@@ -15,7 +15,7 @@
 #include "chksum.h"
 #include "misc.h"
 #include "timer.h"
-#include "udp_dom.h"
+#include "pcdns.h"
 
 /**
  * \deprecated.
@@ -33,6 +33,10 @@ int tcp_cbrk (int mode)
  */
 unsigned long set_ttimeout (unsigned ticks)
 {
+#ifdef WIN32
+  DWORD now = set_timeout (0);
+  return (ticks + now);
+#else
   int   tmp = has_8254;
   DWORD now;
 
@@ -40,13 +44,13 @@ unsigned long set_ttimeout (unsigned ticks)
   now = set_timeout (0);
   has_8254 = tmp;
   return (ticks + now);
+#endif
 }
 
 /*
  * Not needed in Watt-32. Print remote tcp address and port.
  */
-#define psocket NAMESPACE (psocket)
-void psocket (const sock_type *s)
+void W32_CALL psocket (const sock_type *s)
 {
   char buf[20];
 
@@ -62,7 +66,7 @@ void psocket (const sock_type *s)
  * Keep the socket open inspite of receiving "ICMP Unreachable"
  * For UDP or TCP socket.
  */
-void sock_sturdy (sock_type *s, int level)
+void W32_CALL sock_sturdy (sock_type *s, int level)
 {
   s->tcp.rigid = level;
   if (s->tcp.rigid < s->tcp.stress)
@@ -72,7 +76,7 @@ void sock_sturdy (sock_type *s, int level)
 /**
  * Resolve an IP-address to a name.
  */
-int resolve_ip (DWORD ip, char *name, size_t len)
+int W32_CALL resolve_ip (DWORD ip, char *name, int len)
 {
   return reverse_resolve_ip4 (ip, name, len);
 }
@@ -80,7 +84,7 @@ int resolve_ip (DWORD ip, char *name, size_t len)
 #undef time
 
 /*
- * Some time/date conversion function only(?) found in Borland libs.
+ * Some time/date conversion function only (?) found in Borland libs.
  * Only(?) djgpp/DMC besides Borland have "struct time" etc.
  */
 #if defined(__DJGPP__) || defined(__DMC__)
@@ -121,7 +125,7 @@ void unixtodos (time_t time, struct date *d, struct time *t)
 }
 #endif
 
-
+#undef inchksum
 WORD inchksum (const void *ptr, int len)
 {
 #ifdef HAVE_IN_CHECKSUM_FAST
@@ -140,8 +144,7 @@ WORD _w32_inchksum (const void *ptr, int len)
 #endif
 }
 
-
-#if !defined(USE_BIGENDIAN) && !defined(WATT_NO_INLINE_INTEL)
+#if !defined(WATT32_NO_INLINE_INTEL)
 /*
  * If linking old .o-files with new watt*.lib.
  * Or user didn't include <sys/swap.h> (via tcp.h).
@@ -162,9 +165,13 @@ WORD intel16 (WORD val)
 {
   return __ntohs (val);
 }
-#endif
+#endif  /* WATT32_NO_INLINE_INTEL */
 
 #if defined(TEST_PROG)
+
+#if !defined(__MSDOS__)
+#error For MSDOS only
+#endif
 
 int main (void)
 {

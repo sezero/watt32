@@ -5,7 +5,7 @@
 /*  Update and printing of MAC/IP/ICMP/IGMP/UDP/TCP input/output
  *  statistics counters.
  *
- *  Copyright (c) 1997-2002 Gisle Vanem <giva@bgnett.no>
+ *  Copyright (c) 1997-2002 Gisle Vanem <gvanem@yahoo.no>
  *
  *  Redistribution and use in source and binary forms, with or without
  *  modification, are permitted provided that the following conditions
@@ -31,7 +31,7 @@
  *  (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
  *  THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
- *  G. Vanem <giva@bgnett.no> 1997
+ *  G. Vanem <gvanem@yahoo.no> 1997
  */
 
 #include <stdio.h>
@@ -55,8 +55,8 @@
 #include "pppoe.h"
 #include "pcstat.h"
 
-int sock_stats (sock_type *sock, DWORD *days, WORD *inactive,
-                WORD *cwindow, DWORD *avg, DWORD *sd)
+int W32_CALL sock_stats (sock_type *sock, DWORD *days, WORD *inactive,
+                         WORD *cwindow, DWORD *avg, DWORD *sd)
 {
   _tcp_Socket *s = &sock->tcp;
 
@@ -88,37 +88,45 @@ int sock_stats (sock_type *sock, DWORD *days, WORD *inactive,
   void print_igmp_stats(void)  {}
   void print_udp_stats (void)  {}
   void print_tcp_stats (void)  {}
+  void print_cache_stats(void) {}
   void print_all_stats (void)  {}
   void reset_stats     (void)  {}
 
 #else  /* rest of file */
 
-struct macstat   macstats;
-struct ipstat    ip4stats;
-struct ip6stat   ip6stats;
-struct udpstat   udpstats;
-struct tcpstat   tcpstats;
-struct icmpstat  icmpstats;
-struct icmp6stat icmp6stats;
-struct igmpstat  igmpstats;
-struct pppoestat pppoestats;
+struct macstat    macstats;
+struct ipstat     ip4stats;
+struct ip6stat    ip6stats;
+struct udpstat    udpstats;
+struct icmpstat   icmpstats;
+struct icmp6stat  icmp6stats;
+struct igmpstat   igmpstats;
+struct pppoestat  pppoestats;
+struct cache_stat cache_stats;
 
-void reset_stats (void)
+#if !defined(USE_UDP_ONLY)
+struct tcpstat   tcpstats;
+#endif
+
+void W32_CALL reset_stats (void)
 {
-  memset (&macstats,  0, sizeof(macstats));
-  memset (&ip4stats,  0, sizeof(ip4stats));
-  memset (&ip6stats,  0, sizeof(ip6stats));
-  memset (&udpstats,  0, sizeof(udpstats));
-  memset (&tcpstats,  0, sizeof(tcpstats));
-  memset (&icmpstats, 0, sizeof(icmpstats));
-  memset (&igmpstats, 0, sizeof(igmpstats));
-  memset (&pppoestats,0, sizeof(pppoestats));
+  memset (&macstats,   0, sizeof(macstats));
+  memset (&ip4stats,   0, sizeof(ip4stats));
+  memset (&ip6stats,   0, sizeof(ip6stats));
+  memset (&udpstats,   0, sizeof(udpstats));
+  memset (&icmpstats,  0, sizeof(icmpstats));
+  memset (&igmpstats,  0, sizeof(igmpstats));
+  memset (&pppoestats, 0, sizeof(pppoestats));
+  memset (&cache_stats,0, sizeof(cache_stats));
+#if !defined(USE_UDP_ONLY)
+  memset (&tcpstats, 0, sizeof(tcpstats));
+#endif
 }
 
 static __inline void show_stat (const char *name, DWORD num)
 {
   if (num)
-    (*_printf) ("      %-13s %10lu\n", name, num);
+    (*_printf) ("      %-13s %10lu\n", name, (u_long)num);
 }
 
 #if defined(HAVE_UINT64) && defined(USE_IPV6)
@@ -129,41 +137,50 @@ static __inline void show_stat64 (const char *name, uint64 num)
 }
 #endif
 
-void print_mac_stats (void)
+void W32_CALL print_cache_stats (void)
+{
+  (*_printf) ("Cache stats:\n"
+              "      ARP-cache:   hits %lu, misses %lu\n"
+              "      Route-cache: hits %lu, misses %lu\n\n",
+              (u_long)cache_stats.num_arp_hits,   (u_long)cache_stats.num_arp_misses,
+              (u_long)cache_stats.num_route_hits, (u_long)cache_stats.num_route_misses);
+}
+
+void W32_CALL print_mac_stats (void)
 {
   (*_printf) ("MAC   input stats:\n"
               "      dropped %lu, waiting %d, looped %lu, non-IP recv %lu sent %lu\n"
               "      unknown types, %lu, LLC frames %lu, IP-recursions %lu",
-              pkt_dropped(), pkt_waiting(), macstats.num_mac_loop,
-              macstats.non_ip_recv, macstats.non_ip_sent,
-              macstats.num_unk_type, macstats.num_llc_frames,
-              macstats.num_ip_recurse);
+              (u_long)pkt_dropped(), pkt_waiting(), (u_long)macstats.num_mac_loop,
+              (u_long)macstats.non_ip_recv, (u_long)macstats.non_ip_sent,
+              (u_long)macstats.num_unk_type, (u_long)macstats.num_llc_frames,
+              (u_long)macstats.num_ip_recurse);
 
 #if defined(USE_FAST_PKT) || defined(WIN32)
   (*_printf) (" \n      wrong handle %lu, bad-sync %lu, too large %lu, too small %lu",
-              macstats.num_wrong_handle, macstats.num_bad_sync,
-              macstats.num_too_large, macstats.num_too_small);
+              (u_long)macstats.num_wrong_handle, (u_long)macstats.num_bad_sync,
+              (u_long)macstats.num_too_large, (u_long)macstats.num_too_small);
 #endif
 
   (*_printf) (" \nMAC   output stats:\n"
               "      Tx errors     %10lu %s\n"
               "      Tx retries    %10lu\n"
               "      Tx timeout    %10lu\n",
-              macstats.num_tx_err, macstats.num_tx_err ? "****" : "",
-              macstats.num_tx_retry, macstats.num_tx_timeout);
+              (u_long)macstats.num_tx_err, macstats.num_tx_err ? "****" : "",
+              (u_long)macstats.num_tx_retry, (u_long)macstats.num_tx_timeout);
 }
 
-void print_arp_stats (void)
+void W32_CALL print_arp_stats (void)
 {
   (*_printf) ("ARP   Requests:     %10lu recv\n"
               "      Requests:     %10lu sent\n"
               "      Replies:      %10lu recv\n"
               "      Replies:      %10lu sent\n",
-              macstats.arp.request_recv, macstats.arp.request_sent,
-              macstats.arp.reply_recv, macstats.arp.reply_sent);
+              (u_long)macstats.arp.request_recv, (u_long)macstats.arp.request_sent,
+              (u_long)macstats.arp.reply_recv,   (u_long)macstats.arp.reply_sent);
 }
 
-void print_rarp_stats (void)
+void W32_CALL print_rarp_stats (void)
 {
 #if defined(USE_RARP)
   DWORD total = macstats.rarp.request_recv +
@@ -176,14 +193,14 @@ void print_rarp_stats (void)
                  "      Requests:     %10lu sent\n"
                  "      Replies:      %10lu recv\n"
                  "      Replies:      %10lu sent\n",
-                 macstats.rarp.request_recv, macstats.rarp.request_sent,
-                 macstats.rarp.reply_recv, macstats.rarp.reply_sent);
+                 (u_long)macstats.rarp.request_recv, (u_long)macstats.rarp.request_sent,
+                 (u_long)macstats.rarp.reply_recv,   (u_long)macstats.rarp.reply_sent);
 #endif
 }
 
-void print_vjc_stats (void)
+void W32_CALL print_vjc_stats (void)
 {
-#if !defined(WIN32)
+#if defined(__MSDOS__)
   struct slcompress vjc;
 
   if (stricmp(_pktdrvrname,"PPPD220F") &&   /* not using DOSPPP driver */
@@ -199,16 +216,16 @@ void print_vjc_stats (void)
   }
 
   (*_printf) ("      Tx TCP packets: %lu, non-TCP: %lu\n",
-              vjc.sls_o_tcp, vjc.sls_o_nontcp);
+              (u_long)vjc.sls_o_tcp, (u_long)vjc.sls_o_nontcp);
 
   (*_printf) ("      Rx error packets: %lu, tossed: %lu\n",
-              vjc.sls_i_error, vjc.sls_i_tossed);
+              (u_long)vjc.sls_i_error, (u_long)vjc.sls_i_tossed);
 
   (*_printf) ("      Rx runt packets: %lu, bad checksum: %lu\n",
-               vjc.sls_i_runt, vjc.sls_i_badcheck);
+               (u_long)vjc.sls_i_runt, (u_long)vjc.sls_i_badcheck);
 
   (*_printf) ("      connection state searches: %lu, misses: %lu\n",
-              vjc.sls_o_searches, vjc.sls_o_misses);
+              (u_long)vjc.sls_o_searches, (u_long)vjc.sls_o_misses);
 
   (*_printf) ("      oldest xmit in ring: %-9u\n", vjc.xmit_oldest);
   (*_printf) ("      compression state flags: 0x%X\n",  vjc.flags);
@@ -220,10 +237,10 @@ void print_vjc_stats (void)
                vjc.xmit_current, vjc.recv_current);
 
   (*_printf) ("      uncompressed packets: Tx %-5lu Rx %lu\n",
-              vjc.sls_o_uncompressed, vjc.sls_i_uncompressed);
+              (u_long)vjc.sls_o_uncompressed, (u_long)vjc.sls_i_uncompressed);
 
   (*_printf) ("      compressed packets:   Tx %-5lu Rx %lu\n",
-              vjc.sls_o_compressed, vjc.sls_i_compressed);
+              (u_long)vjc.sls_o_compressed, (u_long)vjc.sls_i_compressed);
 
   if (!stricmp(_pktdrvrname,"PPPD220F"))  /* using DOSPPP driver */
   {
@@ -255,32 +272,44 @@ void print_vjc_stats (void)
        (*_printf) ("      not available\n");
   }
   (*_printf) (" \n");
-#endif
+#endif  /* __MSDOS__ */
 }
 
-void print_pkt_stats (void)
+void W32_CALL print_pkt_stats (void)
 {
   struct PktStats stat, total;
+  char   tot_rx [15] = "         ?";
+  char   tot_tx [15] = "         ?";
 
   (*_printf) ("Driver statistics:\n");
   if (!pkt_get_stats(&stat,&total))
   {
-    (*_printf) ("      Not available\n");
+    (*_printf) ("      Not available\n\n");
     return;
   }
 
-  (*_printf) ("      Rx: %9lu pkt, %10lu bytes, %6lu errors, %6lu lost  (this session)\n",
-              stat.in_packets, stat.in_bytes, stat.in_errors, stat.lost);
-  (*_printf) ("      Tx: %9lu pkt, %10lu bytes, %6lu errors\n",
-              stat.out_packets, stat.out_bytes, stat.out_errors);
+  /*
+   * The total.in_bytes and total.out_bytes (since boot) are only
+   * available for DOS packet-drivers. Win32 drivers count only total
+   * packets since driver was started. Print a '? for Win32.
+   */
+#if defined(__MSDOS__)
+  sprintf (tot_rx, "%10lu", total.in_bytes);
+  sprintf (tot_tx, "%10lu", total.out_bytes);
+#endif
 
-  (*_printf) ("      Rx: %9lu pkt, %10lu bytes, %6lu errors, %6lu lost  (since boot)\n",
-              total.in_packets, total.in_bytes, total.in_errors, total.lost);
+  (*_printf) ("      Rx: %9lu pkt, %10lu bytes, %6lu errors, %6lu lost  (this session)\n",
+              (u_long)stat.in_packets, (u_long)stat.in_bytes, (u_long)stat.in_errors, (u_long)stat.lost);
   (*_printf) ("      Tx: %9lu pkt, %10lu bytes, %6lu errors\n",
-              total.out_packets, total.out_bytes, total.out_errors);
+              (u_long)stat.out_packets, (u_long)stat.out_bytes, (u_long)stat.out_errors);
+
+  (*_printf) ("      Rx: %9lu pkt, %s bytes, %6lu errors, %6lu lost  (since boot)\n",
+              (u_long)total.in_packets, tot_rx, (u_long)total.in_errors, (u_long)total.lost);
+  (*_printf) ("      Tx: %9lu pkt, %s bytes, %6lu errors\n\n",
+              (u_long)total.out_packets, tot_tx, (u_long)total.out_errors);
 }
 
-void print_pppoe_stats (void)
+void W32_CALL print_pppoe_stats (void)
 {
 #if defined(USE_PPPOE)
   (*_printf) ("PPPoE stats:\n");
@@ -291,7 +320,7 @@ void print_pppoe_stats (void)
 #endif
 }
 
-void print_ip4_stats (void)
+void W32_CALL print_ip4_stats (void)
 {
   (*_printf) ("IP4   input stats:\n");
   show_stat ("total:",      ip4stats.ips_total);
@@ -314,7 +343,7 @@ void print_ip4_stats (void)
   show_stat ("dropped:",    ip4stats.ips_odropped);
 }
 
-void print_ip6_stats (void)
+void W32_CALL print_ip6_stats (void)
 {
 #if defined(HAVE_UINT64) && defined(USE_IPV6)
   (*_printf) ("IP6   input stats:\n");
@@ -336,7 +365,7 @@ void print_ip6_stats (void)
 #endif
 }
 
-void print_icmp6_stats (void)
+void W32_CALL print_icmp6_stats (void)
 {
 #if defined(HAVE_UINT64) && defined(USE_IPV6)
   uint64 total_in  = 0;
@@ -348,8 +377,7 @@ void print_icmp6_stats (void)
   for (i = 0; i < DIM(icmp6stats.icp6s_inhist); i++)
       total_in += icmp6stats.icp6s_inhist[i];
 
-  show_stat64 ("total:",       total_in);
-
+  show_stat64 ("total:",      total_in);
   show_stat64 ("badsum:",     icmp6stats.icp6s_checksum);
   show_stat64 ("short:",      icmp6stats.icp6s_tooshort);
   show_stat64 ("badcode:",    icmp6stats.icp6s_badcode);
@@ -365,7 +393,7 @@ void print_icmp6_stats (void)
 #endif
 }
 
-void print_icmp_stats (void)
+void W32_CALL print_icmp_stats (void)
 {
   DWORD  total_in  = 0;
   DWORD  total_out = 0;
@@ -413,7 +441,7 @@ void print_icmp_stats (void)
      show_stat (types[i], icmpstats.icps_outhist[i]);
 }
 
-void print_igmp_stats (void)
+void W32_CALL print_igmp_stats (void)
 {
 #if defined(USE_MULTICAST)
   (*_printf) ("IGMP  input stats:\n");
@@ -431,7 +459,7 @@ void print_igmp_stats (void)
 #endif
 }
 
-void print_udp_stats (void)
+void W32_CALL print_udp_stats (void)
 {
   (*_printf) ("UDP   input stats:\n");
   show_stat ("total:",      udpstats.udps_ipackets);
@@ -445,7 +473,7 @@ void print_udp_stats (void)
   show_stat ("total:",      udpstats.udps_opackets);
 }
 
-void print_tcp_stats (void)
+void W32_CALL print_tcp_stats (void)
 {
 #if !defined(USE_UDP_ONLY)
   (*_printf) ("TCP   input stats:\n");
@@ -462,7 +490,7 @@ void print_tcp_stats (void)
   show_stat ("OoO bytes:",   tcpstats.tcps_rcvoobyte);
   show_stat ("ACK pkts:",    tcpstats.tcps_rcvackpack);
   show_stat ("ACK bytes:",   tcpstats.tcps_rcvackbyte);
-  show_stat ("ACK nosent:",   tcpstats.tcps_rcvacktoomuch);
+  show_stat ("ACK nosent:",  tcpstats.tcps_rcvacktoomuch);
   show_stat ("dup ACK:",     tcpstats.tcps_rcvduppack);
   show_stat ("dup bytes:",   tcpstats.tcps_rcvdupbyte);
   show_stat ("pers-drop:",   tcpstats.tcps_persistdrop);
@@ -486,12 +514,46 @@ void print_tcp_stats (void)
 #endif
 }
 
-void print_all_stats (void)
+/* \todo print a nice table of everything. Something like:
+
+    IP4            SENT     RECEIVED
+      total
+      badsum
+      tooshort
+      toosmall
+      badhlen
+      badlen
+      fragments
+      fragdropped
+      fragtimeout
+      forward
+      cantforward
+      redirectsent
+      noproto
+      delivered
+      localout
+      odropped
+      idropped
+      reassembled
+      fragmented
+      ofragments
+      cantfrag
+      badoptions
+      noroute
+      badvers
+      rawout
+      toolong
+
+ */
+void W32_CALL print_all_stats (void)
 {
   int save = ctrace_on;
 
   ctrace_on = 0;
 
+  (*_printf) ("\n");
+
+  print_cache_stats();
   print_vjc_stats();
   print_pkt_stats();
   print_mac_stats();
@@ -522,6 +584,7 @@ void update_in_stat (void)
   const struct pkt_split *ps;
   const eth_Header       *eth;
   const tok_Header       *tok;
+  const fddi_Header      *fddi;
   const ICMP_PKT         *icmp;
   BOOL  got_ip = FALSE;
   BYTE  type;
@@ -539,6 +602,12 @@ void update_in_stat (void)
       case TYPE_TOKEN_HEAD:
            tok = (const tok_Header*) ps->data;
            if (!memcmp(tok->source,_eth_addr,sizeof(_eth_addr)))
+              macstats.num_mac_loop++;
+           break;
+
+      case TYPE_FDDI_HEAD:
+           fddi = (const fddi_Header*) ps->data;
+           if (!memcmp(fddi->source,_eth_addr,sizeof(_eth_addr)))
               macstats.num_mac_loop++;
            break;
 
@@ -612,6 +681,7 @@ void update_in_stat (void)
 
       case TYPE_IP4_FRAG:
            got_ip = TRUE;
+      case TYPE_IP4_OPTIONS:
            break;
 
       case TYPE_ICMP:
@@ -629,12 +699,14 @@ void update_in_stat (void)
            udpstats.udps_ipackets++;
            return;
 
+#if !defined(USE_UDP_ONLY)
       case TYPE_TCP_HEAD:
            tcpstats.tcps_rcvtotal++;
            return;
+#endif
 
       default:
-#if defined(USE_DEBUG) && 1  /* !! bug hunt */
+#if defined(USE_DEBUG)
            dbug_printf ("Unknown split-type %d\n", ps->type);
 #endif
            macstats.num_unk_type++;
@@ -655,7 +727,7 @@ void update_out_stat (void)
   const in_Header        *ip;
   const ICMP_PKT         *icmp;
   BOOL  got_ip  = FALSE;
-  BYTE  type, flags;
+  BYTE  type;
   DWORD ofs;
 
   for (ps = pkt_get_split_out(); ps->data; ps++)
@@ -736,7 +808,7 @@ void update_out_stat (void)
 #if defined(USE_MULTICAST)
       case TYPE_IGMP:
            {
-             const IGMP_packet *igmp = (const IGMP_packet*) ps->data;
+             const IGMPv1_packet *igmp = (const IGMPv1_packet*) ps->data;
 
              if (igmp->version == 1 && igmp->type == IGMPv1_REPORT)
                 igmpstats.igps_snd_reports++;
@@ -752,6 +824,7 @@ void update_out_stat (void)
       case TYPE_TCP_HEAD:
            {
              const tcp_Header *tcp = (const tcp_Header*) ps->data;
+             BYTE  flags;
 
              flags = tcp->flags & tcp_FlagMASK;
              tcpstats.tcps_sndtotal++;

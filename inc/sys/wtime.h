@@ -26,26 +26,33 @@
 #include <sys/cdefs.h>
 #endif
 
-#if defined(__DJGPP__)
+#ifndef __SYS_WHIDE_H
+#include <sys/whide.h>
+#endif
+
+#if defined(__DJGPP__) || defined(__CYGWIN__)
   #include <sys/time.h>
   #include <sys/times.h>
+  #include <sys/types.h>
 
 #elif defined(__MINGW32__)
   #include <sys/time.h>
 
 #else
   struct timeval {
-         time_t tv_sec;
-         long   tv_usec;
+         long tv_sec;
+         long tv_usec;
        };
   #define STRUCT_TIMEVAL_DEFINED
 #endif
 
-#if !defined(__DJGPP__)
-  struct timezone {
-         int tz_minuteswest;
-         int tz_dsttime;
-       };
+#if !defined(__DJGPP__) && !defined(__CYGWIN__)
+  #if !W32_MINGW_VER(3,10)
+    struct timezone {         /* Added in MinGW 3.1 */
+           int tz_minuteswest;
+           int tz_dsttime;
+         };
+  #endif
 
   struct tms {
          unsigned long tms_utime;
@@ -66,20 +73,45 @@
          struct timeval it_value;     /* current value */
        };
 
-  W32_FUNC int getitimer (int, struct itimerval *);
-  W32_FUNC int setitimer (int, struct itimerval *, struct itimerval *);
+  W32_FUNC int W32_CALL getitimer (int, struct itimerval *);
+  W32_FUNC int W32_CALL setitimer (int, struct itimerval *, struct itimerval *);
 
-  W32_FUNC int gettimeofday (struct timeval *tp, struct timezone *tz);
+  #if !W32_MINGW_VER(3,10)   /* Added in MinGW 3.1 */
+    W32_FUNC int W32_CALL gettimeofday (struct timeval *, struct timezone *);
+  #endif
 
   __END_DECLS
 
-#endif      /* !__DJGPP__ */
+#endif    /* !__DJGPP__ && !__CYGWIN__ */
 
-#if !defined(_STRUCT_TIMESPEC) && !defined(_pthread_signal_h)
+/* 'struct timespec' hacks
+ */
+#if defined(_STRUCT_TIMESPEC) || defined(_TIMESPEC_DEFINED)
+  #define W32_HAVE_STRUCT_TIMESPEC
+
+#elif (defined(_MSC_VER) && _MSC_VER >= 1900)   /* VC 2015 uclib */
+  #define W32_HAVE_STRUCT_TIMESPEC
+
+#elif (defined(__clang__) && _MSC_VER >= 1800)  /* clang-cl 5.0+? */
+  #define W32_HAVE_STRUCT_TIMESPEC
+
+#elif defined(__POCC__) && ( __POCC_STDC_VERSION__ >= 201101L) /* PellesC */
+  #define W32_HAVE_STRUCT_TIMESPEC
+
+#elif defined(_pthread_signal_h) || defined(__CYGWIN__)
+  #define W32_HAVE_STRUCT_TIMESPEC
+
+#elif W32_MINGW_VER(3,21)                     /* MinGW 3.21 + */
+  #define W32_HAVE_STRUCT_TIMESPEC
+#endif
+
+#if !defined(W32_HAVE_STRUCT_TIMESPEC)
   #define _STRUCT_TIMESPEC
+  #define __struct_timespec_defined    /* For MinGW 3.21+ */
+
   struct timespec {
-         time_t tv_sec;
-         long   tv_nsec;
+         long tv_sec;
+         long tv_nsec;
        };
 #endif
 
@@ -89,8 +121,8 @@
 
 __BEGIN_DECLS
 
-W32_FUNC unsigned long net_times (struct tms *buffer);
-W32_FUNC int           gettimeofday2 (struct timeval *tv, struct timezone *tz);
+W32_FUNC unsigned long W32_CALL net_times (struct tms *buffer);
+W32_FUNC int           W32_CALL gettimeofday2 (struct timeval *, struct timezone *);
 
 __END_DECLS
 
@@ -99,7 +131,7 @@ __END_DECLS
  *
  * NB: timercmp does not work for >= or <=.
  */
-#ifndef timerisset
+#if !defined(timerisset)
   #define timerisset(tvp)         ((tvp)->tv_sec || (tvp)->tv_usec)
 
   #define timercmp(tvp, uvp, cmp) ((tvp)->tv_sec cmp (uvp)->tv_sec || \

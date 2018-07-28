@@ -12,7 +12,7 @@
 
 #include "copyrigh.h"
 #include "wattcp.h"
-#include "udp_dom.h"
+#include "pcdns.h"
 #include "pcbuf.h"
 #include "pctcp.h"
 #include "pcdbug.h"
@@ -21,15 +21,32 @@
 #include "misc.h"
 #include "wdpmi.h"
 #include "x32vm.h"
+#include "win_dll.h"
 #include "powerpak.h"
 #include "strings.h"
 #include "bsdname.h"
+
+#ifdef __CYGWIN__
+  #define XHOSTID_RETV      long
+  #define SETHOSTNAME_ARG2  size_t
+#else
+  #define XHOSTID_RETV      u_long
+  #define SETHOSTNAME_ARG2  int
+#endif
+
+#ifdef __DJGPP__
+  #define GETHOSTNAME_ARG2 int
+#else
+  #define GETHOSTNAME_ARG2 size_t
+#endif
+
+
 
 /**
  * Core style: Returns local IPv4-address.
  *  \retval address on \b host order.
  */
-DWORD _gethostid (void)
+DWORD W32_CALL _gethostid (void)
 {
   return (my_ip_addr);
 }
@@ -38,7 +55,7 @@ DWORD _gethostid (void)
  * Core-style: Sets local IPv4-address.
  *  \retval address on \b host order.
  */
-DWORD _sethostid (DWORD ip)
+DWORD W32_CALL _sethostid (DWORD ip)
 {
   return (my_ip_addr = ip);
 }
@@ -48,7 +65,7 @@ DWORD _sethostid (DWORD ip)
  * BSD style: returns local IPv4-address.
  *  \retval  address on \b network order.
  */
-u_long W32_CALL gethostid (void)
+XHOSTID_RETV W32_CALL gethostid (void)
 {
   if (!netdb_init())
      return (INADDR_NONE);
@@ -59,11 +76,11 @@ u_long W32_CALL gethostid (void)
  * BSD-style: Sets local IPv4-address.
  *  \retval address on \b host order.
  */
-u_long W32_CALL sethostid (DWORD ip)
+XHOSTID_RETV W32_CALL sethostid (u_long ip)
 {
   return (my_ip_addr = ntohl(ip));
 }
-#endif
+#endif  /* USE_BSD_API */
 
 #if defined(USE_IPV6)
 /**
@@ -88,12 +105,11 @@ void _sethostid6 (const void *addr)
 }
 #endif  /* USE_IPV6 */
 
-
 /**
  * Core-style: \n
  * Return 'watt_sockaddr' for peer in a UDP/TCP connection.
  */
-int _getpeername (const sock_type *s, void *dest, int *len)
+int W32_CALL _getpeername (const sock_type *s, void *dest, int *len)
 {
   struct watt_sockaddr temp;
   size_t ltemp;
@@ -120,7 +136,7 @@ int _getpeername (const sock_type *s, void *dest, int *len)
   memcpy (dest, &temp, ltemp);
 
   if (len)
-     *len = ltemp;
+     *len = (int)ltemp;
   return (0);
 }
 
@@ -128,7 +144,7 @@ int _getpeername (const sock_type *s, void *dest, int *len)
  * Core-style: \n
  * Return 'watt_sockaddr' for our side of a UDP/TCP connection.
  */
-int _getsockname (const sock_type *s, void *dest, int *len)
+int W32_CALL _getsockname (const sock_type *s, void *dest, int *len)
 {
   struct watt_sockaddr temp;
   size_t ltemp;
@@ -155,7 +171,7 @@ int _getsockname (const sock_type *s, void *dest, int *len)
   memcpy (dest, &temp, ltemp);
 
   if (len)
-     *len = ltemp;
+     *len = (int)ltemp;
   return (0);
 }
 
@@ -167,17 +183,17 @@ int _getsockname (const sock_type *s, void *dest, int *len)
  *
  * Set errno on failure and return -1.
  */
-int W32_CALL getdomainname (char *buffer, int buflen)
+int W32_CALL getdomainname (char *buffer, size_t buflen)
 {
   const char *my_domainname = def_domain ? def_domain : "";
 
-  if (!buffer || buflen < 0 || buflen < (int)strlen(my_domainname))
+  if (!buffer || buflen < strlen(my_domainname))
   {
     SOCK_ERRNO (EINVAL);
     return (-1);
   }
 #if (DOSX)
-  if (!valid_addr((DWORD)buffer, buflen))
+  if (!valid_addr(buffer, buflen))
   {
     SOCK_ERRNO (EFAULT);
     return (-1);
@@ -185,7 +201,7 @@ int W32_CALL getdomainname (char *buffer, int buflen)
 #endif
 
   strncpy (buffer, my_domainname, buflen);
-  /* no terminating '\0' needs to be forced here per bsd spec */
+  /* no terminating '\0' needs to be forced here per BSD spec */
   return (0);
 }
 
@@ -194,23 +210,23 @@ int W32_CALL getdomainname (char *buffer, int buflen)
  * Set the host's domain name.
  * Set errno on failure and return -1.
  */
-int W32_CALL setdomainname (const char *name, int len)
+int W32_CALL setdomainname (const char *name, size_t len)
 {
-  if (!name || len < 0 || len > SIZEOF(defaultdomain)-1)
+  if (!name || len > sizeof(defaultdomain)-1)
   {
     SOCK_ERRNO (EINVAL);
     return (-1);
   }
 
 #if (DOSX)
-  if (!valid_addr((DWORD)name, len))
+  if (!valid_addr(name, len))
   {
     SOCK_ERRNO (EFAULT);
     return (-1);
   }
 #endif
 
-  def_domain = StrLcpy (defaultdomain, name, len);
+  def_domain = _strlcpy (defaultdomain, name, len);
   return (0);
 }
 
@@ -219,17 +235,17 @@ int W32_CALL setdomainname (const char *name, int len)
  * Make a FQDN from `hostname' & `def_domain'.
  * Set errno on failure and return -1.
  */
-int W32_CALL gethostname (char *buffer, int buflen)
+int W32_CALL gethostname (char *buffer, GETHOSTNAME_ARG2 buflen)
 {
   /* the FQDN when no hostname has been set is "localhost.localdomain".
-   * the FQDN when a hostname has been set, but no domname is set, is 'my_hostname'
+   * the FQDN when a hostname has been set, but no my_domname is set, is 'my_hostname'
    * the FQDN when both are set is 'my_hostname.my_domname'
    */
   const char *my_hostname = "localhost";
   const char *my_domname  = "localdomain";
-  int   pos;
+  GETHOSTNAME_ARG2 pos;
 
-  if (!buffer || buflen < 0)
+  if (!buffer)
   {
     SOCK_ERRNO (EINVAL);
     return (-1);
@@ -238,7 +254,7 @@ int W32_CALL gethostname (char *buffer, int buflen)
      return (0);
 
 #if (DOSX)
-  if (!valid_addr((DWORD)buffer, buflen))
+  if (!valid_addr(buffer, buflen))
   {
     SOCK_ERRNO (EFAULT);
     return (-1);
@@ -259,7 +275,6 @@ int W32_CALL gethostname (char *buffer, int buflen)
   if (pos < buflen && my_domname)
   {
     buffer[pos++] = '.';
-    /*@-nullderef@*/
     while (pos < buflen && *my_domname)
         buffer[pos++] = *my_domname++;
   }
@@ -274,18 +289,18 @@ int W32_CALL gethostname (char *buffer, int buflen)
  * Split at first `.' and extract `hostname' and `def_domain'.
  * Set errno on failure and return -1.
  */
-int W32_CALL sethostname (const char *fqdn, int len)
+int W32_CALL sethostname (const char *fqdn, SETHOSTNAME_ARG2 len)
 {
-  int pos;
+  SETHOSTNAME_ARG2 pos;
 
-  if (!fqdn || !*fqdn || len < 0 || len > MAX_HOSTLEN)
+  if (!fqdn || !*fqdn || len == 0 || len > MAX_HOSTLEN)
   {
     SOCK_ERRNO (EINVAL);
     return (-1);
   }
 
 #if (DOSX)
-  if (!valid_addr((DWORD)fqdn, len))
+  if (!valid_addr(fqdn, len))
   {
     SOCK_ERRNO (EFAULT);
     return (-1);
@@ -295,7 +310,7 @@ int W32_CALL sethostname (const char *fqdn, int len)
   pos = 0;
   while (pos < len && fqdn[pos] != '.')
   {
-    if (!fqdn[pos]) /* should do complete alpha/digit/underscore check here */
+    if (!fqdn[pos]) /** \todo: should do complete alpha/digit/underscore check here */
     {
       pos = 0;
       break;
@@ -334,18 +349,12 @@ int W32_CALL sethostname (const char *fqdn, int len)
  */
 int _get_machine_name (char *buf, int size)
 {
-  int     rc;
-  DWORD   sz  = size;
-  HMODULE mod = GetModuleHandle ("KERNEL32.DLL");
-  BOOL (WINAPI *_GetComputerNameExA) (int, char*, DWORD*) = NULL;
-  typedef BOOL (WINAPI *gcn_ex) (int, char*, DWORD*);
+  DWORD sz = size;
+  int   rc;
 
-  if (mod)
-     _GetComputerNameExA = (gcn_ex) GetProcAddress (mod, "GetComputerNameExA");
-
-  if (!_GetComputerNameExA)
-       rc = GetComputerNameA (buf, &sz);
-  else rc = (*_GetComputerNameExA) (ComputerNameDnsHostname, buf, &sz);
+  if (p_GetComputerNameExA)
+       rc = (*p_GetComputerNameExA) (ComputerNameDnsHostname, buf, &sz);
+  else rc = GetComputerNameA (buf, &sz);
 
   rc = rc ? 0 : -1;
   TCP_CONSOLE_MSG (2, ("_get_machine_name(): \"%s\", rc %d\n", buf, rc));
@@ -377,6 +386,7 @@ int _get_machine_name (char *buf, int size)
 
 /**
  * Try asking a LAN extension of DOS for a host-name.
+ * Work for a DOS-box under Windows-XP.
  */
 int _get_machine_name (char *buf, int size)
 {
@@ -428,14 +438,7 @@ int _get_machine_name (char *buf, int size)
   memcpy (dosBuf, SEG_OFS_TO_LIN(_watt_dosTbSeg,0), sizeof(dosBuf));
 #endif
 
-  /* Remove right space padding
-   */
-  h = dosBuf + min (strlen(dosBuf), sizeof(dosBuf)-1);
-  while (h > dosBuf && h[-1] == ' ')
-        h--;
-
-  *h  = '\0';
-  h   = dosBuf;
+  h = strrtrim (dosBuf);
   len = strlen (h);
   if (len + 1 > size)
   {

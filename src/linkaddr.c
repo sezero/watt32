@@ -36,10 +36,6 @@
  *  $Id: linkaddr.c,v 1.2 1998/08/20 21:56:24 joel Exp $
  */
 
-#if defined(LIBC_SCCS) && !defined(lint)
-static char sccsid[] = "@(#)linkaddr.c  8.1 (Berkeley) 6/4/93";
-#endif
-
 #include "socket.h"
 
 #if defined(USE_BSD_API)
@@ -58,11 +54,11 @@ static char sccsid[] = "@(#)linkaddr.c  8.1 (Berkeley) 6/4/93";
 #define DELIM   (4*2)
 #define LETTER  (4*3)
 
-void link_addr (const char *addr, struct sockaddr_dl *sdl)
+void W32_CALL link_addr (const char *addr, struct sockaddr_dl *sdl)
 {
   char *cp    = sdl->sdl_data;
   char *cplim = sdl->sdl_len + (char*) sdl;
-  int   byte  = 0;
+  int   Byte  = 0;
   int   state = NAMING;
   int   New   = 0;
 
@@ -101,27 +97,27 @@ void link_addr (const char *addr, struct sockaddr_dl *sdl)
            continue;
       case NAMING | DELIM:
            state = RESET;
-           sdl->sdl_nlen = cp - sdl->sdl_data;
+           sdl->sdl_nlen = (u_char)(cp - sdl->sdl_data);
            continue;
       case GOTTWO | DIGIT:
-           *cp++ = byte;
+           *cp++ = Byte;
            /* FALLTHROUGH */
       case RESET | DIGIT:
            state = GOTONE;
-           byte = New;
+           Byte = New;
            continue;
       case GOTONE | DIGIT:
            state = GOTTWO;
-           byte = New + (byte << 4);
+           Byte = New + (Byte << 4);
            continue;
       default:               /* | DELIM */
            state = RESET;
-           *cp++ = byte;
-           byte = 0;
+           *cp++ = Byte;
+           Byte = 0;
            continue;
       case GOTONE | END:
       case GOTTWO | END:
-           *cp++ = byte;
+           *cp++ = Byte;
            /* FALLTHROUGH */
       case RESET | END:
            break;
@@ -130,13 +126,13 @@ void link_addr (const char *addr, struct sockaddr_dl *sdl)
   }
   while (cp < cplim);
 
-  sdl->sdl_alen = cp - (char*)LLADDR (sdl);
-  New = cp - (char*) sdl;
+  sdl->sdl_alen = (u_char)(cp - LLADDR(sdl));
+  New = (int) (cp - (char*)sdl);
   if (New > (int)sizeof(*sdl))
      sdl->sdl_len = New;
 }
 
-char *link_ntoa (const struct sockaddr_dl *sdl)
+char * W32_CALL link_ntoa (const struct sockaddr_dl *sdl)
 {
   static char obuf[64];
   char  *out        = obuf;
@@ -153,22 +149,21 @@ char *link_ntoa (const struct sockaddr_dl *sdl)
   }
   while (in < inlim && out < obuf+sizeof(obuf)-3)
   {
-    int byte = *in++;
+    int Byte = *in++;
 
     if (firsttime)
          firsttime = FALSE;
     else *out++ = '.';
-    if (byte > 0xF)
+    if (Byte > 0xF)
     {
-      *out++ = hex_chars_lower [byte >> 4];
-      *out++ = hex_chars_lower [byte & 0xf];
+      *out++ = hex_chars_lower [Byte >> 4];
+      *out++ = hex_chars_lower [Byte & 0xf];
     }
     else
-      *out++ = hex_chars_lower [byte];
+      *out++ = hex_chars_lower [Byte];
   }
   *out = '\0';
   return (obuf);
 }
-
 #endif /* USE_BSD_API */
 

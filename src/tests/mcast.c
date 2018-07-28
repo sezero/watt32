@@ -12,15 +12,22 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <unistd.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #include <tcp.h>
 
+#ifndef _MSC_VER
+#include <unistd.h>
+#endif
+
 #define HELLO_PORT  12345
 #define HELLO_GROUP "225.0.0.37"
 #define MSGBUFSIZE  256
+
+#if defined(__CYGWIN__)
+  #define strnicmp(s1, s2, len)  strncasecmp (s1, s2, len)
+#endif
 
 int sender_main (int argc, char **argv)
 {
@@ -47,6 +54,8 @@ int sender_main (int argc, char **argv)
     return (-1);
   }
 
+//tcp_cbreak (1);
+
   /* now just sendto() our destination! */
   while (1)
   {
@@ -57,7 +66,16 @@ int sender_main (int argc, char **argv)
       return (-1);
     }
     fputc ('.', stderr);
+#ifdef WIN32
+    Sleep (1000);
+#else
     sleep (1);
+#endif
+
+#if 0
+    if (_watt_cbroke)
+       break;
+#endif
   }
   return (0);
 }
@@ -103,6 +121,8 @@ int listener_main (int argc, char **argv)
     return (-1);
   }
 
+//tcp_cbreak (1);
+
   /* now just enter a read-print loop */
   while (1)
   {
@@ -115,6 +135,10 @@ int listener_main (int argc, char **argv)
       return (-1);
     }
     puts (message);
+#if 0
+    if (_watt_cbroke)
+       break;
+#endif
   }
   return (0);
 }

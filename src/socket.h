@@ -1,4 +1,4 @@
-/*!\file SRC/socket.h
+/*!\file src/socket.h
  */
 
 /*
@@ -15,7 +15,11 @@
    * Prevent tcc <= 2.01 from even looking at this.
    */
   #define BOOL int
-#else
+#else  /* rest of file */
+
+#if defined(__CYGWIN__)
+  #include "wattcp.h"
+#endif
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -63,6 +67,7 @@
 #include "chksum.h"
 #include "wdpmi.h"
 #include "misc.h"
+#include "run.h"
 #include "timer.h"
 #include "strings.h"
 #include "sock_ini.h"
@@ -73,7 +78,7 @@
 #include "pcsed.h"
 #include "pcpkt.h"
 #include "pcstat.h"
-#include "pcmulti.h"
+#include "pcigmp.h"
 #include "pctcp.h"
 #include "pcbuf.h"
 #include "pcicmp.h"
@@ -94,7 +99,7 @@
 /*
  * Various sizes
  */
-#if (DOSX)
+#if defined (TARGET_IS_32BIT)
   #define MAX_DGRAMS        5              /* # of datagrams for broadcast */
   #define MAX_RAW_BUFS      5              /* # of _raw_Socket in list */
   #define MAX_RAW6_BUFS     5              /* # of _raw6_Socket in list */
@@ -169,7 +174,7 @@ typedef struct Socket {
         /* For SOCK_PACKET sockets.
          */
         sock_packet_pool   *packet_pool;
-        int               (*old_eth_peek) (void*);
+        int      (W32_CALL *old_eth_peek) (void *pkt);
 
         /* listen-queue for incoming tcp connections
          */
@@ -179,6 +184,7 @@ typedef struct Socket {
 
         unsigned            send_lowat;  /* low-water Tx marks */
         unsigned            recv_lowat;  /* low-water Rx marks */
+        BOOL                msg_nosig;   /* don't raise SIGPIPE */
         DWORD               cookie;      /* memory cookie / marker */
 
       } Socket;
@@ -254,16 +260,16 @@ typedef struct Socket {
           }                                      \
         } while (0)
 
-#if (DOSX)
-  #define VERIFY_RW(ptr,len)                     \
-          do {                                   \
-            if (!valid_addr((DWORD)(ptr),len)) { \
-               SOCK_DEBUGF ((", EFAULT "         \
-                 "(buf %08lXh, len %d)",         \
-                 (DWORD)(ptr), (int)(len)));     \
-               SOCK_ERRNO (EFAULT);              \
-               return (-1);                      \
-            }                                    \
+#if defined(TARGET_IS_32BIT)
+  #define VERIFY_RW(ptr,len)                    \
+          do {                                  \
+            if (!valid_addr(ptr,len)) {         \
+               SOCK_DEBUGF ((", EFAULT "        \
+                 "(buf %" ADDR_FMT ", len %d)", \
+                 ADDR_CAST(ptr), (int)(len)));  \
+               SOCK_ERRNO (EFAULT);             \
+               return (-1);                     \
+            }                                   \
           } while (0)
 #else
   #define VERIFY_RW(ptr,len) ((void)0)
@@ -279,7 +285,6 @@ typedef struct Socket {
                              fflush (stdout);          \
                           /* _watt_fatal_error = 1; */ \
                              exit (-1);                \
-                             /*@-unreachable@*/        \
                            } while (0)
 #else
   #define SOCK_FATAL(arg)  ((void)0)
@@ -331,29 +336,13 @@ typedef struct Socket {
 #define F_SETOWN  (W32_FCNTL_BASE+9)
 #endif
 
-
-W32_FUNC int close_s  (int s);
-W32_FUNC int write_s  (int s, const char *buf, int num);
-W32_FUNC int writev_s (int s, const struct iovec *vec, size_t num);
-W32_FUNC int recvmsg  (int s, struct msghdr *msg, int flags);
-W32_FUNC int read_s   (int s, char *buf, int num);
-W32_FUNC int select_s (int n, fd_set *r, fd_set *w, fd_set *x, struct timeval *t);
-
-#if defined(WIN32)
-W32_FUNC int W32_CALL select (int num_sockets,
-                              fd_set *read_events,
-                              fd_set *write_events,
-                              fd_set *except_events,
-                              struct timeval *timeout);
-#endif
-
 /*
  * Setup trapping of signals and critical sections around loops.
  */
 extern int  _sock_sig_setup   (void);
 extern int  _sock_sig_restore (void);
 extern int  _sock_sig_pending (void);
-extern int  _sock_sig_epipe   (void);
+extern int  _sock_sig_epipe   (const Socket *s);
 
 extern void _sock_crit_start  (void);
 extern void _sock_crit_stop   (void);
@@ -372,7 +361,7 @@ extern unsigned sock_packet_transmit (Socket *sock, const void *buf,
                                       int tolen);
 
 extern unsigned sock_packet_receive (Socket *sock, void *buf, unsigned len,
-                                     struct sockaddr *from, int *fromlen);
+                                     struct sockaddr *from, size_t *fromlen);
 
 extern unsigned sock_packet_rbused (Socket *sock);
 

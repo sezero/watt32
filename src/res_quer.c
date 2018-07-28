@@ -62,9 +62,9 @@
 #if defined(USE_BIND)
 
 #if (PACKETSZ > 1024)
-  #define MAXPACKET  PACKETSZ
+  #define MAX_PACKET  PACKETSZ
 #else
-  #define MAXPACKET  1024
+  #define MAX_PACKET  1024
 #endif
 
 /*
@@ -77,10 +77,10 @@
  *
  * Caller must parse answer and determine whether it answers the question.
  */
-int res_query (const char *name, int Class, int type,
-               u_char *answer, int anslen)
+int W32_CALL res_query (const char *name, int Class, int type,
+                        u_char *answer, int anslen)
 {
-  u_char  buf[MAXPACKET];
+  u_char  buf[MAX_PACKET];
   HEADER *hp = (HEADER*) answer;
   int     n;
 
@@ -150,8 +150,8 @@ int res_query (const char *name, int Class, int type,
  * If enabled, implement search rules until answer or unrecoverable failure
  * is detected.  Error code, if any, is left in h_errno.
  */
-int res_search (const char *name, int Class, int type,
-                u_char *answer, int anslen)
+int W32_CALL res_search (const char *name, int Class, int type,
+                         u_char *answer, int anslen)
 {
   #define RDBG(x)  (*_printf) ("res_search() = %d at line %u\n", x, __LINE__)
 
@@ -319,12 +319,11 @@ int res_search (const char *name, int Class, int type,
  * Perform a call on res_query on the concatenation of name and domain,
  * removing a trailing dot from name if domain is NULL.
  */
-int res_querydomain (const char *name, const char *domain, int Class,
-                     int type, u_char *answer, int anslen)
+int W32_CALL res_querydomain (const char *name, const char *domain, int Class,
+                              int type, u_char *answer, int anslen)
 {
-  char  nbuf[2*MAXDNAME+2];
+  char  nbuf [2*MAXDNAME+2];
   const char *longname = nbuf;
-  int   n;
 
   if ((_res.options & RES_INIT) == 0 && res_init() == -1)
   {
@@ -340,11 +339,12 @@ int res_querydomain (const char *name, const char *domain, int Class,
   {
     /* Check for trailing '.'; copy without '.' if present.
      */
-    n = strlen (name) - 1;
-    if (n != -1 && name[n] == '.' && n < (int)sizeof(nbuf)-1)
+    size_t len = strlen (name) - 1;
+
+    if (len < sizeof(nbuf)-1 && name[len] == '.')
     {
-      memcpy (nbuf, name, n);
-      nbuf[n] = '\0';
+      memcpy (nbuf, name, len);
+      nbuf [len] = '\0';
     }
     else
       longname = name;
@@ -364,12 +364,12 @@ int res_querydomain (const char *name, const char *domain, int Class,
  * Line format is:
  *   [ ].host[ ]*alias{#}.[\r\n]
  */
-char *__hostalias (const char *name)
+char * W32_CALL __hostalias (const char *name)
 {
   const char *file;
-  FILE  *fp;
-  char   buf[BUFSIZ];
+  char   buf[BUFSIZ], *tok_buf = NULL;
   static char abuf[MAXDNAME];
+  FILE  *fp;
 
   if (_res.options & RES_NOALIASES)
      return (NULL);
@@ -391,14 +391,14 @@ char *__hostalias (const char *name)
     if (!*p || *p == '\n' || *p == '#' || *p == ';')
        continue;
 
-    host  = strtok (p, " \t");
-    alias = strtok (NULL, " \t\n");
+    host  = strtok_r (p, " \t", &tok_buf);
+    alias = strtok_r (NULL, " \t\n", &tok_buf);
     if (!host || !alias)
        continue;
 
     if (!stricmp(host, name))
     {
-      StrLcpy (abuf, alias, sizeof(abuf)-1);
+      _strlcpy (abuf, alias, sizeof(abuf)-1);
       break;
     }
   }

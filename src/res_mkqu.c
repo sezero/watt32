@@ -64,7 +64,7 @@
  * Form all types of queries.
  * Returns the size of the result or -1.
  */
-int res_mkquery (
+int W32_CALL res_mkquery (
     int           op,            /* opcode of query */
     const char   *dname,         /* domain name */
     int           Class,         /* class of query */

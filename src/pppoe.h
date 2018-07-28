@@ -34,24 +34,22 @@
 /*
  * The PPPOE header (RFC-2561) excluding Ether-header.
  */
-#include <sys/packon.h>
+W32_CLANG_PACK_WARN_OFF()
+
+#include <sys/pack_on.h>
 
 typedef struct pppoe_Packet {
-#if defined(USE_BIGENDIAN)
-        BYTE  type : 4;
-        BYTE  ver  : 4;
-#else
         BYTE  ver  : 4;
         BYTE  type : 4;
-#endif
         BYTE  code;
         WORD  session;
         WORD  length;
         BYTE  data [PPPOE_MAX_DATA];  /* higher level proto at data[2] */
       } pppoe_Packet;
 
-#include <sys/packoff.h>
+#include <sys/pack_off.h>
 
+W32_CLANG_PACK_WARN_DEF()
 
 extern void  pppoe_init (void);
 extern void  pppoe_exit (void);

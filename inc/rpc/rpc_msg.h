@@ -84,7 +84,7 @@ enum reject_stat {
  * Reply part of an rpc exchange
  */
 
-#include <sys/packon.h>
+#include <sys/pack_on.h>
 
 /*
  * Reply to an rpc request that was accepted by the server.
@@ -166,7 +166,7 @@ struct rpc_msg {
 #define	acpted_rply	ru.RM_rmb.ru.RP_ar
 #define	rjcted_rply	ru.RM_rmb.ru.RP_dr
 
-#include <sys/packoff.h>
+#include <sys/pack_off.h>
 
 __BEGIN_DECLS
 

@@ -3,7 +3,7 @@
  *  `/etc/ethers' file functions for Watt-32.
  */
 
-/*  Copyright (c) 1997-2002 Gisle Vanem <giva@bgnett.no>
+/*  Copyright (c) 1997-2002 Gisle Vanem <gvanem@yahoo.no>
  *
  *  Redistribution and use in source and binary forms, with or without
  *  modification, are permitted provided that the following conditions
@@ -39,11 +39,14 @@
 
 #include "wattcp.h"
 #include "misc.h"
+#include "run.h"
 #include "pcarp.h"
 #include "pcconfig.h"
-#include "udp_dom.h"
+#include "pcdns.h"
+#include "pcdbug.h"
 #include "strings.h"
 #include "netaddr.h"
+#include "bsddbug.h"
 #include "get_xby.h"
 
 #if defined(USE_BSD_API)
@@ -53,6 +56,15 @@
 #include <net/if_dl.h>
 #include <net/if_ether.h>
 #include <net/route.h>
+
+#if defined(TEST_PROG)
+  #undef  SOCK_DEBUGF
+  #define SOCK_DEBUGF(args)  printf args
+#endif
+
+#if !defined(USE_BUFFERED_IO)
+  #error This file needs USE_BUFFERED_IO
+#endif
 
 struct ethent {
        eth_address    eth_addr;  /* ether/MAC address of host */
@@ -65,32 +77,32 @@ static struct ethent *eth0 = NULL;
 static int    num_entries  = -1;
 static char   ethersFname [MAX_PATHLEN] = "";
 
-static int  getethent (const char *line, eth_address *e, char *name, size_t max);
-static void endethent (void);
+static void W32_CALL end_ether_entries (void);
+static int           get_ether_entry (char *in_buf, eth_address *e,
+                                      char *out_buf, size_t out_buf_size);
 
-#if defined(TEST_PROG)
-  #define TRACE(s)  printf s
-#else
-  #define TRACE(s)  ((void)0)
-#endif
-
-void InitEthersFile (const char *fname)
+void W32_CALL InitEthersFile (const char *fname)
 {
   if (fname && *fname)
-     StrLcpy (ethersFname, fname, sizeof(ethersFname));
+     _strlcpy (ethersFname, fname, sizeof(ethersFname));
 }
 
-const char *GetEthersFile (void)
+const char * W32_CALL GetEthersFile (void)
 {
   return (ethersFname[0] ? ethersFname : NULL);
 }
 
-int NumEtherEntries (void)
+int W32_CALL NumEtherEntries (void)
 {
   return (num_entries);
 }
 
-void ReadEthersFile (void)
+/**
+ * Read the /etc/ethers file. This MUST be called after any /etc/hosts
+ * file has been read.
+ * \todo: Assert that.
+ */
+void W32_CALL ReadEthersFile (void)
 {
   FILE *file;
   char  buf [2*MAX_HOSTLEN];
@@ -98,8 +110,7 @@ void ReadEthersFile (void)
   if (!ethersFname[0])
      return;
 
-  file = fopen (ethersFname, "rt");
-  if (!file)
+  if (!FOPEN_TXT(file, ethersFname))
   {
     netdb_warn (ethersFname);
     return;
@@ -109,41 +120,45 @@ void ReadEthersFile (void)
   {
     struct ethent  *e;
     struct hostent *h;
-    char   hostname [MAX_HOSTLEN], *p;
+    char   host_ip [MAX_HOSTLEN];
     int    save;
     eth_address eth;
 
-    p = strrtrim (strltrim(buf));
-    if (memchr ("\r\n#;\0", *p, 5))
-       continue;
-
-    TRACE (("line '%s', ", p));
-
-    if (!getethent(p,&eth,hostname,sizeof(hostname)))
+    if (!get_ether_entry(buf,&eth,host_ip,sizeof(host_ip)))
        continue;
 
     if (num_entries == -1)
        num_entries = 0;
     num_entries++;
+
     save = called_from_resolve;
     called_from_resolve = TRUE;   /* prevent a DNS lookup */
-    h = gethostbyname (hostname);
+    h = gethostbyname (host_ip);
     called_from_resolve = save;
 
+    /* If 'h == NULL': means 'host_ip' contained a host-name that cannot be resolved
+     *                 at this moment. gethostbyname()+resolve() cannot be called at startup.
+     * If 'h != NULL': means 'host_ip' is simply an IPv4-address or a host-name (or alias)
+     *                 that is in '/etc/hosts' file.
+     */
     if (!h)
     {
-      TRACE (("gethostbyname() failed\n"));
+      CONSOLE_MSG (4, ("ReadEthersFile(): gethostbyname() failed\n"));
       continue;
     }
-    TRACE (("\n"));
+    CONSOLE_MSG (4, ("\n"));
 
     e = calloc (sizeof(*e), 1);
     if (!e)
        break;
 
-    memcpy (&e->eth_addr, &eth, sizeof(e->eth_addr));
     e->ip_addr = ntohl (*(DWORD*)h->h_addr);
-    _arp_add_cache (e->ip_addr, &e->eth_addr, FALSE);
+    memcpy (&e->eth_addr, &eth, sizeof(e->eth_addr));
+
+    /* Add this to the permanent ARP-cache.
+     */
+    _arp_cache_add (e->ip_addr, &e->eth_addr, FALSE);
+
     if (h->h_name)
     {
       e->name = strdup (h->h_name);
@@ -154,47 +169,72 @@ void ReadEthersFile (void)
     eth0 = e;
   }
 
-  fclose (file);
-  RUNDOWN_ADD (endethent, 250);
+  FCLOSE (file);
+  RUNDOWN_ADD (end_ether_entries, 250);
 }
 
 /*
  * Parse a string of text containing an ethernet address and
  * hostname/IP-address and separate it into its component parts.
+ * E.g.
+ *   in_buf -> "88-87-17-17-5a-3e  10.0.0.4"
+ *   in_buf -> "E0-CA-94-3D-74-F0  printer"
  */
-static int getethent (const char *line, eth_address *e,
-                      char *name, size_t name_max)
-{
-  const char *host_ip;
-  size_t      len, i;
-  WORD        eth[6];
+#define MIN_LEN  sizeof("0:0:0:0:0:0 a.b.c.d")
 
-  if (sscanf(line, "%hx:%hx:%hx:%hx:%hx:%hx",
-             &eth[0], &eth[1], &eth[2],
-             &eth[3], &eth[4], &eth[5]) != 6)
+static int get_ether_entry (char *in_buf, eth_address *e,
+                            char *name, size_t name_max)
+{
+  size_t   len, i;
+  unsigned eth [sizeof(*e)];
+  BOOL     ok, colon;
+  char    *token = strltrim (in_buf);
+  char    *ip_name;
+  char    *tok_buf = NULL;
+
+  if (*token == '#' || *token == ';' || *token == '\n' || strlen(token) < MIN_LEN)
+     return (0);
+
+  colon = (token[2] == ':');
+
+  ok = colon ? (sscanf(token, "%02x:%02x:%02x:%02x:%02x:%02x",
+                       &eth[0], &eth[1], &eth[2],
+                       &eth[3], &eth[4], &eth[5]) == DIM(eth)) :
+               (sscanf(token, "%02x-%02x-%02x-%02x-%02x-%02x",
+                       &eth[0], &eth[1], &eth[2],
+                       &eth[3], &eth[4], &eth[5]) == DIM(eth));
+  if (!ok)
   {
-    TRACE (("sscanf() failed\n"));
+    CONSOLE_MSG (1, ("get_ether_entry(): sscanf() failed\n"));
     return (0);
   }
 
-  host_ip = strchr (line, ' ');
-  if (!host_ip)
-     return (0);
+  token   = strtok_r (token, " \t", &tok_buf);
+  ip_name = strtok_r (NULL, " #\t\n", &tok_buf);
 
-  len = strlen (host_ip);
-  if (len < 1 || len >= name_max)
-     return  (0);
+  if (!token || !ip_name || (len = strlen(ip_name)) < 1 || len > name_max)
+  {
+    CONSOLE_MSG (1, ("get_ether_entry(): short line or malformed ip_name '%s'\n", ip_name));
+    return (0);
+  }
 
-  sscanf (host_ip, "%s", name);
+  ip_name = (char*) expand_var_str (ip_name);
+
+  _strlcpy (name, ip_name, name_max);
+
   for (i = 0; i < sizeof(*e); i++)
-      ((BYTE*)e)[i] = (BYTE) eth[i];
+      ((BYTE*)e)[i] = eth[i];
+
+  CONSOLE_MSG (4, ("get_ether_entry(): ip: %s, eth: %02X:%02X:%02X:%02X:%02X:%02X\n",
+                   ip_name, eth[0],eth[1],eth[2],eth[3],eth[4],eth[5]));
+
   return (1);
 }
 
 /*
  * Free memory in 'eth0' array
  */
-static void endethent (void)
+static void W32_CALL end_ether_entries (void)
 {
   struct ethent *e, *next;
 
@@ -203,14 +243,48 @@ static void endethent (void)
 
   for (e = eth0; e; e = next)
   {
-    free (e->name);
+    DO_FREE (e->name);
     next = e->next;
     free (e);
   }
   eth0 = NULL;
   num_entries = 0;
 }
+
+void W32_CALL DumpEthersCache (void)
+{
+  const struct ethent *e;
+
+  if (!ethersFname[0])
+  {
+    SOCK_DEBUGF (("No ETHERS line found in WATTCP.CFG\n"));
+    return;
+  }
+
+  SOCK_DEBUGF (("\n%s entries:\n", ethersFname));
+  for (e = eth0; e; e = e->next)
+      SOCK_DEBUGF (("  %s = %-15.15s (%s)\n",
+                    MAC_address(&e->eth_addr), _inet_ntoa(NULL,e->ip_addr),
+                    e->name ? e->name : "none"));
+}
 #endif  /* USE_BSD_API */
+
+/*
+ * Find the name associated with ether-addr 'eth'.
+ * Returns null if not found in 'eth0' list.
+ */
+const char * W32_CALL GetEtherName (const eth_address *eth)
+{
+#if defined(USE_BSD_API)
+  const struct ethent *e;
+
+  for (e = eth0; e; e = e->next)
+     if (!memcmp(eth, e->eth_addr, sizeof(*eth)))
+        return (e->name);
+#endif
+  ARGSUSED (eth);
+  return  (NULL);
+}
 
 #if defined(TEST_PROG)
 
@@ -220,29 +294,14 @@ static void endethent (void)
 int main (void)
 {
 #if defined(USE_BSD_API)
-  const struct ethent *e;
-
+  debug_on = 2;
   dbug_init();
   sock_init();
+  DumpEthersCache();
 
-  if (!ethersFname[0])
-  {
-    printf ("No ETHERS line found in WATTCP.CFG\n");
-    return (-1);
-  }
-
-  printf ("\n%s entries:\n", ethersFname);
-  for (e = eth0; e; e = e->next)
-      printf ("%02X:%02X:%02X:%02X:%02X:%02X = %-15.15s (%s)\n",
-              (int)e->eth_addr[0], (int)e->eth_addr[1],
-              (int)e->eth_addr[2], (int)e->eth_addr[3],
-              (int)e->eth_addr[4], (int)e->eth_addr[5],
-              _inet_ntoa(NULL,e->ip_addr), e->name ? e->name : "none");
-  fflush (stdout);
 #else
   puts ("\"USE_BSD_API\" not defined");
 #endif /* USE_BSD_API */
   return (0);
 }
 #endif /* TEST_PROG */
-

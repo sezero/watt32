@@ -5,7 +5,7 @@
  */
 
 /*
- *  Copyright (c) 1997-2002 Gisle Vanem <giva@bgnett.no>
+ *  Copyright (c) 1997-2002 Gisle Vanem <gvanem@yahoo.no>
  *
  *  Redistribution and use in source and binary forms, with or without
  *  modification, are permitted provided that the following conditions
@@ -42,6 +42,7 @@
 #include "pctcp.h"
 #include "pcdbug.h"
 #include "misc.h"
+#include "run.h"
 #include "netaddr.h"
 #include "echo.h"
 
@@ -58,15 +59,18 @@ static BOOL  do_disc   = 0;
 static WORD  disc_port = 9;
 static DWORD disc_host = 0;
 
-static void (*prev_hook) (const char*, const char*) = NULL;
+static void (W32_CALL *prev_hook) (const char*, const char*) = NULL;
 
-static void echo_discard_daemon (void);
-static void udp_handler (sock_type *s, void *data, int len, const tcp_PseudoHeader *ph);
+static void W32_CALL echo_discard_daemon (void);
+
+static void W32_CALL udp_handler (sock_type *s, void *data, int len,
+                                  const tcp_PseudoHeader *ph,
+                                  const void *udp_hdr);
 
 /*
  * Parse and match "echo.daemon = 0/1", "echo.port = <n>" etc.
  */
-static void echo_config (const char *name, const char *value)
+static void W32_CALL echo_config (const char *name, const char *value)
 {
   static const struct config_table echo_cfg[] = {
             { "DAEMON", ARG_ATOI,    (void*)&do_echo   },
@@ -93,9 +97,9 @@ static void echo_config (const char *name, const char *value)
  * Don't bother resetting any connections. Just remove daemon and
  * free allocated memory.
  */
-static void echo_discard_exit (void)
+static void W32_CALL echo_discard_exit (void)
 {
-  delwattcpd (echo_discard_daemon);
+  DAEMON_DEL (echo_discard_daemon);
   if (udp_echo_sock)
      free (udp_echo_sock);
   if (tcp_echo_sock)
@@ -127,44 +131,59 @@ void echo_discard_start (void)
   if (do_echo)
   {
     udp_echo_sock = malloc (sizeof(*udp_echo_sock));
+#if !defined(USE_UDP_ONLY)
     tcp_echo_sock = malloc (sizeof(*tcp_echo_sock));
-    if (udp_echo_sock && tcp_echo_sock)
+#endif
+    if (!udp_echo_sock && !tcp_echo_sock)
+       do_echo = FALSE;
+
+    if (udp_echo_sock)
     {
       udp_listen (udp_echo_sock, echo_port, echo_host, 0,
                   (ProtoHandler)udp_handler);
       udp_echo_sock->sockmode &= ~SOCK_MODE_UDPCHK;  /* no checksum testing */
-      tcp_listen (tcp_echo_sock, echo_port, echo_host, 0, NULL, 0);
     }
-    else
-      do_echo = FALSE;
+#if !defined(USE_UDP_ONLY)
+    if (tcp_echo_sock)
+       tcp_listen (tcp_echo_sock, echo_port, echo_host, 0, NULL, 0);
+#endif
   }
 
   if (do_disc)
   {
     udp_disc_sock = malloc (sizeof(*udp_disc_sock));
+#if !defined(USE_UDP_ONLY)
     tcp_disc_sock = malloc (sizeof(*tcp_disc_sock));
-    if (udp_disc_sock && tcp_disc_sock)
+#endif
+    if (!udp_disc_sock && !tcp_disc_sock)
+       do_disc = FALSE;
+
+    if (udp_disc_sock)
     {
       udp_listen (udp_disc_sock, disc_port, disc_host, 0,
                   (ProtoHandler)udp_handler);
       udp_disc_sock->sockmode &= ~SOCK_MODE_UDPCHK;
-      tcp_listen (tcp_disc_sock, disc_port, disc_host, 0, NULL, 0);
     }
-    else
-      do_disc = FALSE;
+#if !defined(USE_UDP_ONLY)
+    if (tcp_disc_sock)
+       tcp_listen (tcp_disc_sock, disc_port, disc_host, 0, NULL, 0);
+#endif
   }
 
   if (do_echo || do_disc)
-     addwattcpd (echo_discard_daemon);
+     DAEMON_ADD (echo_discard_daemon);
 }
 
 /**
  * "background" process handling echo + discard TCP sockets.
  * \todo handle jumbo packets (IP-fragments)
  */
-static void echo_discard_daemon (void)
+static void W32_CALL echo_discard_daemon (void)
 {
   sock_type *s = (sock_type*) tcp_echo_sock;
+
+  if (!s || !tcp_disc_sock)
+     return;
 
   if (sock_dataready(s))  /* only echo back from echo-socket */
   {
@@ -178,8 +197,9 @@ static void echo_discard_daemon (void)
 /**
  * Callback handler for echo + discard UDP sockets.
  */
-static void udp_handler (sock_type *s, void *data, int len,
-                         const tcp_PseudoHeader *ph)
+static void W32_CALL udp_handler (sock_type *s, void *data, int len,
+                                  const tcp_PseudoHeader *ph,
+                                  const void *udp)
 {
   if (s == (sock_type*)udp_echo_sock)
   {
@@ -195,6 +215,7 @@ static void udp_handler (sock_type *s, void *data, int len,
                      len, _inet_ntoa(NULL,intel(ph->src))));
   }
   ARGSUSED (ph);
+  ARGSUSED (udp);
 }
 
 #if defined(TEST_PROG)
@@ -202,6 +223,9 @@ static void udp_handler (sock_type *s, void *data, int len,
 int main (int argc, char **argv)
 {
   /** \todo Make a \b echo client/server test program */
+
+  ARGSUSED (argc);
+  ARGSUSED (argv);
   return (0);
 }
 #endif /* TEST_PROG */

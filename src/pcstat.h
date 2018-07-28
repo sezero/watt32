@@ -3,39 +3,31 @@
 #ifndef _w32_PCSTAT_H
 #define _w32_PCSTAT_H
 
-/*
- * tcc <= 2.01 lacks proper bit-field support.
- * Don't define USE_BSD_API/USE_STATISTICS with this compiler.
- */
-
 #ifndef ICMP_MAXTYPE
 #define ICMP_MAXTYPE 18
 #endif
 
-#if !defined(OLD_TURBOC)
-  #include <sys/socket.h>
-  #include <net/if.h>
-  #include <net/if_dl.h>
-  #include <net/if_ether.h>
-  #include <net/route.h>
-  #include <netinet/in.h>
-  #include <netinet/in_systm.h>
-  #include <netinet/in_var.h>
-  #include <netinet/ip.h>
-  #include <netinet/ip_var.h>
-  #include <netinet/in_pcb.h>
-  #include <netinet/tcp.h>
-  #include <netinet/tcp_time.h>
-  #include <netinet/tcpip.h>
-  #include <netinet/udp.h>
-  #include <netinet/udp_var.h>
-  #include <netinet/tcp_var.h>
-  #include <netinet/icmp_var.h>
-  #include <netinet/igmp_var.h>
-  #include <netinet/icmp6.h>
-  #include <netinet6/ip6_var.h>
-#endif
-
+#include <sys/socket.h>
+#include <net/if.h>
+#include <net/if_dl.h>
+#include <net/if_ether.h>
+#include <net/route.h>
+#include <netinet/in.h>
+#include <netinet/in_systm.h>
+#include <netinet/in_var.h>
+#include <netinet/ip.h>
+#include <netinet/ip_var.h>
+#include <netinet/in_pcb.h>
+#include <netinet/tcp.h>
+#include <netinet/tcp_time.h>
+#include <netinet/tcpip.h>
+#include <netinet/udp.h>
+#include <netinet/udp_var.h>
+#include <netinet/tcp_var.h>
+#include <netinet/icmp_var.h>
+#include <netinet/igmp_var.h>
+#include <netinet/icmp6.h>
+#include <netinet6/ip6_var.h>
 
 /*!\struct macstat
  *
@@ -82,6 +74,19 @@ struct pppoestat {
        DWORD  num_disc_recv;
        DWORD  num_sess_sent;
        DWORD  num_sess_recv;
+     };
+
+/*!\struct cache_stat
+ *
+ * Statistics for various cache hits/misses.
+ */
+struct cache_stat {
+       DWORD  num_arp_search;
+       DWORD  num_arp_hits;
+       DWORD  num_arp_misses;
+       DWORD  num_arp_overflow;
+       DWORD  num_route_hits;
+       DWORD  num_route_misses;
      };
 
 /*
@@ -229,50 +234,33 @@ struct pppoestat {
  * igps_snd_reports     - sent membership reports
  */
 
-extern int sock_stats (sock_type *sock, DWORD *days, WORD *inactive,
-                       WORD *cwindow, DWORD *avg, DWORD *sd);
-
-extern void print_mac_stats  (void);
-extern void print_arp_stats  (void);
-extern void print_pkt_stats  (void);
-extern void print_vjc_stats  (void);
-extern void print_pppoe_stats(void);
-extern void print_ip4_stats  (void);
-extern void print_ip6_stats  (void);
-extern void print_icmp_stats (void);
-extern void print_icmp6_stats(void);
-extern void print_igmp_stats (void);
-extern void print_udp_stats  (void);
-extern void print_tcp_stats  (void);
-extern void print_all_stats  (void);
-extern void reset_stats      (void);
-
-
 #if defined(USE_STATISTICS)
-  #define macstats     NAMESPACE (macstats)
-  #define ip4stats     NAMESPACE (ip4stats)
-  #define ip6stats     NAMESPACE (ip6stats)
-  #define udpstats     NAMESPACE (udpstats)
-  #define tcpstats     NAMESPACE (tcpstats)
-  #define icmpstats    NAMESPACE (icmpstats)
-  #define icmp6stats   NAMESPACE (icmp6stats)
-  #define igmpstats    NAMESPACE (igmpstats)
-  #define pppoestats   NAMESPACE (pppoestats)
+  #define macstats     W32_NAMESPACE (macstats)
+  #define ip4stats     W32_NAMESPACE (ip4stats)
+  #define ip6stats     W32_NAMESPACE (ip6stats)
+  #define udpstats     W32_NAMESPACE (udpstats)
+  #define tcpstats     W32_NAMESPACE (tcpstats)
+  #define icmpstats    W32_NAMESPACE (icmpstats)
+  #define icmp6stats   W32_NAMESPACE (icmp6stats)
+  #define igmpstats    W32_NAMESPACE (igmpstats)
+  #define pppoestats   W32_NAMESPACE (pppoestats)
+  #define cache_stats  W32_NAMESPACE (cache_stats)
 
-  #define STAT(x) x
-
-  extern struct macstat   macstats;
-  extern struct ipstat    ip4stats;
-  extern struct ip6stat   ip6stats;
-  extern struct udpstat   udpstats;
-  extern struct tcpstat   tcpstats;
-  extern struct icmpstat  icmpstats;
-  extern struct icmp6stat icmp6stats;
-  extern struct igmpstat  igmpstats;
-  extern struct pppoestat pppoestats;
+  extern struct macstat    macstats;
+  extern struct ipstat     ip4stats;
+  extern struct ip6stat    ip6stats;
+  extern struct udpstat    udpstats;
+  extern struct tcpstat    tcpstats;
+  extern struct icmpstat   icmpstats;
+  extern struct icmp6stat  icmp6stats;
+  extern struct igmpstat   igmpstats;
+  extern struct pppoestat  pppoestats;
+  extern struct cache_stat cache_stats;
 
   extern void update_in_stat  (void);
   extern void update_out_stat (void);
+
+  #define STAT(x) x
 
 #else
   #define STAT(x)  ((void)0)

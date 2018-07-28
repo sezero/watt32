@@ -1,6 +1,7 @@
 #include <stdio.h>
-#include <string.h>
 #include <stdlib.h>
+
+#include "sysdep.h"
 
 /* Supported language translations: Norwegian, Swedish, German
  */

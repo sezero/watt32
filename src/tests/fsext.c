@@ -1,5 +1,5 @@
 /*
- * This is mainly to test if sockets may be used with djgpp's
+ * This is mainly to test if sockets might be used with djgpp's
  * fdopen() and stdio oriented calls (fgets, fprintf). It doesn't
  * seems it's implemented as of djgpp 2.03.
  */

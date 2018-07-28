@@ -24,14 +24,14 @@
  *   int  ip_timer_expired (void *s)
  *  - 0 if not expired
  */
-void ip_timer_init (sock_type *s, unsigned seconds)
+void W32_CALL ip_timer_init (sock_type *s, unsigned seconds)
 {
   if (seconds)
        s->tcp.usertimer = set_timeout (1000UL * seconds);
   else s->tcp.usertimer = 0;
 }
 
-int ip_timer_expired (const sock_type *s)
+int W32_CALL ip_timer_expired (const sock_type *s)
 {
   if (!s->tcp.usertimer)
      return (0);
@@ -42,7 +42,7 @@ int ip_timer_expired (const sock_type *s)
  * _ip_delay0 called by macro sock_wait_established()
  *
  */
-int _ip_delay0 (sock_type *s, int timeout_sec, UserHandler fn, int *statusptr)
+int W32_CALL _ip_delay0 (sock_type *s, int timeout_sec, UserHandler fn, int *statusptr)
 {
   int status = -1;
 
@@ -96,7 +96,7 @@ int _ip_delay0 (sock_type *s, int timeout_sec, UserHandler fn, int *statusptr)
 /*
  * _ip_delay1 called by macro sock_wait_input()
  */
-int _ip_delay1 (sock_type *s, int timeoutseconds, UserHandler fn, int *statusptr)
+int W32_CALL _ip_delay1 (sock_type *s, int timeoutseconds, UserHandler fn, int *statusptr)
 {
   int status = -1;
 
@@ -150,7 +150,7 @@ int _ip_delay1 (sock_type *s, int timeoutseconds, UserHandler fn, int *statusptr
 /*
  * _ip_delay2 called by macro sock_wait_closed();
  */
-int _ip_delay2 (sock_type *s, int timeoutseconds, UserHandler fn, int *statusptr)
+int W32_CALL _ip_delay2 (sock_type *s, int timeoutseconds, UserHandler fn, int *statusptr)
 {
   int status = -1;
 
@@ -202,7 +202,7 @@ int _ip_delay2 (sock_type *s, int timeoutseconds, UserHandler fn, int *statusptr
   return (status);
 }
 
-int sock_timeout (sock_type *s, int sec)
+int W32_CALL sock_timeout (sock_type *s, int sec)
 {
   if (s->tcp.ip_type != TCP_PROTO)
      return (1);
@@ -218,7 +218,7 @@ int sock_timeout (sock_type *s, int sec)
   return (0);
 }
 
-int sock_established (sock_type *s)
+int W32_CALL sock_established (sock_type *s)
 {
   switch (s->tcp.ip_type)
   {

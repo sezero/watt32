@@ -3,7 +3,7 @@
  *  Simple syslog handler for Watt-32.
  *
  *  Loosely based on BSD-version.
- *    by Gisle Vanem <giva@bgnett.no>  Jun-99
+ *    by Gisle Vanem <gvanem@yahoo.no>  Jun-99
  *
  *  This module really belongs to the application layer,
  *  but is included in Watt-32 for convenience.
@@ -13,21 +13,22 @@
  *        is called.
  *
  *  \todo configure variables in syslog2.c when calling openlog() thus
- *        making syslog() independant of watt_sock_init().
+ *        making syslog() independent of watt_sock_init().
  */
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdarg.h>
+#include <string.h>
 #include <sys/syslog.h>
 #include <sys/socket.h>
 #include <fcntl.h>
-#include <string.h>
 #include <time.h>
 #include <netdb.h>
 
 #include "wattcp.h"
 #include "misc.h"
+#include "run.h"
 #include "printk.h"
 #include "pctcp.h"
 #include "pcsed.h"
@@ -52,66 +53,66 @@
 
 #define INTERNALLOG  (LOG_ERR|LOG_CONS|LOG_PERROR|LOG_PID)
 
-static sock_type *logSock   = NULL;     /* UDP socket for log */
-static FILE      *logFile   = NULL;     /* FILE* for log */
-static DWORD      logHost   = 0UL;      /* IP-address of host (host order) */
-static BOOL       logOpened = FALSE;    /* have done openlog() (error or not) */
-static int        logStat   = 0;        /* status bits, set by openlog() */
-static char      *logTag    = NULL;     /* string to tag the entry with */
-static int        logMask   = LOG_INFO; /* default is LOG_EMERG - LOGINFO */
-static DWORD      logFacil  = LOG_USER; /* default facility */
+static sock_type *log_sock   = NULL;     /* UDP socket for log */
+static FILE      *log_file   = NULL;     /* FILE* for log */
+static DWORD      log_host   = 0UL;      /* IP-address of host (host order) */
+static BOOL       log_opened = FALSE;    /* have called openlog() (error or not) */
+static int        log_stat   = 0;        /* status bits, set by openlog() */
+static char      *log_tag    = NULL;     /* string to tag the entry with */
+static int        log_mask   = LOG_INFO; /* default is LOG_EMERG - LOGINFO */
+static DWORD      log_facil  = LOG_USER; /* default facility */
 
 /* These arrays used to be pulled in from <sys/syslog.h> when SYSLOG_NAMES
  * was defined, but caused "multiple defined" problems.
  */
 CODE prioritynames[] = {
-        { LOG_ALERT,      "alert"    },
-        { LOG_CRIT,       "crit"     },
-        { LOG_DEBUG,      "debug"    },
-        { LOG_EMERG,      "emerg"    },
-        { LOG_ERR,        "err"      },
-        { LOG_ERR,        "error"    },      /* DEPRECATED */
-        { LOG_INFO,       "info"     },
-        { INTERNAL_NOPRI, "none"     },      /* INTERNAL */
-        { LOG_NOTICE,     "notice"   },
-        { LOG_EMERG,      "panic"    },      /* DEPRECATED */
-        { LOG_WARNING,    "warn"     },      /* DEPRECATED */
-        { LOG_WARNING,    "warning"  },
-        { -1,             NULL       }
+        { LOG_ALERT,      "alert"   },
+        { LOG_CRIT,       "crit"    },
+        { LOG_DEBUG,      "debug"   },
+        { LOG_EMERG,      "emerg"   },
+        { LOG_ERR,        "err"     },
+        { LOG_ERR,        "error"   },      /* DEPRECATED */
+        { LOG_INFO,       "info"    },
+        { INTERNAL_NOPRI, "none"    },      /* INTERNAL */
+        { LOG_NOTICE,     "notice"  },
+        { LOG_EMERG,      "panic"   },      /* DEPRECATED */
+        { LOG_WARNING,    "warn"    },      /* DEPRECATED */
+        { LOG_WARNING,    "warning" },
+        { -1,             NULL      }
       };
 
 CODE facilitynames[] = {
-        { LOG_AUTH,      "auth"      },
-        { LOG_AUTHPRIV,  "authpriv"  },
-        { LOG_CRON,      "cron"      },
-        { LOG_DAEMON,    "daemon"    },
-        { LOG_FTP,       "ftp"       },
-        { LOG_KERN,      "kern"      },
-        { LOG_LPR,       "lpr"       },
-        { LOG_MAIL,      "mail"      },
-        { INTERNAL_MARK, "mark"      },      /* INTERNAL */
-        { LOG_NEWS,      "news"      },
-        { LOG_NTP,       "ntp"       },
-        { LOG_AUTH,      "security"  },      /* DEPRECATED */
-        { LOG_SYSLOG,    "syslog"    },
-        { LOG_USER,      "user"      },
-        { LOG_UUCP,      "uucp"      },
-        { LOG_LOCAL0,    "local0"    },
-        { LOG_LOCAL1,    "local1"    },
-        { LOG_LOCAL2,    "local2"    },
-        { LOG_LOCAL3,    "local3"    },
-        { LOG_LOCAL4,    "local4"    },
-        { LOG_LOCAL5,    "local5"    },
-        { LOG_LOCAL6,    "local6"    },
-        { LOG_LOCAL7,    "local7"    },
-        { -1,            NULL        }
+        { LOG_AUTH,      "auth"     },
+        { LOG_AUTHPRIV,  "authpriv" },
+        { LOG_CRON,      "cron"     },
+        { LOG_DAEMON,    "daemon"   },
+        { LOG_FTP,       "ftp"      },
+        { LOG_KERN,      "kern"     },
+        { LOG_LPR,       "lpr"      },
+        { LOG_MAIL,      "mail"     },
+        { INTERNAL_MARK, "mark"     },      /* INTERNAL */
+        { LOG_NEWS,      "news"     },
+        { LOG_NTP,       "ntp"      },
+        { LOG_AUTH,      "security" },      /* DEPRECATED */
+        { LOG_SYSLOG,    "syslog"   },
+        { LOG_USER,      "user"     },
+        { LOG_UUCP,      "uucp"     },
+        { LOG_LOCAL0,    "local0"   },
+        { LOG_LOCAL1,    "local1"   },
+        { LOG_LOCAL2,    "local2"   },
+        { LOG_LOCAL3,    "local3"   },
+        { LOG_LOCAL4,    "local4"   },
+        { LOG_LOCAL5,    "local5"   },
+        { LOG_LOCAL6,    "local6"   },
+        { LOG_LOCAL7,    "local7"   },
+        { -1,            NULL       }
       };
 
 /*
  * syslog, vsyslog --
  *   print message on log file; output is intended for syslogd(8).
  */
-void MS_CDECL syslog (int pri, const char *fmt, ...)
+void W32_CDECL syslog (int pri, const char *fmt, ...)
 {
   va_list args;
   va_start (args, fmt);
@@ -119,12 +120,14 @@ void MS_CDECL syslog (int pri, const char *fmt, ...)
   va_end (args);
 }
 
-void vsyslog (int pri, const char *fmt, va_list ap)
+void W32_CALL vsyslog (int pri, const char *fmt, va_list ap)
 {
+#if defined(USE_DEBUG)
   const char *pri_name = "?";
   const char *fac_name = "?";
+#endif
   const char *pri_end;
-  char  *p;
+  char  *p, ct_buf[30];
   char   tbuffer [2048];
   int    left = sizeof(tbuffer);
   int    saved_errno = errno;
@@ -143,7 +146,7 @@ void vsyslog (int pri, const char *fmt, va_list ap)
   /* Set default facility if none specified
    */
   if (!(pri & LOG_FACMASK))
-     pri |= logFacil;
+     pri |= log_facil;
 
 #if defined(USE_DEBUG)
   pri_name = list_lookup (LOG_PRI(pri),
@@ -158,17 +161,19 @@ void vsyslog (int pri, const char *fmt, va_list ap)
   /* Check priority against setlogmask() values.
    * Note: higher priorities are lower values !!
    */
-  if (LOG_PRI(pri) > LOG_PRI(logMask))
+  if (LOG_PRI(pri) > LOG_PRI(log_mask))
   {
+#if defined(USE_DEBUG)
     if (debug_on >= 2)
        (*_printf) ("syslog: Dropping %s (%d) priority message, "
                    "facility %s (%d), pri 0x%04X\n",
                    pri_name, LOG_PRI(pri),
                    fac_name, LOG_FAC(pri), pri);
+#endif
     return;
   }
 
-#if 1
+#if defined(USE_DEBUG)
   if (debug_on >= 2)
      (*_printf) ("syslog: Accepting %s (%d) priority message, "
                  "facility %s (%d), pri 0x%04X\n",
@@ -180,21 +185,21 @@ void vsyslog (int pri, const char *fmt, va_list ap)
    */
   time (&t);
   p  = tbuffer;
-  p += _snprintk (p, left, "<%3d>%.15s ", pri, ctime(&t)+4);
+  p += _snprintk (p, left, "<%3d>%.15s ", pri, ctime_r(&t,ct_buf)+4);
   left -= p - tbuffer;
   pri_end = 1 + strchr (tbuffer, '>');
 
-  if (logTag)
+  if (log_tag)
   {
-    p += _snprintk (p, left, logTag);
+    p += _snprintk (p, left, "%s", log_tag);
     left -= p - tbuffer;
   }
-  if (logStat & LOG_PID)
+  if (log_stat & LOG_PID)
   {
     p += _snprintk (p, left, "[%d]", getpid());
     left -= p - tbuffer;
   }
-  if (logTag)
+  if (log_tag)
   {
     p += _snprintk (p, left, ": ");
     left -= p - tbuffer;
@@ -208,31 +213,31 @@ void vsyslog (int pri, const char *fmt, va_list ap)
     *p = '\0';
   }
 
-  if (!logOpened)
-     openlog (logTag, logStat | LOG_NDELAY, logFacil);
+  if (!log_opened)
+     openlog (log_tag, log_stat | LOG_NDELAY, log_facil);
 
-  if (logFile)
-     _fputsk (pri_end, logFile);
+  if (log_file)
+     _fputsk (pri_end, log_file);
 
-  if ((logStat & LOG_PERROR) ||
-      ((pri & LOG_PRIMASK) == LOG_ERR && (logStat & LOG_CONS)))
+  if ((log_stat & LOG_PERROR) ||
+      ((pri & LOG_PRIMASK) == LOG_ERR && (log_stat & LOG_CONS)))
      _fputsk (pri_end, stdout);
 
-  if (logSock)
+  if (log_sock)
   {
     int   len = strlen (tbuffer);
     char *err;
 
-    len = sock_write (logSock, (const BYTE*)tbuffer, len);
-    err = (char*) sockerr (logSock);
+    len = sock_write (log_sock, (const BYTE*)tbuffer, len);
+    err = (char*) sockerr (log_sock);
 
     if (len <= 0 || err)
     {
       err = strdup (err);
-      sock_close (logSock);
-      free (logSock);
-      logSock = NULL;
-      syslog (logStat | LOG_ERR, "UDP write failed: %s\n", err);
+      sock_close (log_sock);
+      free (log_sock);
+      log_sock = NULL;
+      syslog (log_stat | LOG_ERR, "UDP write failed: %s\n", err);
       if (err)
          free (err);
     }
@@ -248,8 +253,8 @@ static const char *getlogname (void)
 
   if (name && name[0])
   {
-    name = StrLcpy (buf, name, sizeof(buf));
-    dot = strrchr (name, '.');
+    name = _strlcpy (buf, name, sizeof(buf));
+    dot  = strrchr (name, '.');
     if (dot && (!strnicmp(dot,".exe",4) || !strnicmp(dot,".exp",4)))
     {
       strcpy (dot, ".log");
@@ -259,7 +264,6 @@ static const char *getlogname (void)
   return ("$unknown.log");
 }
 
-
 static int openloghost (char **errbuf)
 {
   struct servent *sp;
@@ -268,67 +272,72 @@ static int openloghost (char **errbuf)
 
   *errbuf = NULL;
 
-  if (logSock)    /* reopen UDP connection */
+  if (log_sock)    /* reopen UDP connection */
   {
-    sock_close (logSock);
-    logSock = NULL;
+    sock_close (log_sock);
+    log_sock = NULL;
   }
 
   sp = getservbyname ("syslog", "udp");
   if (sp)
      syslog_port = htons (sp->s_port);
 
-  logHost = _inet_addr (syslog_hostName);
-  if (!logHost)
+  log_host = _inet_addr (syslog_host_name);
+  if (!log_host)
   {
-    hp = gethostbyname (syslog_hostName);
+    hp = gethostbyname (syslog_host_name);
     if (!hp)
     {
-      sprintf (buf, "unknown host `%s'", syslog_hostName);
+      sprintf (buf, "unknown host `%s'", syslog_host_name);
       *errbuf = buf;
       return (0);
     }
-    logHost = ntohl (*(DWORD*)hp->h_addr);
+    log_host = ntohl (*(DWORD*)hp->h_addr);
   }
 
-  if (!logSock)
+  if (!log_sock)
   {
-    logSock = (sock_type*) malloc (sizeof(_udp_Socket));
-    if (!logSock)
+    log_sock = (sock_type*) malloc (sizeof(_udp_Socket));
+    if (!log_sock)
     {
-      StrLcpy (buf, strerror(errno), sizeof(buf));
+      _strlcpy (buf, strerror(errno), sizeof(buf));
       *errbuf = buf;
       return (0);
     }
   }
 
-  if (!udp_open(&logSock->udp, 0, logHost, syslog_port, NULL))
+  if (!udp_open(&log_sock->udp, 0, log_host, syslog_port, NULL))
   {
-    StrLcpy (buf, sockerr(logSock), sizeof(buf));
+    _strlcpy (buf, sockerr(log_sock), sizeof(buf));
     *errbuf = buf;
-    sock_close (logSock);
-    free (logSock);
-    logSock = NULL;
+    sock_close (log_sock);
+    free (log_sock);
+    log_sock = NULL;
     return (0);
   }
   return (1);
 }
 
-void openlog (const char *ident, int logstat, int logfac)
+static void W32_CALL _closelog (void)
+{
+  closelog();
+}
+
+void W32_CALL openlog (const char *ident, int logstat, int logfac)
 {
   static BOOL done = FALSE;
   BOOL   fail  = FALSE;
   char  *error = NULL;
 
   if (ident)
-     logTag = (char*)ident;
-  logStat = logstat;
+     log_tag = (char*)ident;
+  log_stat = logstat;
 
   if (logfac && !(logfac & ~LOG_FACMASK))  /* legal facility */
-     logFacil = logfac;
+     log_facil = logfac;
 
-  if (!syslog_fileName[0])          /* not set in wattcp.cfg */
-     StrLcpy (syslog_fileName, getlogname(), sizeof(syslog_fileName));
+  if (!syslog_file_name[0])          /* not set in wattcp.cfg */
+     _strlcpy (syslog_file_name, getlogname(), sizeof(syslog_file_name));
 
   if (syslog_mask)
   {
@@ -339,16 +348,17 @@ void openlog (const char *ident, int logstat, int logfac)
   /* Open immediately
    * !! fix-me: the LOG_NDELAY flag is really for the network connection
    */
-  if (syslog_fileName[0] && (logStat & LOG_NDELAY))
+  if (syslog_file_name[0] && (log_stat & LOG_NDELAY))
   {
-    if (logFile)                  /* reopen */
-       fclose (logFile);
+    if (log_file)                  /* reopen */
+       fclose (log_file);
 
-    logOpened = TRUE;
-    logFile = fopen (syslog_fileName, "at");
-    if (!logFile || fputs("\n",logFile) == EOF)
+    log_opened = TRUE;
+
+    log_file = fopen (syslog_file_name, "at");
+    if (!log_file || fputs("\n",log_file) == EOF)
     {
-      logFile = NULL;
+      log_file = NULL;
       error = strerror (errno);
       fail  = TRUE;
     }
@@ -356,70 +366,70 @@ void openlog (const char *ident, int logstat, int logfac)
     else
     {
       static char fbuf [256];
-      setvbuf (logFile, fbuf, _IOLBF, sizeof(fbuf));  /* line-buffered */
+      setvbuf (log_file, fbuf, _IOLBF, sizeof(fbuf));  /* line-buffered */
     }
 #endif
   }
 
-  if (syslog_hostName[0] && !openloghost(&error))
+  if (syslog_host_name[0] && !openloghost(&error))
      fail = TRUE;
 
-  _printk_file = logFile;
+  _printk_file = log_file;
 
   if (!done)
   {
-    RUNDOWN_ADD (closelog, 110);
+    RUNDOWN_ADD (_closelog, 110);
     _printk_init (2000, NULL);
     done = TRUE;
-    if (logSock)
+    if (log_sock)
     {
       syslog (LOG_INFO, "syslog client at %I started", htonl(my_ip_addr));
-      if (_inet_addr(syslog_hostName))
-           syslog (LOG_INFO, "Logging to host %s", syslog_hostName);
+      if (_inet_addr(syslog_host_name))
+           syslog (LOG_INFO, "Logging to host %s", syslog_host_name);
       else syslog (LOG_INFO, "Logging to host %s (%I)",
-                   syslog_hostName, htonl(logHost));
+                   syslog_host_name, htonl(log_host));
     }
   }
 
-  if (fail && (logStat & LOG_CONS))
+  if (fail && (log_stat & LOG_CONS))
      fprintf (stdout, "syslog: %s\n", error);
 }
 
 
-int setlogmask (int mask)
+int W32_CALL setlogmask (int new_mask)
 {
-  int old = logMask;
-  if (mask)
-     logMask = mask;
+  int old = log_mask;
+  if (new_mask)
+     log_mask = new_mask;
   return (old);
 }
 
 
-char *setlogtag (char *newTag)
+char * W32_CALL setlogtag (char *new_tag)
 {
-  char *old = logTag;
-  logTag = newTag;
+  char *old = log_tag;
+  log_tag = new_tag;
   return (old);
 }
 
 #include "nochkstk.h"
 
-void closelog (void)
+void W32_CALL closelog (void)
 {
   if (!_watt_fatal_error)
   {
-    if (logFile)
-       fclose (logFile);
+    if (log_file)
+       fclose (log_file);
 
-    if (logSock)
+    if (log_sock)
     {
-      sock_close (logSock);
-      free (logSock);
+      sock_close (log_sock);
+      free (log_sock);
     }
   }
-  logSock   = NULL;
-  logFile   = NULL;
-  logOpened = FALSE;
+  log_sock   = NULL;
+  log_file   = NULL;
+  log_opened = FALSE;
 }
 #endif /* USE_BSD_API */
 
@@ -458,8 +468,8 @@ int main (void)
   syslog (LOG_INFO, "INFO:    Leaving main()");
 
   printf ("Done. ");
-  if (logFile)
-     printf ("Look at `%s'", syslog_fileName);
+  if (log_file)
+     printf ("Look at `%s'", syslog_file_name);
 
   closelog();
   return (0);

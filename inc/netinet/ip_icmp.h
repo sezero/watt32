@@ -41,7 +41,9 @@
 #ifndef __NETINET_IP_ICMP_H
 #define __NETINET_IP_ICMP_H
 
-#include <sys/packon.h>
+W32_CLANG_PACK_WARN_OFF()
+
+#include <sys/pack_on.h>
 
 /*
  * Interface Control Message Protocol Definitions.
@@ -117,7 +119,9 @@ struct icmp {
 #define icmp_data       icmp_dun.id_data
 };
 
-#include <sys/packoff.h>
+#include <sys/pack_off.h>
+
+W32_CLANG_PACK_WARN_DEF()
 
 /*
  * Lower bounds on packet lengths for various types.

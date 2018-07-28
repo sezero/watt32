@@ -72,7 +72,13 @@
 #ifndef _NETINET6_IP6_VAR_H_
 #define _NETINET6_IP6_VAR_H_
 
+#ifndef __SYS_QUEUE_H
 #include <sys/queue.h>
+#endif
+
+#ifndef __SYS_MBUF_H
+#include <sys/mbuf.h>
+#endif
 
 #if !defined(__BORLANDC__) /* stop warnings for undefined structs */
 /*

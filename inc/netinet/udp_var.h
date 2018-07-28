@@ -45,12 +45,18 @@
  * UDP kernel structures and variables.
  */
 #ifdef NOT_NEEDED
-  #include <sys/packon.h>
+  W32_CLANG_PACK_WARN_OFF()
+
+  #include <sys/pack_on.h>
+
   struct  udpiphdr {
           struct  ipovly ui_i;            /* overlaid ip structure */
           struct  udphdr ui_u;            /* udp header */
         };
-  #include <sys/packoff.h>
+
+  #include <sys/pack_off.h>
+
+  W32_CLANG_PACK_WARN_DEF()
 
   #define ui_next         ui_i.ih_next
   #define ui_prev         ui_i.ih_prev

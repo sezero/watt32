@@ -50,6 +50,10 @@
 #ifndef __NET_SLCOMPRESS_H
 #define __NET_SLCOMPRESS_H
 
+#ifndef __SYS_MBUF_H
+#include <sys/mbuf.h>
+#endif
+
 #ifndef MLEN
 #define MLEN 128
 #endif

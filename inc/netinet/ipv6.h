@@ -30,8 +30,9 @@
  *  source interface/address selection, source routing, etc...
  *  *under construction*
  */
+W32_CLANG_PACK_WARN_OFF()
 
-#include <sys/packon.h>
+#include <sys/pack_on.h>
 
 /*
  *  IPv6 fixed header
@@ -131,7 +132,7 @@ struct ipv6_rt0_hdr {
 
 /*
  *      Addr type
- *      
+ *
  *      type    -       unicast | multicast | anycast
  *      scope   -       local   | site      | global
  *      v4      -       compat
@@ -142,8 +143,8 @@ struct ipv6_rt0_hdr {
 
 #define IPV6_ADDR_ANY           0x0000U
 
-#define IPV6_ADDR_UNICAST       0x0001U 
-#define IPV6_ADDR_MULTICAST     0x0002U 
+#define IPV6_ADDR_UNICAST       0x0001U
+#define IPV6_ADDR_MULTICAST     0x0002U
 #define IPV6_ADDR_ANYCAST       0x0004U
 
 #define IPV6_ADDR_LOOPBACK      0x0010U
@@ -169,7 +170,9 @@ struct ipv6_fraghdr {
      };
 #define fraghdr ipv6_fraghdr
 
-#include <sys/packoff.h>
+#include <sys/pack_off.h>
+
+W32_CLANG_PACK_WARN_DEF()
 
 #endif
 

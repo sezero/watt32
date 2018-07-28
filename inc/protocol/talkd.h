@@ -60,7 +60,7 @@
  * stream connection through which the conversation takes place.
  */
 
-#include <sys/packon.h>
+#include <sys/pack_on.h>
 
 /*
  * Client->server request message format.
@@ -93,7 +93,7 @@ typedef struct {
 	struct	  osockaddr addr; /* address for establishing conversation */
 } CTL_RESPONSE;
 
-#include <sys/packoff.h>
+#include <sys/pack_off.h>
 
 #define	TALK_VERSION	1		/* protocol version */
 

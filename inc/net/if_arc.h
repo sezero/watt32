@@ -43,7 +43,13 @@
 #ifndef __NET_IF_ARC_H
 #define __NET_IF_ARC_H
 
-#include <sys/packon.h>
+#ifndef __SYS_MBUF_H
+#include <sys/mbuf.h>
+#endif
+
+W32_CLANG_PACK_WARN_OFF()
+
+#include <sys/pack_on.h>
 
 /*
  * Arcnet address - 1 octets
@@ -112,12 +118,14 @@ struct	arccom {
 	struct ac_frag {
 		u_int8_t  af_maxflag;	/* from first packet */
 		u_int8_t  af_lastseen;	/* last split flag seen */
-		u_int16_t af_seqid;	
+		u_int16_t af_seqid;
 		struct mbuf *af_packet;
 	} ac_fragtab[256];		/* indexed by sender ll address */
 
 };
 
-#include <sys/packoff.h>
+#include <sys/pack_off.h>
+
+W32_CLANG_PACK_WARN_DEF()
 
 #endif

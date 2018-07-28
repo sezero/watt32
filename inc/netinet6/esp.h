@@ -74,6 +74,7 @@ struct esptail {
      };
 
 #ifdef _KERNEL
+struct mbuf;
 struct secasvar;
 
 struct esp_algorithm {

@@ -20,7 +20,7 @@
  *    - no expansion but flushes on CR/LF
  *    - returns character
  */
-BYTE sock_putc (sock_type *s, BYTE c)
+BYTE W32_CALL sock_putc (sock_type *s, BYTE c)
 {
 #if !defined(USE_UDP_ONLY)
   if (c == '\n' || c == '\r')
@@ -36,7 +36,7 @@ BYTE sock_putc (sock_type *s, BYTE c)
  *           - returns length.
  *           - only accepts ASCII strings.
  */
-int sock_puts (sock_type *s, const BYTE *data)
+int W32_CALL sock_puts (sock_type *s, const BYTE *data)
 {
   int len;
 
@@ -54,17 +54,17 @@ int sock_puts (sock_type *s, const BYTE *data)
     if (len > 0)  /* merge in a newline */
     {
       len = min (len, SIZEOF(tmp)-2);  /* May truncate, tough luck */
-      memcpy (tmp, data, len);
+      memcpy (&tmp, data, len);
       tmp [len++] = '\r';
       tmp [len++] = '\n';
       data = tmp;
     }
     else
     {
-      data = (BYTE*)"\r\n";
+      data = (const BYTE*) "\r\n";
       len  = 2;
     }
-    sock_write (s,data, len);
+    len = sock_write (s, data, len);
   }
   else
   {
@@ -87,7 +87,7 @@ int sock_puts (sock_type *s, const BYTE *data)
  *              SSH. Only suitable for ASCII orientented protocols
  *              like POP3/SMTP/NNTP etc.
  */
-int sock_gets (sock_type *s, BYTE *data, int bmax)
+WORD W32_CALL sock_gets (sock_type *s, BYTE *data, int bmax)
 {
   int   len = 0, frag = 0;
   BYTE *nl_p, *cr_p, eol;
@@ -229,7 +229,7 @@ int sock_gets (sock_type *s, BYTE *data, int bmax)
  * Return a single character.
  * Returns EOF on fail (no data or connection closed).
  */
-int sock_getc (sock_type *s)
+int W32_CALL sock_getc (sock_type *s)
 {
   BYTE ch = 0;
   return (sock_read (s, &ch, 1) < 1 ? EOF : ch);
@@ -243,7 +243,7 @@ int sock_getc (sock_type *s)
  *      receive buffer.
  *    - For UDP or TCP sockets only.
  */
-WORD sock_dataready (sock_type *s)
+WORD W32_CALL sock_dataready (sock_type *s)
 {
   char *p;
   int   len = s->tcp.rx_datalen;
@@ -298,28 +298,28 @@ WORD sock_dataready (sock_type *s)
 /**
  * \todo Wide character versions of above functions.
  */
-int sock_putcw (sock_type *s, wchar_t ch)
+int W32_CALL sock_putcw (sock_type *s, wchar_t ch)
 {
 }
 
 /**
  * \todo Wide character version of sock_puts()
  */
-int sock_putsw (sock_type *s, const wchar_t *data)
+int W32_CALL sock_putsw (sock_type *s, const wchar_t *data)
 {
 }
 
 /**
  * \todo Wide character version of sock_gets()
  */
-int sock_getsw (sock_type *s, wchar_t *data, int n)
+int W32_CALL sock_getsw (sock_type *s, wchar_t *data, int n)
 {
 }
 
 /**
  * \todo Wide character version of sock_getc()
  */
-wchar_t sock_getcw (sock_type *s)
+wchar_t W32_CALL sock_getcw (sock_type *s)
 {
 }
 #endif

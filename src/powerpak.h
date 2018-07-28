@@ -12,7 +12,7 @@
 #define RP_SEG(rp)          (WORD)((DWORD)(rp) >> 16)
 #define PokeRealWord(rp,x)  WriteRealMem (rp, &(x), sizeof(WORD))
 
-#include <sys/packon.h>
+#include <sys/pack_on.h>
 
 typedef struct {
         DWORD  r_di;
@@ -28,7 +28,7 @@ typedef struct {
         WORD   r_ip, r_cs, r_sp, r_ss;
       } REAL_regs;
 
-#include <sys/packoff.h>
+#include <sys/pack_off.h>
 
 typedef struct {
         void    (*pm_func)(void);

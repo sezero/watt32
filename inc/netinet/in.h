@@ -144,14 +144,29 @@
  * Internet address (a structure for historical reasons)
  */
 struct in_addr {
-       u_long s_addr;
+       u_int32_t s_addr;
      };
+
 /*
  *  For IPv6 from RFC2133
  */
-struct in6_addr {
-       u_int8_t  s6_addr[16];
-     };
+#if 1
+  struct in6_addr {
+         u_int8_t  s6_addr[16];
+       };
+#else
+  struct in6_addr {
+         union {
+           u_char  _S6_u8[16];
+           u_short _S6_u16[8];
+           u_long  _S6_u32[4];
+         } _S6_un;
+       };
+  /* s6_addr is the standard name */
+  #define s6_addr         _S6_un._S6_u8
+  #define s6_bytes        _S6_un._S6_u8
+  #define s6_words        _S6_un._S6_u16
+#endif
 
 /*
  * Definitions of bits in internet address integers.
@@ -184,15 +199,15 @@ struct in6_addr {
 #define IN_EXPERIMENTAL(i)      (((long)(i) & 0xF0000000) == 0xF0000000)
 #define IN_BADCLASS(i)          (((long)(i) & 0xF0000000) == 0xF0000000)
 
-#define INADDR_ANY              (u_long)0x00000000
-#define INADDR_BROADCAST        (u_long)0xFFFFFFFF      /* must be masked */
-#define INADDR_LOOPBACK         (u_long)0x7F000001      /* 127.0.0.1 */
+#define INADDR_ANY              (u_int32_t)0x00000000
+#define INADDR_BROADCAST        (u_int32_t)0xFFFFFFFF   /* must be masked */
+#define INADDR_LOOPBACK         (u_int32_t)0x7F000001   /* 127.0.0.1 */
 #define INADDR_NONE             0xFFFFFFFF              /* -1 return */
 
-#define INADDR_UNSPEC_GROUP     (u_long)0xE0000000      /* 224.0.0.0 */
-#define INADDR_ALLHOSTS_GROUP   (u_long)0xE0000001      /* 224.0.0.1 */
-#define INADDR_ALLRTRS_GROUP    (u_long)0xE0000002      /* 224.0.0.2 */
-#define INADDR_MAX_LOCAL_GROUP  (u_long)0xE00000FF      /* 224.0.0.255 */
+#define INADDR_UNSPEC_GROUP     (u_int32_t)0xE0000000   /* 224.0.0.0 */
+#define INADDR_ALLHOSTS_GROUP   (u_int32_t)0xE0000001   /* 224.0.0.1 */
+#define INADDR_ALLRTRS_GROUP    (u_int32_t)0xE0000002   /* 224.0.0.2 */
+#define INADDR_MAX_LOCAL_GROUP  (u_int32_t)0xE00000FF   /* 224.0.0.255 */
 
 #define IN_LOOPBACKNET          127                     /* official! */
 
@@ -210,7 +225,7 @@ W32_DATA const struct in6_addr in6addr_loopback;        /* ::1 */
  * Socket address, internet style.
  */
 struct sockaddr_in {
-       u_short        sin_family;
+       sa_family_t    sin_family;
        u_short        sin_port;
        struct in_addr sin_addr;
        char           sin_zero[8];
@@ -231,11 +246,11 @@ struct sockaddr_in6 {
  * and maximum size of 128 bytes
  */
 struct sockaddr_storage {
-       u_short  ss_family;
-       u_short  ss_len;        /* !! added for BSD progs, gv Nov-2003 */
-       char   __ss_pad1[6];              /* pad to 8 */
-       long   __ss_align1, __ssalign2;   /* force alignment */
-       char   __ss_pad2[110];            /* pad to 128 */
+       sa_family_t ss_family;
+       u_short     ss_len;        /* !! added for BSD progs, gv Nov-2003 */
+       char      __ss_pad1[6];              /* pad to 8 */
+       long      __ss_align1, __ssalign2;   /* force alignment */
+       char      __ss_pad2[110];            /* pad to 128 */
      };
 
 
@@ -297,7 +312,7 @@ struct ip_opts {
  */
 #define IP_DEFAULT_MULTICAST_TTL  1     /* normally limit m'casts to 1 hop  */
 #define IP_DEFAULT_MULTICAST_LOOP 1     /* normally hear sends if a member  */
-#define IP_MAX_MEMBERSHIPS      20      /* per socket */
+#define IP_MAX_MEMBERSHIPS        20    /* per socket */
 
 /*
  * Argument structure for IP_ADD_MEMBERSHIP and IP_DROP_MEMBERSHIP.
@@ -384,13 +399,13 @@ struct ip_mreq {
 /*
  * IPv6 address macros
  */
-#define IN6_IS_ADDR_UNSPECIFIED(a)        \
+#define IN6_IS_ADDR_UNSPECIFIED(a)      \
            (((u_int32_t*)(a))[0] == 0   \
          && ((u_int32_t*)(a))[1] == 0   \
          && ((u_int32_t*)(a))[2] == 0   \
          && ((u_int32_t*)(a))[3] == 0)
 
-#define IN6_IS_ADDR_LOOPBACK(a)           \
+#define IN6_IS_ADDR_LOOPBACK(a)         \
            (((u_int32_t*)(a))[0] == 0   \
          && ((u_int32_t*)(a))[1] == 0   \
          && ((u_int32_t*)(a))[2] == 0   \
@@ -416,10 +431,11 @@ struct ip_mreq {
          && (ntohl(((u_int32_t*)(a))[3]) > 1))
 
 #define IN6_ARE_ADDR_EQUAL(a,b) \
-           ((((u_int32_t*)(a))[0] == ((u_int32_t*)(b))[0])  \
-         && (((u_int32_t*)(a))[1] == ((u_int32_t*)(b))[1])  \
-         && (((u_int32_t*)(a))[2] == ((u_int32_t*)(b))[2])  \
-         && (((u_int32_t*)(a))[3] == ((u_int32_t*)(b))[3]))
+        (memcmp ((void*)a, (void*)b, sizeof(struct in6_addr)) == 0)
+
+#ifndef IN6_ADDR_EQUAL
+#define IN6_ADDR_EQUAL(a,b) IN6_ARE_ADDR_EQUAL(a,b)
+#endif
 
 #define IN6_IS_ADDR_MC_NODELOCAL(a) \
         (IN6_IS_ADDR_MULTICAST(a) && ((((u_int8_t*)(a))[1] & 0xf) == 0x1))

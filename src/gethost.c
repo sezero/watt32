@@ -4,7 +4,7 @@
  */
 
 /*
- *  Copyright (c) 1997-2002 Gisle Vanem <giva@bgnett.no>
+ *  Copyright (c) 1997-2002 Gisle Vanem <gvanem@yahoo.no>
  *
  *  Redistribution and use in source and binary forms, with or without
  *  modification, are permitted provided that the following conditions
@@ -62,6 +62,7 @@
 #include "wattcp.h"
 #include "strings.h"
 #include "misc.h"
+#include "run.h"
 #include "timer.h"
 #include "language.h"
 #include "pcconfig.h"
@@ -69,12 +70,12 @@
 #include "pctcp.h"
 #include "bsdname.h"
 #include "bsddbug.h"
-#include "udp_dom.h"
+#include "pcdns.h"
 #include "get_xby.h"
 
 int h_errno = 0;
 
-#if defined(USE_BSD_API)   /* Whole file */
+#if defined(USE_BSD_API)   /* Rest of file */
 
 unsigned netdbCacheLife = MAX_CACHE_LIFE;
 
@@ -85,6 +86,7 @@ static const char      *from_where = NULL;
 static struct _hostent *host0      = NULL;
 
 static BOOL did_lookup = FALSE;   /* tried a DNS lookup */
+static BOOL is_addr    = FALSE;   /* name is simply an IPv4 address */
 
 static BOOL gethostbyname_internal (const char *name,
                                     const char **alias,
@@ -97,9 +99,15 @@ static struct hostent  *fill_hostent (const struct _hostent *h);
 
 static struct _hostent *add_hostent (struct _hostent *h,
                                      const char *name, const char *cname,
-                                     DWORD *alist, DWORD addr, DWORD ttl);
+                                     DWORD *alist, DWORD addr, DWORD ttl,
+                                     BOOL windns);
 
-void ReadHostsFile (const char *fname)
+static void W32_CALL _endhostent (void)
+{
+  endhostent();
+}
+
+void W32_CALL ReadHostsFile (const char *fname)
 {
   static BOOL been_here = FALSE;
 
@@ -109,7 +117,7 @@ void ReadHostsFile (const char *fname)
   if (been_here)  /* loading multiple hosts files */
   {
     free (hostFname);
-    fclose (hostFile);
+    FCLOSE (hostFile);
     hostFile = NULL;
   }
 
@@ -132,11 +140,10 @@ void ReadHostsFile (const char *fname)
     if (!h)
        break;
 
-    h2 = (struct _hostent*) calloc (sizeof(*h2), 1);
+    h2 = calloc (sizeof(*h2), 1);
     if (!h2)
     {
-      outs (hostFname);
-      outsnl (_LANG(" too big!"));
+      (*_printf) (_LANG("%s too big!\n"), hostFname);
       break;
     }
 
@@ -160,7 +167,7 @@ void ReadHostsFile (const char *fname)
     for (h = host0; h; h = h->h_next)
     {
       printf ("address = %-17.17s name = %-30.30s  Aliases:",
-               inet_ntoa(*(struct in_addr*)&h->h_address[0]), h->h_name);
+              inet_ntoa(*(struct in_addr*)&h->h_address[0]), h->h_name);
       for (i = 0; h->h_aliases[i]; i++)
           printf (" %s,", h->h_aliases[i]);
       puts ("");
@@ -169,14 +176,14 @@ void ReadHostsFile (const char *fname)
   }
 #endif
   rewind (hostFile);
-  RUNDOWN_ADD (endhostent, 254);
+  RUNDOWN_ADD (_endhostent, 254);
 }
 
 /**
  * Return name of hosts-file.
  * \note Only returns the last 'hosts' file opened.
  */
-const char *GetHostsFile (void)
+const char * W32_CALL GetHostsFile (void)
 {
   return (hostFname);
 }
@@ -186,10 +193,10 @@ const char *GetHostsFile (void)
  * To prevent running out of file-handles, one should close the
  * hosts-file before spawning a new shell.
  */
-void CloseHostFile (void)
+void W32_CALL CloseHostFile (void)
 {
   if (hostFile)
-     fclose (hostFile);
+     FCLOSE (hostFile);
   hostFile = NULL;
 }
 
@@ -197,7 +204,7 @@ void CloseHostFile (void)
  * Reopen hosts-file.
  * Call this after e.g. system() returns.
  */
-void ReopenHostFile (void)
+void W32_CALL ReopenHostFile (void)
 {
   ReadHostsFile (hostFname);
 }
@@ -210,7 +217,7 @@ void ReopenHostFile (void)
 struct hostent * W32_CALL gethostent (void)
 {
   struct _hostent h;
-  char  *tok, *ip, *name, *alias;
+  char  *tok, *ip, *name, *alias, *tok_buf = NULL;
   char   buf [2*MAX_HOSTLEN];
   int    i;
 
@@ -229,8 +236,8 @@ struct hostent * W32_CALL gethostent (void)
     if (*tok == '#' || *tok == ';' || *tok == '\n')
        continue;
 
-    ip   = strtok (tok, " \t");
-    name = strtok (NULL, " \t\n");
+    ip   = strtok_r (tok, " \t", &tok_buf);
+    name = strtok_r (NULL, " \t\n", &tok_buf);
     if (ip && name && isaddr(ip))
        break;
   }
@@ -245,17 +252,17 @@ struct hostent * W32_CALL gethostent (void)
 
   h.h_num_addr = 1;
   h.h_name = name;
-  alias    = strtok (NULL, " \t\n");
+  alias = strtok_r (NULL, " \t\n", &tok_buf);
 
   for (i = 0; alias && i < MAX_HOST_ALIASES; i++)
   {
-    static char aliases [MAX_NETENT_ALIASES][MAX_HOSTLEN];
+    static char aliases [MAX_HOST_ALIASES][MAX_HOSTLEN];
 
     if (*alias == '#' || *alias == ';')
        break;
 
-    h.h_aliases[i] = StrLcpy (aliases[i], alias, sizeof(aliases[i]));
-    alias = strtok (NULL, " \t\n");
+    h.h_aliases[i] = _strlcpy (aliases[i], alias, sizeof(aliases[i]));
+    alias = strtok_r (NULL, " \t\n", &tok_buf);
   }
   return fill_hostent (&h);
 }
@@ -269,6 +276,7 @@ struct hostent * W32_CALL gethostbyname (const char *name)
   const char *alias;
 
   SOCK_DEBUGF (("\ngethostbyname: `%s'", name));
+  is_addr = FALSE;
 
   if (gethostbyname_internal(name, &alias, &h))
   {
@@ -278,9 +286,9 @@ struct hostent * W32_CALL gethostbyname (const char *name)
         SOCK_DEBUGF ((" %s,", inet_ntoa(*(struct in_addr*)&h.h_address[i])));
 
     if (!did_lookup)
-       SOCK_DEBUGF ((" %s", h.h_timeout ? "cached" :
-                     from_where ? from_where : "hosts-file"));
-
+       SOCK_DEBUGF ((" %s", is_addr     ? "" :
+                            h.h_timeout ? "cached" :
+                            from_where  ? from_where : "hosts-file"));
     if (alias)
        SOCK_DEBUGF ((" (alias %s)", alias));
 #endif
@@ -323,6 +331,7 @@ static BOOL gethostbyname_internal (const char *name, const char **alias,
     ret->h_name       = (char*) name;
     ret->h_address[0] = addr.s_addr;
     ret->h_num_addr   = 1;
+    is_addr = TRUE;
     return (TRUE);
   }
 
@@ -342,7 +351,7 @@ static BOOL gethostbyname_internal (const char *name, const char **alias,
       *ret = *h;
       return (h->h_address[0] != INADDR_NONE ? TRUE : FALSE);
     }
-    for (i = 0; h->h_aliases[i] && i < MAX_HOST_ALIASES; i++)
+    for (i = 0; i < MAX_HOST_ALIASES && h->h_aliases[i]; i++)
         if (!stricmp(name,h->h_aliases[i]))
         {
           if (h->h_timeout && now > h->h_timeout)
@@ -363,7 +372,7 @@ static BOOL gethostbyname_internal (const char *name, const char **alias,
     ret->h_num_addr   = 1;
     ret->h_address[0] = gethostid();
     ret->h_name       = hostname;
-    from_where = "sethostname";
+    from_where        = "gethostname";
     return (TRUE);
   }
 
@@ -372,7 +381,7 @@ static BOOL gethostbyname_internal (const char *name, const char **alias,
     ret->h_num_addr   = 1;
     ret->h_address[0] = gethostid();
     ret->h_name       = our_name;
-    from_where = "sethostname";
+    from_where        = "gethostname";
     return (TRUE);
   }
 
@@ -394,18 +403,19 @@ expired:
 
   if (ip)                /* successfully resolved */
   {
-    h = add_hostent (h, name, dom_cname, dom_a4list, htonl(ip), dom_ttl);
+    h = add_hostent (h, name, dom_cname, dom_a4list, htonl(ip),
+                     dom_ttl, from_windns);
     return (h ? *ret = *h, TRUE : FALSE);
   }
 
   /* Add the name to the list even if we got a negative DNS reply.
    * Thus the next call to gethostbyxx() will return immediately.
    */
-  add_hostent (h, name, NULL, NULL, INADDR_NONE, netdbCacheLife);
+  add_hostent (h, name, NULL, NULL, INADDR_NONE, netdbCacheLife, from_windns);
   return (FALSE);
 }
 
-struct hostent *W32_CALL gethostbyname2 (const char *name, int family)
+struct hostent * W32_CALL gethostbyname2 (const char *name, int family)
 {
   if (family == AF_INET)
      return gethostbyname (name);
@@ -423,7 +433,7 @@ struct hostent *W32_CALL gethostbyname2 (const char *name, int family)
 /*
  * Return a 'struct hostent *' for an address.
  */
-struct hostent *W32_CALL gethostbyaddr (const char *addr_name, int len, int type)
+struct hostent * W32_CALL gethostbyaddr (const char *addr_name, int len, int type)
 {
   struct _hostent h;
 
@@ -466,7 +476,7 @@ void W32_CALL sethostent (int stayopen)
      return;
 
   if (!hostFile)
-       hostFile = fopen (hostFname, "rt");
+       FOPEN_TXT (hostFile, hostFname);
   else rewind (hostFile);
 }
 
@@ -480,7 +490,7 @@ void W32_CALL endhostent (void)
   if (hostFname)
      free (hostFname);
   if (hostFile)
-     fclose (hostFile);
+     FCLOSE (hostFile);
   hostFname = NULL;
   hostFile  = NULL;
 
@@ -536,7 +546,7 @@ static BOOL gethostbyaddr_internal (const char *addr_name, int len, int type,
     ret->h_num_addr   = 1;
     ret->h_address[0] = gethostid();
     ret->h_name       = name;
-    from_where = "sethostname";
+    from_where        = "gethostname";
     return (TRUE);
   }
 
@@ -545,7 +555,7 @@ static BOOL gethostbyaddr_internal (const char *addr_name, int len, int type,
   {
     ret->h_num_addr   = 1;
     ret->h_address[0] = addr;
-    ret->h_name       = "broadcast";
+    ret->h_name       = (char*) "broadcast";
     return (TRUE);
   }
 
@@ -562,7 +572,7 @@ static BOOL gethostbyaddr_internal (const char *addr_name, int len, int type,
   {
     int i;
 
-    for (i = 0; h->h_address[i] != INADDR_NONE && i < h->h_num_addr; i++)
+    for (i = 0; i < h->h_num_addr && h->h_address[i] != INADDR_NONE; i++)
     {
       if (addr == h->h_address[i])
       {
@@ -572,6 +582,8 @@ static BOOL gethostbyaddr_internal (const char *addr_name, int len, int type,
            goto expired;
 
         *ret = *h;
+        if (!strcmp(h->h_name,"*unknown*"))
+           return (FALSE);
         return (TRUE);
       }
     }
@@ -591,7 +603,7 @@ expired:
 
   if (rc)     /* successfully resolved */
   {
-    h = add_hostent (h, name, dom_cname, NULL, addr, dom_ttl);
+    h = add_hostent (h, name, dom_cname, NULL, addr, dom_ttl, from_windns);
     /** \todo should be the new aliases */
     return (h ? *ret = *h, TRUE : FALSE);
   }
@@ -600,7 +612,7 @@ expired:
    * interrupted by _resolve_hook(). Thus the next call to gethostbyxx()
    * will return immediately.
    */
-  add_hostent (h, "*unknown*", NULL, NULL, addr, 0UL);
+  add_hostent (h, "*unknown*", NULL, NULL, addr, 0UL, FALSE);
   return (FALSE);
 }
 
@@ -614,9 +626,8 @@ expired:
  */
 void uninit_warn (const char *func)
 {
-  outs ("Warning: function \"");
-  outs (func);
-  outsnl ("()\" called before \"sock_init()\".");
+  (*_printf) ("Warning: function \"%s()\" called before \"sock_init()\".",
+              func);
 }
 #endif
 
@@ -648,7 +659,7 @@ static struct hostent *fill_hostent (const struct _hostent *h)
 
   list[i]         = NULL;
   ret.h_addr_list = list;
-  ret.h_name      = StrLcpy (hostnam, h->h_name, sizeof(hostnam));
+  ret.h_name      = _strlcpy (hostnam, h->h_name, sizeof(hostnam));
   ret.h_aliases   = aliases;
   ret.h_addrtype  = AF_INET;
   ret.h_length    = sizeof (addr[0].s_addr);
@@ -666,7 +677,8 @@ static struct _hostent  *add_hostent
         const char      *cname,  /* Canonical name (CNAME) */
         DWORD           *alist,  /* List of alternate addresses */
         DWORD            addr,   /* Main IP-address */
-        DWORD            ttl)    /* Time-to-live (sec) */
+        DWORD            ttl,    /* Time-to-live (sec) */
+        BOOL             windns) /* answer came from WinDNS */
 {
   DWORD real_ttl = ttl;
   int   i;
@@ -685,7 +697,7 @@ static struct _hostent  *add_hostent
   }
   else           /* create a new node */
   {
-    h = (struct _hostent*) calloc (sizeof(*h), 1);
+    h = calloc (sizeof(*h), 1);
     if (h)
     {
       h->h_next = host0;
@@ -697,8 +709,14 @@ static struct _hostent  *add_hostent
      cname = NULL;
 
   if (addr != INADDR_NONE)
-     SOCK_DEBUGF ((", CNAME %s, ttl %lus,",
-                   cname ? cname : "<none>", real_ttl));
+  {
+    SOCK_DEBUGF ((", CNAME %s, TTL %s, ",
+                  cname ? cname : "<none>", hms_str(real_ttl)));
+#if defined(WIN32)
+    SOCK_DEBUGF (("WinDNS %d, ", windns));
+#endif
+  }
+
   if (h)
   {
     h->h_timeout    = ttl ? time (NULL) + ttl : 0;
@@ -738,6 +756,7 @@ static struct _hostent  *add_hostent
     printf ("new entry: ENOMEM\n");
 #endif
 
+  ARGSUSED (windns);
   return (h);
 }
 
@@ -777,7 +796,7 @@ static BOOL ReverseHostsList (void)
   return (TRUE);
 }
 
-void DumpHostsCache (void)
+void W32_CALL DumpHostsCache (void)
 {
   struct _hostent *h;
   time_t now;
@@ -785,8 +804,8 @@ void DumpHostsCache (void)
   if (!ReverseHostsList())
      return;
 
-  SOCK_DEBUGF ((" \n\nCached IPv4 hosts:                         "
-                "Address         TTL       Alias\n"));
+  SOCK_DEBUGF ((" \n\nCached IPv4 hosts:                                   "
+                "Address          TTL       Alias\n"));
   now = time (NULL);
 
   for (h = host0; h; h = h->h_next)
@@ -802,7 +821,7 @@ void DumpHostsCache (void)
     ip_str     = (h->h_address[0] == INADDR_NONE) ? "<none>" :
                   inet_ntoa(*(struct in_addr*)&h->h_address[0]);
 
-    SOCK_DEBUGF (("  %-40s %-15s %8s  ", h->h_name, ip_str, cache_time));
+    SOCK_DEBUGF (("  %-50s %-15s %9s  ", h->h_name, ip_str, cache_time));
     for (i = 0; h->h_aliases[i]; i++)
         SOCK_DEBUGF (("%s ", h->h_aliases[i]));
     if (i == 0)
@@ -810,8 +829,7 @@ void DumpHostsCache (void)
     else SOCK_DEBUGF ((" \n"));
 
     for (i = 1; i < h->h_num_addr; i++)
-        SOCK_DEBUGF (("%42s %s\n", "",
-                      inet_ntoa(*(struct in_addr*)&h->h_address[i])));
+        SOCK_DEBUGF (("%52s %-15s\n", "", inet_ntoa(*(struct in_addr*)&h->h_address[i])));
   }
 }
 #endif
@@ -819,8 +837,13 @@ void DumpHostsCache (void)
 
 #if defined(TEST_PROG)
 
+#if !defined(__CYGWIN__)
 #include <conio.h>
+#endif
+
+#if !defined(_MSC_VER) && !defined(__BORLANDC__)
 #include <unistd.h>
+#endif
 
 #include "pcdbug.h"
 #include "sock_ini.h"
@@ -850,17 +873,26 @@ static void print_hosts (void)
   fflush (stdout);
 }
 
-void Sleep (int time)
+void do_sleep (int time)
 {
   while (time)
   {
-    if (kbhit() && getch() == 27)
+    if (kbhit())
     {
-      fputc ('\n', stderr);
-      return;
+      int ch = getch();
+      if (ch == 27 || ch == 'q')
+      {
+        fputc ('\n', stderr);
+        return;
+      }
     }
     fprintf (stderr, "%4d", time--);
+#ifdef WIN32
+    Sleep (1000);
+#else
     sleep (1);
+#endif
+    tcp_tick (NULL);  /* empty rx-buffers */
     fprintf (stderr, "\b\b\b\b");
   }
 }
@@ -868,7 +900,7 @@ void Sleep (int time)
 int main (void)
 {
   const struct hostent *h;
-  const char *host_name = "test-host";
+  const char *host_name = "test-host";  /* This doesn't exist in real life */
   int   wait_time;
   DWORD addr_list [MAX_ADDRESSES+1];
 
@@ -886,7 +918,7 @@ int main (void)
 
   SOCK_DEBUGF (("\nadd_hostent: `%s'", host_name));
   add_hostent (NULL, host_name, "some.cname.org", &addr_list[1],
-               addr_list[0], netdbCacheLife);
+               addr_list[0], netdbCacheLife, FALSE);
   h = gethostbyname (host_name);
   if (!h)
   {
@@ -894,9 +926,13 @@ int main (void)
     return (1);
   }
   fprintf (stderr, "Waiting for cache-entry to timeout..");
-  Sleep (wait_time);
+  do_sleep (wait_time);
 
   fprintf (stderr, "gethostbyname() should do a DNS lookup now.\n");
+
+  /* Since "test-host" doesn't exist in real life, a new lookup should fail.
+   * If 'h != NULL', it should mean the cached entry didn't timeout.
+   */
   h = gethostbyname (host_name);
   if (h)
      fprintf (stderr, "entry didn't timeout!.\n");
@@ -905,6 +941,7 @@ int main (void)
   Fortify_ListAllMemory();
   Fortify_OutputStatistics();
 #endif
+
   return (0);
 }
 #endif /* TEST_PROG */

@@ -49,7 +49,7 @@
 #define	TSPVERSION	1
 #define ANYADDR 	NULL
 
-#include <sys/packon.h>
+#include <sys/pack_on.h>
 
 struct tsp {
 	u_int8_t tsp_type;
@@ -65,7 +65,7 @@ struct tsp {
 	char tsp_name[MAXHOSTNAMELEN];
 };
 
-#include <sys/packoff.h>
+#include <sys/pack_off.h>
 
 #define	tsp_time	tsp_u.tspu_time
 #define	tsp_hopcnt	tsp_u.tspu_hopcnt

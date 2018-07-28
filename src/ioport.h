@@ -17,7 +17,9 @@
  * NB! macro-args must be TASM/MASM compatible
  */
 
-#if defined(__BORLANDC__) && defined(__FLAT__)
+#if defined(__BORLANDC__) && defined(__FLAT__) && \
+   !(defined(W32_IS_EMBARCADERO) || defined(W32_IS_CODEGEARC))
+
   #define VOLATILE        volatile
   #define __in(p,t,z)     ( _DX = (unsigned short)(p),__emit__(0xEC+z),(unsigned t)_AX )
   #define __out(p,x,z)    { _AX = (unsigned short)(x); _DX = (unsigned short)(p);__emit__(0xEE+z); }
@@ -26,19 +28,24 @@
   #define _outportb(p,x)  __out(p,x,0)
   #define _outportw(p,x)  __out(p,x,1)
 
-#elif defined (__HIGHC__)
+#elif defined(__HIGHC__)
   #define _inportb(p)     _inb(p)
   #define _inportw(p)     _inw(p)
   #define _outportb(p,x)  _outb(p,x)
   #define _outportw(p,x)  _outpw(p,x)
   #define VOLATILE
 
-#elif defined (__DJGPP__) || defined (__EMX__)
+#elif defined(__DJGPP__) || defined(__EMX__)
   #define _inportb(p)     inportb(p)
   #define _inport(p)      inportw(p)
   #define _outportb(p,x)  outportb(p,x)
   #define _outportw(p,x)  outportw(p,x)
   #define VOLATILE
+
+#elif defined(_MSC_VER) && defined(__clang__)
+
+ /* Windows implied. Should be no need for this.
+  */
 
 #elif defined(_MSC_VER) && (_MSC_VER >= 800)
   #include <conio.h>
@@ -57,11 +64,11 @@
   #define VOLATILE
 #endif
 
-#if defined (__EMX__)
+#if defined(__EMX__)
 
 /* Copyright (C) 1995 DJ Delorie, see COPYING.DJ for details */
 
-extern __inline__ unsigned char inportb (unsigned short port)
+W32_GCC_INLINE unsigned char inportb (unsigned short port)
 {
   unsigned char rc;
   __asm__ __volatile__ (
@@ -71,7 +78,7 @@ extern __inline__ unsigned char inportb (unsigned short port)
   return (rc);
 }
 
-extern __inline__ unsigned short inportw (unsigned short port)
+W32_GCC_INLINE unsigned short inportw (unsigned short port)
 {
   unsigned short rc;
   __asm__ __volatile__ (
@@ -81,7 +88,7 @@ extern __inline__ unsigned short inportw (unsigned short port)
   return (rc);
 }
 
-extern __inline__ void outportb (unsigned short port, unsigned char data)
+W32_GCC_INLINE void outportb (unsigned short port, unsigned char data)
 {
   __asm__ __volatile__ (
              "outb %1, %0"
@@ -89,7 +96,7 @@ extern __inline__ void outportb (unsigned short port, unsigned char data)
              "a" (data));
 }
 
-extern __inline__ void outportw (unsigned short port, unsigned short data)
+W32_GCC_INLINE void outportw (unsigned short port, unsigned short data)
 {
   __asm__ __volatile__ (
              "outw %1, %0"

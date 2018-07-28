@@ -53,12 +53,6 @@
 #include <ctype.h>
 #include <time.h>
 
-#if defined(_WIN32) || defined(WIN32)
-#define WIN32_LEAN_AND_MEAN
-#include <windows.h>
-#include <windowsx.h>
-#endif
-
 /* Prototypes and such */
 #define __FORTIFY_C__
 
@@ -66,11 +60,17 @@
 #include "misc.h"
 #include "strings.h"
 #include "nochkstk.h"
-
 #include "fortify.h"
-/* #include "chksum.h" */
 
-#if defined(USE_FORTIFY) && !defined(USE_CRTDBG)
+#if defined(USE_FORTIFY) /* && !defined(USE_CRTDBG) */  /* rest of file */
+
+#if defined(__CYGWIN__)
+#error Fortify does not work with Cygwin. Have no idea why yet.
+#endif
+
+#if defined(WIN32)
+#include <windowsx.h>
+#endif
 
 /*
  * struct Header - this structure is used
@@ -121,7 +121,7 @@ struct Header {
 
 #if (DOSX)
   #define VALIDATE(p,len,neg_action)  \
-          ((int) (valid_addr ((DWORD)(p),len) ? 1 : (int)(neg_action)))
+          ((int) (valid_addr ((const void*)(p),len) ? 1 : (int)(neg_action)))
 #else
   #define VALIDATE(p,len,neg_action)  (1)
 #endif
@@ -146,15 +146,16 @@ static const char *st_MemoryBlockString(struct Header *h);
 static void st_OutputDeleteTrace (void);
 
 #if defined(FORTIFY_TRACK_DEALLOCATED_MEMORY)
-#if defined(FORTIFY_WARN_WHEN_DISCARDING_DEALLOCATED_MEMORY) && \
-    defined(FORTIFY_VERBOSE_WARN_WHEN_DISCARDING_DEALLOCATED_MEMORY)
-    static const char *st_DeallocatedMemoryBlockString(struct Header *h);
-#endif
-    static int  st_IsOnDeallocatedList(const struct Header *h);
-    static int  st_PurgeDeallocatedBlocks(DWORD Bytes, const char *file, DWORD line);
-    static int  st_PurgeDeallocatedScope(BYTE Scope, const char *file, DWORD line);
-    static int  st_CheckDeallocatedBlock(struct Header *h, const char *file, DWORD line);
-    static void st_FreeDeallocatedBlock(struct Header *h, const char *file, DWORD line);
+  #if defined(FORTIFY_WARN_WHEN_DISCARDING_DEALLOCATED_MEMORY) && \
+      defined(FORTIFY_VERBOSE_WARN_WHEN_DISCARDING_DEALLOCATED_MEMORY)
+    static const char *st_DeallocatedMemoryBlockString (struct Header *h);
+  #endif
+
+  static int  st_IsOnDeallocatedList (const struct Header *h);
+  static int  st_PurgeDeallocatedBlocks (DWORD Bytes, const char *file, DWORD line);
+  static int  st_PurgeDeallocatedScope (BYTE Scope, const char *file, DWORD line);
+  static int  st_CheckDeallocatedBlock (struct Header *h, const char *file, DWORD line);
+  static void st_FreeDeallocatedBlock (struct Header *h, const char *file, DWORD line);
 #endif
 
 
@@ -195,6 +196,14 @@ static void message (BOOL warn, const char *fmt, ...)
   if (!st_Output)
      return;
 
+#if 0
+  if (!valid_addr(&st_Output,sizeof(*st_Output)))
+  {
+    (*_printf) ("%s(%u): st_Output = 0x%08lX !!??\n", __FILE__, __LINE__, (DWORD)st_Output);
+    return;
+  }
+#endif
+
   va_start (args, fmt);
   if (warn)
   {
@@ -203,7 +212,7 @@ static void message (BOOL warn, const char *fmt, ...)
   }
 
 #if defined(VSNPRINTF)
-  VSNPRINTF (pos, sizeof(st_Buffer) - (pos-st_Buffer)-1, fmt, args);
+  VSNPRINTF (pos, sizeof(st_Buffer) - (pos - st_Buffer) - 1, fmt, args);
 #else
   vsprintf (pos, fmt, args);
 #endif
@@ -263,57 +272,75 @@ static const BYTE st_ValidDeallocator[] = {
 #endif
 };
 
+
+#if defined(__HIGHC__) && defined(__MSDOS__)
+  #define FORTIFY_LOCK()     /* Fortify_LockLocalData(1) */ /**< \todo data locking */
+  #define FORTIFY_UNLOCK()   /* Fortify_LockLocalData(0) */
+#elif defined(WIN32)
+  #define FORTIFY_LOCK()     EnterCriticalSection (&_watt_crit_sect)
+  #define FORTIFY_UNLOCK()   LeaveCriticalSection (&_watt_crit_sect)
+#else
+  #define FORTIFY_LOCK()
+  #define FORTIFY_UNLOCK()
+#endif
+
+
 #if defined(__HIGHC__)
+  #if 0  /* !! not yet */
+  #include <pharlap.h>
+  #include <hw386.h>
 
-#if 0  /* !! not yet */
-#include <pharlap.h>
-#include <hw386.h>
+  static char st_LockDataEnd = 0;
 
-static char st_LockDataEnd = 0;
-
-/*
- *  Change page-attributes for local data.
- *  Set to present or non-present pages.
- */
-static Fortify_LockLocalData (int lock)
-{
-  UINT  lockSize  = (ULONG)&st_LockDataEnd - (ULONG)&st_LockDataStart;
-  ULONG num_pages = (lockSize + 4095) / 4096;
-  ULONG page      = ((ULONG)&st_LockDataStart + 4095) / 4096;
-
-  for ( ; page < page + num_pages; page++)
+  /*
+   *  Change page-attributes for local data.
+   *  Set to present or non-present pages.
+   */
+  static Fortify_LockLocalData (int lock)
   {
-    ULONG pte, ptInfo;
-    if (_dx_rd_ptinfl (page << 12, &pte, &ptInfo))
-       break;
-    if (lock)
-         pte &= ~PE_PRESENT;
-    else pte |=  PE_PRESENT;
-    if (_dx_wr_ptinfl (page << 12, pte, ptInfo))
-       break;
+    UINT  lockSize  = (ULONG)&st_LockDataEnd - (ULONG)&st_LockDataStart;
+    ULONG num_pages = (lockSize + 4095) / 4096;
+    ULONG page      = ((ULONG)&st_LockDataStart + 4095) / 4096;
+
+    for ( ; page < page + num_pages; page++)
+    {
+      ULONG pte, ptInfo;
+      if (_dx_rd_ptinfl (page << 12, &pte, &ptInfo))
+         break;
+      if (lock)
+           pte &= ~PE_PRESENT;
+      else pte |=  PE_PRESENT;
+      if (_dx_wr_ptinfl (page << 12, pte, ptInfo))
+         break;
+    }
   }
-}
-#endif
+  #endif  /* 0 */
 
-#pragma data (common,"?_MWHEAP");
+  #pragma data (common,"?_MWHEAP");
 
-BYTE Check_heap_integrity_flag; /* must be public */
-BYTE Heap_init_byte;
-BYTE Init_allocated_storage;
+  BYTE Check_heap_integrity_flag;  /* must be public */
+  BYTE Heap_init_byte;
+  BYTE Init_allocated_storage;
 
-#pragma data;
+  #pragma data;
 
-static void heap_integrity_check (BOOL on)
-{
-  if (on)
+  static void heap_integrity_check (BOOL on)
   {
-    Check_heap_integrity_flag = Init_allocated_storage = 1;
-    Heap_init_byte = 0xFE;
+    if (on)
+    {
+      Check_heap_integrity_flag = Init_allocated_storage = 1;
+      Heap_init_byte = 0xFE;
+    }
+    else
+      Check_heap_integrity_flag = Init_allocated_storage = 0;
   }
-  else
-    Check_heap_integrity_flag = Init_allocated_storage = 0;
-}
-#endif
+
+  #define HEAP_INTEGRITY_CHECK(x)  heap_integrity_check(x)
+
+#else
+
+  #define HEAP_INTEGRITY_CHECK(x)  ((void)0)
+#endif  /* __HIGHC__ */
 
 
 
@@ -338,7 +365,7 @@ Fortify_Allocate (size_t size, unsigned char allocator, unsigned long flags,
          allocator == Fortify_Allocator_array_new))
     {
       /* A new of zero bytes must succeed, but a malloc of
-       * zero bytes probably won't
+       * zero bytes probably won't.
        */
       return malloc (1);
     }
@@ -353,9 +380,7 @@ Fortify_Allocate (size_t size, unsigned char allocator, unsigned long flags,
   if (allocator != Fortify_Allocator_GlobalAlloc)
   {
 #ifdef FORTIFY_CHECK_ALL_MEMORY_ON_ALLOCATE
-    #ifdef __HIGHC__
-      heap_integrity_check (TRUE);
-    #endif
+    HEAP_INTEGRITY_CHECK (TRUE);
     Fortify_CheckAllMemory (file, line);
 #endif
   }
@@ -439,8 +464,8 @@ Fortify_Allocate (size_t size, unsigned char allocator, unsigned long flags,
     /* malloc the memory, including the space
      * for the header and fortification buffers
      */
-    ptr = (BYTE*) malloc (FORTIFY_HEADER_SIZE + FORTIFY_ALIGNED_BEFORE_SIZE +
-                          size + FORTIFY_AFTER_SIZE);
+    ptr = malloc (FORTIFY_HEADER_SIZE + FORTIFY_ALIGNED_BEFORE_SIZE +
+                  size + FORTIFY_AFTER_SIZE);
 
 #ifdef FORTIFY_TRACK_DEALLOCATED_MEMORY
     /* If we're tracking deallocated memory, then we can free some of
@@ -545,9 +570,7 @@ Fortify_Deallocate (void *uptr, BYTE deallocator, const char *file, DWORD line)
   struct Header *h = (struct Header*) ptr;
 
 #ifdef FORTIFY_CHECK_ALL_MEMORY_ON_DEALLOCATE
-  #ifdef __HIGHC__
-    heap_integrity_check (TRUE);
-  #endif
+  HEAP_INTEGRITY_CHECK (TRUE);
   Fortify_CheckAllMemory(file, line);
 #endif
 
@@ -611,7 +634,7 @@ Fortify_Deallocate (void *uptr, BYTE deallocator, const char *file, DWORD line)
 #endif
 
     message (1, "Possible \"%s\" twice of (%08lX) was detected at %s.%lu\n",
-             st_DeallocatorName[deallocator], (DWORD)uptr, file, line);
+             st_DeallocatorName[deallocator], (DWORD_PTR)uptr, file, line);
 
     st_OutputDeleteTrace();
     return;
@@ -790,7 +813,6 @@ Fortify_Deallocate (void *uptr, BYTE deallocator, const char *file, DWORD line)
  * The pointer MUST be one returned by a Fortify
  * allocation function.
  */
-/*@-redef@*/
 void
 Fortify_LabelPointer (void *uptr, const char *label, const char *file, DWORD line)
 {
@@ -840,7 +862,7 @@ Fortify_CheckPointer (void *uptr, const char *file, DWORD line)
   if (!st_IsOnAllocatedList(h))
   {
     message (1, "Invalid pointer (%08lX) detected at %s.%lu\n",
-             (DWORD) uptr, file, line);
+             (DWORD_PTR)uptr, file, line);
     FORTIFY_UNLOCK();
     return (0);
   }
@@ -849,7 +871,7 @@ Fortify_CheckPointer (void *uptr, const char *file, DWORD line)
   if (st_IsOnDeallocatedList(h))
   {
     message (1, "Deallocated pointer (%08lX) detected at %s.%lu\n",
-             (DWORD) uptr, file, line);
+             (DWORD_PTR)uptr, file, line);
 
     sprintf (st_Buffer, "         Memory block was deallocated by \"%s\" at %s.%lu\n",
              st_DeallocatorName[h->Deallocator], h->FreedFile, h->FreedLine);
@@ -865,7 +887,7 @@ Fortify_CheckPointer (void *uptr, const char *file, DWORD line)
 }
 
 /*
- * Fortify_SetOutputFunc(Fortify_OutputFuncPtr Output) -
+ * Fortify_SetOutputFunc (Fortify_OutputFuncPtr Output) -
  * Sets the function used to output all error and
  * diagnostic messages. The output function  takes
  * a single const BYTE * argument, and must be
@@ -963,8 +985,8 @@ DWORD FORTIFY_STORAGE Fortify_CheckAllMemory (const char *file, DWORD line)
  */
 BYTE FORTIFY_STORAGE Fortify_EnterScope (const char *file, DWORD line)
 {
-  ARGSUSED (file);
-  ARGSUSED (line);
+  message (1, "Entering new scope %d at %s.%lu\n", st_Scope+1, file, line);
+  ST_OUTPUT (st_Buffer);
   return (++st_Scope);
 }
 
@@ -1187,8 +1209,16 @@ void FORTIFY_STORAGE Fortify_Disable (const char *file, DWORD line)
   if (file && line)
      st_PurgeDeallocatedScope (0, file, line);
 #endif
-
+  ARGSUSED (file);
+  ARGSUSED (line);
   st_Disabled = 1;
+}
+
+void FORTIFY_STORAGE Fortify_Enable (const char *file, DWORD line)
+{
+  ARGSUSED (file);
+  ARGSUSED (line);
+  st_Disabled = 0;
 }
 
 /*
@@ -1203,7 +1233,9 @@ static int st_CheckBlock (struct Header *h, const char *file, DWORD line)
   if (!st_IsHeaderValid(h))
   {
     message (1, "Invalid pointer (%08lX) or corrupted header detected at %s.%lu\n",
-             (DWORD)(ptr + FORTIFY_HEADER_SIZE + FORTIFY_ALIGNED_BEFORE_SIZE), file, line);
+             (DWORD_PTR)(ptr + FORTIFY_HEADER_SIZE + FORTIFY_ALIGNED_BEFORE_SIZE),
+             file, line);
+//  st_MakeHeaderValid (h);             // !!
     st_OutputLastVerifiedPoint();
     return (0);
   }
@@ -1247,8 +1279,8 @@ static int st_CheckBlock (struct Header *h, const char *file, DWORD line)
 #ifdef FORTIFY_TRACK_DEALLOCATED_MEMORY
 
 /*
- * st_CheckDeallocatedBlock - Check a deallocated block's header and fortifications.
- * Returns true if the block is happy.
+ * st_CheckDeallocatedBlock - Check a deallocated block's header and
+ * fortifications. Returns true if the block is happy.
  */
 static int
 st_CheckDeallocatedBlock (struct Header *h, const char *file, DWORD line)
@@ -1258,8 +1290,10 @@ st_CheckDeallocatedBlock (struct Header *h, const char *file, DWORD line)
 
   if (!st_IsHeaderValid(h))
   {
-    message (1, "Invalid deallocated pointer (%08lX) or corrupted header detected at %s.%lu\n",
-             (DWORD)(ptr + FORTIFY_HEADER_SIZE + FORTIFY_ALIGNED_BEFORE_SIZE),
+    message (1, "Invalid deallocated pointer (%08lX) or corrupted "
+                "header detected at %s.%lu\n",
+             (DWORD_PTR)(ptr + FORTIFY_HEADER_SIZE +
+                         FORTIFY_ALIGNED_BEFORE_SIZE),
              file, line);
     st_OutputLastVerifiedPoint();
     return (0);
@@ -1271,7 +1305,8 @@ st_CheckDeallocatedBlock (struct Header *h, const char *file, DWORD line)
     message (1, "Underwrite detected before deallocated block %s at %s.%lu\n",
              st_MemoryBlockString(h), file, line);
 
-    sprintf (st_Buffer, "         Memory block was deallocated by \"%s\" at %s.%lu\n",
+    sprintf (st_Buffer, "         Memory block was deallocated by \"%s\" "
+                        "at %s.%lu\n",
              st_DeallocatorName[h->Deallocator], h->FreedFile, h->FreedLine);
     ST_OUTPUT (st_Buffer);
 
@@ -1286,13 +1321,15 @@ st_CheckDeallocatedBlock (struct Header *h, const char *file, DWORD line)
     result = 0;
   }
 
-  if (!st_CheckFortification(ptr + FORTIFY_HEADER_SIZE + FORTIFY_ALIGNED_BEFORE_SIZE +
-                             h->Size, FORTIFY_AFTER_VALUE, FORTIFY_AFTER_SIZE))
+  if (!st_CheckFortification(ptr + FORTIFY_HEADER_SIZE +
+                             FORTIFY_ALIGNED_BEFORE_SIZE + h->Size,
+                             FORTIFY_AFTER_VALUE, FORTIFY_AFTER_SIZE))
   {
     message (1, "Overwrite detected after deallocated block %s at %s.%lu\n",
              st_MemoryBlockString(h), file, line);
 
-    sprintf (st_Buffer, "         Memory block was deallocated by \"%s\" at %s.%lu\n",
+    sprintf (st_Buffer, "         Memory block was deallocated by \"%s\" "
+                        "at %s.%lu\n",
              st_DeallocatorName[h->Deallocator], h->FreedFile, h->FreedLine);
     ST_OUTPUT (st_Buffer);
 
@@ -1427,7 +1464,7 @@ static void st_HexDump (BYTE *ptr, size_t offset, size_t size, int title)
   while (output < size)
   {
     if (column == 0)
-       message (0, "\n%08lX %8lu ", (DWORD)ptr, (DWORD)offset);
+       message (0, "\n%08lX %8lu ", (DWORD_PTR)ptr, (DWORD)offset);
 
     message (0, "%02x%s", *ptr, ((column % 4) == 3) ? " " : "");
 
@@ -1496,7 +1533,7 @@ static WORD st_ChecksumHeader (const struct Header *h)
   WORD *p = (WORD*)h;
 
   for (c = checksum = 0; c < FORTIFY_HEADER_SIZE/sizeof(WORD); c++)
-      checksum += *p++;
+      checksum += (*p++) & 0xFF;
   return (checksum);
 }
 
@@ -1670,7 +1707,7 @@ static int st_OutputHeader (struct Header *h)
     return (0);
   }
 
-  p += sprintf (p, "%08lX %8lu ", (DWORD)addr, (DWORD)h->Size);
+  p += sprintf (p, "%08lX %8lu ", (DWORD_PTR)addr, (DWORD)h->Size);
 
   if (VALIDATE (h->File, 13, p += sprintf(p, "file?.")))
      p += sprintf (p, "%s.", h->File);
@@ -1695,9 +1732,17 @@ static int st_OutputHeader (struct Header *h)
  */
 static void st_OutputLastVerifiedPoint (void)
 {
-  sprintf (st_Buffer, "         Memory integrity was last verified at %s.%lu\n",
+  if (!st_Output)
+     return;
+
+#if defined(VSNPRINTF)
+  SNPRINTF (st_Buffer, sizeof(st_Buffer),
+#else
+  sprintf (st_Buffer,
+#endif
+           "         Memory integrity was last verified at %s.%lu\n",
            st_LastVerifiedFile, st_LastVerifiedLine);
-  ST_OUTPUT (st_Buffer);
+  (*st_Output) (st_Buffer);
 }
 
 /*
@@ -1714,10 +1759,10 @@ static const char *st_MemoryBlockString (struct Header *h)
 
   if (h->Label == 0)
        sprintf (st_BlockString, "(%08lX,%lu,%s.%lu)",
-                (DWORD)h + FORTIFY_HEADER_SIZE + FORTIFY_ALIGNED_BEFORE_SIZE,
+                (DWORD_PTR)h + FORTIFY_HEADER_SIZE + FORTIFY_ALIGNED_BEFORE_SIZE,
                 (DWORD)h->Size, h->File, h->Line);
   else sprintf (st_BlockString, "(%08lX,%lu,%s.%lu,%s)",
-                (DWORD)h + FORTIFY_HEADER_SIZE + FORTIFY_ALIGNED_BEFORE_SIZE,
+                (DWORD_PTR)h + FORTIFY_HEADER_SIZE + FORTIFY_ALIGNED_BEFORE_SIZE,
                 (DWORD)h->Size, h->File, h->Line, h->Label);
   return (st_BlockString);
 }
@@ -1801,7 +1846,7 @@ void *Fortify_realloc (void *uptr, size_t new_size, const char *file, DWORD line
       }
 #endif
       message (1, "Invalid pointer (%08lX) passed to realloc at %s.%lu\n",
-               (DWORD)ptr, file, line);
+               (DWORD_PTR)ptr, file, line);
       return (0);
     }
 
@@ -1865,7 +1910,7 @@ void Fortify_free (void *uptr, const char *file, DWORD line)
 }
 
 
-#if defined(_WIN32) || defined(WIN32) && defined(FORTIFY_GLOBAL_REPLACE)
+#if defined(WIN32) && defined(FORTIFY_GLOBAL_REPLACE)
 
 HGLOBAL Fortify_GlobalAlloc (UINT flags, DWORD size, const char *file, DWORD line)
 {

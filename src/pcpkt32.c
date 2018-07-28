@@ -5,7 +5,7 @@
  *  Skeleton (not finished) for probing for the presence of network cards.
  *  All drivers should be put in a dynamically loaded module (DLL/DXE).
  *
- *  Copyright (c) 1997-2002 Gisle Vanem <giva@bgnett.no>
+ *  Copyright (c) 1997-2002 Gisle Vanem <gvanem@yahoo.no>
  *
  *  Redistribution and use in source and binary forms, with or without
  *  modification, are permitted provided that the following conditions
@@ -36,12 +36,10 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-/* Nothing of this is needed for Win32.
- * Refer winpcap.c instead.
- */
-#if !defined(WIN32) && !defined(_WIN32)
-
 #include "wattcp.h"
+
+#if defined(__MSDOS__) && DOSX
+
 #include "pcconfig.h"
 #include "wdpmi.h"
 #include "x32vm.h"
@@ -50,11 +48,9 @@
 #include "pcpkt.h"
 #include "pcpkt32.h"
 
-#if (DOSX)
-
 int (*_pkt32_drvr)(IREGS*) = NULL;
 
-struct PM_driver pm_driver_list[] = {
+const struct PM_driver pm_driver_list[] = {
                  { PM_DRVR_3C501,   "3c501"   },
                  { PM_DRVR_3C503,   "3c503"   },
                  { PM_DRVR_3C505,   "3c505"   },
@@ -89,7 +85,4 @@ const char *pkt32_drvr_name (int driver)
 
   return ("unknown");
 }
-
-#endif  /* DOSX */
-#endif  /* !WIN32 && !_WIN32 */
-
+#endif  /* __MSDOS__ && DOSX */

@@ -42,6 +42,11 @@
 #define _NETINET6_AH6_H_
 
 #ifdef _KERNEL
+
+#ifndef __SYS_MBUF_H
+#include <sys/mbuf.h>
+#endif
+
 struct secasvar;
 
 extern int ah6_input (struct mbuf **, int *, int));

@@ -3,6 +3,8 @@
  *  This file contains all assembly code for the Intel Cpu identification.
  *  It is based on linux cpu detection code.
  *
+ *  Only for GNU-C targets. Others use cpumodel.asm.
+ *
  *  Intel also provides public similar code in the book
  *  called :
  *
@@ -27,6 +29,8 @@
 #define IN_ASM_FILE
 #include "register.h"
 
+#if defined(__i386__)  /* '__x86_64__' code below */
+
 .data
 
 DATA (x86_type,       .byte 0)
@@ -39,8 +43,8 @@ DATA (x86_vendor_id,  .zero 13)
 
 .text
 
-/* 
- * check Processor type: 386, 486, 6x86(L) or CPUID capable processor 
+/*
+ * check Processor type: 386, 486, 6x86(L) or CPUID capable processor
  */
 ENTRY (_w32_CheckCpuType)
     pushl %ebp
@@ -57,14 +61,14 @@ ENTRY (_w32_CheckCpuType)
     pushfl                          /* save EFLAGS */
     pushfl                          /* Get EFLAGS in EAX */
     popl %eax
-    
+
     movl  %eax, %ecx                /* save original EFLAGS in ECX */
     xorl  $EFLAGS_ALIGN_CHECK, %eax /* flip AC bit in EAX */
     pushl %eax                      /* set EAX as EFLAGS */
-    popfl           
+    popfl
     pushfl                          /* Get new EFLAGS in EAX */
     popl  %eax
-    
+
     xorl  %ecx, %eax                /* check if AC bit changed */
     andl  $EFLAGS_ALIGN_CHECK,%eax
     je is386                        /* If not : we have a 386 */
@@ -75,49 +79,49 @@ ENTRY (_w32_CheckCpuType)
     movl  %ecx, %eax                /* Restore orig EFLAGS in EAX */
     xorl  $EFLAGS_ID, %eax          /* flip  ID flag */
     pushl %eax                      /* set EAX as EFLAGS */
-    popfl               
+    popfl
     pushfl                          /* Get new EFLAGS in EAX */
     popl  %eax
-            
+
     xorl  %ecx, %eax                /* check if ID bit changed */
     andl  $EFLAGS_ID, %eax
 
-    /* 
+    /*
      * if we are on a straight 486DX, SX, or 487SX we can't
      * change it. OTOH 6x86MXs and MIIs check OK.
      * Also if we are on a Cyrix 6x86(L)
      */
     je is486x
 
-isnew:  
+isnew:
     /* restore original EFLAGS
      */
     popfl
     incl _C_LABEL(x86_have_cpuid)   /* we have CPUID instruction */
 
     /* use CPUID to get :
-     *  processor type,
-     *  processor model,
-     *  processor mask,
+     *   processor type,
+     *   processor model,
+     *   processor mask,
      * by using it with EAX = 1
      */
     movl $1, %eax
-    cpuid           
+    cpuid
 
     movb %al, %cl                 /* save reg for future use */
-    
+
     andb $0x0F, %ah               /* mask processor family (bit 8-11) */
     movb %ah, _C_LABEL(x86_type)  /* put result in x86_type (0..15) */
 
     andb $0xF0, %al               /* get model (bit 4-7) */
     shrb $4, %al
     movb %al, _C_LABEL(x86_model) /* store it in x86_model */
-    
+
     andb $0x0F, %cl               /* get mask revision */
     movb %cl, _C_LABEL(x86_mask)  /* store it in x86_mask */
-    
+
     movl %edx, _C_LABEL(x86_capability) /* store feature flags */
-    
+
     /* get vendor info by using CPUID with EAX = 0
      */
     xorl %eax, %eax
@@ -153,7 +157,7 @@ is486x:
     div  %bl
     lahf
     cmpb $2, %ah
-    jne  ncyrix
+    jne  is386
 
     /*
      * N.B. The pattern of accesses to 0x22 and 0x23 is *essential*
@@ -184,10 +188,16 @@ is486x:
     movw %ax, %bx           /* to enable CPUID execution */
     setCx86 ($0xE8, %bx)
 
-    getCx86 ($0xFE)         /* DIR0 : let's check this is a 6x86(L) */
+    /* Must check cpu id regs here and not after trying to set CCR3
+     * to avoid failure when testing SG Microelectronic STPCs, which
+     * lock up if you try to enable cpuid execution
+     */
+
+    getCx86 ($0xFE)         /* DIR0 : let's check if this is a 6x86(L) */
     andw $0xF0, %ax         /* should be 3xh */
-    cmpw $0x30, %ax
-    jne n6x86
+    cmpw $0x30, %ax         /* STPCs return 0x80, 0x1a, 0x1b or 0x1f */
+    jne  is386
+
     getCx86 ($0xE9)         /* CCR5 : we reset the SLOP bit */
     andw $0xFD, %ax         /* so that udelay calculation */
     movw %ax, %bx           /* is correct on 6x86(L) CPUs */
@@ -196,16 +206,6 @@ is486x:
     setCx86 ($0xC3, %cx)    /* Restore old CCR3 */
     sti
     jmp isnew               /* We enabled CPUID now */
-
-n6x86:
-    setCx86 ($0xC3, %cx)    /* Restore old CCR3 */
-    sti
-
-ncyrix:
-    popfl                   /* restore original EFLAGS */
-    call check_x87
-    popl %ebx
-    jmp  end_CheckCpuType
 
 is386:
     popfl                   /* restore original EFLAGS */
@@ -269,6 +269,34 @@ ENTRY (_w32_SelReadable)
     ret
 
 /*
+ * WORD _w32_MY_CS (void)
+ */
+ENTRY (_w32_MY_CS)
+    movw  %cs, %ax
+    ret
+
+/*
+ * WORD _w32_MY_DS (void)
+ */
+ENTRY (_w32_MY_DS)
+    movw  %ds, %ax
+    ret
+
+/*
+ * WORD _w32_MY_ES (void)
+ */
+ENTRY (_w32_MY_ES)
+    movw  %es, %ax
+    ret
+
+/*
+ * WORD _w32_MY_SS (void)
+ */
+ENTRY (_w32_MY_SS)
+    movw  %ss, %ax
+    ret
+
+/*
  * int _w32_asm_ffs (int val)
  */
 ENTRY (_w32_asm_ffs)
@@ -278,3 +306,148 @@ ENTRY (_w32_asm_ffs)
 1:  incl %eax
     ret
 
+#elif defined(__x86_64__)
+
+/*
+ * Nice intro to 64-bit gcc asm:
+ *  http://cs.lmu.edu/~ray/notes/gasexamples/
+ */
+.data
+
+DATA (x86_type,       .byte 0)
+DATA (x86_model,      .byte 0)
+DATA (x86_mask,       .byte 0)
+DATA (x86_capability, .long 0)
+DATA (x86_vendor_id,  .zero 13)
+
+/* An 'int' is 8 bytes (aka. a 'quad'). Hence these should match
+ * the declaration in cpumodel.h.
+ */
+DATA (x86_hard_math,  .quad 0)
+DATA (x86_have_cpuid, .quad 0)
+
+.text
+
+/*
+ * Check Processor type; guaranteed to be a CPUID capable processor.
+ */
+ENTRY (_w32_CheckCpuType)
+    push %rbp
+    mov  %rsp, %rbp
+    push %rbx
+
+    /* Assume 6 for now
+     */
+    movb $6, _C_LABEL(x86_type)
+
+    movq $1, _C_LABEL(x86_have_cpuid)  /* we have CPUID instruction */
+    movq $1, _C_LABEL(x86_hard_math)   /* and math processor. Duh! */
+
+    /* use CPUID to get :
+     *   processor type,
+     *   processor model,
+     *   processor mask,
+     * by using it with EAX = 1
+     */
+    mov $1, %rax
+    cpuid
+
+    movb %al, %cl                 /* save reg for future use */
+
+    andb $0x0F, %ah               /* mask processor family (bit 8-11) */
+    movb %ah, _C_LABEL(x86_type)  /* put result in x86_type (0..15) */
+
+    andb $0xF0, %al               /* get model (bit 4-7) */
+    shrb $4, %al
+    movb %al, _C_LABEL(x86_model) /* store it in x86_model */
+
+    andb $0x0F, %cl               /* get mask revision */
+    movb %cl, _C_LABEL(x86_mask)  /* store it in x86_mask */
+
+    mov %rdx, _C_LABEL(x86_capability) /* store feature flags */
+
+    /* get vendor info by using CPUID with EAX = 0
+     */
+    xor %rax, %rax
+    cpuid
+
+    /* store results contained in rbx, rdx, rcx in x86_vendor_id string.
+     */
+    mov %rbx, _C_LABEL(x86_vendor_id)
+    mov %rdx, _C_LABEL(x86_vendor_id+4)
+    mov %rcx, _C_LABEL(x86_vendor_id+8)
+
+    pop %rbx
+    pop %rbp
+    ret
+
+/*
+ * Return value of CR4 register.
+ */
+ENTRY (_w32_Get_CR4)
+    movw  %cs, %ax
+    testw $3, %ax             /* CPL=0? */
+    jnz   1f
+    .byte 0x0F, 0x20, 0xE0    /* movl %cr4, %eax */
+    ret
+
+1:  xor %rax, %rax
+    ret
+
+/*
+ * BOOL _w32_SelWriteable (WORD sel)
+ */
+ENTRY (_w32_SelWriteable)
+    verw  %cx
+    sete  %al
+    movzx %al, %rax
+    ret
+
+/*
+ * BOOL _w32_SelReadable (WORD sel)
+ */
+ENTRY (_w32_SelReadable)
+    verr  %cx
+    sete  %al
+    movzx %al, %rax
+    ret
+
+/*
+ * WORD _w32_MY_CS (void)
+ */
+ENTRY (_w32_MY_CS)
+    movw  %cs, %ax
+    ret
+
+/*
+ * WORD _w32_MY_CS (void)
+ */
+ENTRY (_w32_MY_DS)
+    movw  %ds, %ax
+    ret
+
+/*
+ * WORD _w32_MY_ES (void)
+ */
+ENTRY (_w32_MY_ES)
+    movw  %es, %ax
+    ret
+
+/*
+ * WORD _w32_MY_SS (void)
+ */
+ENTRY (_w32_MY_SS)
+    movw  %ss, %ax
+    ret
+
+/*
+ * int _w32_asm_ffs (int val)
+ */
+ENTRY (_w32_asm_ffs)
+    bsf  %rcx, %rax
+    jnz  1f
+    movq $-1, %rax
+1:  incq %rax
+    ret
+
+#endif  /* __i386__ */

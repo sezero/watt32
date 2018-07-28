@@ -1,30 +1,29 @@
 /*
- * This program originally by John E. Davis for the SLang library
+ * A simple makefile preprocessor and generator.
+ *
+ * This program originally by John E. Davis for the S-Lang library
  *
  * Modified for Waterloo tcp/ip by G.Vanem 1998
- * Requires SLang and djgpp 2.01+
+ * Requires S-Lang compiled with djgpp 2.01+, MingW or MSVC.
  */
 
 #include <stdio.h>
-#include <slang.h>
 #include <stdlib.h>
+#include <slang.h>
 #include <string.h>
-#include <unistd.h>
 #include <limits.h>
 #include <assert.h>
-#include <ctype.h>
+#include <errno.h>
 #include <time.h>
-#include <dir.h>
-#include <dos.h>
 #include <sys/stat.h>
 
-int   recursive    = 0;
-int   quiet        = 0;
-int   time_depend  = 0;
+#include "sysdep.h"
+
+int   verbose = 0;
 char *in_makefile  = NULL;
 char *out_makefile = NULL;
-char  line_cont_ch = '\\'; /* if this is not '\\' and a line ends in '\\' */
-                           /* then change it to this. (Watcom needs '&') */
+char  line_cont_ch = '\\';  /* if this is not '\\' and a line ends in '\\' */
+                            /* then change it to this. (Watcom needs '&') */
 #if (SLANG_VERSION < 20000)
   SLPreprocess_Type _pt, *pt;
 #else
@@ -33,181 +32,139 @@ char  line_cont_ch = '\\'; /* if this is not '\\' and a line ends in '\\' */
 
 void Usage (void)
 {
-  if (!quiet)
-     fprintf (stderr,
-       "Usage: mkmake [-rqt] [-ofile] [-ddir] makefile.all [DEF1 [DEF2 ...]]\n"
-       "options:\n"
-       "     -r:  recurse all subdirectories (needs `-o' option)\n"
-       "     -q:  quiet, don't print any messages\n"
-       "     -t:  don't generate file/stdout if `makefile.all' is older\n"
-       "     -o:  write parsed `makefile.all' to file (default is stdout)\n"
-       "     -d:  creates subdirectory (or subdirectories)\n"
-       "     DEF1 DEF2 ... are preprocessor defines in `makefile.all'\n");
+  fprintf (stderr,
+           "Usage: mkmake [-v] [-ofile] [-ddir] makefile.all [DEF1 [DEF2 ...]]\n"
+           "options:\n"
+           "     -v:  be verbose\n"
+           "     -o:  write parsed `makefile.all' to file (default is stdout)\n"
+           "     -d:  creates subdirectory (or subdirectories)\n"
+           "     DEF1 DEF2 ... are preprocessor defines in `makefile.all'\n");
   exit (1);
 }
 
 void process_makefile (const char *infname, const char *outfname)
 {
-  char  buf[1024];
+  char  buf[1024], *p;
   FILE *out = stdout;
   FILE *in;
 
-#if 0
-  fprintf (stderr, "in = `%s', out = `%s'\n", infname, outfname);
-  return;
-#endif
+  if (verbose)
+     fprintf (stdout, "infname = `%s', outfname = `%s'\n", infname, outfname);
 
   in = fopen (infname, "rt");
   if (!in)
   {
-    if (!quiet)
-       fprintf (stderr, "Cannot open `%s'\n", infname);
+    fprintf (stderr, "Cannot open `%s'\n", infname);
     Usage();
   }
+
   if (outfname)
   {
     out = fopen (outfname, "wt");
     if (!out)
     {
-      if (!quiet)
-         fprintf (stderr, "Cannot open `%s'\n", outfname);
+      fprintf (stderr, "Cannot open `%s'\n", outfname);
       Usage();
     }
   }
 
   while (fgets(buf,sizeof(buf)-1,in))
   {
-    if (SLprep_line_ok(buf,pt))
-    {
-      if (line_cont_ch != '\\')
-      {  
-        unsigned int len = strlen (buf);
+    p = buf;
+#if 1
+    while (*p == ' ')
+         p++;
+#endif
+    if (!SLprep_line_ok(p,pt))
+       continue;
 
-        while (len > 0 && isspace(buf[len-1]))
-           len--;
-        if (len > 0 && buf[len-1] == '\\')
-           buf[len-1] = line_cont_ch;
-      }
-      fputs (buf, out);
+    if (line_cont_ch != '\\')   /* WATCOM */
+    {
+      unsigned int len = strlen (p);
+
+      while (len > 0 && isspace(p[len-1]))
+         len--;
+      if (len > 0 && p[len-1] == '\\')
+         p[len-1] = line_cont_ch;
     }
+    if (p > buf)
+      fprintf (out, "%*s", p-buf, " ");
+    fputs (p, out);
   }
   if (out != stdout)
      fclose (out);
 }
 
-time_t file_time (const char *file)
+/*
+ * Replace 'ch1' to 'ch2' in string 'str'.
+ */
+void str_replace (int ch1, int ch2, char *str)
 {
-  struct ffblk ff;
-  struct tm    time;
-  unsigned     attr = _A_NORMAL|_A_ARCH|_A_RDONLY|_A_HIDDEN;
+  char *s = str;
 
-  if (findfirst(file,&ff,attr))
-     return (0);
-
-  time.tm_hour  = (ff.ff_ftime >> 11) & 31;
-  time.tm_min   = (ff.ff_ftime >> 5) & 63;
-  time.tm_sec   = (ff.ff_ftime & 31) << 1;
-
-  time.tm_year  = (ff.ff_fdate >> 9) + 1980 - 1900;
-  time.tm_mday  = (ff.ff_fdate & 31);
-  time.tm_mon   = (ff.ff_fdate >> 5) & 15;
-  time.tm_mon--;
-  time.tm_wday  = 0;
-  time.tm_yday  = 0;
-  time.tm_isdst = 0;
-
-  if (time.tm_year < 80)
-     time.tm_year += 2000;
-  return mktime (&time);
-}
-
-int check_filestamp (const char *ref_file, const char *new_file)
-{
-  time_t ref_time, new_time;
-
-  if (!new_file || !time_depend)
-     return (0);
-
-  if ((ref_time = file_time(ref_file)) == 0)
-     return (0);
-
-  if ((new_time = file_time(new_file)) == 0)
-     return (0);
-
-  return (ref_time <= new_time);
-}
-
-int dir_tree_walk (const char *path, const struct ffblk *ff)
-{
-  if ((ff->ff_attrib & _A_SYSTEM) ||
-      (ff->ff_attrib & _A_SUBDIR) ||
-      (ff->ff_attrib & _A_VOLID))
-     return (0);
-
-  if (!stricmp(ff->ff_name,in_makefile))
+  while (*s)
   {
-    char outpath[PATH_MAX];
-    char fdrv   [MAXDRIVE];
-    char fdir   [MAXDIR];
+    if (*s == ch1)
+        *s = ch2;
+    s++;
+  }
+}
 
-    fnsplit (path, fdrv, fdir, NULL, NULL);
-    sprintf (outpath, "%s%s%s", fdrv, fdir, out_makefile);
-  
-    if (!check_filestamp(path,outpath))
-         process_makefile (path, outpath);
-    else if (!quiet)
-         fprintf (stderr, "%s is up to date\n", outpath);
+int make_dirs (char *dir)
+{
+  char *p = strchr (dir, '\0');
+
+#if (SLASH == '/')
+  str_replace ('\\', SLASH, dir);
+#else
+  str_replace ('/', SLASH, dir);
+#endif
+
+  if (p[-1] != SLASH)
+     *p++ = SLASH, *p = '\0';
+
+  for (p = strchr(dir+1, SLASH); p; p = strchr(p+1, SLASH))
+  {
+    *p = '\0';
+    if (MKDIR(dir) == -1)
+    {
+      if (errno != EEXIST)
+      {
+        *p = SLASH;
+        return (-1);
+      }
+    }
+    *p = SLASH;
   }
   return (0);
 }
 
-void check_outfile (void)
+static int get_win_ver (SLprep_Type *pt, char *expr)
 {
-  if (!recursive && !time_depend)
-     return;
+  char *p;
 
-  if (!out_makefile)
-  {
-    fprintf (stderr, "`-r' or `-t' option requires `-o' option\n");
-    Usage();
-  }
+  p = strstr (expr, "@(get_win_ver)");
 
-  if (strcspn(out_makefile,"?*[]/\\"))
-  {
-    fprintf (stderr, "outfile cannot contain path-chars or wildcards\n");
-    Usage();
-  }
-}
+  if (verbose)
+     fprintf (stdout, "expr: '%s', p: '%s'", expr, p);
 
-void make_dirs (char *dir)
-{
-  char *slash = strchr (dir, '\\');
-
-  if (slash && slash < dir+strlen(dir))
-  {
-    *slash = '\0';
-    mkdir (dir, 666);
-    *slash = '\\';
-  }
-  mkdir (dir, 666);
+  if (p)
+     strcpy (p, "0x0501");
+  return (1);
 }
 
 int main (int argc, char **argv)
 {
   int i, ch;
 
-  while ((ch = getopt(argc,argv,"?rqto:d:")) != EOF)
+  while ((ch = getopt(argc,argv,"?o:d:v")) != EOF)
      switch (ch)
      {
-       case 'r': recursive = 1;
-                 break;
-       case 'q': quiet = 1;
-                 break;
-       case 't': time_depend = 1;
-                 break;
        case 'o': out_makefile = optarg;
                  break;
        case 'd': make_dirs (optarg);
+                 break;
+       case 'v': verbose++;
                  break;
        case '?':
        default:  Usage();
@@ -222,8 +179,6 @@ int main (int argc, char **argv)
   argv++;
   argc--;
 
-  check_outfile();
-
 #if (SLANG_VERSION < 20000)
   SLprep_open_prep (&_pt);
   pt = &_pt;
@@ -236,6 +191,7 @@ int main (int argc, char **argv)
   SLprep_set_prefix (pt, "@");
   SLprep_set_comment (pt, "#", "#");
   SLprep_set_flags (pt, SLPREP_BLANK_LINES_OK | SLPREP_COMMENT_LINES_OK);
+  SLprep_set_eval_hook (pt, get_win_ver);
 #endif
 
   for (i = 0; i < argc; i++)
@@ -247,17 +203,7 @@ int main (int argc, char **argv)
     SLdefine_for_ifdef (arg);
   }
 
-  if (recursive)
-  {
-    char base [PATH_MAX];
-    __file_tree_walk (getcwd(base,sizeof(base)), dir_tree_walk);
-  }
-  else
-  {
-    if (!check_filestamp(in_makefile,out_makefile))
-         process_makefile (in_makefile, out_makefile);
-    else if (!quiet)
-         fprintf (stderr, "%s is up to date\n", out_makefile);
-  }
+  process_makefile (in_makefile, out_makefile);
   return (0);
 }
+

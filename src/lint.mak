@@ -5,7 +5,13 @@
 
 .SUFFIXES: .lnt
 
-LINT = /djgpp/contrib/lclint.24/bin/lclint.exe
+path_find = $(wildcard $(addsuffix /$(1),$(subst ;, ,$(subst \,/,$(PATH)))))
+
+ifeq ($(call path_find,lclint.exe),)
+  LINT = e:/djgpp/contrib/lclint.24/bin/lclint.exe
+else
+  LINT = lclint
+endif
 
 LFLAGS = +standard -I../inc -I$(DJDIR)/include -sysdirs $(DJDIR)/include \
          -Dlint -D__DJGPP__=2 -D__GNUC__=3 -D__GNUC_MINOR__=1 -DDOSX=2   \

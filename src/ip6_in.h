@@ -18,6 +18,7 @@
 #define IP6_NEXT_NONE      59      /* No next header */
 #define IP6_NEXT_DEST      60      /* Destination options header */
 #define IP6_NEXT_COMP      108     /* Compression options header */
+#define IP6_NEXT_SCTP      132     /* Stream Control Transfer Protocol */
 
 typedef struct ip6_RouteHdr {
                BYTE  next_hdr;
@@ -26,11 +27,11 @@ typedef struct ip6_RouteHdr {
                BYTE  seg_left;
              } ip6_RouteHdr;
 
-extern int  _ip6_handler (const in6_Header *ip, BOOL broadcast);
-extern int  _ip6_init (void);
-extern int  _ip6_pkt_init (void);
-extern void _ip6_post_init (void);
-
-extern int _ip6_is_local_addr (const void *ip);
-
+#if defined(USE_IPV6)
+  extern int  _ip6_handler (const in6_Header *ip, BOOL broadcast);
+  extern int  _ip6_init (void);
+  extern int  _ip6_pkt_init (void);
+  extern void _ip6_post_init (void);
+  extern int  _ip6_is_local_addr (const void *ip);
+#endif  /* USE_IPV6 */
 #endif

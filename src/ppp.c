@@ -5,7 +5,7 @@
  * This implements just LCP and IPCP, and then only a subset of each
  * of those.  This is not supported and probably shouldn't be used for
  * much more than simple experiments with PPP.  If you need a real
- * version of PPP, see Paul Mackerras' ppp-2.3.  If you do try to use
+ * version of PPP, see Paul Mackerras' ppp-2.3. If you do try to use
  * this, don't say I didn't warn you.
  *
  * This code may be used for any purpose as long as the author's
@@ -41,6 +41,7 @@
 #include "pcsed.h"
 #include "pcpkt.h"
 #include "pctcp.h"
+#include "run.h"
 #include "ip4_in.h"
 #include "netaddr.h"
 #include "pppoe.h"
@@ -1093,7 +1094,7 @@ static void std_negotiation (struct ppp_state *state, struct ppp_xcp *xcp)
 
   code   = *state->bp++;
   id     = *state->bp++;
-  length = intel16 (*(WORD*)&state->bp);
+  length = intel16 (*(WORD*)state->bp);  /* !! */
   if (length > state->mlen)
   {
     PRINTF (0, ("Truncated negotiation message; %d > %d\n",
@@ -1174,7 +1175,7 @@ static void std_negotiation (struct ppp_state *state, struct ppp_xcp *xcp)
          break;
 
     case CODE_PROTO_REJ:
-         proto = intel16 (*(WORD*)&state->bp);
+         proto = intel16 (*(WORD*)state->bp);  /* !! */
 
          /* Peer cannot reject LCP!
           */
@@ -1354,7 +1355,7 @@ void ppp_start (int dbg_level)
 
   /* Add handler for checking timeouts (via tcp_tick)
    */
-  addwattcpd (check_timeouts);
+  DAEMON_ADD (check_timeouts);
 }
 
 #endif /* USE_PPPOE */

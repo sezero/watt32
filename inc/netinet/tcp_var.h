@@ -41,6 +41,10 @@
 #ifndef __NETINET_TCP_VAR_H
 #define __NETINET_TCP_VAR_H
 
+#ifndef __SYS_MBUF_H
+#include <sys/mbuf.h>
+#endif
+
 /*
  * Kernel variables for tcp.
  */

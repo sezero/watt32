@@ -3,7 +3,9 @@
 #ifndef _w32_PCICMP6_H
 #define _w32_PCICMP6_H
 
-#include <sys/packon.h>
+W32_CLANG_PACK_WARN_OFF()
+
+#include <sys/pack_on.h>
 
 /*!\struct ICMP6_unused
  */
@@ -118,7 +120,9 @@ typedef union ICMP6_PKT {
         struct ICMP6_nd_sol    nd_solic;
       } ICMP6_PKT;
 
-#include <sys/packoff.h>
+#include <sys/pack_off.h>
+
+W32_CLANG_PACK_WARN_OFF()
 
 enum ND_cacheState {
      ND_CACHE_UNUSED,      /* entry not used */
@@ -138,7 +142,7 @@ struct icmp6_cache {
 
 #define ND_CACHE_SIZE 10
 
-W32_DATA DWORD icmp6_6to4_gateway;
+extern DWORD icmp6_6to4_gateway;
 
 extern void icmp6_handler (const in6_Header *ip);
 extern void icmp6_unreach (const in6_Header *ip, int code);

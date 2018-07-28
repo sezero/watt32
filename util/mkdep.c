@@ -1,19 +1,30 @@
+/*
+ * Simple tool for generating dependencies from .c/.h files.
+ * Requires djgpp or MingW.
+ *
+ * Notes: This isn't a C-preprocessor, so it doesn't correctly handle
+ * "#include" files inside "#if" blocks. Output dependencies are always
+ * written in lower case.
+ */
+
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
-#include <unistd.h>
 #include <limits.h>
-#include <ctype.h>
-#include <dir.h>
 
-/*
- * Simple tool for generating dependencies from .c/.h files.
- * COMPILE WITH DJGPP ONLY.
- *
- * Notes: This isn't a C-preprocessor, so it doesn't handle "#include"
- * files inside comments or "#if" blocks. Output dependencies are always
- * written in lower case.
- */
+#include "sysdep.h"
+
+#define TRACE(level, fmt, ...)                  \
+        do {                                    \
+          if (verbose >= level) {               \
+            printf ("# line %u: "fmt, __LINE__, \
+                    ##__VA_ARGS__);             \
+          }                                     \
+        } while (0)
+
+#ifdef __MINGW32__
+int _dowildcard = 1; /* Required for MinGW-64 to glob the cmd-line. */
+#endif
 
 char  include[]  = "#include";
 char  exclude[]  = "@NO_DEP";
@@ -22,9 +33,13 @@ char *obj_suffix = ".$(O)";
 
 int usage (const char *who_am_i)
 {
-  fprintf (stderr, "syntax: %s [-v] [-p obj-prefix] [-s obj-suffix] "
-           ".c/.h-files | @resp\n", who_am_i);
+  printf ("syntax: %s [-v] [-p obj-prefix] [-s obj-suffix] "
+          ".c/.h-files | @resp\n", who_am_i);
   return (-1);
+}
+
+void print_deps (const char *ipath, char *fname)
+{
 }
 
 int main (int argc, char **argv)
@@ -60,42 +75,39 @@ int main (int argc, char **argv)
 
   for (idx = 0; idx < argc && (fname = argv[idx]) != NULL; idx++)
   {
-    char  buf[512], drive[3], dir[256], stem[256], ext[5];
+    char  buf[512], *dot, *slash;
     int   c_file, h_file;
     int   rvalue;
     FILE *fin;
 
+    fname = strdup (fname);
+    strlwr (fname);
+    dot = strrchr (fname, '.');
+    if (!dot)
+    {
+      TRACE (0, "`%s' is not a .c or .h-file\n", fname);
+      continue;
+    }
+
+    TRACE (1, "Processing `%s'\n", fname);
+
+    c_file = (stricmp(dot,".c") == 0);
+    h_file = (stricmp(dot,".h") == 0);
+
+    if (!c_file && !h_file)
+    {
+      TRACE (0, "`%s' is not a .c or .h-file\n", fname);
+      continue;
+    }
 
     fin = fopen (fname, "rt");
     if (!fin)
     {
-      fprintf (stderr, "Cannot read `%s'\n", fname);
+      TRACE (0, "Cannot open `%s'\n", fname);
       return (-1);
     }
 
-    drive[0] = dir[0] = stem[0] = ext[0] = '\0';
-    fnsplit (fname, drive, dir, stem, ext);
-    strlwr (stem);
-    strlwr (ext);
-
-    if (verbose)
-       fprintf (stderr, "Processing `%s%s%s'\n", dir, stem, ext);
-
-    if (!ext[0])
-    {
-      fprintf (stderr, "`%s' is not a .c or .h-file\n", fname);
-      continue;
-    }
-
-    c_file = (stricmp(ext,".c") == 0);
-    h_file = (stricmp(ext,".h") == 0);
-
-    if (!c_file && !h_file)
-    {
-      fprintf (stderr, "`%s' is not a .c or .h-file\n", fname);
-      continue;
-    }
-
+    slash = strrchr (fname, '/');
     rvalue = 0;
     num_deps = 0;
 
@@ -128,8 +140,7 @@ int main (int argc, char **argv)
 
       if (strstr(cp,exclude))
       {
-        if (verbose)
-           fprintf (stderr, "Excluding line %s\n", buf);
+        TRACE (1, "Excluding line %s\n", buf);
         continue;
       }
 
@@ -138,31 +149,36 @@ int main (int argc, char **argv)
 
       if (!rvalue)  /* processing left side of dependency */
       {
-        strlwr (fname);
         if (c_file)
-             printf ("%s%s%s: %s", obj_prefix, stem, obj_suffix, fname);
+             printf ("%s%.*s%s: %s", obj_prefix, dot-fname, fname, obj_suffix, fname);
         else printf ("%s:", fname);
         rvalue = 1;
       }
 
       /* now print the right side */
       *cp1 = '\0';
-      if (dir[0] && c_file)
-           printf (" %s%s", dir, cp);
+      if (slash && c_file)
+           printf (" %.*s%s", slash-fname, fname, cp);
       else printf (" %s", cp);
+
+#if 0
+      /* Try to follow the include_path */
+      for (ipath = inc_path; ipath; ipath++)
+        print_deps (ipath, fname);
+#endif
     }
+
     if (rvalue)
        putchar ('\n');
     fclose (fin);
 
     num_files++;
-    if (verbose && num_deps > 0)
-       fprintf (stderr, "  %d dependant(s)\n", num_deps);
+    if (num_deps > 0)
+       TRACE (1, "  %d dependant(s)\n", num_deps);
   }
 
-  if (verbose)
-     fprintf (stderr, "Processed %d files with %d include files\n",
-              num_files, num_includes);
+  TRACE (1, "Processed %d files with %d include files\n",
+         num_files, num_includes);
 
   return (num_files > 0 ? 0 : 1);
 }

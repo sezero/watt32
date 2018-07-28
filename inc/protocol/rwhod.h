@@ -42,7 +42,7 @@
 #ifndef __PROTOCOL_RWHOD_H
 #define __PROTOCOL_RWHOD_H
 
-#include <sys/packon.h>
+#include <sys/pack_on.h>
 
 /*
  * rwho protocol packet format.
@@ -68,7 +68,7 @@ struct	whod {
 	} wd_we[1024 / sizeof (struct whoent)];
 };
 
-#include <sys/packoff.h>
+#include <sys/pack_off.h>
 
 #define	WHODVERSION	1
 #define	WHODTYPE_STATUS	1		/* host status */

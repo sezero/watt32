@@ -45,6 +45,10 @@
 #ifndef __NETINET_IP_MROUTE_H
 #define __NETINET_IP_MROUTE_H
 
+#ifndef __SYS_MBUF_H
+#include <sys/mbuf.h>
+#endif
+
 /*
  * Definitions for IP multicast forwarding.
  *

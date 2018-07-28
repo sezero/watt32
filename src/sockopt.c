@@ -2,9 +2,9 @@
  * BSD setsockopt(), getsockopt().
  */
 
-/*  BSD sockets functionality for Waterloo TCP/IP
+/*  BSD sockets functionality for Watt-32 TCP/IP
  *
- *  Copyright (c) 1997-2002 Gisle Vanem <giva@bgnett.no>
+ *  Copyright (c) 1997-2002 Gisle Vanem <gvanem@yahoo.no>
  *
  *  Redistribution and use in source and binary forms, with or without
  *  modification, are permitted provided that the following conditions
@@ -55,9 +55,10 @@ static int get_udp_opt  (_udp_Socket *udp, int opt, void *val, int *len);
 static int set_recv_buf (sock_type *s, DWORD size, BOOL is_tcp);
 static int set_xmit_buf (sock_type *s, DWORD size, BOOL is_tcp);
 static int raw_rx_buf   (_raw_Socket  *raw, DWORD size);
-static int raw6_rx_buf  (_raw6_Socket *raw, DWORD size);
 static int raw_tx_buf   (_raw_Socket  *raw, DWORD size);
+static int raw6_rx_buf  (_raw6_Socket *raw, DWORD size);
 static int raw6_tx_buf  (_raw6_Socket *raw, DWORD size);
+
 static int set_tx_lowat (Socket *s, unsigned size);
 static int set_rx_lowat (Socket *s, unsigned size);
 static int get_tx_lowat (const Socket *s, unsigned *size);
@@ -67,7 +68,7 @@ static int get_rx_lowat (const Socket *s, unsigned *size);
 static const char *sockopt_name (int level, int option);
 #endif
 
-int W32_CALL setsockopt (int s, int level, int option, const void *optval, int optlen)
+int W32_CALL setsockopt (int s, int level, int option, const void *optval, socklen_t optlen)
 {
   Socket *socket = _socklist_find (s);
   int     rc;
@@ -105,7 +106,8 @@ int W32_CALL setsockopt (int s, int level, int option, const void *optval, int o
 
   else if ((level == socket->so_proto && level == IPPROTO_IP)   ||
            (level == socket->so_proto && level == IPPROTO_ICMP) ||
-           socket->so_proto == IPPROTO_UDP)
+           socket->so_proto == IPPROTO_UDP ||
+           socket->so_proto == IPPROTO_ICMP)
      rc = set_raw_opt (socket, option, optval, optlen);
 
   else
@@ -120,7 +122,7 @@ int W32_CALL setsockopt (int s, int level, int option, const void *optval, int o
   return (rc);
 }
 
-int W32_CALL getsockopt (int s, int level, int option, void *optval, int *optlen)
+int W32_CALL getsockopt (int s, int level, int option, void *optval, socklen_t *optlen)
 {
   Socket *socket = _socklist_find (s);
   int     rc;
@@ -200,7 +202,7 @@ static int set_sol_opt (Socket *s, int opt, const void *val, unsigned len)
          }
          if (tv->tv_sec == 0)        /* i.e. use system default */
               s->timeout = sock_delay;
-         else s->timeout = tv->tv_sec + tv->tv_usec/1000000UL;
+         else s->timeout = (DWORD)tv->tv_sec + tv->tv_usec/1000000UL;
          SOCK_DEBUGF ((" %d", s->timeout));
          break;
 
@@ -481,7 +483,7 @@ static int get_sol_opt (Socket *s, int opt, void *val, int *len)
            tv->tv_usec = 0;
            tv->tv_sec  = s->timeout;
          }
-         SOCK_DEBUGF ((", timeout %lu.%06ld", (DWORD)tv->tv_sec, tv->tv_usec));
+         SOCK_DEBUGF ((", timeout %lu.%06ld", (u_long)tv->tv_sec, tv->tv_usec));
          break;
 
     case SO_ERROR:
@@ -489,7 +491,7 @@ static int get_sol_opt (Socket *s, int opt, void *val, int *len)
          *len = SIZEOF(s->so_error);
          SOCK_DEBUGF ((", val %d=%s",
                       s->so_error, short_strerror(s->so_error)));
-         s->so_error = 0;   /* !! should be do this */
+         s->so_error = 0;   /* Linux man-page states we should clear this */
          break;
 
  /* case SO_STYLE: GNU libc name */
@@ -791,7 +793,7 @@ static int get_raw_opt (Socket *s, int opt, void *val, int *len)
 
 /*
  * Set receive buffer size for UDP/TCP. Since sock_setbuf() handles
- * maxiumum 64kB, we do the same here. 
+ * maxiumum 64kB, we do the same here.
  * Maximum size accepted for TCP is '64k * (2 << TCP_MAX_WINSHIFT)' = 1MByte.
  * Minimum size is 1 byte.
  */
@@ -829,7 +831,7 @@ static int set_recv_buf (sock_type *s, DWORD size, BOOL is_tcp)
   if (is_tcp && size > USHRT_MAX)
      s->tcp.tx_wscale = (BYTE) (size >> 16);  /* not yet */
 
-  SOCK_DEBUGF ((" %lu", size));
+  SOCK_DEBUGF ((" %lu", (u_long)size));
   return (0);
 }
 
@@ -880,16 +882,7 @@ static int set_xmit_buf (sock_type *s, DWORD size, BOOL is_tcp)
 static int raw_rx_buf (_raw_Socket *raw, DWORD size)
 {
   /** \todo Support setting Rx-buffer size of raw IPv4 sockets */
-  SOCK_DEBUGF ((" %lu unsupported", size));
-  ARGSUSED (raw);
-  ARGSUSED (size);
-  return (0);
-}
-
-static int raw6_rx_buf (_raw6_Socket *raw, DWORD size)
-{
-  /** \todo Support setting Rx-buffer size of raw IPv6 sockets */
-  SOCK_DEBUGF ((" %lu unsupported", size));
+  SOCK_DEBUGF ((" %lu unsupported", (u_long)size));
   ARGSUSED (raw);
   ARGSUSED (size);
   return (0);
@@ -898,7 +891,16 @@ static int raw6_rx_buf (_raw6_Socket *raw, DWORD size)
 static int raw_tx_buf (_raw_Socket *raw, DWORD size)
 {
   /** \todo Support setting Tx-buffer size of raw IPv4 sockets */
-  SOCK_DEBUGF ((" %lu unsupported", size));
+  SOCK_DEBUGF ((" %lu unsupported", (u_long)size));
+  ARGSUSED (raw);
+  ARGSUSED (size);
+  return (0);
+}
+
+static int raw6_rx_buf (_raw6_Socket *raw, DWORD size)
+{
+  /** \todo Support setting Rx-buffer size of raw IPv6 sockets */
+  SOCK_DEBUGF ((" %lu unsupported", (u_long)size));
   ARGSUSED (raw);
   ARGSUSED (size);
   return (0);
@@ -907,12 +909,11 @@ static int raw_tx_buf (_raw_Socket *raw, DWORD size)
 static int raw6_tx_buf (_raw6_Socket *raw, DWORD size)
 {
   /** \todo Support setting Tx-buffer size of raw IPv6 sockets */
-  SOCK_DEBUGF ((" %lu unsupported", size));
+  SOCK_DEBUGF ((" %lu unsupported", (u_long)size));
   ARGSUSED (raw);
   ARGSUSED (size);
   return (0);
 }
-
 
 /*
  * Set send buffer "low water marks"; x >= 0, x < send-size.

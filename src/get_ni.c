@@ -39,13 +39,8 @@
  *   we need to truncate the result.  We obey RFC2553 (and X/Open should be
  *   modified).
  *
- * Adapted for Watt-32 tcp/ip stack by G. Vanem <giva@bgnett.no>, Aug 2002.
+ * Adapted for Watt-32 tcp/ip stack by G. Vanem <gvanem@yahoo.no>, Aug 2002.
  */
-
-#if 0
-static const char rcsid[] = "@(#) $Header: /tcpdump/master/tcpdump/missing/"
-                            "getnameinfo.c,v 1.8 2000/10/24 00:56:53 fenner Exp $";
-#endif
 
 #include "socket.h"
 
@@ -115,18 +110,19 @@ static int gi_result (int err, const char *str, unsigned line)
   return (err);
 }
 
-int W32_CALL getnameinfo (const struct sockaddr *sa, int salen,
-                          char *host, int hostlen,
-                          char *serv, int servlen, int flags)
+int W32_CALL getnameinfo (const struct sockaddr *sa, socklen_t salen,
+                          char *host, socklen_t hostlen,
+                          char *serv, socklen_t servlen, int flags)
 {
   static BOOL init = FALSE;
-  struct afd     *afd;
-  int    i, family = -1;
-  DWORD  v4a;
-  WORD   port;
-  char   numserv[512];
-  char   numaddr[512];
-  char  *addr, *p;
+  struct afd *afd;
+  sa_family_t family = -1;
+  DWORD       v4a;
+  WORD        port;
+  char        numserv[512];
+  char        numaddr[512];
+  char       *addr, *p;
+  int         i;
 
   const struct servent      *sp;
   const struct hostent      *hp;
@@ -226,6 +222,7 @@ found:
          }
          break;
   }
+
   if (!host || hostlen == 0)
   {
     /* do nothing in this case.
@@ -318,12 +315,13 @@ static int ip4_resolve (const char *name)
   fflush (stdout);
 
   a4.sin_family = AF_INET;
-  inet_pton (AF_INET, "193.69.165.20", &a4.sin_addr);
+  inet_pton (AF_INET, "203.178.141.194", &a4.sin_addr);
   rc = getnameinfo ((const struct sockaddr*)&a4, sizeof(a4),
                     buf, sizeof(buf), NULL, 0, ni_flags);
   if (rc)
        perror (NULL);
   else puts (buf);
+  ARGSUSED (name);
   return (rc);
 }
 
@@ -336,13 +334,14 @@ static int ip6_resolve (const char *name)
   printf ("getnameinfo(): ");
   fflush (stdout);
 
-  a6.sin6_family = AF_INET6;  /* ftp.deepspace6.net */
-  inet_pton (AF_INET6, "2001:760:204:10:10:a7ff:fe16:27f4", &a6.sin6_addr);
+  a6.sin6_family = AF_INET6;  /* www.kame.net */
+  inet_pton (AF_INET6, "2001:200:DFF:FFF1:216:3EFF:FEB1:44D7", &a6.sin6_addr);
   rc = getnameinfo ((const struct sockaddr*)&a6, sizeof(a6),
                     buf, sizeof(buf), NULL, 0, ni_flags);
   if (rc)
-       perror (NULL);
+       puts (hstrerror(h_errno));
   else puts (buf);
+  ARGSUSED (name);
   return (rc);
 }
 
@@ -353,20 +352,20 @@ int main (int argc, char **argv)
   if (argc < 2)
      goto usage;
 
+  dbug_init();
+  sock_init();
+
   if (!stricmp(argv[1],"AF_INET"))
      af = AF_INET;
 
   else if (!stricmp(argv[1],"AF_INET6"))
      af = AF_INET6;
 
-  dbug_init();
-  sock_init();
-
   if (af == AF_INET6)
-     return ip6_resolve ("ftp.deepspace6.net");
+     return ip6_resolve ("www.kame.net");
 
   if (af == AF_INET)
-     return ip4_resolve ("ftp.deepspace6.net");
+     return ip4_resolve ("www.kame.net");
 
 usage:
   printf ("Usage: <AF_INET | AF_INET6>");

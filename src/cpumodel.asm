@@ -4,15 +4,15 @@
 ;  It is based on linux cpu detection code.
 ;
 ;  Intel also provides public similar code in the book
-;  called :
+;  called:
 ;
 ;  Pentium Processor Family
 ;      Developer Family
-;  Volume  3 : Architecture and Programming Manual
+;  Volume 3: Architecture and Programming Manual
 ;
 ;  At the following place :
 ;
-;  Chapter 5 : Feature determination
+;  Chapter 5:  Feature determination
 ;  Chapter 25: CPUID instruction
 ;
 ;  COPYRIGHT (c) 1998 valette@crf.canon.fr
@@ -23,13 +23,13 @@
 ;
 ;  $Id: cpumodel.S,v 1.1 1998/08/05 15:15:46 joel Exp $
 ;
-;  Rewritten for tasm/wasm by G. Vanem 2000 for
+;  Rewritten for tasm/wasm/ml by G. Vanem 2000 for
 ;  the Watt-32 tcp/ip stack.
 ;
 
 PAGE 66, 132
 
-ifdef DOSX  ; only for 32-bit target (including WIN32)
+ifdef DOSX  ; only for 32/64-bit targets (including WIN32/WIN64)
 
 ;
 ; All '__w32_' and '_x86' symbols are only needed for Borland and
@@ -44,11 +44,11 @@ PUBLIC x86_have_cpuid,    _x86_have_cpuid
 PUBLIC x86_hard_math,     _x86_hard_math
 PUBLIC x86_vendor_id,     _x86_vendor_id
 
-PUBLIC _w32_CheckCpuType, __w32_CheckCpuType
-PUBLIC _w32_get_cpuid,    __w32_get_cpuid
-PUBLIC _w32_asm_ffs,      __w32_asm_ffs
-PUBLIC _w32_get_rdtsc,    __w32_get_rdtsc
-PUBLIC _w32_get_rdtsc2,   __w32_get_rdtsc2
+PUBLIC _w32_CheckCpuType, __w32_CheckCpuType, CheckCpuType
+PUBLIC _w32_get_cpuid,    __w32_get_cpuid,    get_cpuid
+PUBLIC _w32_asm_ffs,      __w32_asm_ffs,      asm_ffs
+PUBLIC _w32_get_rdtsc,    __w32_get_rdtsc,    get_rdtsc
+PUBLIC _w32_get_rdtsc2,   __w32_get_rdtsc2,   get_rdtsc2
 
 PUBLIC _w32_MY_CS,        __w32_MY_CS
 PUBLIC _w32_MY_DS,        __w32_MY_DS
@@ -58,32 +58,34 @@ PUBLIC _w32_Get_CR4,      __w32_Get_CR4
 PUBLIC _w32_SelReadable , __w32_SelReadable
 PUBLIC _w32_SelWriteable, __w32_SelWriteable
 
-ifdef ??version   ; Turbo Assembler
-  .486p
-  .487
-else
-  .586p
-  .387
-endif
+ifndef WIN64
+  ifdef ??version   ; Turbo Assembler
+    .486p
+    .487
+  else              ; MASM, ML or WASM
+    .586p
+    .387
+  endif
 
-ifdef X32VM       ; FlashTek's X32 isn't flat-model, but SMALL
-  .MODEL SMALL,C
-else
-  .MODEL FLAT,C
-endif
+  ifdef X32VM    ; FlashTek's X32 isn't FLAT model, but SMALL
+    .MODEL SMALL,C
+  else
+    .MODEL FLAT,C
+  endif
 
-ifdef ??version   ; Turbo Assembler
-  _CPUID       equ  <db 0Fh, 0A2h>   ; TASM v3.2 lacks CPUID etc.
-  _RDTSC       equ  <db 0Fh, 31h>
-  _MOV_EAX_CR4 equ  <db 0Fh, 20h, 0E0h>
-else              ; Watcom or ML assembler
-  _CPUID       equ  cpuid
-  _RDTSC       equ  rdtsc
-  _MOV_EAX_CR4 equ  mov eax, CR4
-endif
+  ifdef ??version   ; Turbo Assembler
+    _CPUID       equ  <db 0Fh, 0A2h>   ; TASM v3.2 lacks CPUID etc.
+    _RDTSC       equ  <db 0Fh, 31h>
+    _MOV_EAX_CR4 equ  <db 0Fh, 20h, 0E0h>
+  else              ; Watcom or ML assembler
+    _CPUID       equ  cpuid
+    _RDTSC       equ  rdtsc
+    _MOV_EAX_CR4 equ  mov eax, CR4
+  endif
 
-EFLAGS_ALIGN_CHECK = 040000h
-EFLAGS_ID          = 200000h
+  EFLAGS_ALIGN_CHECK = 040000h
+  EFLAGS_ID          = 200000h
+endif             ; WIN64 i.e. ml64.
 
 .DATA
 
@@ -113,9 +115,67 @@ _x86_vendor_id  label byte
 
 .CODE
 
+ifdef WIN64
+ALIGN 8
+
+      CheckCpuType:
+ _w32_CheckCpuType:
+__w32_CheckCpuType:
+    push rbp
+    mov  rbp, rsp
+    push rbx
+
+    mov  x86_type, 6        ; Assume type 6
+
+    mov  x86_have_cpuid, 1  ; We have CPUID instruction
+    mov  x86_hard_math, 1   ; and math processor. Duh!
+
+    ; use it to get :
+    ;  processor type,
+    ;  processor model,
+    ;  processor mask,
+    ; by using it with RAX = 1
+
+    mov  rax, 1
+    cpuid
+
+    mov cl, al                     ; save reg for future use
+
+    and ah, 0Fh                    ; mask processor family (bit 8-11)
+    mov x86_type, ah               ; put result in x86_type (0..15)
+
+    and al, 0F0h                   ; get model
+    shr al, 4
+    mov x86_model, al              ; store it in x86_model
+
+    and cl, 0Fh                    ; get mask revision
+    mov x86_mask, cl               ; store it in x86_mask
+
+    mov x86_capability, edx        ; store feature flags
+
+    ;
+    ; Get vendor info by using CPUID with EAX = 0
+    ;
+    xor rax, rax
+    cpuid
+
+    ;
+    ; Store results contained in EBX, EDX and ECX in x86_vendor_id[].
+    ;
+    mov dword ptr x86_vendor_id, ebx
+    mov dword ptr x86_vendor_id+4, edx
+    mov dword ptr x86_vendor_id+8, ecx
+
+    pop rbx
+    pop rbp
+    ret
+
+else  ; 32-bit
+
 ;
 ; Check Processor type: 386, 486, 6x86(L) or CPUID capable processor
 ;
+      CheckCpuType:
  _w32_CheckCpuType:
 __w32_CheckCpuType:
     push ebp
@@ -153,7 +213,6 @@ __w32_CheckCpuType:
     xor  eax, ecx                   ; check if ID bit changed
     and  eax, EFLAGS_ID
 
-    ;
     ; If we are on a straight 486DX, SX, or 487SX we can't
     ; change it. OTOH 6x86MXs and MIIs check OK.
     ; Also if we are on a Cyrix 6x86(L)
@@ -165,9 +224,9 @@ isnew:
     inc x86_have_cpuid              ; we have CPUID instruction
 
     ; use it to get :
-    ;  processor type,
-    ;  processor model,
-    ;  processor mask,
+    ;   processor type,
+    ;   processor model,
+    ;   processor mask,
     ; by using it with EAX = 1
 
     mov  eax, 1
@@ -175,9 +234,8 @@ isnew:
 
     mov  cl, al                     ; save reg for future use
 
-    and  ah, 0Fh                    ; mask processor family
+    and  ah, 0Fh                    ; mask processor family (bit 8-11)
     mov  x86_type, ah               ; put result in x86_type (0..15)
-    and  x86_type, 7
 
     and  al, 0F0h                   ; get model
     shr  al, 4
@@ -226,7 +284,7 @@ is486x:
     div bl
     lahf
     cmp ah, 2
-    jne ncyrix
+    jne is386
 
     ;
     ; N.B. The pattern of accesses to 0x22 and 0x23 is *essential*
@@ -259,10 +317,15 @@ getCx86 MACRO reg
     mov bx, ax               ; to enable CPUID execution
     setCx86 0E8h, bx
 
-    getCx86 0FEh             ; DIR0 : let's check this is a 6x86(L)
-    and ax, 0F0h             ; should be 3xh
-    cmp ax, 30h
-    jne n6x86
+; Must check cpu id regs here and not after trying to set CCR3
+; to avoid failure when testing SG Microelectronic STPCs, which
+; lock up if you try to enable cpuid execution
+
+    getCx86 0FEh             ; DIR0 : let's check if this is a 6x86(L)
+    and  ax, 0F0h            ; should be 3xh
+    cmp  ax, 30h             ; STPCs return 0x80, 0x1a, 0x1b or 0x1f
+    jne  is386
+
     getCx86 0E9h             ; CCR5 : we reset the SLOP bit
     and ax, 0FDh             ; so that udelay calculation
     mov bx, ax               ; is correct on 6x86(L) CPUs
@@ -272,15 +335,6 @@ getCx86 MACRO reg
     sti
     jmp isnew                ; We enabled CPUID now
 
-n6x86:
-    setCx86 0C3h, cx         ; Restore old CCR3
-    sti
-
-ncyrix:
-    popfd                    ; restore original EFLAGS
-    call check_x87
-    jmp  end_CheckCpuType
-
 is386:
     popfd                    ; restore original EFLAGS
     call check_x87
@@ -289,8 +343,6 @@ end_CheckCpuType:
     pop  ebx
     pop  ebp
     ret
-
-
 ;
 ; This checks for 287/387.
 ;
@@ -306,12 +358,51 @@ is_x87:
     mov x86_hard_math, 1
     ret
 
+endif  ; WIN64
+
 ;
-; void cdecl _w32_get_cpuid (DWORD val, DWORD *_eax, DWORD *_ebx,
-;                            DWORD *_ecx, DWORD *_edx);
+; 32-bit:
+;   void cdecl _w32_get_cpuid (DWORD val, DWORD *_eax, DWORD *_ebx,
+;                              DWORD *_ecx, DWORD *_edx);
 ;
 ; Don't call this if x86_have_cpuid == FALSE
 ;
+; 64-bit:
+;   void cdecl _w32_get_cpuid (DWORD val, DWORD *_eax, DWORD *_ebx,
+;                              DWORD *_ecx, DWORD *_edx);
+;
+;  Parameter passing in 64-bit is very different than in 32-bit mode.
+;  Ref:
+;    https://msdn.microsoft.com/en-us/library/zthk2dkh.aspx
+;
+;   val  = ECX
+;   _rax = RDX
+;   _rbx = R8
+;   _rcx = R9
+;   _rdx = [RBP + (2*8)]
+;
+
+ifdef WIN64
+  ALIGN 8
+      get_cpuid:
+ _w32_get_cpuid:
+__w32_get_cpuid:
+     mov  [rsp+8], rbx            ; Save RBX on stack
+     mov  eax, ecx                ; EAX = val
+     mov  r10, rdx                ; R10 = _eax
+     cpuid
+     mov  dword ptr [r10], eax    ; *_eax = EAX
+     mov  rax, [rsp+28h]          ; RAX = *_edx
+     mov  [r8], ebx               ; *_ebx = EBX
+     mov  rbx, [rsp+8]            ; Restore RBX
+     mov  dword ptr [r9], ecx     ; *_ecx = ECX
+     mov  dword ptr [rax], edx    ; *_edx = EDX
+     ret
+
+else
+
+  ALIGN 4
+      get_cpuid:
  _w32_get_cpuid:
 __w32_get_cpuid:
     enter 0, 0
@@ -332,20 +423,35 @@ __w32_get_cpuid:
     leave
     ret
 
+endif  ; WIN64
 
 ;
 ; uint64 cdecl _w32_get_rdtsc (void);
 ;
+      get_rdtsc:
  _w32_get_rdtsc:
 __w32_get_rdtsc:
+ifdef WIN64
+    rdtsc
+else
    _RDTSC
+endif
     ret
 
 ;
 ; void cdecl _w32_get_rdtsc2 (struct ulong_long *tsc);
 ;
+      get_rdtsc2:
  _w32_get_rdtsc2:
 __w32_get_rdtsc2:
+ifdef WIN64
+    push  rdx
+    rdtsc
+    mov   [rcx], eax
+    mov   [rcx+4], edx
+    pop   rdx
+    ret
+else
     enter 0, 0
     push  esi
     push  edx
@@ -357,17 +463,27 @@ __w32_get_rdtsc2:
     pop   esi
     leave
     ret
+endif   ; WIN64
 
 ;
 ; int cdecl _w32_asm_ffs (int val)
 ;
+      asm_ffs:
  _w32_asm_ffs:
 __w32_asm_ffs:
+ifdef WIN64
+    bsf rax, rcx
+    jnz ok
+    mov rax, -1
+ok: inc rax
+    ret
+else
     bsf eax, [esp+4]
     jnz ok
     mov eax, -1
 ok: inc eax
     ret
+endif   ; WIN64
 
 ;
 ; WORD cdecl MY_CS (void);
@@ -404,12 +520,23 @@ __w32_MY_SS:
 ;
 ; DWORD cdecl Get_CR4 (void);
 ;
-; Is virtualised under Win32 (always returns 0), hence of no use.
+; This is virtualised under Win32 (always returns 0), hence of no use.
 ; Don't call this function w/o checking for a true Pentium first
 ; (see RDTSC_enabled() in misc.c). Returns 0 if CPL != 0.
 ;
  _w32_Get_CR4:
 __w32_Get_CR4:
+ifdef WIN64
+    mov  ax, cs
+    test ax, 3
+    jnz  not_cpl0
+    mov rax, CR4
+    ret
+
+not_cpl0:
+    xor rax, rax
+    ret
+else
     mov  ax, cs
     test ax, 3
     jnz  not_cpl0
@@ -419,39 +546,54 @@ __w32_Get_CR4:
 not_cpl0:
     xor eax, eax
     ret
+endif
 
 ;
 ; BOOL _w32_SelWriteable (WORD sel)
 ;
  _w32_SelWriteable:
 __w32_SelWriteable:
+ifdef WIN64
+    verw  cx
+    sete  al
+    movzx rax, al
+    ret
+else
     mov   ax, [esp+4]
     verw  ax
     sete  al
     movzx eax, al
     ret
+endif
 
 ;
 ; BOOL _w32_SelReadable (WORD sel)
 ;
  _w32_SelReadable:
 __w32_SelReadable:
+ifdef WIN64
+    verr  cx
+    sete  al
+    movzx rax, al
+    ret
+else
     mov   ax, [esp+4]
     verr  ax
     sete  al
     movzx eax, al
     ret
+endif
 
+endif ; DOSX
 
-comment ~   ; not yet (problem with linking this)
+ifdef DOS16
 
-; ************************************************************************
 ;
 ; 16 bit versions of some functions.
 ; Maybe not worth the effort; tlink have problems linking this module).
 ;
 
-PUBLIC _w32_get_rdtsc2, __w32_get_rdtsc2
+PUBLIC _w32_get_rdtsc2, __w32_get_rdtsc2, _get_rdtsc2
 
 .MODEL LARGE,C
 .CODE
@@ -484,6 +626,7 @@ _x86_vendor_id  label byte
 ; void far cdecl get_rdtsc2 (struct ulong_long far *res)
 ; RDTSC is always enabled in real-mode
 ;
+     _get_rdtsc2:
  _w32_get_rdtsc2:
 __w32_get_rdtsc2:
     enter 0, 0
@@ -496,6 +639,7 @@ __w32_get_rdtsc2:
     leave
     retf
 
+     _CheckCpuType:
  _w32_CheckCpuType:
 __w32_CheckCpuType:
     mov _x86_type, 4  ; test !! to-do
@@ -504,6 +648,7 @@ __w32_CheckCpuType:
 ;
 ; void cdecl _w32_get_cpuid (DWORD val, DWORD *_eax, DWORD *_ebx, DWORD *_ecx, DWORD *_edx);
 ;
+     _get_cpuid:
  _w32_get_cpuid:
 __w32_get_cpuid:
     enter 0, 0
@@ -541,17 +686,18 @@ __w32_get_cpuid:
 ;
 ; int FAR cdecl _w32_asm_ffs (int val)
 ;
+     _asm_ffs:
  _w32_asm_ffs:
 __w32_asm_ffs:
-    bsf ax, [bp+4]
+    enter 0, 0
+    bsf ax, [bp+6]
     jnz @f
     mov eax, -1
 @f: inc ax
+    leave
     retf
 
-~
-
-endif ; DOSX
+endif ; DOS16
 
 end
 

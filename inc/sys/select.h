@@ -3,4 +3,9 @@
  * Compatibility header.
  */
 
-#include <tcp.h>   /* select_s() */
+#if defined(__CYGWIN__)
+  #include_next <sys/select.h>
+#else
+  #include <tcp.h>   /* select_s() */
+#endif
+

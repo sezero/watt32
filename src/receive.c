@@ -2,9 +2,9 @@
  * BSD recv(), recvfrom().
  */
 
-/*  BSD sockets functionality for Waterloo TCP/IP
+/*  BSD sockets functionality for Watt-32 TCP/IP
  *
- *  Copyright (c) 1997-2002 Gisle Vanem <giva@bgnett.no>
+ *  Copyright (c) 1997-2002 Gisle Vanem <gvanem@yahoo.no>
  *
  *  Redistribution and use in source and binary forms, with or without
  *  modification, are permitted provided that the following conditions
@@ -42,13 +42,13 @@
 #if defined(USE_BSD_API)
 
 static int tcp_receive (Socket *sock, void *buf, int len, int flags,
-                        struct sockaddr *from, int *fromlen);
+                        struct sockaddr *from, size_t *fromlen);
 
 static int udp_receive (Socket *sock, void *buf, int len, int flags,
-                        struct sockaddr *from, int *fromlen);
+                        struct sockaddr *from, size_t *fromlen);
 
 static int raw_receive (Socket *sock, void *buf, unsigned len, int flags,
-                        struct sockaddr *from, int *fromlen);
+                        struct sockaddr *from, size_t *fromlen);
 
 /*
  * receive() flags:
@@ -64,7 +64,7 @@ static int raw_receive (Socket *sock, void *buf, unsigned len, int flags,
  */
 
 static int receive (const char *func, int s, void *buf, int len, int flags,
-                    struct sockaddr *from, int *fromlen)
+                    struct sockaddr *from, size_t *fromlen)
 {
   Socket *socket = _socklist_find (s);
   int     ret    = 0;
@@ -89,16 +89,16 @@ static int receive (const char *func, int s, void *buf, int len, int flags,
 
   if (from && fromlen)
   {
-    int sa_len = (socket->so_family == AF_INET6)  ?
-                  sizeof(struct sockaddr_in6)     :
-                 (socket->so_family == AF_PACKET) ?
-                  sizeof(struct sockaddr_ll)      :
-                  sizeof(struct sockaddr_in);
+    size_t sa_len = (socket->so_family == AF_INET6)  ?
+                     sizeof(struct sockaddr_in6)     :
+                    (socket->so_family == AF_PACKET) ?
+                     sizeof(struct sockaddr_ll)      :
+                     sizeof(struct sockaddr_in);
 
     if (*fromlen < sa_len)
     {
       SOCK_DEBUGF ((", EADDRNOTAVAIL (fromlen = %d, sa_len = %d)",
-                    *fromlen, sa_len));
+                    (int)*fromlen, (int)sa_len));
       SOCK_ERRNO (EADDRNOTAVAIL);
       return (-1);
     }
@@ -162,6 +162,8 @@ static int receive (const char *func, int s, void *buf, int len, int flags,
          break;
 
     case SOCK_PACKET:
+         /* give raw packets a chance to be polled first. */
+         tcp_tick (NULL);
          ret = sock_packet_receive (socket, buf, len, from, fromlen);
          SOCK_DEBUGF ((", len=%d", ret));
          break;
@@ -181,9 +183,9 @@ static int receive (const char *func, int s, void *buf, int len, int flags,
  *             in 'from' (if non-NULL)
  */
 int W32_CALL recvfrom (int s, void *buf, int len, int flags,
-                       struct sockaddr *from, int *fromlen)
+                       struct sockaddr *from, socklen_t *fromlen)
 {
-  return receive ("recvfrom", s, buf, len, flags, from, fromlen);
+  return receive ("recvfrom", s, buf, len, flags, from, (size_t*)fromlen);
 }
 
 /*
@@ -199,7 +201,7 @@ int W32_CALL recv (int s, void *buf, int len, int flags)
 /*
  * read_s(): As above but no flags.
  */
-int read_s (int s, char *buf, int len)
+int W32_CALL read_s (int s, char *buf, int len)
 {
   return receive ("read_s", s, buf, len, 0, NULL, NULL);
 }
@@ -209,7 +211,7 @@ int read_s (int s, char *buf, int len)
  *            Loop for each element in the vector. If 'msg->msg_name'
  *            is non-NULL, fill in from-addr.
  */
-int recvmsg (int s, struct msghdr *msg, int flags)
+int W32_CALL recvmsg (int s, struct msghdr *msg, int flags)
 {
   struct iovec    *iov;
   int    count = msg->msg_iovlen;
@@ -228,7 +230,7 @@ int recvmsg (int s, struct msghdr *msg, int flags)
   for (i = bytes = 0; i < count; i++)
   {
 #if (DOSX)
-    if (!valid_addr ((DWORD)iov[i].iov_base, iov[i].iov_len))
+    if (!valid_addr(iov[i].iov_base, iov[i].iov_len))
     {
       SOCK_DEBUGF ((", EFAULT (iovec[%d] = %p/%d)",
                    (int)i, iov[i].iov_base, iov[i].iov_len));
@@ -239,7 +241,7 @@ int recvmsg (int s, struct msghdr *msg, int flags)
 
     len = receive (NULL, s, iov[i].iov_base, iov[i].iov_len,
                    flags, (struct sockaddr*)msg->msg_name,
-                   &msg->msg_namelen);
+                   (size_t*)&msg->msg_namelen);
     if (len < 0)
     {
       bytes = -1;
@@ -256,16 +258,16 @@ int recvmsg (int s, struct msghdr *msg, int flags)
 /*
  * readv_s(): Complementary of writev_s().
  */
-int readv_s (int s, const struct iovec *vector, size_t count)
+int W32_CALL readv_s (int s, const struct iovec *vector, size_t count)
 {
   int i, len, bytes = 0;
 
-  SOCK_DEBUGF (("\nreadv_s:%d, iovecs=%lu", s, (DWORD)count));
+  SOCK_DEBUGF (("\nreadv_s:%d, iovecs=%lu", s, (u_long)count));
 
   for (i = 0; i < (int)count; i++)
   {
 #if (DOSX)
-    if (!valid_addr ((DWORD)vector[i].iov_base, vector[i].iov_len))
+    if (!valid_addr(vector[i].iov_base, vector[i].iov_len))
     {
       SOCK_DEBUGF ((", EFAULT (iovec[%d] = %p/%d)",
                    (int)i, vector[i].iov_base, vector[i].iov_len));
@@ -293,24 +295,24 @@ int readv_s (int s, const struct iovec *vector, size_t count)
  * Fill in packet's address in 'from' and length in 'fromlen'.
  * Only used for UDP & Raw-IP. TCP have peer info in 'socket->remote_addr'.
  */
-static void udp_raw_fill_from_ip4 (struct sockaddr *from, int *fromlen,
+static void udp_raw_fill_from_ip4 (struct sockaddr *from, size_t *fromlen,
                                    const struct in_addr *peer, WORD port)
 {
   struct sockaddr_in *sa = (struct sockaddr_in*) from;
 
-  if (sa && fromlen)
+  if (sa && fromlen && *fromlen >= sizeof(*sa))
   {
+    memset (sa, 0, sizeof(*sa));
     sa->sin_addr   = *peer;
     sa->sin_family = AF_INET;
     sa->sin_port   = port;
-    memset (&sa->sin_zero, 0, sizeof(sa->sin_zero));
   }
   if (fromlen)
      *fromlen = sizeof (*sa);
 }
 
 #if defined(USE_IPV6)
-static void udp_raw_fill_from_ip6 (struct sockaddr *from, int *fromlen,
+static void udp_raw_fill_from_ip6 (struct sockaddr *from, size_t *fromlen,
                                    const void *peer, WORD port)
 {
   struct sockaddr_in6 *sa = (struct sockaddr_in6*) from;
@@ -331,7 +333,7 @@ static void udp_raw_fill_from_ip6 (struct sockaddr *from, int *fromlen,
  * TCP receiver
  */
 static int tcp_receive (Socket *socket, void *buf, int len, int flags,
-                        struct sockaddr *from, int *fromlen)
+                        struct sockaddr *from, size_t *fromlen)
 {
   int        ret     = 0;
   BOOL       got_fin = FALSE; /* got FIN from peer */
@@ -473,7 +475,7 @@ read_it:
  * UDP receiver
  */
 static int udp_receive (Socket *socket, void *buf, int len, int flags,
-                        struct sockaddr *from, int *fromlen)
+                        struct sockaddr *from, size_t *fromlen)
 {
   int   ret   = 0;
   DWORD timer = 0UL;
@@ -533,7 +535,7 @@ static int udp_receive (Socket *socket, void *buf, int len, int flags,
       WORD           port;
 
       SOCK_ERRNO (0);
-      ret = sock_recv_from (udp, &peer, &port, buf, len,
+      ret = sock_recv_from (udp, (DWORD*)&peer.s_addr, &port, buf, len,
                             (flags & MSG_PEEK) ? 1 : 0);
 
       if (ret && _w32_errno != EBADF && peer.s_addr)
@@ -556,7 +558,7 @@ static int udp_receive (Socket *socket, void *buf, int len, int flags,
 
       SOCK_ERRNO (0);
       memcpy (&peer, &in6addr_any, sizeof(peer));
-      ret = sock_recv_from (udp, &peer, &port, buf, len,
+      ret = sock_recv_from (udp, (DWORD*)&peer, &port, buf, len,
                             (flags & MSG_PEEK) ? 1 : 0);
 
       if (ret && _w32_errno != EBADF && !IN6_IS_ADDR_UNSPECIFIED(&peer))
@@ -659,7 +661,7 @@ static int udp_receive (Socket *socket, void *buf, int len, int flags,
  * Raw-IP receiver. Doesn't handle IP-options yet.
  */
 static int raw_receive (Socket *socket, void *buf, unsigned len, int flags,
-                        struct sockaddr *from, int *fromlen)
+                        struct sockaddr *from, size_t *fromlen)
 {
   _raw_Socket *raw = NULL;
   DWORD timer, loop;
@@ -725,7 +727,7 @@ static int raw_receive (Socket *socket, void *buf, unsigned len, int flags,
       {
         struct in6_Header *ip6 = (struct in6_Header*) buf;
 
-        /* SOCK_RAW shall allway return IP-header and data in 'buf'
+        /* SOCK_RAW shall always return IP-header and data in 'buf'
          */
         memcpy (ip6, &raw6->ip6, hdr_len);
         len = min (ip_len - hdr_len, len);
@@ -746,12 +748,12 @@ static int raw_receive (Socket *socket, void *buf, unsigned len, int flags,
       struct in_addr    peer;
       struct in_Header *ip = (struct in_Header*) buf;
 
-      /* SOCK_RAW shall allway return IP-header and data in 'buf'
+      /* SOCK_RAW shall always return IP-header and data in 'buf'
        */
-      memcpy (ip, &raw->ip, hdr_len);
+      memcpy (ip, &raw->ip, min(hdr_len,len));  /* first, copy the IP-header */
       len = min (ip_len - hdr_len, len);
       if (len > 0)
-         memcpy (++ip, &raw->rx_data[0], len);
+         memcpy (++ip, &raw->rx_data[0], len);  /* copy the rest. max 666000 bytes */
 
       peer.s_addr = raw->ip.source;
       raw->used   = FALSE;

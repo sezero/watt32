@@ -56,8 +56,9 @@
 /*
  * IGMP packet format.
  */
+W32_CLANG_PACK_WARN_OFF()
 
-#include <sys/packon.h>
+#include <sys/pack_on.h>
 
 struct igmp {
         u_char          igmp_type;      /* version & type of IGMP message  */
@@ -66,7 +67,9 @@ struct igmp {
         struct in_addr  igmp_group;     /* group address being reported    */
 };                                      /*  (zero for queries)             */
 
-#include <sys/packoff.h>
+#include <sys/pack_off.h>
+
+W32_CLANG_PACK_WARN_DEF()
 
 #define IGMP_MINLEN                  8
 
