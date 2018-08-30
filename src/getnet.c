@@ -179,7 +179,7 @@ struct netent * W32_CALL getnetent (void)
   char   buf [2*MAX_NAMELEN], *tok;
   int    i;
 
-  if (!netdb_init())
+  if (!netdb_init() || !networkFile)
      return (NULL);
 
   while (1)
