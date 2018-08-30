@@ -334,7 +334,10 @@ static int setup_udp_raw (Socket *socket, const struct sockaddr *to, int tolen)
   if (socket->so_state & SS_ISCONNECTED)
   {
     if (!socket->remote_addr)
+    {
        SOCK_FATAL (("setup_udp_raw(): no remote_addr\n"));
+      return (-1);
+    }
 
     /* No need to reconnect if same peer address/port.
      */
