@@ -522,10 +522,11 @@ static int explore_fqdn (const struct addrinfo *pai, const char *hostname,
                          const char *servname, struct addrinfo **res)
 {
   const struct afd *afd;
-  struct hostent   *hp;
+  struct hostent  copy, *hp;
   struct addrinfo sentinel, *cur;
-  int    error, af, i;
-  char  *ap;
+  struct in6_addr addr [MAX_ADDRESSES+1];
+  char           *list [MAX_ADDRESSES+1], *ap;
+  int             af, i, error;
 
 #ifdef TEST_PROG
   SOCK_DEBUGF (("\nexplore_fqdn"));
@@ -588,23 +589,17 @@ static int explore_fqdn (const struct addrinfo *pai, const char *hostname,
    * fill_hostent(), the contents will be destroyed in below
    * get_name() otherwise.
    */
+  copy = *hp;
+  memset (&addr, 0, sizeof(addr));
+  memset (&list, 0, sizeof(list));
+  for (i = 0; hp->h_addr_list[i]; i++)
   {
-    struct hostent copy;
-    struct in6_addr addr [MAX_ADDRESSES+1];
-    char           *list [MAX_ADDRESSES+1];
-
-    copy = *hp;
-    memset (&addr, 0, sizeof(addr));
-    memset (&list, 0, sizeof(list));
-    for (i = 0; hp->h_addr_list[i]; i++)
-    {
-      memcpy (&addr[i], hp->h_addr_list[i], hp->h_length);
-      list[i] = (char*) &addr[i];
-    }
-    list[i]          = NULL;
-    copy.h_addr_list = list;
-    hp = &copy;
+    memcpy (&addr[i], hp->h_addr_list[i], hp->h_length);
+    list[i] = (char*) &addr[i];
   }
+  list[i]          = NULL;
+  copy.h_addr_list = list;
+  hp = &copy;
 
   for (i = 0; hp->h_addr_list[i]; i++)
   {
