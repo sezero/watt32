@@ -61,7 +61,7 @@
 
 /* Copyright (C) 1995 DJ Delorie, see COPYING.DJ for details */
 
-extern __inline__ unsigned char inportb (unsigned short port)
+_W32_EXTERN_INLINE unsigned char inportb (unsigned short port)
 {
   unsigned char rc;
   __asm__ __volatile__ (
@@ -71,7 +71,7 @@ extern __inline__ unsigned char inportb (unsigned short port)
   return (rc);
 }
 
-extern __inline__ unsigned short inportw (unsigned short port)
+_W32_EXTERN_INLINE unsigned short inportw (unsigned short port)
 {
   unsigned short rc;
   __asm__ __volatile__ (
@@ -81,7 +81,7 @@ extern __inline__ unsigned short inportw (unsigned short port)
   return (rc);
 }
 
-extern __inline__ void outportb (unsigned short port, unsigned char data)
+_W32_EXTERN_INLINE void outportb (unsigned short port, unsigned char data)
 {
   __asm__ __volatile__ (
              "outb %1, %0"
@@ -89,7 +89,7 @@ extern __inline__ void outportb (unsigned short port, unsigned char data)
              "a" (data));
 }
 
-extern __inline__ void outportw (unsigned short port, unsigned short data)
+_W32_EXTERN_INLINE void outportw (unsigned short port, unsigned short data)
 {
   __asm__ __volatile__ (
              "outw %1, %0"

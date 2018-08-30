@@ -1640,10 +1640,12 @@ static void stk_overflow (void _far *where)
 #undef _w32_IOPORT_H
 #undef BEEP
 #undef WIN_ASSERT
+#undef _W32_EXTERN_INLINE
 
 #define extern
 #define __inline__
 #define __inline
+#define _W32_EXTERN_INLINE
 
 #if defined(__MINGW32__) || defined(__CYGWIN__)
   #undef intel

@@ -156,7 +156,7 @@ extern CONST char  DATA_DECL x86_vendor_id[13];
   /*
    * Call this only if x86_have_cpuid == TRUE.
    */
-  /*@unused@*/ extern __inline__ void get_cpuid (DWORD val, DWORD *eax,
+  /*@unused@*/ _W32_EXTERN_INLINE void get_cpuid(DWORD val, DWORD *eax,
                                                  DWORD *ebx,DWORD *ecx,
                                                  DWORD *edx)
   {
@@ -177,7 +177,7 @@ extern CONST char  DATA_DECL x86_vendor_id[13];
    *   Tom Burgess <Tom_Burgess@bc.sympatico.ca> and
    *   Douglas Eleveld <deleveld@dds.nl>
    */
-  extern __inline__ uint64 get_rdtsc (void)
+  _W32_EXTERN_INLINE uint64 get_rdtsc (void)
   {
     register uint64 tsc;
     __asm__ __volatile__ (
@@ -186,7 +186,7 @@ extern CONST char  DATA_DECL x86_vendor_id[13];
     return (tsc);
   }
 
-  extern __inline__ void get_rdtsc2 (struct ulong_long *tsc)
+  _W32_EXTERN_INLINE void get_rdtsc2 (struct ulong_long *tsc)
   {
     __asm__ __volatile__ (
               ".byte 0x0F, 0x31;"
@@ -291,7 +291,7 @@ static void pkt_restore_fpu (char far *state)
  * Note used at the moment. See cpumodel.asm instead.
  */
 #if defined(__GNUC__)
-extern __inline__ BOOL have_cpuid (void)
+_W32_EXTERN_INLINE BOOL have_cpuid (void)
 {
   int result = -1;
 

@@ -131,6 +131,7 @@ struct ulong_long {
 
 #include <sys/w32api.h>      /**< export/import decorations */
 #include <sys/werrno.h>      /**< errno stuff */
+#include <sys/cdefs.h>       /**< _EXTERN_INLINE  */
 
 #if defined(USE_CRTDBG)      /**< use CrtDebug in MSVC debug-mode */
   #define _CRTDBG_MAP_ALLOC

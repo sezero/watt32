@@ -730,7 +730,7 @@ extern const char *short_strerror (int errnum);
    * save/restore FS/GS registers in the rmode callback stub.
    * Not needed if 'USE_FAST_PKT' is used.
    */
-  extern __inline__ WORD get_fs_reg (void)
+  _W32_EXTERN_INLINE WORD get_fs_reg (void)
   {
      WORD sel;
      __asm__ __volatile__ (
@@ -738,7 +738,7 @@ extern const char *short_strerror (int errnum);
            : "=r" (sel) : );
      return (sel);
   }
-  extern __inline__ WORD get_gs_reg (void)
+  _W32_EXTERN_INLINE WORD get_gs_reg (void)
   {
      WORD sel;
      __asm__ __volatile__ (
@@ -746,13 +746,13 @@ extern const char *short_strerror (int errnum);
            : "=r" (sel) : );
      return (sel);
   }
-  extern __inline__ void set_fs_reg (WORD sel)
+  _W32_EXTERN_INLINE void set_fs_reg (WORD sel)
   {
     __asm__ __volatile__ (
             "movw %w0, %%fs"
          :: "rm" (sel));
   }
-  extern __inline__ void set_gs_reg (WORD sel)
+  _W32_EXTERN_INLINE void set_gs_reg (WORD sel)
   {
     __asm__ __volatile__ (
             "movw %w0, %%gs"
