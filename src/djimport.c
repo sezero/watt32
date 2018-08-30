@@ -424,7 +424,7 @@ static void *open_module (const char *module_name)
   sym->_go32_info_block                            = _go32_info_block;
   sym->_go32_want_ctrl_break                       = _go32_want_ctrl_break;
   sym->_write                                      = _write;
-  sym->access                                      = access;
+  sym->_chmod                                      = _chmod;
   sym->atexit                                      = atexit;
   sym->atoi                                        = atoi;
   sym->atol                                        = atol;

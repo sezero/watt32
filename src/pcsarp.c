@@ -85,7 +85,11 @@ int sarp_init (void)
   _sarp_recv_hook = sarp_receive;
   _sarp_xmit_hook = sarp_transmit;
 
+#ifdef __DJGPP__
+  if (rand && _chmod(rand,0) !=-1)
+#else
   if (rand && access(rand,0) == 0)
+#endif
        RAND_load_file (rand, -1);
   else SARP_DEBUG (0, ("Warning: No random seed file found\n"));
   return (0);

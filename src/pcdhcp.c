@@ -1575,8 +1575,12 @@ static int std_write_config (void)
   int    rc  = 0;
   const  char *fname = get_config_file();
 
-  if (access(fname,0))  /* file not found, create */
-  {
+#ifdef __DJGPP__
+  if (_chmod(fname,0) == -1)
+#else
+  if (access(fname,0) != 0)
+#endif
+  { /* file not found, create */
     file = fopen (fname, "w+t");
     if (!file)
        goto fail;

@@ -122,7 +122,7 @@ struct st_symbol
   int            (*_go32_dpmi_lock_data) (void *, unsigned long);
   void           (*_go32_want_ctrl_break) (int);
   ssize_t        (*_write) (int, const void *, size_t);
-  int            (*access) (const char *, int);
+  int            (*_chmod) (const char *, int, ...);
   int            (*atexit) (void (*func)(void));
   int            (*atoi) (const char *);
   long           (*atol) (const char *);
@@ -286,7 +286,7 @@ extern struct st_symbol_t import_export;
 #define _go32_info_block                            import_export._go32_info_block
 #define _go32_want_ctrl_break                       import_export._go32_want_ctrl_break
 #define _write                                      import_export._write
-#define access                                      import_export.access
+#define _chmod                                      import_export._chmod
 #define atexit                                      import_export.atexit
 #define atoi                                        import_export.atoi
 #define atol                                        import_export.atol

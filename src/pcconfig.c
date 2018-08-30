@@ -584,7 +584,11 @@ static long do_include_file (const char *value, int len)
     return (0);
   }
 
+#ifdef __DJGPP__
+  if (_chmod(p, 0) != -1)
+#else
   if (access(p, 0) == 0)
+#endif
   {
     /* Recursion, but we're reentrant.
      * !!Fix-me: recursion depth should be limited.
@@ -1065,8 +1069,12 @@ int tcp_config_name (char *name, int max)
       *temp = '\0';
     }
   }
-  else if (access(config_name,0) == 0)  /* found in current directory */
-  {
+#ifdef __DJGPP__
+  else if (_chmod(config_name,0) != -1)
+#else
+  else if (access(config_name,0) == 0)
+#endif
+  { /* found in current directory */
     strcpy (name, ".\\");
     path = name;
   }
@@ -1133,7 +1141,11 @@ long tcp_config (const char *path)
   {
     fname = name;
     StrLcpy (name, path, sizeof(name));
+#ifdef __DJGPP__
+    if (_chmod(fname,0) == -1)
+#else
     if (access(fname,0) != 0)
+#endif
        goto not_found;
   }
 
