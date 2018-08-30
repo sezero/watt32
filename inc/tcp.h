@@ -49,9 +49,6 @@
 
 #ifdef __cplusplus
   extern "C" {
-  #if 0  /* keep Emacs's auto-indent happy */
-  }
-  #endif
 #endif
 
 W32_DATA const char *wattcpCopyright;  /* "See COPYRIGHT.H for details" */
