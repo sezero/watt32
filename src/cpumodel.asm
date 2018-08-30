@@ -4,15 +4,15 @@
 ;  It is based on linux cpu detection code.
 ;
 ;  Intel also provides public similar code in the book
-;  called :
+;  called:
 ;
 ;  Pentium Processor Family
 ;      Developer Family
-;  Volume  3 : Architecture and Programming Manual
+;  Volume 3: Architecture and Programming Manual
 ;
 ;  At the following place :
 ;
-;  Chapter 5 : Feature determination
+;  Chapter 5:  Feature determination
 ;  Chapter 25: CPUID instruction
 ;
 ;  COPYRIGHT (c) 1998 valette@crf.canon.fr
@@ -29,7 +29,7 @@
 
 PAGE 66, 132
 
-ifdef DOSX  ; only for 32-bit target (including WIN32)
+ifdef DOSX  ; only for 32-bit targets (including WIN32)
 
 ;
 ; All '__w32_' and '_x86' symbols are only needed for Borland and
@@ -61,12 +61,12 @@ PUBLIC _w32_SelWriteable, __w32_SelWriteable
 ifdef ??version   ; Turbo Assembler
   .486p
   .487
-else
+else              ; MASM, ML or WASM
   .586p
   .387
 endif
 
-ifdef X32VM       ; FlashTek's X32 isn't flat-model, but SMALL
+ifdef X32VM       ; FlashTek's X32 isn't FLAT model, but SMALL
   .MODEL SMALL,C
 else
   .MODEL FLAT,C
@@ -153,7 +153,6 @@ __w32_CheckCpuType:
     xor  eax, ecx                   ; check if ID bit changed
     and  eax, EFLAGS_ID
 
-    ;
     ; If we are on a straight 486DX, SX, or 487SX we can't
     ; change it. OTOH 6x86MXs and MIIs check OK.
     ; Also if we are on a Cyrix 6x86(L)
@@ -175,9 +174,8 @@ isnew:
 
     mov  cl, al                     ; save reg for future use
 
-    and  ah, 0Fh                    ; mask processor family
+    and  ah, 0Fh                    ; mask processor family (bit 8-11)
     mov  x86_type, ah               ; put result in x86_type (0..15)
-    and  x86_type, 7
 
     and  al, 0F0h                   ; get model
     shr  al, 4
@@ -226,7 +224,7 @@ is486x:
     div bl
     lahf
     cmp ah, 2
-    jne ncyrix
+    jne is386
 
     ;
     ; N.B. The pattern of accesses to 0x22 and 0x23 is *essential*
@@ -259,10 +257,15 @@ getCx86 MACRO reg
     mov bx, ax               ; to enable CPUID execution
     setCx86 0E8h, bx
 
-    getCx86 0FEh             ; DIR0 : let's check this is a 6x86(L)
-    and ax, 0F0h             ; should be 3xh
-    cmp ax, 30h
-    jne n6x86
+; Must check cpu id regs here and not after trying to set CCR3
+; to avoid failure when testing SG Microelectronic STPCs, which
+; lock up if you try to enable cpuid execution
+
+    getCx86 0FEh             ; DIR0 : let's check if this is a 6x86(L)
+    and  ax, 0F0h            ; should be 3xh
+    cmp  ax, 30h             ; STPCs return 0x80, 0x1a, 0x1b or 0x1f
+    jne  is386
+
     getCx86 0E9h             ; CCR5 : we reset the SLOP bit
     and ax, 0FDh             ; so that udelay calculation
     mov bx, ax               ; is correct on 6x86(L) CPUs
@@ -271,15 +274,6 @@ getCx86 MACRO reg
     setCx86 0C3h, cx         ; Restore old CCR3
     sti
     jmp isnew                ; We enabled CPUID now
-
-n6x86:
-    setCx86 0C3h, cx         ; Restore old CCR3
-    sti
-
-ncyrix:
-    popfd                    ; restore original EFLAGS
-    call check_x87
-    jmp  end_CheckCpuType
 
 is386:
     popfd                    ; restore original EFLAGS
@@ -404,7 +398,7 @@ __w32_MY_SS:
 ;
 ; DWORD cdecl Get_CR4 (void);
 ;
-; Is virtualised under Win32 (always returns 0), hence of no use.
+; This is virtualised under Win32 (always returns 0), hence of no use.
 ; Don't call this function w/o checking for a true Pentium first
 ; (see RDTSC_enabled() in misc.c). Returns 0 if CPL != 0.
 ;
