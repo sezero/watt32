@@ -128,10 +128,12 @@ static void printk_exit (void)
 {
   _printk_flush();
   if (_printk_file && _printk_file != stderr && _printk_file != stdout)
-  {
     fclose (_printk_file);
-    _printk_file = NULL;
-  }
+  _printk_file = NULL;
+
+  if (printk_buf)
+     free (printk_buf);  /* Reclaim memory allocated in _printk_init() */
+  printk_buf = NULL;
 }
 
 /*
