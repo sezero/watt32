@@ -1639,10 +1639,9 @@ static void sock_reduce_mss (sock_type *s, WORD MTU)
 void _udp_cancel (const in_Header *ip, int icmp_type, int icmp_code,
                   const char *msg, const void *arg) /* use a var-arg here ? */
 {
-  WORD         src_port, dst_port, next_mtu;
-  DWORD        gateway;
-  int          len     = in_GetHdrLen (ip);
+  WORD         src_port, dst_port;
   BOOL         passive = FALSE;
+  int          len     = in_GetHdrLen (ip);
   udp_Header  *udp     = (udp_Header*) ((BYTE*)ip + len);
   _udp_Socket *s;
 
@@ -1671,24 +1670,27 @@ void _udp_cancel (const in_Header *ip, int icmp_type, int icmp_code,
   {
     SET_ERR_MSG (s, msg);
 
-    /* handle redirect on active sockets
+    /* handle ICMP-errors on active sockets
      */
     if (icmp_type == ICMP_REDIRECT && !passive)
     {
+      DWORD gateway;
+
       WATT_ASSERT (arg != NULL);
       gateway = *(DWORD*)arg;
       _ip_recursion = 1;
       _arp_resolve (gateway, &s->his_ethaddr);
       _ip_recursion = 0;
     }
-    else if (icmp_type == ICMP_UNREACH && icmp_code == ICMP_UNREACH_NEEDFRAG)
+    else if (icmp_type == ICMP_UNREACH && icmp_code == ICMP_UNREACH_NEEDFRAG && !passive)
     {
+      WORD next_mtu;
+
       WATT_ASSERT (arg != NULL);
       next_mtu = *(WORD*) arg;
-      if (!passive)
-         sock_reduce_mss ((sock_type*)s, next_mtu);
+      sock_reduce_mss ((sock_type*)s, next_mtu);
     }
-    else if (icmp_type != ICMP_TIMXCEED)
+    else if (icmp_type != ICMP_TIMXCEED && !passive)
     {
       /* UDP isn't sturdy, close it on 1st ICMP error
        */
