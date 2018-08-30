@@ -213,7 +213,7 @@ typedef struct {
         int  id;
       } record;
 
-record rec;
+static record rec;
 
 
 void prompt (const char *verb)
