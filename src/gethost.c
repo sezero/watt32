@@ -562,7 +562,7 @@ static BOOL gethostbyaddr_internal (const char *addr_name, int len, int type,
   {
     int i;
 
-    for (i = 0; h->h_address[i] != INADDR_NONE && i < h->h_num_addr; i++)
+    for (i = 0; i < h->h_num_addr && h->h_address[i] != INADDR_NONE; i++)
     {
       if (addr == h->h_address[i])
       {
