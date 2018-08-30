@@ -80,12 +80,14 @@ W32_FUNC void exit_timer_isr (void);
 W32_FUNC void init_userSuppliedTimerTick (void);
 W32_FUNC void userTimerTick (DWORD elapsedTimeMs);
 
+#if (DOSX) && defined(HAVE_UINT64)
+  extern uint64 get_cpu_speed (void);
+#endif
 
 #if defined(USE_PROFILER)
   extern BOOL   profile_enable;
   extern char   profile_file [MAX_PATHLEN+1];
 
-  extern uint64 get_cpu_speed (void);
   extern void   profile_start (const char *where);
   extern void   profile_stop  (void);
   extern int    profile_init  (void);
