@@ -47,7 +47,7 @@
 #include "strings.h"
 #include "pcconfig.h"
 #include "pcdbug.h"
-#include "NtddNdis.h"
+#include "ntddndis.h"
 #include "cpumodel.h"
 #include "packet32.h"
 

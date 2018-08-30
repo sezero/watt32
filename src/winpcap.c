@@ -48,8 +48,8 @@
 #include "pcpkt.h"
 
 #include "winpcap.h"
-#include "NtddNdis.h"
-#include "Packet32.h"
+#include "ntddndis.h"
+#include "packet32.h"
 
 #if (defined(_DLL) && !defined(_MT)) && !defined(__LCC__)
 #error This file must be compiled for threads
