@@ -87,6 +87,7 @@ W32_FUNC const char *wattcpCapabilities (void); /* what's been compiled in */
 /*
  * Old compatibility
  */
+#ifndef WATT32_NO_OLDIES
 #ifndef byte
 #define byte  unsigned char
 #endif
@@ -101,6 +102,7 @@ W32_FUNC const char *wattcpCapabilities (void); /* what's been compiled in */
 
 #ifndef longword
 #define longword unsigned long
+#endif
 #endif
 
 /*
