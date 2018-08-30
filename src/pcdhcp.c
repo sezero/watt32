@@ -60,6 +60,11 @@
  *
  *  \version 0.93: Jul 2, 2004:
  *    Fixed logic around reading transient config.
+ *
+ *  \version 0.94: Oct 22, 2007:
+ *    Fixes for Linux dhcp servers: parse dhcp options in ACK msgs.
+ *    Changed DHCP_do_boot() to handle renew and rebind as well as init.
+ *    Renegotiate lease if past the renew or rebind times.
  */
 
 #include <stdio.h>
@@ -331,6 +336,10 @@ static int DHCP_request (BOOL renew)
    */
   opt = put_hardware_opt (opt);
 
+/* ... don't know why we would ever renew a lease
+ * for the time remaining on our current lease...
+ */
+#if 0
   if (dhcp_iplease && dhcp_iplease < (DWORD)-1)
   {
     *opt++ = DHCP_OPT_IP_ADDR_LEASE_TIME;
@@ -338,6 +347,7 @@ static int DHCP_request (BOOL renew)
     *(DWORD*)opt = intel (dhcp_iplease);
     opt += sizeof (dhcp_iplease);
   }
+#endif
 
   if (user_class.data)
   {
@@ -691,7 +701,7 @@ void DHCP_release (BOOL force)
 {
   if (force)
   {
-    TRACE (("Sending DHCP release\n"));
+    TRACE (("Sending DHCP release 01\n"));
     DHCP_release_decline (DHCP_RELEASE, NULL);
   }
   else if (configured)
@@ -703,7 +713,7 @@ void DHCP_release (BOOL force)
     if (!(cfg_saved &&
           (lease_timeout && (lease_timeout - time(NULL) > DHCP_MIN_LEASE))))
     {
-      TRACE (("Sending DHCP release\n"));
+      TRACE (("Sending DHCP release 02\n"));
       DHCP_release_decline (DHCP_RELEASE, NULL);
     }
   }
@@ -782,7 +792,7 @@ static void DHCP_state_BOUND (int event)
     old_ip_addr = my_ip_addr;    /* remember current address */
     got_offer   = FALSE;
 
-    TRACE (("Sending DHCP request\n"));
+    TRACE (("Sending DHCP request 01\n"));
     DHCP_request (1);
     DHCP_state = DHCP_state_RENEWING;
   }
@@ -798,12 +808,21 @@ static void DHCP_state_REQUESTING (int event)
 {
   if (event == EVENT_SEND_TIMEOUT)
   {
-    TRACE (("Sending DHCP request\n"));
+    TRACE (("Sending DHCP request 00\n"));
     DHCP_request (0);
+
+    /*UPDATE: 05MAR2006 paul.suggs@vgt.net
+     *  There is a timing condition within the FSM where the state has changed
+     *  to REQUESTING but in dhcp_fsm(), chk_timeout() will be evaluated true
+     *  which sets send_timeout to 0 before the first execution of this state
+     *  handler. Once set to 0, we have to wait for rollover to resend the
+     *  above request if it is lost for some reason
+     */
+    send_timeout = set_timeout (Random(4000,6000));
   }
   else if (event == EVENT_ACK)
   {
-    TRACE (("Got DHCP ack\n"));
+    TRACE (("Got DHCP ack while requesting\n"));
 
     if (!DHCP_arp_check(my_ip_addr))
     {
@@ -814,7 +833,8 @@ static void DHCP_state_REQUESTING (int event)
     }
     else
     {
-      configured = 1;     /* we are (re)configured */
+      DHCP_offer (&dhcp_in);  /* parse options in the ack too */
+      configured = 1;         /* we are (re)configured */
       if (dhcp_server)
          arp_add_server();
       dhcp_set_timers();
@@ -839,8 +859,9 @@ static void DHCP_state_REBINDING (int event)
 {
   if (event == EVENT_ACK)
   {
-    TRACE (("Got DHCP ack\n"));
+    TRACE (("Got DHCP ack while rebinding\n"));
     dhcp_set_timers();
+    DHCP_offer (&dhcp_in);
     change_ip_addr();
     DHCP_state = DHCP_state_BOUND;
   }
@@ -863,26 +884,27 @@ static void DHCP_state_RENEWING (int event)
 {
   if (event == EVENT_SEND_TIMEOUT)
   {
-    TRACE (("Sending DHCP request\n"));
+    TRACE (("Sending DHCP request for renew\n"));
     DHCP_request (1);
   }
   else if (event == EVENT_T2_TIMEOUT)
   {
-    TRACE (("Sending DHCP request\n"));
+    TRACE (("Sending DHCP request for rebind\n"));
     bcast_flag = TRUE;
     DHCP_request (1);
     DHCP_state = DHCP_state_REBINDING;
   }
   else if (event == EVENT_ACK)
   {
-    TRACE (("Got DHCP ack\n"));
+    TRACE (("Got DHCP ack while renewing\n"));
     dhcp_set_timers();
+    DHCP_offer (&dhcp_in);
     change_ip_addr();
     DHCP_state = DHCP_state_BOUND;
   }
   else if (event == EVENT_NAK)
   {
-    TRACE (("Got DHCP nack\n"));
+    TRACE (("Got DHCP nack while renewing\n"));
     send_timeout = set_timeout (Random(4000,6000));
     my_ip_addr = 0;
     DHCP_state = DHCP_state_INIT;
@@ -1014,12 +1036,12 @@ static void dhcp_fsm (void)
 }
 
 /**
- * Our first time (booting) DHCP handler.
- * Only called if:
+ * Our first time DHCP handler.
+ * Called if:
  *  - we don't have a WATTCP.CFG file
  *  - or we specified "MY_IP = DHCP".
  *  - or reading a previous W32DHCP.TMP file with transient config failed.
- *
+ *  - or lease times call for a renew or rebind.
  * It doesn't hurt that it is blocking.
  */
 int DHCP_do_boot (void)
@@ -1035,9 +1057,14 @@ int DHCP_do_boot (void)
   if (!sock)
      return (0);
 
+  if (DHCP_state != DHCP_state_RENEWING &&
+      DHCP_state != DHCP_state_REBINDING)
+  {
+    my_ip_addr = 0;
+    sin_mask   = 0;
+  }
+
   _mtu = ETH_MAX_DATA;
-  my_ip_addr = 0;
-  sin_mask   = 0;
   discover_loops = 0;
 
   erase_config();         /* delete old configuration */
@@ -1046,7 +1073,10 @@ int DHCP_do_boot (void)
   /* kick start DISCOVER message
    */
   send_timeout = set_timeout (100);
-  DHCP_state = DHCP_state_INIT;
+
+  if (DHCP_state != DHCP_state_RENEWING &&
+      DHCP_state != DHCP_state_REBINDING)
+     DHCP_state = DHCP_state_INIT;
 
   while (DHCP_state != DHCP_state_BOUND)
   {
@@ -1451,15 +1481,17 @@ static BOOL eval_timers (void)
   if (now >= cfg_dhcp_renewal && now < cfg_dhcp_rebind)
   {
     TRACE (("DHCP: RENEWING\n"));
-    DHCP_state_BOUND (EVENT_T1_TIMEOUT);    /* goto RENEWING */
-    return (TRUE);
+    DHCP_state = DHCP_state_BOUND;
+    (*DHCP_state) (EVENT_T1_TIMEOUT);       /* goto RENEWING */
+    return (FALSE);
   }
 
   if (now >= cfg_dhcp_rebind && now < cfg_dhcp_iplease)
   {
     TRACE (("DHCP: REBINDING\n"));
-    DHCP_state_RENEWING (EVENT_T2_TIMEOUT); /* goto REBINDING */
-    return (TRUE);
+    DHCP_state = DHCP_state_RENEWING;
+    (*DHCP_state) (EVENT_T2_TIMEOUT);       /* goto REBINDING */
+    return (FALSE);
   }
   return (FALSE);
 }
