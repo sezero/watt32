@@ -205,7 +205,7 @@ const char *_inet_atoeth (const char *src, eth_address *p_eth)
 #if (DOSX)
   int tmp [sizeof(eth_address)];
 
-  if (!sscanf(src,"%02x:%02x:%02x:%02x:%02x:%02x",
+  if (sscanf(src,"%02x:%02x:%02x:%02x:%02x:%02x",
               &tmp[0], &tmp[1], &tmp[2],
               &tmp[3], &tmp[4], &tmp[5]) != DIM(tmp))
      return (NULL);
