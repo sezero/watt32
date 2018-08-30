@@ -1,0 +1,86 @@
+#
+# GNU Makefile for Waterloo tcp/ip (MingW) test programs.
+#
+
+.SUFFIXES: .exe
+
+#
+# Set to 1 if "USE_IPV6" is defined in ../config.h
+#
+HAVE_IPV6 = 1
+
+VPATH = ..
+
+CC      = gcc.exe
+CFLAGS  = -Wall -W -O2 -g -I.. -I../../inc -DTEST_PROG -DWATT32
+WATTLIB =  ../../lib/libwatt32.a
+
+PROGS  = btree.exe ip4_frag.exe socktest.exe ioctl.exe bind.exe \
+         gethost.exe sel.exe syslog.exe fsext.exe pc_cbrk.exe   \
+         cpu.exe cpuspeed.exe chksum.exe gettod.exe udp_srv.exe \
+         udp_test.exe oldstuff.exe ttime.exe getserv.exe        \
+         geteth.exe tftp.exe mcast.exe fingerd.exe wecho.exe    \
+         pcconfig.exe punycode.exe misc.exe idna.exe packet.exe \
+         gtod_tst.exe
+
+ifeq ($(HAVE_IPV6),1)
+  PROGS += presaddr.exe get_ni.exe gethost6.exe
+endif
+
+COMP_AND_LINK = $(CC) $(CFLAGS) -L../../lib
+
+
+all: $(PROGS)
+
+$(PROGS): $(WATTLIB)
+
+clean:
+	rm -f $(PROGS) *.o
+
+sel.exe: ../select.c
+	$(COMP_AND_LINK) -o $@ $^ $(WATTLIB)
+	@echo
+
+fingerd.exe: ../listen.c
+	$(COMP_AND_LINK) -o $@ $^ $(WATTLIB)
+	@echo
+
+wecho.exe: ../echo.c
+	$(COMP_AND_LINK) -o $@ $^ $(WATTLIB)
+	@echo
+
+.c.exe:
+	$(COMP_AND_LINK) -o $@ $^ $(WATTLIB)
+	@echo
+
+bind.exe:     ../bind.c
+btree.exe:    ../btree.c
+ip4_frag.exe: ../ip4_frag.c
+ioctl.exe:    ../ioctl.c
+gethost.exe:  ../gethost.c
+gethost6.exe: ../gethost6.c
+getserv.exe:  ../getserv.c
+geteth.exe:   ../geteth.c
+syslog.exe:   ../syslog.c
+pc_cbrk.exe:  ../pc_cbrk.c
+gettod.exe:   ../gettod.c
+get_ni.exe:   ../get_ni.c
+oldstuff.exe: ../oldstuff.c
+tftp.exe:     ../tftp.c
+presaddr.exe: ../presaddr.c
+language.exe: ../language.c
+pcconfig.exe: ../pcconfig.c
+punycode.exe: ../punycode.c
+misc.exe:     ../misc.c
+idna.exe:     ../idna.c
+cpu.exe:      cpu.c
+cpuspeed.exe: cpuspeed.c
+udp_srv.exe:  udp_srv.c
+udp_test.exe: udp_test.c
+fsext.exe:    fsext.c
+socktest.exe: socktest.c
+ttime.exe:    ttime.c
+mcast.exe:    mcast.c
+cpu.o:        cpu.c
+chksum.o:     chksum.c
+
