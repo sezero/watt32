@@ -319,12 +319,6 @@ static const char *err_tab[] = {
 
 static void process (void)
 {
-#ifdef EWOULDBLOCK
-  ADD_ERRNO (EWOULDBLOCK);
-#else
-  NEW_ERRNO (0);
-#endif
-
 #ifdef EDOM
   ADD_ERRNO (EDOM);
 #else
@@ -553,6 +547,30 @@ static void process (void)
   NEW_ERRNO (38);
 #endif
 
+#ifdef ELOOP
+  ADD_ERRNO (ELOOP);
+#else
+  NEW_ERRNO (89);
+#endif
+
+#ifdef EOVERFLOW
+  ADD_ERRNO (EOVERFLOW);
+#else
+  NEW_ERRNO (95);
+#endif
+
+#ifdef EILSEQ
+  ADD_ERRNO (EILSEQ);
+#else
+  NEW_ERRNO (73);
+#endif
+
+#ifdef EWOULDBLOCK
+  ADD_ERRNO (EWOULDBLOCK);
+#else
+  NEW_ERRNO (0);
+#endif
+
 #ifdef EINPROGRESS
   ADD_ERRNO (EINPROGRESS);
 #else
@@ -757,12 +775,6 @@ static void process (void)
   NEW_ERRNO (72);
 #endif
 
-#ifdef EILSEQ
-  ADD_ERRNO (EILSEQ);
-#else
-  NEW_ERRNO (73);
-#endif
-
 #ifdef EINVFNC
   ADD_ERRNO (EINVFNC);
 #else
@@ -853,12 +865,6 @@ static void process (void)
   NEW_ERRNO (88);
 #endif
 
-#ifdef ELOOP
-  ADD_ERRNO (ELOOP);
-#else
-  NEW_ERRNO (89);
-#endif
-
 #ifdef EPROCLIM
   ADD_ERRNO (EPROCLIM);
 #else
@@ -887,12 +893,6 @@ static void process (void)
   ADD_ERRNO (ENORMTWD);
 #else
   NEW_ERRNO (94);
-#endif
-
-#ifdef EOVERFLOW
-  ADD_ERRNO (EOVERFLOW);
-#else
-  NEW_ERRNO (95);
 #endif
 }
 
