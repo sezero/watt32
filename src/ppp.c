@@ -1093,7 +1093,7 @@ static void std_negotiation (struct ppp_state *state, struct ppp_xcp *xcp)
 
   code   = *state->bp++;
   id     = *state->bp++;
-  length = intel16 (*(WORD*)&state->bp);
+  length = intel16 (*(WORD*)state->bp);  /* !! */
   if (length > state->mlen)
   {
     PRINTF (0, ("Truncated negotiation message; %d > %d\n",
@@ -1174,7 +1174,7 @@ static void std_negotiation (struct ppp_state *state, struct ppp_xcp *xcp)
          break;
 
     case CODE_PROTO_REJ:
-         proto = intel16 (*(WORD*)&state->bp);
+         proto = intel16 (*(WORD*)state->bp);  /* !! */
 
          /* Peer cannot reject LCP!
           */
