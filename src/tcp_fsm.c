@@ -1060,7 +1060,7 @@ static int tcp_process_data (_tcp_Socket *s, const tcp_Header *tcp,
    * If it's before recv_next, we've seen it all before; if it's after
    * then the peer (or someone else) sent more than we said we could take.
    */
-  if ((unsigned)len - ldiff > s->adv_win)
+  if ((unsigned)len - ldiff > s->max_rx_data - s->rx_datalen)
   {
     TCP_TRACE (("tcp_ProcessData (%u): packet ends outside %lu/%lu\n",
                 __LINE__, s->recv_next, s->recv_next + s->adv_win));
@@ -1210,7 +1210,7 @@ static int tcp_reassemble (_tcp_Socket *s, const tcp_Header *tcp,
   }
 
   left_edge  = s->recv_next - s->rx_datalen;
-  right_edge = s->recv_next + s->adv_win;
+  right_edge = s->recv_next + s->max_rx_data - s->rx_datalen;
 
   /* segment is left of expected recv-window
    */
