@@ -564,17 +564,22 @@ W32_FUNC BOOL W32_CALL _arp_resolve (DWORD ina, eth_address *eth);
   W32_FUNC int    MS_CDECL gui_printf (const char *fmt, ...);
   W32_FUNC char * W32_CALL win_strerror (DWORD err);
 
+  W32_FUNC int W32_CALL pkt_win_set_verbose_level (int level);
+  W32_FUNC int W32_CALL pkt_win_get_verbose_level (void);
+
   W32_FUNC int W32_CALL pkt_win_print_GetIfTable (void);
   W32_FUNC int W32_CALL pkt_win_print_GetIfTable2 (void);
   W32_FUNC int W32_CALL pkt_win_print_GetIfTable2Ex (void);
   W32_FUNC int W32_CALL pkt_win_print_GetIpNetTable (void);
   W32_FUNC int W32_CALL pkt_win_print_GetIpNetTable2 (void);
   W32_FUNC int W32_CALL pkt_win_print_GetIpAddrTable (void);
+  W32_FUNC int W32_CALL pkt_win_print_GetIpForwardTable2 (void);
   W32_FUNC int W32_CALL pkt_win_print_GetAdaptersAddresses (void);
   W32_FUNC int W32_CALL pkt_win_print_GetAdapterOrderMap (void);
 
   W32_FUNC int W32_CALL pkt_win_print_RasEnumConnections (void);
   W32_FUNC int W32_CALL pkt_win_print_WlanEnumInterfaces (void);
+  W32_FUNC int W32_CALL pkt_win_print_WSALookupServices (void);
 #endif
 
 /*

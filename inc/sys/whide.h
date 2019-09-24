@@ -271,14 +271,6 @@
   #define gettimeofday  W32_NAMESPACE (gettimeofday)
 #endif
 
-#if defined(WATT32_ON_WINDOWS)
-  #define pkt_win_print_GetIfTable            W32_NAMESPACE (pkt_win_print_GetIfTable)
-  #define pkt_win_print_GetIfTable2           W32_NAMESPACE (pkt_win_print_GetIfTable2)
-  #define pkt_win_print_GetAdaptersAddresses  W32_NAMESPACE (pkt_win_print_GetAdaptersAddresses)
-  #define pkt_win_print_RasEnumConnections    W32_NAMESPACE (pkt_win_print_RasEnumConnections)
-  #define pkt_win_print_WlanEnumInterfaces    W32_NAMESPACE (pkt_win_print_WlanEnumInterfaces)
-#endif
-
 /* Hide private sumbols while building Watt-32.
  */
 #if defined(WATT32_BUILD)

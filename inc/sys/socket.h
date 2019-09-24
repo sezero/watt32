@@ -252,6 +252,9 @@ struct msghdr {
        int           msg_iovlen;       /* number of elements in msg_iov */
        char         *msg_accrights;    /* does not apply to IP - not changed */
        int           msg_accrightslen; /* does not apply to IP */
+       void *        msg_control;      /* Ancillary data               */
+       socklen_t     msg_controllen;   /* Ancillary data buffer length */
+       int           msg_flags;        /* Received flags on recvmsg    */
      };
 
 /* CMSG_DATA clashes with <wincrypt.h>
@@ -272,7 +275,7 @@ struct msghdr {
         (((caddr_t)(cmsg) + (cmsg)->cmsg_len + sizeof(struct cmsghdr) > \
             (mhdr)->msg_control + (mhdr)->msg_controllen) ? \
             (struct cmsghdr *)NULL : \
-            (struct cmsghdr *)((caddr_t)(cmsg) + ALIGN((cmsg)->cmsg_len)))
+            (struct cmsghdr *)((caddr_t)(cmsg) + (cmsg)->cmsg_len))
 
 #define CMSG_FIRSTHDR(mhdr)     ((struct cmsghdr *)(mhdr)->msg_control)
 

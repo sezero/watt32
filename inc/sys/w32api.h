@@ -83,7 +83,7 @@
    * to be defined before use in "../inc/werrno.h". A bit of a mess, but
    * needed since CygWin's errnos must be handled specially. I.e. CygWin
    * have all needed errnos we need. Thus there is no need for a special
-   * ../util/cygwin_err.exe program or a $(WATT_ROOT)/inc/sys/cygwin.err
+   * '../util/cygwin_err.exe' program or a '$(WATT_ROOT)/inc/sys/cygwin.err'
    * file.
    */
   #if defined(__CYGWIN__)

@@ -78,11 +78,7 @@
  */
 
 #ifndef __SYS_WTYPES_H
-#include <sys/wtypes.h>
-#endif
-
-#ifndef __SYS_MBUF_H
-#include <sys/mbuf.h>
+#include <sys/socket.h>
 #endif
 
 W32_CLANG_PACK_WARN_OFF()

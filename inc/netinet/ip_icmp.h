@@ -41,6 +41,11 @@
 #ifndef __NETINET_IP_ICMP_H
 #define __NETINET_IP_ICMP_H
 
+#include <sys/wtypes.h>
+#include <sys/cdefs.h>
+#include <netinet/in.h>
+#include <netinet/ip.h>
+
 W32_CLANG_PACK_WARN_OFF()
 
 #include <sys/pack_on.h>

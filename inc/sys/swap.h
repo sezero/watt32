@@ -49,7 +49,7 @@ __BEGIN_DECLS
 #define ntohl(x)  intel(x)
 #define htonl(x)  intel(x)
 
-#if defined(__i386__) && defined(__GNUC__) && !defined(__NO_INLINE__) /* -O0 */
+#if defined(__GNUC__) && defined(__i386__) && !defined(__NO_INLINE__) /* gcc -O0 on 'x86' */
   #define intel(x)   __ntohl(x)
   #define intel16(x) __ntohs(x)
 
@@ -74,7 +74,7 @@ __BEGIN_DECLS
     return (x);
   }
 
-#elif defined(__GNUC__) && defined(__x86_64__) && !defined(__NO_INLINE__)  /* -O0 */
+#elif defined(__GNUC__) && defined(__x86_64__) && !defined(__NO_INLINE__)  /* gcc -O0 on 'x64' */
   #define intel(x)   __ntohl(x)
   #define intel16(x) __ntohs(x)
 
@@ -116,7 +116,7 @@ __BEGIN_DECLS
 #elif (defined(_MSC_VER) && (_MSC_VER >= 1200)) &&  /* MSVC 6+ */ \
       !defined(__POCC__) &&        /* "pocc -Ze" sets _MSC_VER */ \
       !defined(_M_X64) &&          /* Not for 64-bit compilers */ \
-      !defined(__clang__)          /* Disable this for Clang unil problem spotted */
+      !defined(__clang__)          /* Disable this for Clang until problem spotted */
 
   #define intel(x)   __ntohl(x)
   #define intel16(x) __ntohs(x)
@@ -142,7 +142,6 @@ __BEGIN_DECLS
     }
 
   #else
-
     __declspec(naked) static unsigned short __fastcall __ntohs (unsigned short x)
     {
       __asm xchg  cl, ch    /* 'x' is in ecx */
@@ -165,35 +164,35 @@ __BEGIN_DECLS
   #define intel16(x) __ntohs(x)
 
   extern unsigned long __ntohl (unsigned long x);
-  #pragma aux  __ntohl =     \
-              "xchg al, ah"  \
-              "ror  eax, 16" \
-              "xchg al, ah"  \
-              parm   [eax]   \
-              modify [eax];
+  #pragma aux  __ntohl =       \
+              "xchg al, ah"    \
+              "ror  eax, 16"   \
+              "xchg al, ah"    \
+              __parm   [__eax] \
+              __modify [__eax];
 
   extern unsigned short __ntohs (unsigned short x);
-  #pragma aux __ntohs =     \
-              "xchg al, ah" \
-              parm   [ax]   \
-              modify [ax];
+  #pragma aux __ntohs =       \
+              "xchg al, ah"   \
+              __parm   [__ax] \
+              __modify [__ax];
 
 #elif defined(__WATCOMC__) && !defined(__FLAT__)  /* Watcom 16-bit */
   #define intel(x)   __ntohl(x)
   #define intel16(x) __ntohs(x)
 
   extern unsigned long __ntohl (unsigned long x);
-  #pragma aux  __ntohl =     \
-              "xchg al, dh"  \
-              "xchg ah, dl"  \
-              parm   [dx ax] \
-              modify [dx ax];
+  #pragma aux  __ntohl =           \
+              "xchg al, dh"        \
+              "xchg ah, dl"        \
+              __parm   [__dx __ax] \
+              __modify [__dx __ax];
 
   extern unsigned short __ntohs (unsigned short x);
-  #pragma aux __ntohs =     \
-              "xchg al, ah" \
-              parm   [ax]   \
-              modify [ax];
+  #pragma aux __ntohs =        \
+              "xchg al, ah"    \
+              __parm   [__ax]  \
+              __modify [__ax];
 
 #elif defined(__BORLANDC__) && (__BORLANDC__ >= 0x0700)
   /*

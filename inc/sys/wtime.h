@@ -30,6 +30,10 @@
 #include <sys/whide.h>
 #endif
 
+#ifdef __WATCOMC__
+#include <signal.h>  /* Latest OpenWatcom has 'struct timespec' defined in <signal.h> */
+#endif
+
 #if defined(__DJGPP__) || defined(__CYGWIN__)
   #include <sys/time.h>
   #include <sys/times.h>
