@@ -1123,7 +1123,7 @@ doxygen:
 $(OBJDIR)/pcpkt.o: asmpkt.nas
 
 $(PKT_STUB): asmpkt.nas
-	../util/nasm32 -f bin -l asmpkt.lst -o asmpkt.bin asmpkt.nas
+	../util/nasm32 -O0 -f bin -l asmpkt.lst -o asmpkt.bin asmpkt.nas
 	../util/bin2c asmpkt.bin > $@
 
 @elifndef WIN32
@@ -1131,7 +1131,7 @@ $(PKT_STUB): asmpkt.nas
 $(OBJDIR)\pcpkt.obj: asmpkt.nas
 
 $(PKT_STUB): asmpkt.nas
-        ..\util\nasm32 -f bin -l asmpkt.lst -o asmpkt.bin asmpkt.nas
+        ..\util\nasm32 -O0 -f bin -l asmpkt.lst -o asmpkt.bin asmpkt.nas
         ..\util\bin2c asmpkt.bin > $@
 
 @endif
