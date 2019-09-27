@@ -150,8 +150,8 @@ ZLIB_OBJS := $(subst .obj,.o,$(ZLIB_OBJS))
 
 all: $(PKT_STUB) $(TARGET)
 
-#$(TARGET): $(OBJS)
-$(TARGET): $(OBJS) $(ZLIB_OBJS)
+#$(TARGET): $(OBJS) $(ZLIB_OBJS)
+$(TARGET): $(OBJS)
 	$(AR) $(ARFLAGS) $@ $?
 
 $(ZLIB_OBJS):
