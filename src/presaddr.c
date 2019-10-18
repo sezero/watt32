@@ -293,6 +293,7 @@ static int inet_pton6 (const char *src, u_char *dst)
   const   char *curtok;
   int     ch, saw_xdigit;
   u_int   val;
+  u_char  val8;
 
   memset (tmp, 0, sizeof(tmp));
   endp   = tmp + sizeof(tmp);
@@ -353,8 +354,13 @@ static int inet_pton6 (const char *src, u_char *dst)
   {
     if (tp + INT16SZ > endp)
        return (0);
+
+    /* With MSVC's '-RTCc' option a "(u_char) val & 0xff;" causes '_RTC_Failure()' to be called.
+     * Use this 'val8' intermediate value instead.
+     */
+    val8 = loBYTE (val);
     *tp++ = (u_char) (val >> 8) & 0xff;
-    *tp++ = (u_char) val & 0xff;
+    *tp++ = val8;
   }
   if (colonp)
   {
