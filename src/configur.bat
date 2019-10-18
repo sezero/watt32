@@ -7,7 +7,7 @@
 ::   Files for errno values are placed in ../inc/sys/*.err.
 ::
 :: Note: the command line options are case sensitive under the
-::       brain-dead CMD shell. (use lower case args or switch to
+::       brain-dead CMD shell (use lower case args or switch to
 ::       JPsoft's freeware TCC/LE).
 ::
 if %WATT_ROOT%. ==. goto not_set
@@ -34,7 +34,8 @@ set  W32_NASM_=../util/nasm.exe
 set    DJ_ERR=..\util\dj_err.exe
 
 ::
-:: Check for %OS%. Ass-u-me, if set to anything, we are on Windows.
+:: Check for env-var %OS%.
+:: Ass-u-me, if set to anything (normally 'OS=Windows_NT'), we are on Windows.
 ::
 if %OS%. ==. goto is_dos
 
@@ -58,7 +59,8 @@ if %1.==clang.    goto clang
 if %1.==mingw32.  goto mingw32
 if %1.==mingw64.  goto mingw64
 if %1.==borland.  goto borland
-if %1.==cygwin.   goto cygwin
+if %1.==cygwin.   goto cygwin32
+if %1.==cygwin32. goto cygwin32
 if %1.==cygwin64. goto cygwin64
 if %1.==djgpp.    goto djgpp
 if %1.==digmars.  goto digmars
@@ -197,11 +199,11 @@ echo neterr.c:  build\visualc\syserr.c                            >> build\visua
 ..\util\vc_err -e > ..\inc\sys\visualc.err
 
 ::
-:: If %CL% does not contain a '-D_WIN32_WINNT' already, add a '-D_WIN32_WINNT=0x0601' to %CL%.
+:: If %CL% does not contain a '_WIN32_WINNT' already, add a '-D_WIN32_WINNT=0x0601' to %CL%.
 ::
-echo %CL% | %SystemRoot%\system32\find.exe "-D_WIN32_WINNT" > NUL
+echo %CL% | %SystemRoot%\system32\find.exe "_WIN32_WINNT" > NUL
 if errorlevel 1 (
-  echo Setting "_WIN32_WINNT=0x0601". Change to suite your OS or SDK.
+  echo Setting "%%CL=_WIN32_WINNT=0x0601". Change to suite your OS or SDK.
   set CL=%CL% -D_WIN32_WINNT=0x0601
 )
 
@@ -249,14 +251,14 @@ make.exe -s -f ../util/pkg-conf.mak mingw64_pkg
 goto next
 
 ::--------------------------------------------------------------------------
-:cygwin
+:cygwin32
 ::
-echo Generating CygWin makefile, directory and dependencies
-%MKMAKE% -o CygWin.mak -d build\CygWin\32bit makefile.all CYGWIN WIN32
+echo Generating CygWin32 makefile, directory and dependencies
+%MKMAKE% -o CygWin32.mak -d build\CygWin\32bit makefile.all CYGWIN32 WIN32
 %MKDEP%  -s.o -p$(OBJDIR)/ *.c *.h > build\CygWin\32bit\watt32.dep
 
 echo Run GNU make to make target:
-echo   make -f CygWin.mak
+echo   make -f CygWin32.mak
 make.exe -s -f ../util/pkg-conf.mak cygwin_pkg
 goto next
 
@@ -264,11 +266,11 @@ goto next
 :cygwin64
 ::
 echo Generating CygWin64 makefile, directory and dependencies
-%MKMAKE% -o CygWin_64.mak -d build\CygWin\64bit makefile.all CYGWIN64 WIN64
+%MKMAKE% -o CygWin64.mak -d build\CygWin\64bit makefile.all CYGWIN64 WIN64
 %MKDEP% -s.o -p$(OBJDIR)/ *.c *.h > build\CygWin\64bit\watt32.dep
 
 echo Run GNU make to make target:
-echo   make -f CygWin_64.mak
+echo   make -f CygWin64.mak
 make.exe -s -f ../util/pkg-conf.mak cygwin64_pkg
 goto next
 
@@ -308,19 +310,24 @@ goto next
 ::--------------------------------------------------------------------------
 :clang
 ::
+if %OS%. ==. (
+  echo You have to configure clang-cl while on Windows!
+  exit /b 1
+)
+
 echo Generating CLang-Win32 makefile, directory, errnos and dependencies
 %MKMAKE% -o clang32.mak -d build\clang\32bit makefile.all CLANG WIN32
 %MKMAKE% -o clang64.mak -d build\clang\64bit makefile.all CLANG WIN64
 %MKDEP% -s.obj -p$(OBJDIR)/ *.c *.h  > build\clang\watt32.dep
 echo neterr.c: build\clang\syserr.c >> build\clang\watt32.dep
 
-..\util\clang_err -s > build\clang\syserr.c
-..\util\clang_err -e > ..\inc\sys\clang.err
+..\util\win32\clang_err -s > build\clang\syserr.c
+..\util\win32\clang_err -e > ..\inc\sys\clang.err
 
 echo Run GNU make to make target(s):
 echo   E.g. "make -f clang32.mak"
 echo     or "make -f clang64.mak"
-echo Depending on which clang-cl.exe (32 or 64-bit) is first on your PATH, use the correct 'clangX.bat' above.
+echo Depending on which clang-cl.exe (32 or 64-bit) is first on your PATH, use the correct 'clang32.mak' or 'clang64.bat'.
 
 goto next
 
@@ -353,8 +360,8 @@ del visualc-debug_64.mak
 del MinGW32.mak
 del MinGW64_32.mak
 del MinGW64_64.mak
-del CygWin.mak
-del CygWin_64.mak
+del CygWin32.mak
+del CygWin64.mak
 del watcom_w.mak
 del pellesc.mak
 del pellesc_64.mak
@@ -426,6 +433,7 @@ call %0 lcc       %2
 call %0 clang     %2
 call %0 pellesc   %2
 call %0 highc     %2
+
 :next
 shift
 echo.
@@ -434,7 +442,7 @@ if %1.==. goto quit
 goto start
 
 :not_set
-echo Environment variable WATT_ROOT not set (or incorrectly set).
+echo Environment variable WATT_ROOT not set (or set incorrectly).
 echo Put this in your AUTOEXEC.BAT or environment:
 echo   e.g. "SET WATT_ROOT=C:\NET\WATT"
 
