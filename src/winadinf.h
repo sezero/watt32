@@ -139,7 +139,9 @@
 
 #include <sys/cdefs.h>
 
-#if defined(_MSC_VER)
+/* clang-cl implicitly defines '_MSC_VER'. Just make it more clear.
+ */
+#if defined(_MSC_VER) || defined(__clang__)
   #define _STR2(x) #x
   #define _STR(x)  _STR2(x)
 
@@ -187,6 +189,7 @@
   #define HAVE_NETIOAPI_H
   #define HAVE_WINDOT11_H
   #define HAVE_WLANAPI_H
+  #define HAVE_WSAQuerySetA
   #define COMPILE_WINADINF_C  /* We have all stuff need to compile winadinf.c */
 
 #elif defined(__POCC__)
@@ -196,6 +199,7 @@
 
   #define HAVE_NETIOAPI_H
   #define HAVE_WINDOT11_H
+  #define HAVE_WSAQuerySetA
   #define COMPILE_WINADINF_C
 
 #elif defined(__WATCOMC__)
@@ -204,6 +208,7 @@
   #include <windot11.h>
 
   #define HAVE_WINDOT11_H
+  #define HAVE_WSAQuerySetA
   #define COMPILE_WINADINF_C
 
 #elif defined(__BORLANDC__) && (__BORLANDC__ >= 0x0700)
@@ -230,6 +235,7 @@
   #define HAVE_NETIOAPI_H
   #define HAVE_WLANAPI_H
   #define HAVE_WINDOT11_H
+  #define HAVE_WSAQuerySetA
   #define COMPILE_WINADINF_C
 
 #elif defined(__MINGW32__)      /* old-school MinGW */
@@ -341,7 +347,6 @@
   #endif
 #endif
 
-
 #if !defined(HAVE_WINDOT11_H) && defined(COMPILE_WINADINF_C)
   /*
    * The DOT11 stuff ripped from OpenWatcom's <wlantype.h> and <windot11.h>.
@@ -400,7 +405,6 @@
   } DOT11_CIPHER_ALGORITHM;
 
   typedef UCHAR DOT11_MAC_ADDRESS [6]; /* 802.11 MAC address */
-
 #endif
 
 #if !defined(HAVE_WLANAPI_H) && defined(COMPILE_WINADINF_C)
@@ -557,7 +561,14 @@
           DOT11_CIPHER_ALGORITHM dot11CipherAlgorithm;
         } WLAN_SECURITY_ATTRIBUTES;
 
-  #if !defined(__WATCOMC__)
+  #if defined(__WATCOMC__)
+    #define DOT11_RATE_SET_MAX_LENGTH 126
+
+    typedef struct _WLAN_RATE_SET {
+            ULONG  uRateSetLength;
+            USHORT usRateSet [DOT11_RATE_SET_MAX_LENGTH];
+          } WLAN_RATE_SET;
+  #else
     typedef struct _DOT11_AUTH_CIPHER_PAIR {
             DOT11_AUTH_ALGORITHM   AuthAlgoId;
             DOT11_CIPHER_ALGORITHM CipherAlgoId;
@@ -631,7 +642,28 @@
           DWORD          dwNumberOfItems;
           WLAN_BSS_ENTRY wlanBssEntries [1];
         } WLAN_BSS_LIST;
-#endif  /* HAVE_WLANAPI_H */
+#endif  /* HAVE_WLANAPI_H) && COMPILE_WINADINF_C */
+
+
+#if !defined(HAVE_WSAQuerySetA) && defined(COMPILE_WINADINF_C)
+  typedef struct _WSAQuerySetA {
+          DWORD           dwSize;
+          char           *lpszServiceInstanceName;
+          GUID           *lpServiceClassId;
+          WSAVERSION     *lpVersion;
+          char           *lpszComment;
+          DWORD           dwNameSpace;
+          GUID           *lpNSProviderId;
+          char           *lpszContext;
+          DWORD           dwNumberOfProtocols;
+          AFPROTOCOLS    *lpafpProtocols;
+          char           *lpszQueryString;
+          DWORD           dwNumberOfCsAddrs;
+          CSADDR_INFO    *lpcsaBuffer;
+          DWORD           dwOutputFlags;
+          BLOB           *lpBlob;
+        } WSAQUERYSETA;
+#endif
 
 /*
  * Flags that control the list returned by WlanGetAvailableNetworkList
@@ -751,6 +783,12 @@
 #define NDIS_IF_MAX_STRING_SIZE      256
 #endif
 
+/* Missing in Watcom's <nspapi.h>
+ */
+#ifndef NS_BTH
+#define NS_BTH                       16
+#endif
+
 #ifndef IP_ADAPTER_RECEIVE_ONLY
 #define IP_ADAPTER_RECEIVE_ONLY      0x00000008
 #endif
@@ -768,34 +806,6 @@
 #endif
 
 #if defined(INSIDE_WINADINF_C) && defined(COMPILE_WINADINF_C)
-  #ifndef __in
-  #define __in
-  #endif
-
-  #ifndef __inout
-  #define __inout
-  #endif
-
-  #ifndef __in_opt
-  #define __in_opt
-  #endif
-
-  #ifndef __out
-  #define __out
-  #endif
-
-  #ifndef __out_opt
-  #define __out_opt
-  #endif
-
-  #ifndef __deref_out
-  #define __deref_out
-  #endif
-
-  #ifndef __reserved
-  #define __reserved
-  #endif
-
   /*
    * TDM-MinGW and MinGW64 got this structure wrong since the MSDN docs are
    * wrong too.
@@ -816,7 +826,7 @@
             SOCKADDR_INET     Address;
             NET_IFINDEX       InterfaceIndex;
             NET_LUID          InterfaceLuid;
-            UCHAR             PhysicalAddress[IF_MAX_PHYS_ADDRESS_LENGTH];
+            UCHAR             PhysicalAddress [IF_MAX_PHYS_ADDRESS_LENGTH];
             ULONG             PhysicalAddressLength;
             NL_NEIGHBOR_STATE State;
             union {
@@ -844,6 +854,11 @@
             ULONG          NumEntries;
             MIB_IPNET_ROW2 Table [1];
           } MIB_IPNET_TABLE2;
+
+    typedef struct _MIB_IPFORWARD_TABLE2 {
+            ULONG              NumEntries;
+            MIB_IPFORWARD_ROW2 Table [1];
+          } MIB_IPFORWARD_TABLE2;
 
     typedef enum _DOT11_RADIO_STATE {
             dot11_radio_state_unknown,
@@ -879,20 +894,21 @@
   static void print_radio_state             (const WLAN_RADIO_STATE *rs, int indent);
   static void print_auth_pairs              (const WLAN_AUTH_CIPHER_PAIR_LIST2 *auth, int indent);
 
-  static void print_mib_ipnetrow   (DWORD index, const MIB_IPNETROW *row);
-  static void print_mib_ipnet_row2 (DWORD index, const MIB_IPNET_ROW2 *row);
+  static void print_mib_ipnetrow       (DWORD index, const MIB_IPNETROW *row);
+  static void print_mib_ipnet_row2     (DWORD index, const MIB_IPNET_ROW2 *row);
+  static void print_mib_ipforward_row2 (DWORD index, const MIB_IPFORWARD_ROW2 *row, int family);
 
   static int compare_ipnetrow  (const void *_a, const void *_b);
   static int compare_ipnetrow2 (const void *_a, const void *_b);
 
   static void print_mib_if_row (DWORD index, const MIB_IFROW *row);
 
-  #if defined(ON_WIN_VISTA) && defined(HAVE_NETIOAPI_H)
-    static void print_mib_if_row2 (DWORD index, const MIB_IF_ROW2 *row, int verbose);
-    static void print_net_luid    (const NET_LUID *luid, int indent);
-  #endif
-
   #if defined(ON_WIN_VISTA)
+    #if defined(HAVE_NETIOAPI_H)
+      static void print_mib_if_row2 (DWORD index, const MIB_IF_ROW2 *row);
+      static void print_net_luid    (const NET_LUID *luid, int indent);
+    #endif
+
     static const char *get_best_route2 (IF_LUID *luid, const SOCKADDR_INET *dest);
   #endif
 

@@ -57,6 +57,7 @@
 #include "misc.h"
 #include "run.h"
 #include "gettod.h"
+#include "timer.h"
 #include "win_dll.h"
 
 /*
@@ -80,166 +81,233 @@
 #define PRINT_RAS_ERROR(space,ret) \
         (*_printf) ("%s%s(%u): error: %s\n", space, __FILE__, __LINE__, ras_strerror(ret))
 
-typedef int (WINAPI *func_WSAStartup) (
-        __in    WORD     version,
-        __inout WSADATA *data);
+#define TRACE(level, ...)  do {                                         \
+                             if (verbose_level >= level) {              \
+                               printf ("%s(%u): ", __FILE__, __LINE__); \
+                               printf (__VA_ARGS__);                    \
+                             }                                          \
+                           } while (0)
 
-typedef int (WINAPI *func_WSACleanup) (void);
+#ifndef __in
+#define __in
+#endif
 
-typedef int (WINAPI *func_WSAGetLastError) (void);
+#ifndef __inout
+#define __inout
+#endif
 
-typedef INT (WINAPI *func_WSAAddressToStringA) (
-        __in      SOCKADDR         *lpsaAddress,
-        __in      DWORD             dwAddressLength,
-        __in_opt  WSAPROTOCOL_INFO *lpProtocolInfo,
-        __inout   CHAR             *lpszAddressString,
-        __inout   DWORD            *lpdwAddressStringLength);
+#ifndef __in_opt
+#define __in_opt
+#endif
 
-typedef ULONG (WINAPI *func_GetAdaptersAddresses) (
-        __in    ULONG                 Family,
-        __in    ULONG                 Flags,
-        __in    VOID                 *Reserved,
-        __out   IP_ADAPTER_ADDRESSES *AdapterAddresses,
-        __inout ULONG                *outBufLen);
+#ifndef __out
+#define __out
+#endif
 
-typedef IP_ADAPTER_ORDER_MAP * (WINAPI *func_GetAdapterOrderMap) (void);
+#ifndef __out_opt
+#define __out_opt
+#endif
 
-typedef DWORD (WINAPI *func_GetIfTable) (
-        __out    MIB_IFTABLE *pIfTable,
-        __inout  ULONG       *pdwSize,
-        __in     BOOL         bOrder);
+#ifndef __deref_out
+#define __deref_out
+#endif
 
-typedef DWORD (WINAPI *func_GetIfTable2) (
-        __out   MIB_IF_TABLE2 **table);
+#ifndef __reserved
+#define __reserved
+#endif
 
-typedef DWORD (WINAPI *func_GetIpInterfaceEntry) (
-        __inout MIB_IPINTERFACE_ROW *row);
+/**
+ * We only need 1 set of function-pointers for each loaded .DLL.
+ *
+ * \def DEF_FUNC(ret,f,(args))
+ *   define the `typedef` and declare the function-pointer for
+ *   the function we want to import.
+ *   \param ret    the return value type (or `void`)
+ *   \param f      the name of the function (without any `"`).
+ *   \param (args) the function arguments (as one list).
+ */
+#define DEF_FUNC(ret,f,args)  typedef ret (WINAPI *func_##f) args; \
+                              static func_##f p_##f = NULL
 
-typedef DWORD (WINAPI *func_GetIfTable2Ex) (
-        __in    MIB_IF_TABLE_LEVEL level,
-        __out   MIB_IF_TABLE2    **table);
+/* From "ws2_32.dll"
+ */
+DEF_FUNC (int, WSAStartup, (__in    WORD     version,
+                            __inout WSADATA *data));
 
-typedef DWORD (WINAPI *func_GetIpNetTable) (
-        __out    MIB_IPNETTABLE *table,
-        __inout  ULONG          *size,
-        __in     BOOL            sort);
+DEF_FUNC (int, WSACleanup, (void));
+DEF_FUNC (int, WSAGetLastError, (void));
 
-typedef DWORD (WINAPI *func_GetIpNetTable2) (
-        __in  u_short            family,
-        __out MIB_IPNET_TABLE2 **table);
+DEF_FUNC (INT, WSAAddressToStringA,
+          (__in      SOCKADDR         *lpsaAddress,
+           __in      DWORD             dwAddressLength,
+           __in_opt  WSAPROTOCOL_INFO *lpProtocolInfo,
+           __inout   CHAR             *lpszAddressString,
+           __inout   DWORD            *lpdwAddressStringLength));
 
-typedef void (WINAPI *func_FreeMibTable) (
-        __in void *mem);
+DEF_FUNC (INT, WSALookupServiceBeginA,
+          (__in  WSAQUERYSETA *lpqsRestrictions,
+           __in  DWORD         dwControlFlags,
+           __out HANDLE       *lphLookup));
 
-typedef DWORD (WINAPI *func_GetIpAddrTable) (
-        __out   MIB_IPADDRTABLE *table,
-        __inout ULONG           *size,
-        __in    BOOL             order);
+DEF_FUNC (INT, WSALookupServiceEnd,
+          (__in HANDLE lphLookup));
 
-typedef DWORD (WINAPI *func_GetBestRoute) (
-        __in   DWORD             dest_addr,
-        __in   DWORD             source_addr,
-        __out  MIB_IPFORWARDROW *best_route);
+DEF_FUNC (INT, WSALookupServiceNextA,
+          (__in   HANDLE        hLookup,
+          __in    DWORD         dwControlFlags,
+          __inout DWORD        *lpdwBufferLength,
+          __out   WSAQUERYSETA *lpqsResults));
 
-typedef DWORD (WINAPI *func_GetBestRoute2) (
-        __in_opt NET_LUID             *interface_Luid,
-        __in     NET_IFINDEX           interface_index,
-        __in     const SOCKADDR_INET  *source_address,
-        __in     const SOCKADDR_INET  *destination_address,
-        __in     ULONG                 address_sort_options,
-        __out    MIB_IPFORWARD_ROW2   *best_route,
-        __out    SOCKADDR_INET        *best_source_address);
+/* From "iphlpapi.dll"
+ */
+DEF_FUNC (ULONG, GetAdaptersAddresses,
+          (__in    ULONG                 Family,
+           __in    ULONG                 Flags,
+           __in    void                 *Reserved,
+           __out   IP_ADAPTER_ADDRESSES *AdapterAddresses,
+           __inout ULONG                *outBufLen));
 
-typedef DWORD (WINAPI *func_ConvertInterfaceLuidToIndex) (
-        __in  const NET_LUID    *luid,
-        __out       NET_IFINDEX *index);
+DEF_FUNC (IP_ADAPTER_ORDER_MAP *, GetAdapterOrderMap, (void));
 
-typedef DWORD (WINAPI *func_ConvertInterfaceLuidToNameA) (
-        __in  const NET_LUID *luid,
-        __out       char     *if_name,
-        __in        size_t    length);
+DEF_FUNC (DWORD, GetIfTable,
+          (__out    MIB_IFTABLE *pIfTable,
+           __inout  ULONG       *pdwSize,
+           __in     BOOL         bOrder));
 
-typedef DWORD (WINAPI *func_GetIfEntry) (__inout MIB_IFROW *if_row);
+DEF_FUNC (DWORD, GetIfTable2, (__out MIB_IF_TABLE2 **table));
+DEF_FUNC (DWORD, GetIpInterfaceEntry, (__inout MIB_IPINTERFACE_ROW *row));
 
-typedef DWORD (WINAPI *func_RasEnumConnectionsA) (
-        __inout  RASCONN *lprasconn,
-        __inout  DWORD   *lpcb,
-        __out    DWORD   *lpcConnections);
+DEF_FUNC (DWORD, GetIfTable2Ex, (__in    MIB_IF_TABLE_LEVEL level,
+                                 __out   MIB_IF_TABLE2    **table));
 
-typedef DWORD (WINAPI *func_RasGetConnectionStatistics) (
-        __in     HRASCONN   hRasConn,
-        __inout  RAS_STATS *lpStatistics);
+DEF_FUNC (DWORD, GetIpNetTable,
+          (__out    MIB_IPNETTABLE *table,
+           __inout  ULONG          *size,
+           __in     BOOL            sort));
 
-typedef DWORD (WINAPI *func_RasGetErrorStringA) (
-        __in   UINT   err,
-        __out  CHAR  *err_str,
-        __in   DWORD  size);
+DEF_FUNC (DWORD, GetIpNetTable2,
+          (__in  u_short            family,
+           __out MIB_IPNET_TABLE2 **table));
 
-typedef DWORD (WINAPI *func_RasGetProjectionInfoA) (
-        __in     HRASCONN      hrasconn,
-        __in     RASPROJECTION rasprojection,
-        __out    VOID         *lpprojection,
-        __inout  DWORD        *lpcb);
+DEF_FUNC (void, FreeMibTable, (__in void *mem));
 
-typedef DWORD (WINAPI *func_WlanOpenHandle) (
-       __in       DWORD   dwClientVersion,
-       __reserved VOID   *pReserved,
-       __out      DWORD  *pdwNegotiatedVersion,
-       __out      HANDLE *phClientHandle);
+DEF_FUNC (DWORD, GetIpAddrTable,
+          (__out   MIB_IPADDRTABLE *table,
+           __inout ULONG           *size,
+           __in    BOOL             order));
 
-typedef DWORD (WINAPI *func_WlanCloseHandle) (
-       __in        HANDLE dwClientHandle,
-       __reserved  VOID  *pReserved);
+DEF_FUNC (DWORD, GetBestRoute,
+          (__in   DWORD             dest_addr,
+           __in   DWORD             source_addr,
+           __out  MIB_IPFORWARDROW *best_route));
 
-typedef DWORD (WINAPI *func_WlanEnumInterfaces) (
-        __in        HANDLE                     hClientHandle,
-        __reserved  VOID                      *pReserved,
-        __deref_out WLAN_INTERFACE_INFO_LIST **ppInterfaceList);
+DEF_FUNC (DWORD, GetBestRoute2,
+          (__in_opt NET_LUID             *interface_Luid,
+           __in     NET_IFINDEX           interface_index,
+           __in     const SOCKADDR_INET  *source_address,
+           __in     const SOCKADDR_INET  *destination_address,
+           __in     ULONG                 address_sort_options,
+           __out    MIB_IPFORWARD_ROW2   *best_route,
+           __out    SOCKADDR_INET        *best_source_address));
 
-typedef DWORD (WINAPI *func_WlanQueryInterface) (
-        __in        HANDLE                  hClientHandle,
-        __in        const GUID             *pInterfaceGuid,
-        __in        WLAN_INTF_OPCODE        OpCode,
-        __reserved  VOID                   *pReserved,
-        __out       DWORD                  *pdwDataSize,
-        __out       VOID                  **ppData,
-        __out_opt   WLAN_OPCODE_VALUE_TYPE *pWlanOpcodeValueType);
+DEF_FUNC (DWORD, GetIpForwardTable2,
+          (__in  WORD                   family,
+           __out MIB_IPFORWARD_TABLE2 **table));
 
-typedef DWORD (WINAPI *func_WlanGetAvailableNetworkList) (
-        __in        HANDLE                        hClientHandle,
-        __in        const GUID                   *pInterfaceGuid,
-        __in        DWORD                         dwFlags,
-        __reserved  VOID                         *pReserved,
-        __out       WLAN_AVAILABLE_NETWORK_LIST **AvailableNetworks);
+DEF_FUNC (DWORD, ConvertInterfaceLuidToIndex,
+          (__in  const NET_LUID    *luid,
+           __out       NET_IFINDEX *index));
 
-typedef DWORD (WINAPI *func_WlanGetNetworkBssList) (
-        __in       HANDLE            hClientHandle,
-        __in       const GUID       *pInterfaceGuid,
-        __in_opt   const DOT11_SSID *pDot11Ssid,
-        __in       DOT11_BSS_TYPE    dot11BssType,
-        __in       BOOL              bSecurityEnabled,
-        __reserved VOID             *pReserved,
-        __out      WLAN_BSS_LIST   **WlanBssList);
+DEF_FUNC (DWORD, ConvertInterfaceLuidToNameA,
+          (__in  const NET_LUID *luid,
+           __out       char     *if_name,
+           __in        size_t    length));
 
-typedef DWORD (WINAPI *func_WlanReasonCodeToString) (
-        __in       DWORD    dwReasonCode,
-        __in       DWORD    dwBufferSize,
-        __in       WCHAR   *pStringBuffer,
-        __reserved VOID    *pReserved);
+DEF_FUNC (DWORD, GetIfEntry, (__inout MIB_IFROW *if_row));
 
-typedef DWORD (WINAPI *func_WlanGetInterfaceCapability) (
-        __in       HANDLE                      hClientHandle,
-        __in       const GUID                 *pInterfaceGuid,
-        __reserved VOID                       *pReserved,
-        __out      WLAN_INTERFACE_CAPABILITY **ppCapability);
 
-typedef VOID (WINAPI *func_WlanFreeMemory) (
-        __in VOID *memory);
+/* From "rasapi32.dll"
+ */
+DEF_FUNC (DWORD, RasEnumConnectionsA,
+          (__inout RASCONN *lprasconn,
+           __inout DWORD   *lpcb,
+           __out   DWORD   *lpcConnections));
 
-typedef int (WINAPI *func_StringFromGUID2) (
-       __in  REFGUID  rguid,
-       __out LPOLESTR lpsz,
-       __in  int      cchMax);
+DEF_FUNC (DWORD, RasGetConnectionStatistics,
+          (__in    HRASCONN   hRasConn,
+           __inout RAS_STATS *lpStatistics));
+
+DEF_FUNC (DWORD, RasGetErrorStringA,
+          (__in  UINT   err,
+           __out CHAR  *err_str,
+           __in  DWORD  size));
+
+DEF_FUNC (DWORD, RasGetProjectionInfoA,
+          (__in    HRASCONN      hrasconn,
+           __in    RASPROJECTION rasprojection,
+           __out   void         *lpprojection,
+           __inout DWORD        *lpcb));
+
+/* From "wlanapi.dll"
+ */
+DEF_FUNC (DWORD, WlanOpenHandle,
+          (__in       DWORD   dwClientVersion,
+           __reserved void   *pReserved,
+           __out      DWORD  *pdwNegotiatedVersion,
+           __out      HANDLE *phClientHandle));
+
+DEF_FUNC (DWORD, WlanCloseHandle,
+          (__in       HANDLE dwClientHandle,
+           __reserved void  *pReserved));
+
+DEF_FUNC (DWORD, WlanEnumInterfaces,
+          (__in        HANDLE                     hClientHandle,
+           __reserved  void                      *pReserved,
+           __deref_out WLAN_INTERFACE_INFO_LIST **ppInterfaceList));
+
+DEF_FUNC (DWORD, WlanQueryInterface,
+          (__in       HANDLE                  hClientHandle,
+           __in       const GUID             *pInterfaceGuid,
+           __in       WLAN_INTF_OPCODE        OpCode,
+           __reserved void                   *pReserved,
+           __out      DWORD                  *pdwDataSize,
+           __out      void                  **ppData,
+           __out_opt  WLAN_OPCODE_VALUE_TYPE *pWlanOpcodeValueType));
+
+DEF_FUNC (DWORD, WlanGetAvailableNetworkList,
+          (__in       HANDLE                        hClientHandle,
+           __in       const GUID                   *pInterfaceGuid,
+           __in       DWORD                         dwFlags,
+           __reserved void                         *pReserved,
+           __out      WLAN_AVAILABLE_NETWORK_LIST **AvailableNetworks));
+
+DEF_FUNC (DWORD, WlanGetNetworkBssList,
+          (__in       HANDLE            hClientHandle,
+           __in       const GUID       *pInterfaceGuid,
+           __in_opt   const DOT11_SSID *pDot11Ssid,
+           __in       DOT11_BSS_TYPE    dot11BssType,
+           __in       BOOL              bSecurityEnabled,
+           __reserved void             *pReserved,
+           __out      WLAN_BSS_LIST   **WlanBssList));
+
+DEF_FUNC (DWORD, WlanReasonCodeToString,
+          (__in       DWORD  dwReasonCode,
+           __in       DWORD  dwBufferSize,
+           __in       WCHAR *pStringBuffer,
+           __reserved void  *pReserved));
+
+DEF_FUNC (DWORD, WlanGetInterfaceCapability,
+          (__in       HANDLE                      hClientHandle,
+           __in       const GUID                 *pInterfaceGuid,
+           __reserved void                       *pReserved,
+           __out      WLAN_INTERFACE_CAPABILITY **ppCapability));
+
+DEF_FUNC (void, WlanFreeMemory, (__in void *memory));
+
+DEF_FUNC (int, StringFromGUID2,  /* "ole32.dll" */
+          (__in  REFGUID  rguid,
+           __out LPOLESTR lpsz,
+           __in  int      cchMax));
 
 struct one_addr {
        char addr [MAX_IP6_SZ];
@@ -253,43 +321,37 @@ W32_FUNC unsigned long  cdecl _w32_intel (unsigned long x);
 W32_FUNC unsigned short cdecl _w32_intel16 (unsigned short x);
 W32_FUNC const char *W32_CALL _w32_inet_ntop (int af, const void *src,
                                               char *dst, size_t size);
-static int  verbose_level = 0;
+/*
+ * Some of the values under the Registry key
+ *   HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\Class\{4d36e972-e325-11ce-bfc1-08002be10318}\000x
+ */
+struct setup_info_st {
+       char                 *NetCfgInstanceId;
+       char                 *MatchingDeviceId;
+       char                 *DriverDate;
+       char                 *DriverVersion;
+       char                 *ComponentId;
+       char                 *DeviceInstanceID;
+       ULONGLONG             NetworkInterfaceInstallTimestamp;
+       unsigned              IfTypePreStart;      /* 'IF_TYPE_xx' values from <ipifcons.h> */
+       struct setup_info_st *next;
+     };
+
+/* 50 elements should be plenty
+ */
+static struct setup_info_st setup_info [50];
+
+static void setup_info_get (void);
+static int  setup_info_populate (const char *key_name, struct setup_info_st *info);
+static void setup_info_dump (void);
+static void setup_info_adapter_print (const char *adapter_name);
+static void setup_info_free (void);
+
 static BOOL ipv4_only_iface = TRUE;
 static char work_buf [10000];
+static int  verbose_level = 0;
 
 static void print_wlan_bss_list (const WLAN_BSS_LIST *bss_list);
-
-static func_WSAStartup                  p_WSAStartup = NULL;
-static func_WSACleanup                  p_WSACleanup = NULL;
-static func_WSAAddressToStringA         p_WSAAddressToStringA = NULL;
-static func_WSAGetLastError             p_WSAGetLastError = NULL;
-static func_GetAdaptersAddresses        p_GetAdaptersAddresses = NULL;
-static func_GetAdapterOrderMap          p_GetAdapterOrderMap = NULL;
-static func_GetIfTable                  p_GetIfTable = NULL;
-static func_GetIfTable2                 p_GetIfTable2 = NULL;
-static func_GetIfTable2Ex               p_GetIfTable2Ex = NULL;
-static func_GetIpInterfaceEntry         p_GetIpInterfaceEntry = NULL;
-static func_GetIpNetTable               p_GetIpNetTable = NULL;
-static func_GetIpNetTable2              p_GetIpNetTable2 = NULL;
-static func_FreeMibTable                p_FreeMibTable = NULL;
-static func_GetIpAddrTable              p_GetIpAddrTable = NULL;
-static func_GetBestRoute                p_GetBestRoute = NULL;
-static func_GetBestRoute2               p_GetBestRoute2 = NULL;
-static func_ConvertInterfaceLuidToIndex p_ConvertInterfaceLuidToIndex = NULL;
-static func_ConvertInterfaceLuidToNameA p_ConvertInterfaceLuidToNameA = NULL;
-static func_RasEnumConnectionsA         p_RasEnumConnectionsA = NULL;
-static func_RasGetErrorStringA          p_RasGetErrorStringA = NULL;
-static func_RasGetConnectionStatistics  p_RasGetConnectionStatistics = NULL;
-static func_RasGetProjectionInfoA       p_RasGetProjectionInfoA = NULL;
-static func_WlanOpenHandle              p_WlanOpenHandle = NULL;
-static func_WlanCloseHandle             p_WlanCloseHandle = NULL;
-static func_WlanEnumInterfaces          p_WlanEnumInterfaces = NULL;
-static func_WlanQueryInterface          p_WlanQueryInterface = NULL;
-static func_WlanGetAvailableNetworkList p_WlanGetAvailableNetworkList = NULL;
-static func_WlanGetNetworkBssList       p_WlanGetNetworkBssList = NULL;
-static func_WlanFreeMemory              p_WlanFreeMemory = NULL;
-static func_WlanReasonCodeToString      p_WlanReasonCodeToString = NULL;
-static func_StringFromGUID2             p_StringFromGUID2 = NULL;
 
 #define ADD_VALUE(dll, func)  { NULL, _T(dll), #func, (void**)&p_##func }
 
@@ -298,6 +360,9 @@ static struct LoadTable dyn_funcs2[] = {
                         ADD_VALUE ("ws2_32.dll",   WSACleanup),
                         ADD_VALUE ("ws2_32.dll",   WSAAddressToStringA),
                         ADD_VALUE ("ws2_32.dll",   WSAGetLastError),
+                        ADD_VALUE ("ws2_32.dll",   WSALookupServiceBeginA),
+                        ADD_VALUE ("ws2_32.dll",   WSALookupServiceEnd),
+                        ADD_VALUE ("ws2_32.dll",   WSALookupServiceNextA),
                         ADD_VALUE ("ole32.dll",    StringFromGUID2),
                         ADD_VALUE ("iphlpapi.dll", GetAdaptersAddresses),
                         ADD_VALUE ("iphlpapi.dll", GetAdapterOrderMap),
@@ -311,6 +376,7 @@ static struct LoadTable dyn_funcs2[] = {
                         ADD_VALUE ("iphlpapi.dll", GetIpAddrTable),
                         ADD_VALUE ("iphlpapi.dll", GetBestRoute),
                         ADD_VALUE ("iphlpapi.dll", GetBestRoute2),
+                        ADD_VALUE ("iphlpapi.dll", GetIpForwardTable2),
                         ADD_VALUE ("iphlpapi.dll", ConvertInterfaceLuidToIndex),
                         ADD_VALUE ("iphlpapi.dll", ConvertInterfaceLuidToNameA),
                         ADD_VALUE ("rasapi32.dll", RasEnumConnectionsA),
@@ -327,48 +393,65 @@ static struct LoadTable dyn_funcs2[] = {
                         ADD_VALUE ("wlanapi.dll" , WlanReasonCodeToString)
                       };
 
-static void W32_CALL unload_dlls (void)
+/*
+ * Load the above DLLs, set func-ptrs and
+ * call the real WSAStartup().
+ */
+static BOOL load_dlls (void)
 {
+  BOOL    rc;
+  WORD    ver = MAKEWORD (2,2);
+  WSADATA data = { 0 };
+
+  rc = load_dynamic_table (dyn_funcs2, DIM(dyn_funcs2));
+  if (rc)
+  {
+    int err = (*p_WSAStartup) (ver, &data); /* Required for WSAAddressToStringA() etc. */
+    TRACE (3, "WSAStartup() -> err: %s\n"
+              "                ver: %u.%u, high-ver: %u.%u, "
+              "description: \"%s\", status: \"%s\"\n",
+              err ? win_strerror ((*p_WSAGetLastError)()) : NONE_STR,
+              loBYTE(data.wVersion), hiBYTE(data.wVersion),
+              loBYTE(data.wHighVersion), hiBYTE(data.wHighVersion),
+              data.szDescription, data.szSystemStatus);
+    rc = (err == 0);
+  }
+  TRACE (3, "load_dlls(): %s.\n", rc ? "okay" : "failed");
+  return (rc);
+}
+
+/*
+ * The 'rundown()' (atexit()) handler for this module.
+ */
+static void W32_CALL pkt_win_exit (void)
+{
+  setup_info_free();
+
   if (p_WSACleanup)
     (*p_WSACleanup)();
   unload_dynamic_table (dyn_funcs2, DIM(dyn_funcs2));
 }
 
 /*
- * Main initializer for WinAdapterInfo; load DLLs, set func-ptrs and
- * call the real WSAStartup().
+ * Main initializer for this module. Do this once:
+ *  *) load DLLs.
+ *  *) set func-ptrs.
+ *  *) call the real WSAStartup().
  */
-static int load_dlls (void)
+static BOOL pkt_win_init (void)
 {
-  static  int rc, done = 0;
-  WORD    ver = MAKEWORD (2,2);
-  WSADATA data = { 0 };
-  const char *env;
+  static BOOL rc = FALSE;
+  static BOOL done = FALSE;
 
-  if (done)
-     return (rc);
-
-  env = getenv ("TCPINFO_DEBUG");
-  if (env)
-     verbose_level = *env - '0';
-
-  rc = load_dynamic_table (dyn_funcs2, DIM(dyn_funcs2));
-  if (rc)
+  if (!done)
   {
-    int err = (*p_WSAStartup) (ver, &data); /* Required for WSAAddressToStringA() etc. */
-    TCP_CONSOLE_MSG (4, ("WSAStartup() -> err: %s\n"
-                         "                ver: %u.%u, high-ver: %u.%u, "
-                         "description: \"%s\", status: \"%s\"\n",
-                         err ? win_strerror ((*p_WSAGetLastError)()) : NONE_STR,
-                         loBYTE(data.wVersion), hiBYTE(data.wVersion),
-                         loBYTE(data.wHighVersion), hiBYTE(data.wHighVersion),
-                         data.szDescription, data.szSystemStatus));
-    rc = (err == 0);
+    setup_info_get();
+    if (verbose_level >= 2)
+       setup_info_dump();
+    rc = load_dlls();
+    RUNDOWN_ADD (pkt_win_exit, 300);
   }
-
-  TCP_CONSOLE_MSG (4, ("load_dlls(): %s.\n", rc ? "okay" : "failed"));
-  RUNDOWN_ADD (unload_dlls, 300);
-  done = 1;
+  done = TRUE;
   return (rc);
 }
 
@@ -376,18 +459,18 @@ static int load_dlls (void)
  * Search 'list' for 'type' and return it's name.
  * Duplicate it here in-case 'USE_DEBUG' isn't defined for misc.c.
  */
-static const char *_list_lookup (DWORD type, const struct search_list *list, int num)
+static const char *_list_lookup (DWORD value, const struct search_list *list, int num)
 {
   static char buf[15];
 
   while (num > 0 && list->name)
   {
-    if (list->type == type)
+    if (list->type == value)
        return (list->name);
     num--;
     list++;
   }
-  sprintf (buf, "?%lu", (u_long)type);
+  sprintf (buf, "?%lu", (u_long)value);
   return (buf);
 }
 
@@ -399,10 +482,11 @@ static const struct search_list wsock_err_tab[] = {
 static const char *get_wsock_err (void)
 {
   static char buf[100];
-  DWORD  err;
+  int    err;
 
   if (!p_WSAGetLastError)
      return ("WS2_32.DLL not loaded");
+
   err = (*p_WSAGetLastError)();
 
   SNPRINTF (buf, sizeof(buf), "%s", err ?
@@ -632,6 +716,273 @@ static const char *duration_string (DWORD msec)
   return (buf);
 }
 
+/**
+ * Enumerate all "000x" keys under:
+ *   HKLM\SYSTEM\CurrentControlSet\Control\Class\{4D36E972-E325-11CE-BFC1-08002BE10318}
+ *
+ * This is the "System-Defined Device Setup Classes Available to Vendors".
+ * Ref:
+ *   https://docs.microsoft.com/en-us/windows-hardware/drivers/install/system-defined-device-setup-classes-available-to-vendors
+ *
+ * \note A "Software Loopback Interface" does not have a key under the KEY_NAME branch.
+ */
+#define KEY_NAME "SYSTEM\\CurrentControlSet\\Control\\Class\\{4D36E972-E325-11CE-BFC1-08002BE10318}"
+
+static void setup_info_get (void)
+{
+  struct setup_info_st *inf, *prev = NULL;
+  HKEY   key = NULL;
+  int    num;
+  DWORD  rc  = RegOpenKeyEx (HKEY_LOCAL_MACHINE, KEY_NAME, 0, KEY_READ, &key);
+
+  memset (&setup_info, '\0', sizeof(setup_info));
+  inf = setup_info + 0;
+
+  TRACE (3, "RegOpenKeyEx (HKEY_LOCAL_MACHINE\\%s, KEY_READ): %lu\n", KEY_NAME, rc);
+
+  for (num = 0; rc == ERROR_SUCCESS; num++)
+  {
+    char  sub_key [512];  /* Full key name for this leaf */
+    char  new_key [512];  /* The current leaf we're at now */
+    DWORD size = sizeof(new_key);
+
+    rc = RegEnumKeyEx (key, num, new_key, &size, NULL, NULL, NULL, NULL);
+    if (rc == ERROR_NO_MORE_ITEMS)
+       break;
+
+    SNPRINTF (sub_key, sizeof(sub_key), "%s\\%s", KEY_NAME, new_key);
+    TRACE (3, "  RegOpenKeyEx (HKEY_LOCAL_MACHINE\\%s):\n", sub_key);
+    if (new_key[0] != '0')
+    {
+      TRACE (3, "  Ignoring the rest of the leafs: %s\n", new_key);
+      break;
+    }
+    if (num >= DIM(setup_info)-1)
+    {
+      TRACE (3, "  Too many leafs: %s\n", new_key);
+      break;
+    }
+    if (setup_info_populate(sub_key, inf) > 0)
+    {
+      inf->next = inf + 1;
+      prev = inf;
+      inf++;
+    }
+  }
+  if (prev)
+     prev->next = NULL;
+  if (key)
+     RegCloseKey (key);
+}
+
+static void setup_info_dump (void)
+{
+  struct setup_info_st *inf = setup_info + 0;
+  int    i;
+
+  (*_printf) ("\nFrom setup_info:\n");
+  for (i = 0; inf; inf = inf->next, i++)
+  {
+    (*_printf) (" %2d: NetCfgInstanceId: %s\n"
+                "     DriverDate:       %s\n"
+                "     DriverVersion:    %s\n"
+                "     ComponentId:      %s\n"
+                "     DeviceInstanceID: %s\n"
+                "     IfTypePreStart:   %u\n"
+                "     next:             %p\n",
+                i,
+                inf->NetCfgInstanceId,
+                inf->DriverDate,
+                inf->DriverVersion,
+                inf->ComponentId,
+                inf->DeviceInstanceID,
+                inf->IfTypePreStart,
+                inf->next);
+  }
+}
+
+/**
+ * Walk the 'setup_info' array looking for a 'inf->NetCfgInstanceId == adapter_name'
+ * (there can be only one). Print some details for this physical adapter.
+ *
+ * For a software adapter (like the "Loopback" or a "QoS Packet Scheduler")
+ * all these will be "<unknown>".
+ */
+static void setup_info_adapter_print (const char *adapter_name)
+{
+  const struct setup_info_st *inf;
+  const char  *DriverDate       = "<unknown>";
+  const char  *DriverVersion    = "<unknown>";
+  const char  *ComponentId      = "<unknown>";
+  const char  *DeviceInstanceID = "<unknown>";
+  const char  *InstallTimeStamp = "<unknown>";
+  unsigned     IfTypePreStart   = 0;
+  char         buf [20];
+
+  for (inf = setup_info + 0; inf; inf = inf->next)
+  {
+    if (!inf->NetCfgInstanceId || strcmp(inf->NetCfgInstanceId,adapter_name))
+       continue;
+
+    IfTypePreStart   = inf->IfTypePreStart;
+    DriverDate       = inf->DriverDate       ? inf->DriverDate       : "<none>";
+    DriverVersion    = inf->DriverVersion    ? inf->DriverVersion    : "<none>";
+    ComponentId      = inf->ComponentId      ? inf->ComponentId      : "<none>";
+    DeviceInstanceID = inf->DeviceInstanceID ? inf->DeviceInstanceID : "<none>";
+    InstallTimeStamp = inf->NetworkInterfaceInstallTimestamp ?
+                            ULONGLONG_to_ctime(inf->NetworkInterfaceInstallTimestamp) :
+                            "<none>";
+    break;
+  }
+  (*_printf) ("    From setup_info:\n");
+  (*_printf) ("      InstallTimeStamp:  %s\n", InstallTimeStamp);
+  (*_printf) ("      DriverDate:        %s\n", DriverDate);
+  (*_printf) ("      DriverVersion:     %s\n", DriverVersion);
+  (*_printf) ("      ComponentId:       %s\n", ComponentId);
+  (*_printf) ("      DeviceInstanceID:  %s\n", DeviceInstanceID);
+  (*_printf) ("      IfTypePreStart:    %s\n", IfTypePreStart ? itoa((int)IfTypePreStart, buf, 10) : "<unknown>");
+}
+
+static void setup_info_free (void)
+{
+  struct setup_info_st *inf;
+
+  for (inf = setup_info + 0 ; inf; inf = inf->next)
+  {
+    if (inf->NetCfgInstanceId)
+       free (inf->NetCfgInstanceId);
+    if (inf->MatchingDeviceId)
+       free (inf->MatchingDeviceId);
+    if (inf->DriverDate)
+       free (inf->DriverDate);
+    if (inf->DriverVersion)
+       free (inf->DriverVersion);
+    if (inf->ComponentId)
+       free (inf->ComponentId);
+    if (inf->DeviceInstanceID)
+       free (inf->DeviceInstanceID);
+  }
+  setup_info[0].next = NULL;
+}
+
+static const char *reg_type_name (DWORD type)
+{
+  return (type == REG_NONE             ? "REG_NONE"             :
+          type == REG_SZ               ? "REG_SZ"               :
+          type == REG_MULTI_SZ         ? "REG_MULTI_SZ"         :
+          type == REG_LINK             ? "REG_LINK"             :
+          type == REG_BINARY           ? "REG_BINARY"           :
+          type == REG_DWORD            ? "REG_DWORD"            :
+          type == REG_QWORD            ? "REG_QWORD"            :
+          type == REG_EXPAND_SZ        ? "REG_EXPAND_SZ"        :
+          type == REG_RESOURCE_LIST    ? "REG_RESOURCE_LIST"    :
+          type == REG_DWORD_BIG_ENDIAN ? "REG_DWORD_BIG_ENDIAN" : "?");
+}
+
+static int setup_info_populate (const char *key_name, struct setup_info_st *info)
+{
+  HKEY  key = NULL;
+  DWORD num, rc = RegOpenKeyEx (HKEY_LOCAL_MACHINE, key_name, 0, KEY_READ, &key);
+  int   added = 0;
+
+  if (rc != ERROR_SUCCESS)
+  {
+    (*_printf) ("    Error opening registry key \"HKEY_LOCAL_MACHINE\\%s\", rc=%lu\n",
+                key_name, (u_long)rc);
+    return (0);
+  }
+
+  for (num = 0; rc == ERROR_SUCCESS; num++)
+  {
+    char   value [512] = "\0";
+    char   data [512]  = "\0";
+    DWORD  value_size  = sizeof(value);
+    DWORD  data_size   = sizeof(data);
+    DWORD  type        = REG_NONE;
+    DWORD  val32;
+    LONG64 val64;
+    const char *t_val = "";
+
+    rc = RegEnumValue (key, num, value, &value_size, NULL, &type, (LPBYTE)&data, &data_size);
+    if (rc == ERROR_NO_MORE_ITEMS)
+       break;
+
+    val32 = *(DWORD*) &data[0];
+    val64 = *(LONG64*) &data[0];
+
+    switch (type)
+    {
+      case REG_SZ:
+           TRACE (3, "    %2lu: %-12s %-35s -> %s\n",
+                  num, reg_type_name(type),
+                  value[0] ? value : "(no value)",
+                  data[0]  ? data  : "(no data)");
+
+           if (!strcmp(value,"NetCfgInstanceId"))
+           {
+             info->NetCfgInstanceId = strdup (data);
+             added++;
+           }
+           else if (!strcmp(value,"MatchingDeviceId"))
+           {
+             info->MatchingDeviceId = strdup (data);
+             added++;
+           }
+           else if (!strcmp(value,"DriverDate"))
+           {
+             info->DriverDate = strdup (data);
+             added++;
+           }
+           else if (!strcmp(value,"DriverVersion"))
+           {
+             info->DriverVersion = strdup (data);
+             added++;
+           }
+           else if (!strcmp(value,"DeviceInstanceID"))
+           {
+             info->DeviceInstanceID = strdup (data);
+             added++;
+           }
+           else if (!strcmp(value,"ComponentId"))
+           {
+             info->ComponentId = strdup (data);
+             added++;
+           }
+           break;
+
+      case REG_DWORD:
+           if (!strcmp(value,"IfTypePreStart"))
+           {
+             info->IfTypePreStart = val32;
+             added++;
+           }
+           TRACE (3, "    %2lu: %-12s %-35s -> %lu\n",
+                  num, reg_type_name(type), value[0] ? value : "(no value)", (u_long)val32);
+           break;
+
+      case REG_QWORD:
+           if (!strcmp(value,"NetworkInterfaceInstallTimestamp"))
+           {
+             info->NetworkInterfaceInstallTimestamp = (ULONGLONG)val64;
+             t_val = ULONGLONG_to_ctime (info->NetworkInterfaceInstallTimestamp);
+             added++;
+           }
+           TRACE (3, "    %2lu: %-12s %-35s -> %" S64_FMT " %s\n",
+                  num, reg_type_name(type), value[0] ? value : "(no value)", val64, t_val);
+           break;
+
+      default:
+           TRACE (3, "    %2lu: %-12s %-35s -> <ignored>\n",
+                  num, reg_type_name(type), value[0] ? value : "(no value)");
+           break;
+    }
+  }
+  TRACE (3, "\n");
+  if (key)
+     RegCloseKey (key);
+  return (added);
+}
+
 /*
  * Return a printable address from a 'SOCKADDR_INET*' union.
  * Use 4 buffers in round-robin.
@@ -656,10 +1007,37 @@ static const char *get_sockaddr_inet_str (const SOCKADDR_INET *sa)
   return (rc);
 }
 
+/*
+ * Print the count of ifaces not printed due to:
+ *  1) verbose_level too low.
+ *  2) not up
+ *  3) filtered; name ends in "-000X".
+ */
+static int num_ifaces_skipped  = 0;
+static int num_ifaces_not_up   = 0;
+static int num_ifaces_filtered = 0;
+
+static void print_skipped (void)
+{
+  int sum = num_ifaces_skipped + num_ifaces_not_up + num_ifaces_filtered;
+
+  if (verbose_level >= 1 && sum > 0)
+     (*_printf) ("** Skipped %d interfaces due to verbose level (%d not up, %d filtered)**.\n",
+                 sum, num_ifaces_not_up, num_ifaces_filtered);
+
+  num_ifaces_skipped  = 0;
+  num_ifaces_not_up   = 0;
+  num_ifaces_filtered = 0;
+}
+
 static BOOL skip_this_iface (const IP_ADAPTER_ADDRESSES *addr, const MIB_IFROW *if_row, const void *_if_row2)
 {
   if (verbose_level >= 2)
      return (FALSE);
+
+  if ((addr && addr->OperStatus != IfOperStatusUp) ||
+      (if_row && if_row->dwSpeed == 0UL))
+     num_ifaces_not_up++;
 
   if (addr)
   {
@@ -668,7 +1046,7 @@ static BOOL skip_this_iface (const IP_ADAPTER_ADDRESSES *addr, const MIB_IFROW *
        return (TRUE);
 #endif
     if (addr->OperStatus == IfOperStatusDown)
-       return (TRUE);
+      return (TRUE);
   }
   else if (if_row)
   {
@@ -684,7 +1062,6 @@ static BOOL skip_this_iface (const IP_ADAPTER_ADDRESSES *addr, const MIB_IFROW *
        return (TRUE);
 #endif
   }
-
   return (FALSE);
 }
 
@@ -824,7 +1201,16 @@ static const struct search_list neighbour_states[] = {
   };
 #endif
 
-static const char *get_phys_address (const void *a, ULONG len)
+struct tok {
+       unsigned    v;
+       const char *s;
+     };
+
+#define SMI_IETF 0
+
+#include "oui-generated.c"
+
+static const char *get_phys_address (const void *a, ULONG len, BOOL show_manuf)
 {
   const UCHAR *addr = (const UCHAR*)a;
   char        *p, *p_max = work_buf + sizeof(work_buf) - 4;
@@ -838,11 +1224,26 @@ static const char *get_phys_address (const void *a, ULONG len)
   for (i = 0; i < len && p < p_max; i++)
   {
     UCHAR b = addr[i];
+
     *p++ = hex_chars_upper [b >> 4];
     *p++ = hex_chars_upper [b & 0xf];
     if (i < len-1)
          *p++ = ':';
-    else *p++ = '\0';
+    else *p = '\0';
+  }
+
+  /* Get the manufacturer name for this MAC-address.
+   */
+  if (show_manuf)
+  {
+    DWORD oui = (addr[0] << 16) + (addr[1] << 8) + addr[2];
+
+    *p++ = ' ';
+    *p++ = '(';
+    _strlcpy (p, oui_val_to_name(oui), p_max-p);
+    p = strchr (p, '\0');
+    *p++ = ')';
+    *p++ = '\0';
   }
   return (work_buf);
 }
@@ -1063,46 +1464,45 @@ GET_ADDRESSES (get_dns_server_addrs, IP_ADAPTER_DNS_SERVER_ADDRESS, dns)
  *  and:
  *   '(Address.lpSockaddr)->sa_family'  for 'mca' and 'dns'
  */
-
-#ifdef BUG_HUNT
-static void dump_data (const void *data_p, UINT datalen)
+static void dump_data (const void *data_p, UINT datalen, const char *indent)
 {
   const BYTE *data = (const BYTE*) data_p;
   UINT  ofs;
+
+  if (!indent)
+     indent = "";
 
   for (ofs = 0; ofs < datalen; ofs += 16)
   {
     UINT j;
 
     if (ofs == 0)
-         printf ("%u:%s%04X: ", datalen,
-                 datalen > 9999 ? " "    :
-                 datalen > 999  ? "  "   :
-                 datalen > 99   ? "   "  :
-                 datalen > 9    ? "    " :
+         (*_printf) ("%s%u:%s%04X: ", indent, datalen,
+                     datalen > 9999 ? " "    :
+                     datalen > 999  ? "  "   :
+                     datalen > 99   ? "   "  :
+                     datalen > 9    ? "    " :
                                   "     ",
                  ofs);
-    else printf ("       %04X: ", ofs);
+    else (*_printf) ("%s       %04X: ", indent, ofs);
 
     for (j = 0; j < 16 && j+ofs < datalen; j++)
-        printf ("%02X%c", (unsigned)data[j+ofs],
-                j == 7 ? '-' : ' ');  /* no beeps */
+        (*_printf) ("%02X%c", (unsigned)data[j+ofs],
+                    j == 7 ? '-' : ' ');  /* no beeps */
 
     for ( ; j < 16; j++)       /* pad line to 16 positions */
-        printf ("   ");
+        (*_printf) ("   ");
 
     for (j = 0; j < 16 && j+ofs < datalen; j++)
     {
       int ch = data[j+ofs];
 
-      if (ch < ' ')            /* non-printable */
-           putchar ('.');
-      else putchar (ch);
+      (*_printf) ("%c", ch < ' ' ? '.' : ch);
     }
-    putchar ('\n');
+    (*_printf) ("\n");
   }
+  (*_printf) ("\n");
 }
-#endif
 
 /*
  * Use GetIfTable() and dump information from MIB.
@@ -1114,10 +1514,10 @@ static int _pkt_win_print_GetIfTable (void)
   DWORD        rc      = 0;
   UINT         i       = 0;
 
-  (*_printf) ("\nFrom GetIfTable():\n");
-
-  if (!load_dlls())
+  if (!pkt_win_init())
      return (0);
+
+  (*_printf) ("\nFrom GetIfTable():\n");
 
   if (!p_GetIfTable)
   {
@@ -1140,9 +1540,16 @@ static int _pkt_win_print_GetIfTable (void)
   {
     const MIB_IFROW *if_row = (const MIB_IFROW*) (if_table->table + i);
 
-    if (skip_this_iface(NULL,if_row,NULL) ||
-        skip_filter_iface(if_row->bDescr,NULL))
-       continue;
+    if (skip_this_iface(NULL,if_row,NULL))
+    {
+      num_ifaces_skipped++;
+      continue;
+    }
+    if (skip_filter_iface(if_row->bDescr,NULL))
+    {
+      num_ifaces_filtered++;
+      continue;
+    }
 
     print_mib_if_row (i, if_row);
   }
@@ -1164,10 +1571,10 @@ static int _pkt_win_print_GetIfTable2 (void)
   BOOL           rc;
   ULONG          i;
 
-  (*_printf) ("\nFrom GetIfTable2():\n");
-
-  if (!load_dlls())
+  if (!pkt_win_init())
      return (0);
+
+  (*_printf) ("\nFrom GetIfTable2():\n");
 
   if (!p_GetIfTable2 || !p_FreeMibTable)
   {
@@ -1188,11 +1595,18 @@ static int _pkt_win_print_GetIfTable2 (void)
   {
     const MIB_IF_ROW2 *if_row2 = if_table2->Table + i;
 
-    if (skip_this_iface(NULL,NULL,if_row2) ||
-        skip_filter_iface(NULL,if_row2->Description))
-       continue;
+    if (skip_this_iface(NULL,NULL,if_row2))
+    {
+      num_ifaces_skipped++;
+      continue;
+    }
+    if (skip_filter_iface(NULL,if_row2->Description))
+    {
+      num_ifaces_filtered++;
+      continue;
+    }
 
-    print_mib_if_row2 (i, if_row2, verbose_level);
+    print_mib_if_row2 (i, if_row2);
     if (i < if_table2->NumEntries-1)
       (*_printf) ("\n");
   }
@@ -1319,12 +1733,12 @@ static void print_ip_interface_details (const NET_LUID *luid, int family, int in
 #endif  /* __WATCOMC__ */
 }
 
-static void print_mib_if_row2 (DWORD index, const MIB_IF_ROW2 *row, int verbose)
+static void print_mib_if_row2 (DWORD index, const MIB_IF_ROW2 *row)
 {
   (*_printf) ("  GUID:           %s\n", get_guid_str(&row->InterfaceGuid));
   (*_printf) ("    Alias:        %.*" WIDESTR_FMT "\n", IF_MAX_STRING_SIZE, row->Alias);
   (*_printf) ("    Description:  %.*" WIDESTR_FMT "\n", IF_MAX_STRING_SIZE, row->Description);
-  (*_printf) ("    MAC-address:  %s\n", get_phys_address(&row->PhysicalAddress,row->PhysicalAddressLength));
+  (*_printf) ("    MAC-address:  %s\n", get_phys_address(&row->PhysicalAddress,row->PhysicalAddressLength,TRUE));
 
   (*_printf) ("    MTU:          %lu\n", row->Mtu);
   (*_printf) ("    Type:         %s (%lu)\n",
@@ -1343,14 +1757,14 @@ static void print_mib_if_row2 (DWORD index, const MIB_IF_ROW2 *row, int verbose)
   (*_printf) ("    Tx speed:     %s\n", speed64_string(row->TransmitLinkSpeed));
   (*_printf) ("    Rx speed:     %s\n", speed64_string(row->ReceiveLinkSpeed));
 
-  if (verbose >= 1)
+  if (verbose_level >= 1)
   {
     int indent = sizeof ("    LUID:         ") - 1;
 
     (*_printf) ("    LUID:         ");
     print_net_luid (&row->InterfaceLuid, indent);
 
-    if (verbose >= 2)
+    if (verbose_level >= 2)
     {
       (*_printf) ("      Entry (AF_INET):  ");
       indent = sizeof ("      Entry (AF_INET):  ") - 1;
@@ -1378,10 +1792,10 @@ static int _pkt_win_print_GetIfTable2Ex (void)
   BOOL           rc;
   ULONG          i;
 
-  (*_printf) ("\nFrom GetIfTable2Ex():\n");
-
-  if (!load_dlls())
+  if (!pkt_win_init())
      return (0);
+
+  (*_printf) ("\nFrom GetIfTable2Ex():\n");
 
   if (!p_GetIfTable2Ex || !p_FreeMibTable)
   {
@@ -1402,11 +1816,18 @@ static int _pkt_win_print_GetIfTable2Ex (void)
   {
     const MIB_IF_ROW2 *if_row2 = if_table2->Table + i;
 
-    if (skip_this_iface(NULL,NULL,if_row2) ||
-        skip_filter_iface(NULL,if_row2->Description))
-       continue;
+    if (skip_this_iface(NULL,NULL,if_row2))
+    {
+      num_ifaces_skipped++;
+      continue;
+    }
+    if (skip_filter_iface(NULL,if_row2->Description))
+    {
+      num_ifaces_filtered++;
+      continue;
+    }
 
-    print_mib_if_row2 (i, if_row2, verbose_level);
+    print_mib_if_row2 (i, if_row2);
     if (i < if_table2->NumEntries-1)
       (*_printf) ("\n");
   }
@@ -1426,10 +1847,10 @@ static int _pkt_win_print_GetIpNetTable (void)
   MIB_IPNETTABLE *table;
   DWORD           i, rc, len = 0;
 
-  (*_printf) ("\nFrom GetIpNetTable():\n");
-
-  if (!load_dlls() || !p_GetIpNetTable)
+  if (!pkt_win_init() || !p_GetIpNetTable)
      return (0);
+
+  (*_printf) ("\nFrom GetIpNetTable():\n");
 
   rc = (*p_GetIpNetTable) (NULL, &len, FALSE);
   if (rc == ERROR_INSUFFICIENT_BUFFER)
@@ -1464,10 +1885,10 @@ static int _pkt_win_print_GetIpNetTable2 (void)
   MIB_IPNET_TABLE2 *table = NULL;
   DWORD     i, rc;
 
-  (*_printf) ("\nFrom GetIpNetTable2():\n");
-
-  if (!load_dlls() || !p_GetIpNetTable2 || !p_FreeMibTable)
+  if (!pkt_win_init() || !p_GetIpNetTable2 || !p_FreeMibTable)
      return (0);
+
+  (*_printf) ("\nFrom GetIpNetTable2():\n");
 
   rc = (*p_GetIpNetTable2) (AF_UNSPEC, &table);
   if (rc != NO_ERROR && rc != ERROR_NOT_FOUND)
@@ -1491,18 +1912,21 @@ static int _pkt_win_print_GetIpNetTable2 (void)
 static int _pkt_win_print_GetIpAddrTable (void)
 {
    /* \todo */
+  (*_printf) ("\nFrom GetIpAddrTable(): <not implemented>\n");
   return (0);
 }
 
 
 /*
- * Use GetAdaptersAddresses and dump information on all IPv4 adapters.
+ * Use GetAdaptersAddresses and dump information on all IPv4/IPv6 adapters;
+ * use AF_UNSPEC to get info on all.
+ *
  * Rewritten from an MSDN example:
  * http://msdn.microsoft.com/en-us/library/aa366058(v=vs.85).aspx
  *
- * Also see this:
+ * Also refer these:
  *   http://www.ipv6style.jp/files/ipv6/en/apps/20060320_2/GetAdaptersAddresses-EN.c
- *   http://svn.netlabs.org/repos/qt4/trunk/src/plugins/bearer/nativewifi/qnativewifiengine.cpp
+ *   https://code.woboq.org/qt5/qtbase/src/plugins/bearer/nativewifi/qnativewifiengine.cpp.html
  */
 static int _pkt_win_print_GetAdaptersAddresses (void)
 {
@@ -1522,10 +1946,10 @@ static int _pkt_win_print_GetAdaptersAddresses (void)
 
 //flags |= GAA_FLAG_SKIP_FRIENDLY_NAME;
 
-  (*_printf) ("\nFrom GetAdaptersAddresses():\n");
-
-  if (!load_dlls())
+  if (!pkt_win_init())
      return (0);
+
+  (*_printf) ("\nFrom GetAdaptersAddresses():\n");
 
   /* Make an initial call to GetAdaptersAddresses() to get the
    * size needed into the out_len variable.
@@ -1558,18 +1982,42 @@ static int _pkt_win_print_GetAdaptersAddresses (void)
 
   while (addr)
   {
+    const char *prefix_fmt;
+    const char *extra_indent;
+
     ipv4_only_iface = TRUE;
     num++;
 
-    if (skip_this_iface(addr,NULL,NULL) ||
-        skip_filter_iface(NULL,addr->Description))
+    if (skip_this_iface(addr,NULL,NULL))
     {
       addr = addr->Next;
+      num_ifaces_skipped++;
+      continue;
+    }
+
+    if (skip_filter_iface(NULL,addr->Description))
+    {
+      addr = addr->Next;
+      num_ifaces_filtered++;
       continue;
     }
 
     (*_printf) ("  Adapter name:          %s (number %u)\n", addr->AdapterName, num);
     (*_printf) ("    Description:         %s\n", wstring_utf8(addr->Description));
+
+    /* With IPv6 enabled, this is typical list for the 'Unicast Addresses:
+     *
+     *   Unicast Addresses:   2002:6DBD:2078:1:94F3:7B8:2773:8B31,    6DBD:2078 = IPv4 address 109.189.32.120
+     *                        2002:6DBD:2078:1:69A9:4995:5BB8:A863,     -- ditto --
+     *                        2002:6DBD:2078:1:99E6:3289:3A70:6B45,     -- ditto --
+     *                        FE80::94F3:7B8:2773:8B31%5, 10.0.0.10
+     *
+     * IPv6-addresses seems to be listed first (preferred?). And 'ipconfig /all' calls these
+     * "Temporary IPv6 Address."
+     *
+     * And the last one above is this printed as:
+     * Link-local IPv6 Address . . . . . : fe80::94f3:7b8:2773:8b31%5(Preferred)
+     */
     (*_printf) ("    Unicast Addresses:   %s\n", get_unicast_addrs(addr->FirstUnicastAddress));
     (*_printf) ("    Anycast Addresses:   %s\n", get_anycast_addrs(addr->FirstAnycastAddress));
     (*_printf) ("    Multicast Addresses: %s\n", get_multicast_addrs(addr->FirstMulticastAddress));
@@ -1588,21 +2036,33 @@ static int _pkt_win_print_GetAdaptersAddresses (void)
          (*_printf) ("    1st DNS Suffix:        %" WIDESTR_FMT "\n",
                      addr->FirstDnsSuffix->String[0] ? addr->FirstDnsSuffix->String : NONE_STR_W);
 
-      for (dns_num = 1; dns && verbose_level >= 1; dns = dns->Next, dns_num++)
+      if (verbose_level >= 1)
       {
-        SOCKADDR_INET sa;
+        for (dns_num = 1; dns ; dns = dns->Next, dns_num++)
+        {
+          SOCKADDR_INET sa;
 
-        memset (&sa, '\0', sizeof(sa));
-        memcpy (&sa, &dns->Address.lpSockaddr->sa_data, sizeof(sa));
-        sa.si_family = dns->Address.lpSockaddr->sa_family;
-        (*_printf) ("      GetBestRoute2() for DNS %d: %s\n", dns_num, get_best_route2(&addr->Luid, &sa));
+          (*_printf) ("      GetBestRoute2() for DNS %d: ", dns_num);
+
+          if (addr->OperStatus != IfOperStatusUp)
+          {
+            (*_printf) ("iface is not up.\n");
+          }
+          else
+          {
+            memset (&sa, '\0', sizeof(sa));
+            memcpy (&sa, &dns->Address.lpSockaddr->sa_data, sizeof(sa));
+            sa.si_family = dns->Address.lpSockaddr->sa_family;
+            (*_printf) ("%s\n", get_best_route2(&addr->Luid, &sa));
+          }
+        }
       }
     }
 #endif
 
     if (!(flags & GAA_FLAG_SKIP_FRIENDLY_NAME))
       (*_printf) ("    Friendly name:       %s\n", wstring_utf8(addr->FriendlyName));
-    (*_printf) ("    MAC-address:         %s\n", get_phys_address(&addr->PhysicalAddress,addr->PhysicalAddressLength));
+    (*_printf) ("    MAC-address:         %s\n", get_phys_address(&addr->PhysicalAddress,addr->PhysicalAddressLength,TRUE));
     (*_printf) ("    Flags:               %s\n", get_address_flags(addr->Flags));
     (*_printf) ("    MTU:                 %s\n", dword_str(addr->Mtu));
 
@@ -1650,16 +2110,19 @@ static int _pkt_win_print_GetAdaptersAddresses (void)
     prefix = addr->FirstPrefix;
     for (i = 0; prefix; i++)
        prefix = prefix->Next;
+
     num_pfx = i;
+    extra_indent = (num_pfx >= 10 ? " " : "");
+
+    prefix_fmt = (ipv4_only_iface ? "%s%15s / %-2d":
+                                    "%s%46s / %-3d");
+
     (*_printf) ("    Num Prefix entries:  %d:\n", num_pfx);
 
     for (i = 0, prefix = addr->FirstPrefix; prefix; prefix = prefix->Next, i++)
     {
-      const char *fmt = (ipv4_only_iface ? "%15s / %-2d":
-                                           "%46s / %-3d");
-
       (*_printf) ("      Prefix[%d]: ", i);
-      (*_printf) (fmt, get_netmask_prefix(prefix), (int)prefix->PrefixLength);
+      (*_printf) (prefix_fmt, extra_indent, get_netmask_prefix(prefix), (int)prefix->PrefixLength);
 
       if (_watt_os_ver >= 0x0601)
       {
@@ -1690,6 +2153,8 @@ static int _pkt_win_print_GetAdaptersAddresses (void)
       (*_printf) ("\n");
     }
 
+    setup_info_adapter_print (addr->AdapterName);
+
     addr = addr->Next;
     if (addr)
        (*_printf) ("\n");
@@ -1701,10 +2166,10 @@ static int _pkt_win_print_GetAdapterOrderMap (void)
 {
   IP_ADAPTER_ORDER_MAP *order = NULL;
 
-  (*_printf) ("\nFrom GetAdapterOrderMap():\n");
-
-  if (!load_dlls() || !p_GetAdapterOrderMap)
+  if (!pkt_win_init() || !p_GetAdapterOrderMap)
      return (0);
+
+  (*_printf) ("\nFrom GetAdapterOrderMap():\n");
 
   order = (*p_GetAdapterOrderMap)();
   if (order)
@@ -1723,6 +2188,157 @@ static int _pkt_win_print_GetAdapterOrderMap (void)
   }
   return (1);
 }
+
+/*
+ * From libdnet-stripped/src/route-win32.c
+ */
+#if defined(HAVE_NETIOAPI_H)
+static const char *get_route_origin (enum _NL_ROUTE_ORIGIN origin)
+{
+  #undef  ADD_VALUE
+  #define ADD_VALUE(v) { v, #v }
+  static const struct search_list route_origins[] = {
+                                  ADD_VALUE (NlroManual),
+                                  ADD_VALUE (NlroWellKnown),
+                                  ADD_VALUE (NlroDHCP),
+                                  ADD_VALUE (NlroRouterAdvertisement),
+                                  ADD_VALUE (Nlro6to4)
+                                };
+  return _list_lookup ((DWORD)origin, route_origins, DIM(route_origins));
+}
+
+static const char *get_route_protocol (DWORD protocol)
+{
+  static const struct search_list route_protocols[] = {
+                                { 1,     "MIB_IPPROTO_OTHER"             },
+                                { 2,     "MIB_IPPROTO_LOCAL"             },
+                                { 3,     "MIB_IPPROTO_NETMGMT"           },
+                                { 4,     "MIB_IPPROTO_ICMP"              },
+                                { 5,     "MIB_IPPROTO_EGP"               },
+                                { 6,     "MIB_IPPROTO_GGP"               },
+                                { 7,     "MIB_IPPROTO_HELLO"             },
+                                { 8,     "MIB_IPPROTO_RIP"               },
+                                { 9,     "MIB_IPPROTO_IS_IS"             },
+                                { 10,    "MIB_IPPROTO_ES_IS"             },
+                                { 11,    "MIB_IPPROTO_CISCO"             },
+                                { 12,    "MIB_IPPROTO_BBN"               },
+                                { 13,    "MIB_IPPROTO_OSPF"              },
+                                { 14,    "MIB_IPPROTO_BGP"               },
+                                { 10002, "MIB_IPPROTO_NT_AUTOSTATIC"     },
+                                { 10006, "MIB_IPPROTO_NT_STATIC"         },
+                                { 10007, "MIB_IPPROTO_NT_STATIC_NON_DOD" }
+                              };
+  return _list_lookup (protocol, route_protocols, DIM(route_protocols));
+}
+
+static void print_mib_ipforward_row2 (DWORD index, const MIB_IPFORWARD_ROW2 *row, int family)
+{
+  const char              *common_fmt, *header_fmt;
+  const char              *luid   = "   LUID:   ";
+  const IP_ADDRESS_PREFIX *prefix = &row->DestinationPrefix;
+  int                      size   = (family == AF_INET) ? 15 : 35;
+
+  common_fmt = "  %2lu   %2lu     %3lu     %-3s       %-3s   %-3s  %10s  %d     ";
+  header_fmt = "  %s  %s  %s  %s  %s  %s  %s        %s  %-*s  %-*s\n";
+  if (index == 0)
+  {
+    (*_printf) (header_fmt,
+                "idx",
+                "iface",
+                "Metric",
+                "Loopback",
+                "Auto",
+                "Publ",
+                "Age",
+                "Orig" ,
+                size, "NextHop",
+                size, "Prefix");
+
+    (*_printf) ("  ----------------------------------------------"
+                "------------------------------------------------");
+    if (family == AF_INET6)
+         (*_printf) ("--------------------------------------------\n");
+    else (*_printf) ("\n");
+  }
+
+  (*_printf) (common_fmt,
+              index,
+              row->InterfaceIndex,
+              row->Metric,
+              row->Loopback             ? "YES" : "NO",
+              row->AutoconfigureAddress ? "YES" : "NO",
+              row->Publish              ? "YES" : "NO",
+              hms_str(row->Age),
+              (int)row->Origin);
+
+  (*_printf) ("%-*s  %s/%d\n",
+              size, get_sockaddr_inet_str(&row->NextHop),
+              get_sockaddr_inet_str(&prefix->Prefix), prefix->PrefixLength );
+
+  if (verbose_level >= 2)
+  {
+    if (row->ValidLifetime == 0xFFFFFFFF)
+         (*_printf) ("   Lifetime:      <infinite>\n");
+    else (*_printf) ("   Lifetime:      %lu\n", row->ValidLifetime);
+
+    if (row->PreferredLifetime == 0xFFFFFFFF)
+         (*_printf) ("   Pref Lifetime: <infinite>\n");
+    else (*_printf) ("   Pref Lifetime: %lu\n", row->PreferredLifetime);
+
+    (*_printf) ("   Protocol:      %s (%lu)\n", get_route_protocol(row->Protocol), row->Protocol);
+    (*_printf) ("   Immortal:      %s\n", row->Immortal ? "YES" : "NO");
+    (*_printf) ("   Origin:        %s (%d)\n", get_route_origin(row->Origin), (int)row->Origin);
+
+    (*_printf) (luid);
+    print_net_luid (&row->InterfaceLuid, strlen(luid));
+    (*_printf) ("\n");
+  }
+}
+
+static ULONG internal_print_GetIpForwardTable2 (int family)
+{
+  MIB_IPFORWARD_TABLE2 *table2 = NULL;
+  ULONG i, rc = (*p_GetIpForwardTable2) (family, &table2);
+
+  if (rc != NO_ERROR)
+     (*_printf) ("  Error: %s\n", win_strerror(rc));
+  else
+  {
+    for (i = 0; table2 && i < table2->NumEntries; i++)
+        print_mib_ipforward_row2 (i, table2->Table + i, family);
+  }
+  if (table2)
+    (*p_FreeMibTable) (table2);
+  return (rc);
+}
+
+static int _pkt_win_print_GetIpForwardTable2 (void)
+{
+  MIB_IPFORWARD_TABLE2 *table2 = NULL;
+  ULONG rc1, rc2;
+
+  if (!pkt_win_init() || !p_GetIpForwardTable2 || !p_FreeMibTable)
+     return (0);
+
+  (*_printf) ("\nFrom GetIpForwardTable2(), AF_INET:\n");
+  rc1 = internal_print_GetIpForwardTable2 (AF_INET);
+
+  (*_printf) ("\nFrom GetIpForwardTable2(), AF_INET6:\n");
+  rc2 = internal_print_GetIpForwardTable2 (AF_INET6);
+
+  /* From:
+   *   https://docs.microsoft.com/en-gb/windows/desktop/api/netioapi/ns-netioapi-_mib_ipforward_row2
+   */
+  if (rc1 == NO_ERROR || rc2 == NO_ERROR)
+    (*_printf) ("\n"
+                "Orig 0: A result of manual configuration.\n"
+                "     1: A well-known route.\n"
+                "     2: A result of DHCP configuration.\n"
+                "     3: The result of router advertisement.\n"
+                "     4: A result of 6to4 tunneling.\n");
+  return ((rc1 == NO_ERROR || rc2 == NO_ERROR) ? 1 : 0);
+}
+#endif
 
 /*
  * Return err-number+string for 'err' returned from a RAS function.
@@ -1846,6 +2462,9 @@ static const char *get_best_route2 (NET_LUID *luid, const SOCKADDR_INET *dest)
   MIB_IPFORWARD_ROW2 row;
   SOCKADDR_INET      src;
   DWORD              rc;
+  DWORD              sort_opt = 0;
+  char              *p = work_buf;
+  size_t             left = sizeof(work_buf);
 
   if (!p_GetBestRoute2)
      return ("<N/A>");
@@ -1853,16 +2472,21 @@ static const char *get_best_route2 (NET_LUID *luid, const SOCKADDR_INET *dest)
   memset (&row, '\0', sizeof(row));
   memset (&src, '\0', sizeof(src));
 
+  p    += SNPRINTF (p, left, "(fam:%d), ", dest->si_family);
+  left -= (p - work_buf);
+
   /* Contrary to the comment in <netioapi.h> the 'SourceAddress' can be NULL.
    * Except maybe for an IPv6-address.
    */
   if (dest->si_family == AF_INET6)
-       rc = (*p_GetBestRoute2) (luid, 0, dest, dest, 0, &row, &src);
-  else rc = (*p_GetBestRoute2) (luid, 0, NULL, dest, 0, &row, &src);
+       rc = (*p_GetBestRoute2) (luid, 0, dest, dest, sort_opt, &row, &src);
+  else rc = (*p_GetBestRoute2) (luid, 0, NULL, dest, sort_opt, &row, &src);
 
-  if (rc != NO_ERROR)
-        snprintf (work_buf, sizeof(work_buf), "failed: %s", win_strerror(rc));
-  else  snprintf (work_buf, sizeof(work_buf), "%s -> %s",
+  if (rc == ERROR_NETWORK_UNREACHABLE)
+        SNPRINTF (p, left, "failed: ERROR_NETWORK_UNREACHABLE");
+  else if (rc != NO_ERROR)
+        SNPRINTF (p, left, "failed: %s", win_strerror(rc));
+  else  SNPRINTF (p, left, "%s -> %s",
                   get_sockaddr_inet_str(&src),
                   get_sockaddr_inet_str(&row.NextHop));
   return (work_buf);
@@ -1876,10 +2500,10 @@ static int _pkt_win_print_RasEnumConnections (void)
   DWORD     num_conn = 0;
   RASCONN  *ras_conn = alloca (len);
 
-  (*_printf) ("\nFrom RasEnumConnections():\n");
-
-  if (!load_dlls() || !p_RasEnumConnectionsA)
+  if (!pkt_win_init() || !p_RasEnumConnectionsA)
      return (0);
+
+  (*_printf) ("\nFrom RasEnumConnections():\n");
 
   /* RasEnumConnections returns the handles of the current active RAS connections
    */
@@ -2058,10 +2682,10 @@ static int _pkt_win_print_WlanEnumInterfaces (void)
   DWORD  res = 0;
   int    i;
 
-  (*_printf) ("\nFrom WlanEnumInterfaces():\n");
-
-  if (!load_dlls())
+  if (!pkt_win_init())
      return (0);
+
+  (*_printf) ("\nFrom WlanEnumInterfaces():\n");
 
   if (_watt_os_ver <= _WIN32_WINNT_WS03)  /* = 0x0502, Win-XP SP3 */
        cli_ver = 1;
@@ -2186,7 +2810,7 @@ static int _pkt_win_print_WlanEnumInterfaces (void)
     if (network_list)
       (*p_WlanFreeMemory) (network_list);
 
-    (*_printf) ("  \nFrom WlanGetNetworkBssList():\n");
+    (*_printf) ("  \n  From WlanGetNetworkBssList():\n");
 
     res = (*p_WlanGetNetworkBssList) (client, guid, NULL, dot11_BSS_type_any, FALSE, NULL, &bss_list);
 
@@ -2271,7 +2895,7 @@ static const char *get_phy_types (DWORD num, const DOT11_PHY_TYPE *phy)
 
 static const char *get_ssid (const DOT11_SSID *ssid)
 {
-  snprintf (work_buf, sizeof(work_buf), "%.*s", (int)ssid->uSSIDLength, ssid->ucSSID);
+  SNPRINTF (work_buf, sizeof(work_buf), "%.*s", (int)ssid->uSSIDLength, ssid->ucSSID);
   return (work_buf);
 }
 
@@ -2280,7 +2904,7 @@ static const char *get_dot11_auth (DWORD auth)
   if (auth >= DOT11_AUTH_ALGO_IHV_START && auth <= DOT11_AUTH_ALGO_IHV_END)
   {
     auth -= DOT11_AUTH_ALGO_IHV_START;
-    snprintf (work_buf, sizeof(work_buf), "proprietary %lu", auth);
+    SNPRINTF (work_buf, sizeof(work_buf), "proprietary %lu", auth);
     return (work_buf);
   }
   return _list_lookup (auth,dot11_auth_algo,DIM(dot11_auth_algo));
@@ -2291,7 +2915,7 @@ static const char *get_dot11_cipher (DWORD cipher)
   if (cipher >= DOT11_CIPHER_ALGO_IHV_START && cipher <= DOT11_CIPHER_ALGO_IHV_END)
   {
     cipher -= DOT11_CIPHER_ALGO_IHV_START;
-    snprintf (work_buf, sizeof(work_buf), "proprietary %lu", cipher);
+    SNPRINTF (work_buf, sizeof(work_buf), "proprietary %lu", cipher);
     return (work_buf);
   }
   return _list_lookup (cipher,dot11_cipher_algo,DIM(dot11_cipher_algo));
@@ -2383,7 +3007,7 @@ static void print_wlan_current_connection (const WLAN_CONNECTION_ATTRIBUTES *att
               indent, "", _list_lookup(assoc->dot11BssType, bss_types, DIM(bss_types)));
 
   (*_printf) ("%*sBSSID:            %s\n",
-              indent, "", get_phys_address(&assoc->dot11Bssid,DIM(assoc->dot11Bssid)));
+              indent, "", get_phys_address(&assoc->dot11Bssid,DIM(assoc->dot11Bssid),TRUE));
 
   (*_printf) ("%*sPhysical type:    %s\n",
               indent, "", _list_lookup(assoc->dot11PhyType, dot11_phy_types, DIM(dot11_phy_types)));
@@ -2453,6 +3077,112 @@ static double filetime_sec (const FILETIME *filetime)
 #endif  /* NOT_USED */
 
 /*
+ * Convert a frequency in the 2.4GHz band to a channel number.
+ * Return -1 for an unknown channel.
+
+ * 2.4GHz: https://en.wikipedia.org/wiki/List_of_WLAN_channels#2.4_GHz_(802.11b/g/n/ax)
+ * 5GHz:   https://en.wikipedia.org/wiki/List_of_WLAN_channels#5_GHz_(802.11a/h/j/n/ac/ax)
+ */
+static const char *convert_freq_to_ch (DWORD freq)
+{
+  static const struct search_list ch_mapping24[] = {
+                                { 2412, "1",  },
+                                { 2417, "2",  },
+                                { 2422, "3",  },
+                                { 2427, "4",  },
+                                { 2432, "5",  },
+                                { 2437, "6",  },
+                                { 2442, "7",  },
+                                { 2447, "8",  },
+                                { 2452, "9",  },
+                                { 2457, "10", },
+                                { 2462, "11", },
+                                { 2467, "12", },
+                                { 2472, "13", },
+                                { 2484, "14"  }
+                              };
+  static const struct search_list ch_mapping50[] = {
+                                { 5035, "7"   },
+                                { 5040, "8"   },
+                                { 5045, "9"   },
+                                { 5055, "11"  },
+                                { 5060, "12"  },
+                                { 5080, "16"  },
+                                { 5160, "32"  },
+                                { 5170, "34"  },
+                                { 5180, "36"  },
+                                { 5190, "38"  },
+                                { 5200, "40"  },
+                                { 5210, "42"  },
+                                { 5220, "44"  },
+                                { 5230, "46"  },
+                                { 5240, "48"  },
+                                { 5250, "50"  },
+                                { 5260, "52"  },
+                                { 5270, "54"  },
+                                { 5280, "56"  },
+                                { 5290, "58"  },
+                                { 5300, "60"  },
+                                { 5310, "62"  },
+                                { 5320, "64"  },
+                                { 5340, "68"  },
+                                { 5480, "96"  },
+                                { 5500, "100" },
+                                { 5510, "102" },
+                                { 5520, "104" },
+                                { 5530, "106" },
+                                { 5540, "108" },
+                                { 5550, "110" },
+                                { 5560, "112" },
+                                { 5570, "114" },
+                                { 5580, "116" },
+                                { 5590, "118" },
+                                { 5600, "120" },
+                                { 5610, "122" },
+                                { 5620, "124" },
+                                { 5630, "126" },
+                                { 5640, "128" },
+                                { 5660, "132" },
+                                { 5670, "134" },
+                                { 5680, "136" },
+                                { 5690, "138" },
+                                { 5700, "140" },
+                                { 5710, "142" },
+                                { 5720, "144" },
+                                { 5745, "149" },
+                                { 5755, "151" },
+                                { 5765, "153" },
+                                { 5775, "155" },
+                                { 5785, "157" },
+                                { 5795, "159" },
+                                { 5805, "161" },
+                                { 5825, "165" },
+                                { 5845, "169" },
+                                { 5865, "173" },
+                                { 4915, "183" },
+                                { 4920, "184" },
+                                { 4925, "185" },
+                                { 4935, "187" },
+                                { 4940, "188" },
+                                { 4945, "189" },
+                                { 4960, "192" },
+                                { 4980, "196" }
+                             };
+  char *ret;
+
+  if (freq >= 2400 && freq <= 2500)
+       ret = (char*) _list_lookup (freq, ch_mapping24, DIM(ch_mapping24));
+  else if (freq >= 4980 && freq <= 5865)
+       ret = (char*) _list_lookup (freq, ch_mapping50, DIM(ch_mapping50));
+  else ret = (char*) "??";
+
+  if (ret[0] == '?')
+     ret[1] = '\0';
+  return (ret);
+}
+
+
+/*
  * Print the information in a list of Basic Service Set (BSS).
  */
 static void print_wlan_bss_list (const WLAN_BSS_LIST *bss_list)
@@ -2461,31 +3191,49 @@ static void print_wlan_bss_list (const WLAN_BSS_LIST *bss_list)
 
   for (i = 0; i < bss_list->dwNumberOfItems; i++)
   {
-    const WLAN_BSS_ENTRY *bss = &bss_list->wlanBssEntries [i];
+    const WLAN_BSS_ENTRY *bss = bss_list->wlanBssEntries + i;
+    const char *chan;
+    int   dBm;
+    DWORD MHz;
 
-    (*_printf) ("    %lu: %-35s Quality: %3lu MAC: %s\n",
-                i, get_ssid(&bss->dot11Ssid),
-                bss->uLinkQuality, MAC_address(&bss->dot11Bssid));
+    if (bss->uLinkQuality == 0)
+         dBm = -100;
+    else if (bss->uLinkQuality == 100)
+         dBm = -50;
+    else dBm = -100 + (bss->uLinkQuality/2);
 
-    (*_printf) ("       Phy: %lu, BSS Network type:       %s\n",
+    (*_printf) ("    %2lu: SSID:             %s\n"
+                "        Quality:          %d dBm\n",
+                i, get_ssid(&bss->dot11Ssid), dBm);
+
+    (*_printf) ("        MAC-address:      %s\n",
+                get_phys_address(&bss->dot11Bssid, DIM(bss->dot11Bssid),TRUE));
+
+    (*_printf) ("        Phy:              %lu\n"
+                "        BSS Network type: %s\n",
                 bss->uPhyId, _list_lookup(bss->dot11BssType, bss_types, DIM(bss_types)));
 
-    (*_printf) ("       Phy type: %s, capa: %02X, beacon-period: %u ms, TS: %" U64_FMT,
+    (*_printf) ("        Phy type:         %s\n"
+                "        Capability:       0x%04X\n"
+                "        Beacon-period:    %u ms, Time-stamp: %" U64_FMT "\n",
                 get_phy_types(1,&bss->dot11BssPhyType),
                 bss->usCapabilityInformation,
                 (bss->usBeaconPeriod*1024)/1000,
                 bss->ullTimestamp/1024);
 
-    (*_printf) (", host time-stamp: %s, Freq: %lu MHz\n",
-                ULONGLONG_to_ctime(bss->ullHostTimestamp),
-                bss->ulChCenterFrequency / 1000);  /* kHz -> MHz */
+    MHz = bss->ulChCenterFrequency / 1000;  /* kHz -> MHz */
+    chan = convert_freq_to_ch (MHz);
+
+    (*_printf) ("        Host time-stamp:  %s\n"
+                "        Freq:             %lu MHz (ch: %s)\n",
+                ULONGLONG_to_ctime(bss->ullHostTimestamp), MHz, chan);
 
 #if 0
      rate_in_mbps = (bss->wlanRateSet[i] & 0x7FFF) * 0.5;
-     (*_printf) ("    Rates: %s\n", get_wlan_rates(bss->uRateSetLength, bss->wlanRateSet));
-#endif
+     (*_printf) ("    Rates:              %s\n", get_wlan_rates(bss->uRateSetLength, bss->wlanRateSet));
 
-#if 0  // information element blobs
+    /* Information element blobs
+     */
     ie_start = (const BYTE*)bss + bss->ulIeOffset;
     ie_end = ie_start + bss->ulIeSize;
     print_wlan_elements (ie_start, ie_end);
@@ -2541,15 +3289,15 @@ static void print_mib_ipnetrow (DWORD index, const MIB_IPNETROW *row)
 
   _w32_inet_ntop (_w32_AF_INET, &row->dwAddr, abuf, sizeof(abuf));
   (*_printf) ("  %-15.15s  %-17s  %s\n",
-              abuf, get_phys_address(&row->bPhysAddr, len),
+              abuf, get_phys_address(&row->bPhysAddr, len, FALSE),
               _list_lookup(row->dwType, arp_types, DIM(arp_types)));
 }
 
 static void print_mib_ipnet_row2 (DWORD index, const MIB_IPNET_ROW2 *row)
 {
-  ULONG       len  = min (row->PhysicalAddressLength, IF_MAX_PHYS_ADDRESS_LENGTH);
+  ULONG       sec, len  = min (row->PhysicalAddressLength, IF_MAX_PHYS_ADDRESS_LENGTH);
   const char *mac_addr, *nw_addr;
-  char        flt_buf[10];
+  const char *last_reach;
 
   nw_addr = get_sockaddr_inet_str (&row->Address);
 
@@ -2557,28 +3305,187 @@ static void print_mib_ipnet_row2 (DWORD index, const MIB_IPNET_ROW2 *row)
        mac_addr = NONE_STR;
   else if (all_zeroes(&row->PhysicalAddress, len))
        mac_addr = "00:...00";
-  else mac_addr = get_phys_address (&row->PhysicalAddress, len);
+  else mac_addr = get_phys_address (&row->PhysicalAddress, len, FALSE);
 
-#if defined(__WATCOMC__)
-  /*
-   * With this hack I prevented the fatal message
-   * "Floating-point support not loaded" below. Options '-fp6 -fpc'
-   * in CFLAGS was of no help.
-   */
-  snprintf (flt_buf, sizeof(flt_buf), "%9lums", row->ReachabilityTime.LastReachable);
-#else
-  snprintf (flt_buf, sizeof(flt_buf), "%8.1fs", 1E-3 * (double)row->ReachabilityTime.LastReachable);
-#endif
-
+  sec = (DWORD)(row->ReachabilityTime.LastReachable/1000.0);
+  if (sec >= 100*3600)
+       last_reach = "> 10h";
+  else last_reach = hms_str (sec);
 
   if (index == 0)
      (*_printf) ("  Iface IsRouter LastReachable IP-addr                              MAC-addr              State\n"
                  "  ----------------------------------------------------------------------------------------------------\n");
 
   if (row->State != NlnsUnreachable)
-     (*_printf) ("  %2lu    %d        %s     %-36.36s %-17.17s     %s\n",
-                 row->InterfaceIndex, row->IsRouter, flt_buf,
+     (*_printf) ("  %2lu    %d        %-10s    %-36.36s %-17.17s     %s\n",
+                 row->InterfaceIndex, row->IsRouter, last_reach,
                  nw_addr, mac_addr, _list_lookup(row->State, neighbour_states, DIM(neighbour_states)));
+}
+
+/*
+ * Example rewritten from:
+ *  https://www.winsocketdotnetworkprogramming.com/winsock2programming/winsock2advancednsrnr8d.html
+ */
+static void FixList (char ***list, const char *base)
+{
+  if (*list)
+  {
+    char **addr = *list = (char**) ((ULONG_PTR)*list + base);
+
+    while (*addr)
+    {
+      *addr = (char*)(((ULONG_PTR)*addr + base));
+      addr++;
+    }
+  }
+}
+
+static void UnpackHostEnt (struct hostent *hostent)
+{
+  const char *p = (char*) hostent;
+
+  if (hostent->h_name)
+     hostent->h_name = (char*) ((ULONG_PTR)hostent->h_name + p);
+
+  FixList (&hostent->h_aliases, p);
+  FixList (&hostent->h_addr_list, p);
+}
+
+static void print_blob (const BLOB *blob)
+{
+  struct hostent *hp = alloca (blob->cbSize);
+  int    i;
+
+  memcpy (hp, blob->pBlobData, blob->cbSize);
+
+  UnpackHostEnt (hp);
+
+  /* Print out the addresses
+   */
+  for (i = 0; hp->h_addr_list[i]; i++)
+  {
+    address_buf buf = { "?" };
+    DWORD       ipv4 = *(DWORD*) hp->h_addr_list[i];
+
+    _w32_inet_ntop (_w32_AF_INET, &ipv4, buf, sizeof(buf));
+    (*_printf) ("  IP: %s\n", buf);
+  }
+  for (i = 0; hp->h_aliases[i] ;i++)
+      (*_printf) ("  Alias: %s\n", hp->h_aliases[i]);
+}
+
+/*
+ * From Windows' SDK <SvcGuid.h>:
+ */
+#define _SVCID_HOSTNAME            { 0x0002a800, 0, 0, { 0xC0,0,0,0,0,0,0,0x46 } }
+#define _SVCID_INET_HOSTADDRBYNAME { 0x0002a803, 0, 0, { 0xC0,0,0,0,0,0,0,0x46 } }
+
+static int _pkt_win_print_WSALookupServices (void)
+{
+  WSAQUERYSETA q;
+  DWORD        flags;
+  HANDLE       h = INVALID_HANDLE_VALUE;
+  BOOL         get_bth = FALSE;
+  BOOL         get_NLA = FALSE;
+  GUID         guid = _SVCID_HOSTNAME;
+  GUID         HostnameGuid = _SVCID_INET_HOSTADDRBYNAME;
+  int          err = 0;
+  AFPROTOCOLS  afproto[2] = { { AF_INET, IPPROTO_UDP },
+                              { AF_INET, IPPROTO_TCP }
+                            };
+
+  (*_printf) ("\nFrom %s():\n", __FUNCTION__);
+
+  if (!p_WSALookupServiceBeginA || !p_WSALookupServiceEnd || !p_WSALookupServiceNextA)
+  {
+    (*_printf) ("Some needed 'WSALookupService*()' functions not found in 'ws2_32.dll'\n");
+    return (0);
+  }
+
+  memset (&q, '\0', sizeof(q));
+  q.dwSize = sizeof(q);
+
+  if (get_bth)
+  {
+    q.dwNameSpace = NS_BTH;
+    flags = LUP_CONTAINERS;
+  }
+  else if (get_NLA)  /* this will return a BLOB for each adapter connected (detected by the NLA) */
+  {
+    q.dwNameSpace = NS_NLA;
+    flags = LUP_RETURN_ALL | LUP_RETURN_NAME | LUP_RETURN_COMMENT | LUP_DEEP;
+  }
+  else
+  {
+    q.dwNameSpace             = NS_ALL;
+    q.lpServiceClassId        = &guid;
+    q.lpServiceClassId        = &HostnameGuid;
+    q.lpszServiceInstanceName = "www.microsoft.com";
+    q.dwNumberOfProtocols     = DIM(afproto);
+    q.lpafpProtocols          = afproto;
+    flags = LUP_RETURN_ADDR | LUP_RETURN_BLOB;
+  }
+
+  if ((*p_WSALookupServiceBeginA)(&q, flags, &h) != 0)
+  {
+    err = (*p_WSAGetLastError)();
+    (*_printf) ("WSALookupServiceBegin() failed: %s\n", win_strerror(err));
+    goto quit;
+  }
+
+  while (1)
+  {
+    DWORD         len = sizeof(WSAQUERYSETA) + 5000;  /* should be plenty */
+    WSAQUERYSETA *q_ret = alloca (len);
+    const BLOB   *blob;
+
+    memset (q_ret, '\0', len);
+    q_ret->dwSize = sizeof(*q_ret);
+
+    if ((*p_WSALookupServiceNextA)(h, 0, &len, q_ret) != NO_ERROR)
+    {
+      err = (*p_WSAGetLastError)();
+
+      if (err == WSAEFAULT)
+         (*_printf) ("WSALookupServiceNext(): q_ret too small; %lu needed.\n", len);
+
+      else if (err != WSAENOMORE && err != WSA_E_NO_MORE)
+         (*_printf) ("WSALookupServiceNext(): %s\n", win_strerror(err));
+      break;
+    }
+
+    if (q_ret->lpszComment)
+       (*_printf) ("  Comment: %s\n", q_ret->lpszComment);
+
+    if (q_ret->lpszContext)
+       (*_printf) ("  Context: %s\n", q_ret->lpszContext);
+
+    (*_printf) ("  Service instance name: '%s'\n",  q_ret->lpszServiceInstanceName);
+    (*_printf) ("  Name-space num:        %lu\n", q_ret->dwNameSpace);
+    (*_printf) ("  Number of protocols:   %lu\n", q_ret->dwNumberOfProtocols);
+
+    if (q_ret->lpVersion)
+         (*_printf) ("  Version:               %u.%u\n",
+                     HIWORD(q_ret->lpVersion->dwVersion),
+                     LOWORD(q_ret->lpVersion->dwVersion));
+    else (*_printf) ("  Version:               ?.?\n");
+
+    if (q_ret->lpBlob)
+    {
+      blob = q_ret->lpBlob;
+      (*_printf) ("\nBLOB:\n");
+
+      dump_data (&blob->pBlobData, blob->cbSize, "  ");
+
+      if (!get_bth && !get_NLA)
+         print_blob (blob);
+    }
+  }
+
+quit:
+  if (h != INVALID_HANDLE_VALUE)
+     (*p_WSALookupServiceEnd) (h);
+  return (err == 0);
 }
 
 #if defined(ON_WIN_VISTA) && defined(HAVE_NETIOAPI_H)
@@ -2634,43 +3541,24 @@ static int compare_ipnetrow2 (const void *_a, const void *_b)
 
   return (a->State - b->State);
 }
-#endif   /* COMPILE_WINADINF_C */
 
-#if defined(COMPILE_WINADINF_C)
-  static void set_debug (int on_off)
-  {
-    static int old_debug_on = 0;
-
-  #ifdef USE_DEBUG
-    if (!on_off)
-    {
-      old_debug_on = debug_on;
-      debug_on = 0;
-    }
-    else
-      debug_on = old_debug_on;
-  #endif
-  }
-
-  #define DEFINE_FUNC(func) \
-  int W32_CALL func (void)  \
-  {                         \
-    int rc = 0;             \
-    set_debug (0);          \
-    rc = _##func();         \
-    set_debug (1);          \
-    return (rc);            \
-  }
+#define DEFINE_FUNC(func) \
+        int W32_CALL func (void)  \
+        {                         \
+          int rc = _##func();     \
+          print_skipped();        \
+          return (rc);            \
+        }
 
 #else
-  #define DEFINE_FUNC(func)       \
-  int W32_CALL func (void)        \
-  {                               \
-    unimplemented ("_w32_" #func, \
-        __FILE__, __LINE__);      \
-    return (0);                   \
-  }
-#endif
+#define DEFINE_FUNC(func)       \
+        int W32_CALL func (void)        \
+        {                               \
+          unimplemented ("_w32_" #func, \
+              __FILE__, __LINE__);      \
+          return (0);                   \
+        }
+#endif  /* COMPILE_WINADINF_C */
 
 /*
  * Maybe these functions can be interfaced into something like:
@@ -2686,10 +3574,32 @@ DEFINE_FUNC (pkt_win_print_GetIfTable2Ex)
 DEFINE_FUNC (pkt_win_print_GetIpNetTable)
 DEFINE_FUNC (pkt_win_print_GetIpNetTable2)
 DEFINE_FUNC (pkt_win_print_GetIpAddrTable)
+DEFINE_FUNC (pkt_win_print_GetIpForwardTable2)
 DEFINE_FUNC (pkt_win_print_GetAdaptersAddresses)
 DEFINE_FUNC (pkt_win_print_GetAdapterOrderMap)
 DEFINE_FUNC (pkt_win_print_RasEnumConnections)
 DEFINE_FUNC (pkt_win_print_WlanEnumInterfaces)
+DEFINE_FUNC (pkt_win_print_WSALookupServices)
 
+int W32_CALL pkt_win_set_verbose_level (int level)
+{
+#if defined(COMPILE_WINADINF_C)
+  int old = verbose_level;
+
+  verbose_level = level;
+  return (old);
+#else
+  return (0);
+#endif
+}
+
+int W32_CALL pkt_win_get_verbose_level (void)
+{
+#if defined(COMPILE_WINADINF_C)
+  return (verbose_level);
+#else
+  return (0);
+#endif
+}
 #endif  /* WIN32 || _WIN32 */
 
