@@ -54,7 +54,6 @@
 ./*.bat
 ./src/*.mak
 ./src/tests/*.mak
-
 blkfile*
 bin/go-*.bat
 bin/BLAT/
@@ -114,6 +113,7 @@ src/tests-2/
 src/watt-doc/
 src/reconn.udp
 src/lang.c
+src/pkt_stub.h
 src/Python/watt32_swig_wrap.c
 dist/
 docs/
