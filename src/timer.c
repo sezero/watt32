@@ -339,7 +339,8 @@ void init_timer_isr (void)
   init_userSuppliedTimerTick();
   using_int8 = TRUE;
 
-  /* release it very early */
+  /* release it very early
+   */
   RUNDOWN_ADD (exit_timer_isr, -2);
 }
 #endif  /* HAVE_TIMER_ISR */
@@ -364,11 +365,12 @@ int W32_CALL cmp_timers (DWORD t1, DWORD t2)
 
 /**
  * Control use of high-resolution timer.
+ *
  * When using Watt-32 together with programs that reprogram the PIT
  * (8254 timer chip), the millisec_clock() function may return wrong
  * values. In such cases it's best to use old-style 55ms timers.
  * Using Watt-32 with Allegro graphics library is one such case where
- * application program should call `hires_timer(0)' after `sock_init()'
+ * application program should call `hires_timer(0)' after `sock_init()`
  * has been called.
  */
 int hires_timer (int on)
@@ -381,8 +383,7 @@ int hires_timer (int on)
   return (old);
 }
 
-
-/*
+/**
  * The following 2 routines are modified versions from KA9Q NOS
  * by Phil Karn.
  *
@@ -402,7 +403,7 @@ int hires_timer (int on)
  *   A bit lower precision, but a bit faster.
  *
  * WARNING!: This can cause serious trouble if anything else is also using
- * timer interrupts. In that case use the above "userSuppliedTimerTick()".
+ * timer interrupts. In that case use the above `userSuppliedTimerTick()`.
  * The reading of I/O registers gives bad precision under Windows.
  */
 DWORD clockbits (void)
@@ -457,7 +458,7 @@ DWORD clockbits (void)
 }
 
 #if !defined(W32_NO_8087)
-/*
+/**
  * Return hardware time-of-day in milliseconds. Resolution is improved
  * beyond 55 ms (the clock tick interval) by reading back the instantaneous
  * 8254 counter value and combining it with the clock tick counter.
@@ -495,7 +496,7 @@ DWORD millisec_clock (void)
 
 /**
  * Return time for when given timeout (msec) expires.
- * Make sure it never returns 0 (it will confuse chk_timeout).
+ * Make sure it never returns 0 (it will confuse `chk_timeout()`).
  */
 DWORD W32_CALL set_timeout (DWORD msec)
 {
@@ -610,9 +611,10 @@ int W32_CALL set_timediff (long msec)
 }
 
 /**
- * Return time difference between timers 'now' and 'tim'.
+ * Return time difference between timers `now` and `tim`.
+ *
  * Check for day rollover. Max timer distance is 24 hours.
- * This function should be called immediately after chk_timeout()
+ * This function should be called immediately after `chk_timeout()`
  * is called.
  */
 long W32_CALL get_timediff (DWORD now, DWORD tim)
@@ -630,8 +632,8 @@ long W32_CALL get_timediff (DWORD now, DWORD tim)
 }
 
 #if !defined(W32_NO_8087)
-/*
- * Return difference (in micro-sec) between timevals `*newer' and `*older'
+/**
+ * Return difference (in micro-sec) between timevals `*newer` and `*older`.
  */
 double W32_CALL timeval_diff (const struct timeval *newer, const struct timeval *older)
 {
@@ -667,11 +669,13 @@ struct timeval W32_CALL timeval_diff2 (struct timeval *ta, struct timeval *tb)
 }
 
 #if defined(USE_DEBUG)
-/*
- * Return string "x.xx" for timeout value.
- * 'val' is always in milli-sec units if we're using the 8254 PIT,
+/**
+ * Return string `x.xx` for timeout value.
+ *
+ * `val` is always in milli-sec units if we're using the 8254 PIT,
  * RDTSC timestamps, timer ISR or user-supplied timer.
- * 'val' is always in milli-sec units on Win32.
+ *
+ * `val` is always in milli-sec units on Win32.
  */
 const char *time_str (DWORD val)
 {
@@ -705,8 +709,8 @@ const char *time_str (DWORD val)
   return (buf);
 }
 
-/*
- * Return string "HH:MM:SS" for a time in seconds.
+/**
+ * Return string `"HH:MM:SS"` for a time in seconds.
  */
 const char *hms_str (DWORD sec)
 {
@@ -718,9 +722,9 @@ const char *hms_str (DWORD sec)
   return (buf);
 }
 
-/*
- * Return string "xx:xx" for time elapsed since started.
- * Handles max 24 days. Or max 49 days with user_tick_active.
+/**
+ * Return string `"xx:xx"` for time elapsed since started.
+ * Handles max 24 days. Or max 49 days with `user_tick_active`.
  */
 const char *elapsed_str (DWORD val)
 {
@@ -860,7 +864,8 @@ uint64 get_cpu_speed (void)
 
 #elif defined(WIN32)
 
-/* Another hackery section for 'gcc -O0 -fgnu89-inline':
+/**
+ * Another hackery section for `gcc -O0 -fgnu89-inline`:
  */
 #if defined(__GNUC__) && defined(__NO_INLINE__)  /* -O0 */
   #if defined(__i386__)
@@ -889,7 +894,7 @@ uint64 get_cpu_speed (void)
 
 #if 0
 /*
- * Wait for timer-ticks to change 'num' times.
+ * Wait for timer-ticks to change `num` times.
  */
 static void Wait_N_ticks (int num)
 {
@@ -914,16 +919,14 @@ static BOOL get_processor_freq (uint64 *Hz)
                                "CentralProcessor\\0", 0, KEY_READ, &key);
 
   if (status != ERROR_SUCCESS)
-     goto fail;
+     return (FALSE);
 
   status = RegQueryValueEx (key, "~MHz", NULL, NULL, (BYTE*)&MHz, &size);
-  if (status != ERROR_SUCCESS)
-     goto fail;
-
-  *Hz =  MHz * U64_SUFFIX(1000000);
-  rc = TRUE;
-
-fail:
+  if (status == ERROR_SUCCESS)
+  {
+    *Hz = MHz * U64_SUFFIX(1000000);
+    rc = TRUE;
+  }
   if (key)
      RegCloseKey (key);
   return (rc);
@@ -931,8 +934,9 @@ fail:
 
 /**
  * Return estimated CPU speed in Hz.
- * With multiple CPU cores, the QueryPerformanceFrequency() doesn't
- * give the real CPU frequency. Then simply extract from Registry.
+ *
+ * With multiple CPU cores, the `QueryPerformanceFrequency()` doesn't
+ * give the real CPU frequency. Then simply extract from the Registry.
  */
 uint64 get_cpu_speed (void)
 {
