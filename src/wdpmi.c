@@ -590,7 +590,7 @@ extern void SS_TO_DGROUP (void);
         "add ebp, esp"              \
         "push eax"                  \
         "push esi"                  \
-        modify [eax ebx ecx edx edi];
+        __modify [__eax __ebx __ecx __edx __edi];
 
 extern void RESTORE_SS_AND_GO (void);
 #pragma aux RESTORE_SS_AND_GO = \

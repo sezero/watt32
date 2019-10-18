@@ -697,8 +697,8 @@ static int pkt16_drvr_init (mac_address *mac_addr)
 #endif
 
 #if defined(WATCOM386)
- /* #pragma option -zu */                    /* assume SS != DS (doesn't work) */
- /* #pragma aux pkt_release __modify[ss] */  /* !! fix-me (doesn't work) */
+ /* #pragma option -zu */                      /* assume SS != DS (doesn't work) */
+ /* #pragma aux pkt_release __modify[__ss] */  /* !! fix-me (doesn't work) */
 #endif
 
 #include "nochkstk.h"

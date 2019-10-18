@@ -502,7 +502,7 @@ FILE *fopen_excl (const char *file, const char *mode)
 /*
  * Consolidated memory debug for Fortify and MSVC CrtDbg.
  */
-#if defined(USE_CRTDBG)  /* For _MSC_VER (Win32/Win64) only */
+#if defined(USE_CRTDBG)  /* For _MSC_VER / clang-cl (Win32/Win64) only */
   #if !defined(_MSC_VER)
   #error "Something wrong; USE_CRTDBG is for Visual-C only"
   #endif
@@ -595,11 +595,24 @@ static void __cdecl crtdbg_exit (void)
 
   if (_watt_crtdbg_check)
   {
-    _CrtMemDumpAllObjectsSince (&last_state);
-    _CrtMemDumpStatistics (&last_state);
-    _CrtCheckMemory();
-    _CrtDumpMemoryLeaks();
+    _CrtMemState new_state, diff_state;
+
+    _CrtMemCheckpoint (&new_state);
     _CrtSetReportHook (NULL);
+
+    /* Do this only if there is a significant difference in the mem-state.
+     */
+    if (_CrtMemDifference(&diff_state, &last_state, &new_state))
+    {
+      CONSOLE_MSG (0, ("\nA significant difference in the mem-state.\n"));
+
+      _CrtMemDumpAllObjectsSince (&last_state);
+      _CrtMemDumpStatistics (&last_state);
+      _CrtCheckMemory();
+      _CrtDumpMemoryLeaks();
+    }
+    else
+      CONSOLE_MSG (0, ("\nNo significant difference in the mem-state.\n"));
   }
 }
 
@@ -1182,7 +1195,7 @@ DWORD get_ss_limit (void)
 }
 #endif /* BORLAND386 || DMC386 || MSC386 */
 
-#if defined(__DJGPP__) && 0 /* not needed */
+#if defined(__DJGPP__) && 0   /* not needed */
   extern unsigned dj_end asm ("end");
   extern unsigned _stklen, __djgpp_stack_limit;
   #define STK_START()  (DWORD)&dj_end
@@ -1267,6 +1280,14 @@ DWORD get_ss_limit (void)
   #define GetFiberData()    (*(void**) (ULONG_PTR) _w32_GetCurrentFiber() )
 
 #else
+  #if defined(__WATCOMC__)
+    /*
+     * Warning! W202: Symbol 'stack_limit' has been defined, but not referenced
+     * But it does not work.
+     */
+    #pragma warning 202 10
+  #endif
+
   THREAD_LOCAL static UINT_PTR stack_bottom = 0;
   THREAD_LOCAL static UINT_PTR stack_limit  = 0;
 #endif

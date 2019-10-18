@@ -251,8 +251,8 @@ extern CONST char  DATA_DECL x86_vendor_id[13];
         "mov esi, [esp+12]" \
         "mov [esi], eax"    \
         "add esp, 16"       \
-        parm [esi] [eax] [ebx] [ecx] [edx] \
-        modify [esi eax ebx ecx edx];
+        __parm   [__esi] [__eax] [__ebx] [__ecx] [__edx] \
+        __modify [__esi __eax __ebx __ecx __edx];
 
   extern uint64 get_rdtsc (void);
   #pragma aux _w32_get_rdtsc = \
@@ -263,7 +263,7 @@ extern CONST char  DATA_DECL x86_vendor_id[13];
           "nop"           \
           "nop"           \
           "nop"           \
-          modify [eax edx];
+          __modify [__eax __edx];
 
 #elif defined(__LCC__)
   #undef  get_rdtsc

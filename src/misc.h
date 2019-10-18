@@ -586,26 +586,26 @@ extern const char *short_strerror (int errnum);
  * `_r' should be `IREGS'.
  */
 #if (DOSX & DJGPP)
-  #define GEN_INTERRUPT(_i,_r)   __dpmi_int ((int)(_i), _r)
+  #define GEN_INTERRUPT(_i, _r)   __dpmi_int ((int)(_i), _r)
 
 #elif (DOSX & (PHARLAP|X32VM))
-  #define GEN_INTERRUPT(_i,_r)   _dx_real_int ((UINT)(_i), _r)
+  #define GEN_INTERRUPT(_i, _r)   _dx_real_int ((UINT)(_i), _r)
 
 #elif defined(__CCDL__)
-  #define GEN_INTERRUPT(_i,_r)   dpmi_simulate_real_interrupt (_i, _r)
+  #define GEN_INTERRUPT(_i, _r)   dpmi_simulate_real_interrupt (_i, _r)
 
 #elif (DOSX & (DOS4GW|POWERPAK))
-  #define GEN_INTERRUPT(_i,_r)   dpmi_real_interrupt ((_i), _r)
+  #define GEN_INTERRUPT(_i, _r)   dpmi_real_interrupt ((_i), _r)
 
 #elif (DOSX == 0)
   #if defined(_MSC_VER) || defined(__DMC__)
-    #define GEN_INTERRUPT(_i,_r)  intr ((int)(_i), _r) /* our own version */
+    #define GEN_INTERRUPT(_i, _r)  intr ((int)(_i), _r) /* our own version */
 
   #elif defined(__WATCOMC__)
-    #define GEN_INTERRUPT(_i,_r)  intr ((int)(_i), (union REGPACK*)(_r))
+    #define GEN_INTERRUPT(_i, _r)  intr ((int)(_i), (union REGPACK*)(_r))
 
   #else
-    #define GEN_INTERRUPT(_i,_r)  intr ((int)(_i), (struct REGPACK*)(_r))
+    #define GEN_INTERRUPT(_i, _r)  intr ((int)(_i), (struct REGPACK*)(_r))
   #endif
 
 #elif (DOSX & WINWATT)
@@ -673,8 +673,8 @@ extern const char *short_strerror (int errnum);
           "mov  sp, si"   \
           "push ax"       \
           "push bx"       \
-          parm [dx si]    \
-          modify [ax bx];
+          __parm   [__dx __si] \
+          __modify [__ax __bx];
 
   extern void STACK_RESTORE (void);
   #pragma aux STACK_RESTORE = \
@@ -682,7 +682,7 @@ extern const char *short_strerror (int errnum);
           "pop ax"            \
           "mov ss, ax"        \
           "mov sp, bx"        \
-          modify [ax bx];
+          __modify [__ax __bx];
 
   extern void PUSHF_CLI (void);
   #pragma aux PUSHF_CLI = \
@@ -703,8 +703,8 @@ extern const char *short_strerror (int errnum);
           "mov  esp, esi"  \
           "push eax"       \
           "push ebx"       \
-          parm [esi]       \
-          modify [eax ebx ecx];
+          __parm   [__esi] \
+          __modify [__eax __ebx __ecx];
 
   extern void STACK_RESTORE (void);
   #pragma aux STACK_RESTORE = \
@@ -722,18 +722,18 @@ extern const char *short_strerror (int errnum);
   extern WORD watcom_MY_CS (void);
   #pragma aux watcom_MY_CS = \
           "mov ax, cs"       \
-          modify [ax];
+          __modify [__ax];
 
   extern WORD watcom_MY_DS(void);
   #pragma aux watcom_MY_DS = \
           "mov ax, ds"       \
-          modify [ax];
+          __modify [__ax];
 
   extern DWORD GET_LIMIT (WORD sel);
   #pragma aux GET_LIMIT = \
           ".386p"         \
           "lsl eax, eax"  \
-          parm [eax];
+          __parm [__eax];
 
   #define get_cs_limit() GET_LIMIT (watcom_MY_CS())
   #define get_ds_limit() GET_LIMIT (watcom_MY_DS())

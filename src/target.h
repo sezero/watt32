@@ -98,7 +98,10 @@
     #undef  DOSX
     #define DOSX    DOS4GW  /* may be DOS4GW, X32VM, PHARLAP or WINWATT */
   #endif
+
+  #if !defined(__SMALL__) && !defined(__LARGE__)
   #define WATCOM386 1
+  #endif
 #endif
 
 /*

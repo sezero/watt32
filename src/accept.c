@@ -52,6 +52,14 @@
 
 #if defined(USE_BSD_API)
 
+#if defined(__WATCOMC__)
+  /*
+   * Warning! W201: Unreachable code. Due to SOCK_FATAIL().
+   * But it does not work.
+   */
+  #pragma warning 201 10
+#endif
+
 static int  dup_bind   (Socket *socket, Socket **clone, int idx);
 static int  alloc_addr (Socket *socket, Socket  *clone);
 static void listen_free(Socket *socket, int idx);
