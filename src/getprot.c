@@ -82,7 +82,7 @@ void W32_CALL ReadProtoFile (const char *fname)
   if (been_here)  /* loading multiple protocol files */
   {
     free (protoFname);
-    FCLOSE (protoFile);
+    fclose (protoFile);
     protoFile = NULL;
   }
 
@@ -152,7 +152,7 @@ const char * W32_CALL GetProtoFile (void)
 
 void W32_CALL CloseProtoFile (void)
 {
-  FCLOSE (protoFile);
+  fclose (protoFile);
   protoFile = NULL;
 }
 
@@ -287,7 +287,7 @@ void W32_CALL setprotoent (int stayopen)
      return;
 
   if (!protoFile)
-       FOPEN_TXT (protoFile, protoFname);
+       protoFile = fopen (protoFname, "rt");
   else rewind (protoFile);
 }
 
@@ -303,7 +303,7 @@ void W32_CALL endprotoent (void)
   if (protoFname)
      free (protoFname);
   if (protoFile)
-     FCLOSE (protoFile);
+     fclose (protoFile);
   protoFname = NULL;
   protoFile  = NULL;
 

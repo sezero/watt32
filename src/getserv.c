@@ -106,7 +106,7 @@ void W32_CALL ReadServFile (const char *fname)
   if (been_here)  /* loading multiple services files */
   {
     free (servFname);
-    FCLOSE (servFile);
+    fclose (servFile);
     servFile = NULL;
   }
   servFname = strdup (fname);
@@ -164,7 +164,7 @@ const char * W32_CALL GetServFile (void)
  */
 void W32_CALL CloseServFile (void)
 {
-  FCLOSE (servFile);
+  fclose (servFile);
   servFile = NULL;
 }
 
@@ -310,7 +310,7 @@ void W32_CALL setservent (int stayopen)
      return;
 
   if (!servFile)
-       FOPEN_TXT (servFile, servFname);
+       servFile = fopen (servFname, "rt");
   else rewind (servFile);
 }
 
@@ -326,7 +326,7 @@ void W32_CALL endservent (void)
   if (servFname)
      free (servFname);
   if (servFile)
-     FCLOSE (servFile);
+     fclose (servFile);
   servFname = NULL;
   servFile  = NULL;
 

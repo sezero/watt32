@@ -179,7 +179,7 @@ void W32_CALL CloseHost6File (void)
 {
   if (!host6file)
      return;
-  FCLOSE (host6file);
+  fclose (host6file);
   host6file = NULL;
 }
 
@@ -391,7 +391,7 @@ void W32_CALL sethostent6 (int stayopen)
      return;
 
   if (!host6file)
-       FOPEN_TXT (host6file, host6Fname);
+       host6file = fopen (host6Fname, "rt");
   else rewind (host6file);
 }
 

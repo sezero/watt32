@@ -99,7 +99,7 @@ static void W32_CALL profile_exit (void)
 {
   if (prof_fout)
   {
-    FCLOSE (prof_fout);
+    fclose (prof_fout);
     prof_fout = NULL;
     if (num_profs)
        (*_printf) ("profiling info written to \"%s\"\n", profile_file);
@@ -178,7 +178,8 @@ int profile_init (void)
     return (0);
   }
 
-  if (!FOPEN_APP(prof_fout,profile_file))
+  prof_fout = fopen (profile_file, "at");
+  if (!prof_fout)
   {
     (*_printf) (_LANG("Failed to open %s: %s\n"),
                 profile_file, strerror(errno));

@@ -1579,6 +1579,7 @@ static int std_read_config (void)
 /**
  * Write the transient DHCP configuration to file.
  * Append to file if found, else create the file.
+ *
  * \note "ifdef USE_BUFFERED_IO" ignored here.
  */
 static int std_write_config (void)
@@ -1660,7 +1661,7 @@ static int std_write_config (void)
                  tcp_keep_intvl);
 #endif
 
-  FCLOSE (file);
+  fclose (file);
   return (rc);
 
 fail:

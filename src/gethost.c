@@ -117,7 +117,7 @@ void W32_CALL ReadHostsFile (const char *fname)
   if (been_here)  /* loading multiple hosts files */
   {
     free (hostFname);
-    FCLOSE (hostFile);
+    fclose (hostFile);
     hostFile = NULL;
   }
 
@@ -196,7 +196,7 @@ const char * W32_CALL GetHostsFile (void)
 void W32_CALL CloseHostFile (void)
 {
   if (hostFile)
-     FCLOSE (hostFile);
+     fclose (hostFile);
   hostFile = NULL;
 }
 
@@ -476,7 +476,7 @@ void W32_CALL sethostent (int stayopen)
      return;
 
   if (!hostFile)
-       FOPEN_TXT (hostFile, hostFname);
+       hostFile = fopen (hostFname, "rt");
   else rewind (hostFile);
 }
 
@@ -490,7 +490,7 @@ void W32_CALL endhostent (void)
   if (hostFname)
      free (hostFname);
   if (hostFile)
-     FCLOSE (hostFile);
+     fclose (hostFile);
   hostFname = NULL;
   hostFile  = NULL;
 

@@ -331,7 +331,7 @@ static void bsddbug_close (void)
 {
 #if (USE_PRINTK == 0)
   if (dbg_file && dbg_file != stdout && dbg_file != stderr)
-     FCLOSE (dbg_file);
+     fclose (dbg_file);
 #endif
   dbg_file = NULL;
 }

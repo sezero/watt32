@@ -82,7 +82,7 @@ void W32_CALL ReadNetworksFile (const char *fname)
   if (been_here)  /* loading multiple network files */
   {
     free (networkFname);
-    FCLOSE (networkFile);
+    fclose (networkFile);
     networkFile = NULL;
   }
 
@@ -159,7 +159,7 @@ const char * W32_CALL GetNetFile (void)
  */
 void W32_CALL CloseNetworksFile (void)
 {
-  FCLOSE (networkFile);
+  fclose (networkFile);
   networkFile = NULL;
 }
 
@@ -276,7 +276,7 @@ void W32_CALL setnetent (int stayopen)
      return;
 
   if (!networkFile)
-       FOPEN_TXT (networkFile, networkFname);
+       networkFile = fopen (networkFname, "rt");
   else rewind (networkFile);
 }
 
@@ -293,7 +293,7 @@ void W32_CALL endnetent (void)
   if (networkFname)
      free (networkFname);
   if (networkFile)
-     FCLOSE (networkFile);
+     fclose (networkFile);
   networkFname = NULL;
   networkFile  = NULL;
 

@@ -62,10 +62,6 @@
   #define SOCK_DEBUGF(args)  printf args
 #endif
 
-#if !defined(USE_BUFFERED_IO)
-  #error This file needs USE_BUFFERED_IO
-#endif
-
 struct ethent {
        eth_address    eth_addr;  /* ether/MAC address of host */
        DWORD          ip_addr;   /* IP-address (host order) */
@@ -110,7 +106,8 @@ void W32_CALL ReadEthersFile (void)
   if (!ethersFname[0])
      return;
 
-  if (!FOPEN_TXT(file, ethersFname))
+  file = fopen (ethersFname, "rt");
+  if (!file)
   {
     netdb_warn (ethersFname);
     return;
@@ -169,7 +166,7 @@ void W32_CALL ReadEthersFile (void)
     eth0 = e;
   }
 
-  FCLOSE (file);
+  fclose (file);
   RUNDOWN_ADD (end_ether_entries, 250);
 }
 

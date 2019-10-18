@@ -82,6 +82,14 @@ static struct Language {
 
   W32_GCC_PRAGMA (GCC diagnostic push)
   W32_GCC_PRAGMA (GCC diagnostic ignored "-Wunused-function")
+
+#elif defined(__WATCOMC__)
+  /*
+   * Warning! W202:  Symbol 'yy_fatal_error' has been defined, but not referenced.
+   * But it does not work.
+   */
+  #pragma warning 202 10
+
 #endif
 
 
@@ -484,7 +492,8 @@ void lang_init (const char *value)
   }
 
   fname = ++s;
-  if (!FOPEN_BIN(langf,fname))
+  langf = fopen (fname, "rb");
+  if (!langf)
   {
     Fatal ("Cannot open language file ", fname);
     return;
@@ -497,7 +506,7 @@ void lang_init (const char *value)
 
     if (!SortLanguageEntries(lang.entries))
     {
-      FCLOSE (langf);
+      fclose (langf);
       Fatal ("Could not sort LANGUAGE entries", NULL);
       return;
     }
@@ -519,7 +528,7 @@ void lang_init (const char *value)
 #endif
   }
 
-  FCLOSE (langf);
+  fclose (langf);
   RUNDOWN_ADD (lang_exit, 302);
 }
 
