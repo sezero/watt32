@@ -132,7 +132,7 @@ const char *ULONGLONG_to_ctime (ULONGLONG ts)
   tm = localtime (&t);
   if (tm)
        strftime (buf, sizeof(buf), "%Y-%m-%d/%H:%M:%S", tm);
-  else snprintf (buf, sizeof(buf), "%lu/%" U64_FMT, (u_long)t, ts);
+  else SNPRINTF (buf, sizeof(buf), "%lu/%" U64_FMT, (u_long)t, ts);
   return (buf);
 }
 
@@ -186,6 +186,15 @@ void set_utc_offset (void)
 
 
 #if (DOSX == 0)
+
+#include <dos.h>
+
+#if defined(DMC386)
+  #define CX_WORD_REG(r)  r.x.cx
+#else
+  #define CX_WORD_REG(r)  r.w.cx
+#endif
+
 int W32_CALL W32_NAMESPACE (gettimeofday) (struct timeval *tv, struct timezone *tz)
 {
   union  REGS reg;
@@ -210,7 +219,7 @@ int W32_CALL W32_NAMESPACE (gettimeofday) (struct timeval *tv, struct timezone *
 
   tm.tm_mday  = reg.h.dl;
   tm.tm_mon   = reg.h.dh - 1;
-  tm.tm_year  = (reg.x.cx & 0x7FF) - 1900;
+  tm.tm_year  = (CX_WORD_REG(reg) & 0x7FF) - 1900;
   tm.tm_wday  = tm.tm_yday = 0;
   tm.tm_isdst = -1;
 
