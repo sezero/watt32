@@ -3,7 +3,7 @@
 #
 # Contributed by Ozkan Sezer <sezeroz@users.sourceforge.net>
 # for cross-compiling Watt-32 on Linux. Targets are:
-#   djgpp, mingw32, mingw64, cygwin or watcom
+#   djgpp, mingw32, mingw64, cygwin, clang or watcom
 #
 # What works:
 # - generates suitable target makefile from makefile.all
@@ -59,14 +59,14 @@ missing_stuff ()
 bad_usage ()
 {
   echo Unknown option \'$1\'.
-  echo Usage: $0 [djgpp mingw32 mingw64 cygwin watcom all clean]
+  echo Usage: $0 [djgpp mingw32 mingw64 cygwin clang watcom all clean]
   exit 2;
 }
 
 usage ()
 {
   echo Configuring Watt-32 tcp/ip targets.
-  echo Usage: $0 [djgpp mingw32 mingw64 cygwin watcom all clean]
+  echo Usage: $0 [djgpp mingw32 mingw64 cygwin clang watcom all clean]
   exit 1;
 }
 
@@ -160,6 +160,30 @@ gen_cygwin64 ()
   make -s -f ../util/pkg-conf.mak cygwin64_pkg CYGWIN_DIR=../lib
 }
 
+#
+# Highly experimental. I do not have Linux (or WSL for Win-10).
+# So it's completely untested.
+#
+gen_clang ()
+{
+  echo Generating clang-cl (Win32/Win64) makefiles, directories, errnos and dependencies
+  ../util/linux/mkmake -o clang32.mak -d build/clang/32bit makefile.all CLANG WIN32
+  ../util/linux/mkmake -o clang64.mak -d build/clang/64bit makefile.all CLANG WIN64
+
+  ../util/linux/mkdep -s.obj -p\$\(OBJDIR\)/ *.[ch] > build/clang/watt32.dep
+  echo neterr.c: build/clang/syserr.c              >> build/clang/watt32.dep
+
+ # Not sure these will work (under Linux/Wine)?
+  wine ../util/win32/clang_err -s > build/clang/syserr.c
+  wine ../util/win32/clang_err -e > ../inc/sys/clang.err
+
+  echo Run GNU make to make target(s):
+  echo   E.g. "make -f clang32.mak"
+  echo     or "make -f clang64.mak"
+  echo Depending on which clang-cl (32 or 64-bit) is first on your PATH, use the correct 'clang32.mak' or 'clang64.bat'.
+}
+
+
 gen_watcom ()
 {
   echo Generating Watcom makefiles, directories, errnos and dependencies
@@ -191,11 +215,11 @@ gen_all ()
 
 do_clean ()
 {
-  rm -f djgpp.mak watcom_*.mak MinGW32.mak MinGW64.mak CygWin.mak CygWin_64.mak watcom_w.mak
+  rm -f djgpp.mak watcom_{f,l,s,w,x}.mak MinGW32.mak MinGW64.mak CygWin.mak CygWin_64.mak clang{32,64}.mak
   rm -f build/djgpp/watt32.dep build/MinGW32/watt32.dep build/MinGW64/32bit/watt32.dep build/MinGW64/64bit/watt32.dep
-  rm -f build/CygWin/watt32.dep build/watcom/watt32.dep
-  rm -f build/djgpp/syserr.c build/watcom/syserr.c build/MinGW32/syserr.c build/MinGW64/syserr.c
-  rm -f ../inc/sys/djgpp.err ../inc/sys/watcom.err ../inc/sys/mingw32.err ../inc/sys/mingw64.err
+  rm -f build/CygWin/watt32.dep build/watcom/watt32.dep build/clang/watt32.dep
+  rm -f build/djgpp/syserr.c build/watcom/syserr.c build/MinGW32/syserr.c build/MinGW64/syserr.c build/clang/syserr.c
+  rm -f ../inc/sys/djgpp.err ../inc/sys/watcom.err ../inc/sys/mingw32.err ../inc/sys/mingw64.err ../inc/sys/clang.err
 }
 
 #
@@ -221,7 +245,7 @@ if test $# -lt 1; then
   usage
 fi
 case $1 in
-  djgpp|mingw32|mingw64|cygwin|watcom|all|clean)
+  djgpp|mingw32|mingw64|cygwin|clang|watcom|all|clean)
       ;;
   "-h"|"-?") usage ;;
   *)  bad_usage $1 ;;
@@ -245,6 +269,7 @@ do
   mingw64)   gen_mingw64  ;;
   cygwin)    gen_cygwin   ;;
   cygwin64)  gen_cygwin64 ;;
+  clang)     gen_clang    ;;
   watcom)    gen_watcom   ;;
   *)         bad_usage $i;;
  esac
