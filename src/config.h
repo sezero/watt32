@@ -271,7 +271,7 @@
 
 /*
  * If building .html-documentation with Doxygen, document everything.
- * Abd add some stuff Doxygen doesn't know about.
+ * And add some stuff Doxygen doesn't know about.
  */
 #if defined(DOXYGEN)
   #define W32_NAMESPACE(x)  x
