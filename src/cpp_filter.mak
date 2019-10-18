@@ -18,16 +18,18 @@
 # This will produce socket.i from socket.c which you can inspect to see
 # what the C-compiler is really given to compile.
 #
-# Requires Python 2+ and GNU-indent (unless USE_INDENT=0).
+# Requires Python 2+ and optionally:
+#  GNU-indent or clang-format.
 #
-USE_INDENT   ?= 1
-CPU_BITS     ?= 32
-MSVC_CHECK   ?= 1
-CLANG_CHECK  ?= 0
-POCC_CHECK   ?= 0
-DJGPP_CHECK  ?= 0
-CYGWIN_CHECK ?= 0
-PYTHON       ?= f:/ProgramFiler/Python36/python
+USE_INDENT       ?= 0
+USE_CLANG_FORMAT ?= 1
+CPU_BITS         ?= 32
+MSVC_CHECK       ?= 0
+CLANG_CHECK      ?= 0
+POCC_CHECK       ?= 0
+DJGPP_CHECK      ?= 0
+CYGWIN_CHECK     ?= 0
+PYTHON           ?= f:/ProgramFiler/Python36/python
 
 WATT_ROOT := $(realpath $(WATT_ROOT))
 
@@ -65,7 +67,7 @@ else ifeq ($(MSVC_CHECK),1)
 
 else ifeq ($(CLANG_CHECK),1)
   CC     = clang-cl
-  CFLAGS = -nologo -Wall
+  CFLAGS = -nologo # -Wall
   CL=
   export CL
 
@@ -95,16 +97,26 @@ ifeq (0,1)
   CFLAGS += -I$(realpath $(PYTHONHOME))/include
 endif
 
-PREPROCESS_CMD = $(CC) -E $(CFLAGS) $< | $(PYTHON) $(CPP_FILTER_PY)
+PREPROCESS_C   = $(CC) -E $(CFLAGS) $(1) | $(PYTHON) $(CPP_FILTER_PY)
+PREPROCESS_CPP = $(CC) -E $(CFLAGS) $(1) | $(PYTHON) $(CPP_FILTER_PY)
 
-ifeq ($(USE_INDENT),1)
-  PREPROCESS_CMD += | indent -st
+ifeq ($(USE_CLANG_FORMAT),1)
+  PREPROCESS_C   += | clang-format -style=Mozilla -assume-filename=c
+  PREPROCESS_CPP += | clang-format -style=Mozilla -assume-filename=c++
+
+else ifeq ($(USE_INDENT),1)
+  PREPROCESS_C += | indent -st
 endif
 
 all: $(CPP_FILTER_PY) $(MAKECMDGOALS)
 
 %.i: %.c FORCE $(CPP_FILTER_PY)
-	$(PREPROCESS_CMD) > $@
+	$(call PREPROCESS_C, $<) > $@
+	@echo ''
+	@echo 'Look at "$@" for the preprosessed results.'
+
+%.i: %.cpp FORCE $(CPP_FILTER_PY)
+	$(call PREPROCESS_CPP, $<) > $@
 	@echo ''
 	@echo 'Look at "$@" for the preprosessed results.'
 
@@ -185,8 +197,6 @@ define _CPP_FILTER_PY
       empty_lines += 1
       continue
 
-    # print ("orig: \"%s\"" % line)
-
     line = line.replace ("\\\\", "/")
     fname = None
     quote = line.find ('\"')
@@ -195,16 +205,24 @@ define _CPP_FILTER_PY
       fname = _win32_abspath (line[quote:])
       last_fname = fname
 
-    if line.strip() != '' and last_line != '':
+    l = line.rstrip()
+    if l != '' and last_line != '':
       if fname is None or fname != last_fname:
-        if line.find("__declspec(deprecated("):
-          line = wrap_long_line (line)
-        print (line, end="")
+        if 0:
+          if l.find("__declspec(deprecated("):
+            l = wrap_long_line (l)
+        if 0:
+          print (l, end="")
+        else:
+          print (l)
 
-        if line.strip() == '}':  # Print a newline after a function
+        #
+        # Print a newline after a function or struct
+        #
+        if l.endswith('}') or l.endswith('};'):
           print ("")
 
-    last_line = line
+    last_line = l
 
   if empty_lines > 0:
     sys.stderr.write ("Removed %d empty lines." % empty_lines)
