@@ -102,6 +102,12 @@ void W32_CALL __putlong (u_long var, u_char *ptr)   /* in <resolv.h> */
 }
 
 /*
+ * The below causes an 'Error! E1119: Internal compiler error 97'
+ * in 'wcc386 -ml'.
+ */
+#if !defined(__WATCOMC__) && !defined(__LARGE__)
+
+/*
  * If compiler/linker doesn't see our defines for htonl() etc.
  */
 #undef htonl
@@ -125,4 +131,4 @@ unsigned short W32_CALL ntohs (unsigned short val)
 {
   return intel16 (val);
 }
-
+#endif
