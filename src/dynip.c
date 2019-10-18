@@ -26,7 +26,7 @@
 #include "netaddr.h"
 #include "dynip.h"
 
-#if defined(USE_DYNIP_CLI)
+#if defined(USE_DYNIP_CLI) /* Rest of file */
 
 #if defined(SNPRINTF)
   #define BUF(buf)   buf, sizeof(buf)
@@ -69,7 +69,7 @@ static struct URL dyndns = { (char*) "members.dyndns.com",
                              (char*) "/nic/update?system=dyndns&hostname=%s",
                              80, FALSE
                            };
-static struct URL chkip  = { NULL, NULL, 0, FALSE };
+static struct URL chkip = { NULL, NULL, 0, FALSE };
 
 static char   resp_buf [2048];
 static void (W32_CALL *prev_hook) (const char*, const char*);
@@ -114,11 +114,11 @@ static void W32_CALL dynip_config (const char *name, const char *value)
  */
 static void W32_CALL dynip_exit (void)
 {
-  if (_watt_fatal_error)
-     return;
-
-  url_free (&chkip);
-  url_free (&dyndns);
+  if (!_watt_fatal_error)
+  {
+    url_free (&chkip);
+    url_free (&dyndns);
+  }
 }
 
 void dynip_init (void)
@@ -166,6 +166,8 @@ int dynip_exec (void)
     if (rc <= 0)
        return (0);
 
+    /* 'resp_buf[]' is the non-HTTP part filled by 'get_url()' above.
+     */
     myip = parse_myip_address (resp_buf);
 
     TRACE (2, ("Got %d bytes HTML, Found myip: `%s'\r\n", rc, myip));
@@ -470,7 +472,7 @@ static int base64encode (const char *in, char *out, size_t out_len)
 }
 
 /**
- * Receive and parse the HYTTP header.
+ * Receive and parse the HTTP header.
  * Return FALSE if header isn't correct.
  * Return TRUE and extract "Content-Length" field.
  */
@@ -523,7 +525,7 @@ static BOOL get_header (void *sock, long *cont_len_ptr)
   }
 
   /* Eat up the other header lines here.
-   * Set to LONG_MAX, in case no "Content-length" header.
+   * Set to LONG_MAX, in case of no "Content-length" header.
    */
   content_length = LONG_MAX;
 
@@ -561,11 +563,11 @@ static BOOL get_header (void *sock, long *cont_len_ptr)
 static int get_url (const char *host, int port, const char *path,
                     const char *user_pass)
 {
-  DWORD addr;
-  int   status = 0;
-  int   length;
-  long  content_length = 0L;
-  char  req_buf [512], *p;
+  DWORD      addr;
+  int        status = 0;
+  int        length;
+  long       content_length = 0L;
+  char       req_buf [512], *p;
   sock_type *sock;
 
   if (!host)
