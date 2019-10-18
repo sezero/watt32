@@ -1,5 +1,6 @@
 *.arg
 *.exe
+*.exe.manifest
 *.exp
 *.dll
 *.dif
@@ -112,7 +113,8 @@ src/TMP/
 src/tests-2/
 src/watt-doc/
 src/reconn.udp
-src/language.c
+src/lang.c
+src/Python/watt32_swig_wrap.c
 dist/
 docs/
 ertos/
