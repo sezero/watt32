@@ -29,10 +29,10 @@
 #if (DOSX & DJGPP)
   #include <sys/time.h>
 #elif (DOSX & PHARLAP)
-  #include <mw/exc.h>  /* _dx_alloc_rmode_wrapper_iret() */
+  #include <mw/exc.h>   /* _dx_alloc_rmode_wrapper_iret() */
 #endif
 
-#if defined(__MSDOS__)
+#if defined(__MSDOS__)  /* Rest of file */
 
 #define TIMER_INTR  0x08
 #define STK_SIZE    1024
