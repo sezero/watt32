@@ -75,14 +75,6 @@
   #include "build/pellesc/syserr.c" /* @NO_DEP */
 
 #elif defined(__WATCOMC__)
-  #if 0
-    #if __WATCOMC__ > 1290
-      char * _WCDATA SYS_ERRLIST[] = {
-    #else
-      char *SYS_ERRLIST[] = {
-    #endif
-  #endif
-
   #if defined(WIN32)
     #define SYS_ERRLIST _w32_sys_errlist
     #define SYS_NERR    _w32_sys_nerr
