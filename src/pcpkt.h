@@ -189,7 +189,7 @@ struct async_iocb {
        BYTE  code;            /* Error code */
        DWORD xmit_func;       /* Transmitter upcall */
        char  reserved[4];     /* Future gather-write data */
-       char  private[8];      /* Driver's private data */
+       char  priv_data[8];    /* Driver's private data */
      };
 
 #define ASY_DONE   1  /* packet driver is done with this iocb */
