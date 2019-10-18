@@ -357,13 +357,13 @@ static ULONG AllocHashDeinit (void)
   {
     // output some statistics from the hash-table
     fprintf (g_fFile, "***** Hash-Table statistics:\n");
-    fprintf (g_fFile, "      Table-Size:     %i\n", ALLOC_HASH_ENTRIES);
-    fprintf (g_fFile, "      Inserts:        %i\n", AllocHashEntries);
-    fprintf (g_fFile, "      Freed:          %i\n", AllocHashFreed);
-    fprintf (g_fFile, "      Sum Collisions: %i\n", AllocHashCollisions);
+    fprintf (g_fFile, "      Table-Size:     %d\n", ALLOC_HASH_ENTRIES);
+    fprintf (g_fFile, "      Inserts:        %lu\n", AllocHashEntries);
+    fprintf (g_fFile, "      Freed:          %lu\n", AllocHashFreed);
+    fprintf (g_fFile, "      Sum Collisions: %lu\n", AllocHashCollisions);
     fprintf (g_fFile, "\n");
-    fprintf (g_fFile, "      Max used:       %i\n", AllocHashMaxUsed);
-    fprintf (g_fFile, "      Max Collisions: %i\n", AllocHashMaxCollisions);
+    fprintf (g_fFile, "      Max used:       %lu\n", AllocHashMaxUsed);
+    fprintf (g_fFile, "      Max Collisions: %lu\n", AllocHashMaxCollisions);
   }
 
   // Free Hash-Table
@@ -637,7 +637,7 @@ ULONG AllocHashOutLeaks (FILE *fFile)
           CONTEXT c;
 
           ulCount++;
-          fprintf (fFile, "RequestID: %12i, Removed: %i, Size: %12i\n",
+          fprintf (fFile, "RequestID: %12ld, Removed: %d, Size: %12d\n",
                    pHashEntry->lRequestID, pHashEntry->cRemovedFlag, pHashEntry->nDataSize);
           memset (&c, 0, sizeof(c));
           c.Eip = pHashEntry->dwEIPOffset;
@@ -652,7 +652,7 @@ ULONG AllocHashOutLeaks (FILE *fFile)
       }
     }
   }
-  fprintf (fFile, "\n**** Number of leaks: %i\n", ulCount);
+  fprintf (fFile, "\n**** Number of leaks: %ld\n", ulCount);
   return (ulLeaksByte);
 }
 
@@ -669,7 +669,7 @@ static void AllocHashOut (FILE *fFile)
     {
       while (pHashEntry)
       {
-        fprintf (fFile, "RequestID: %12i, Removed: %i, Size: %12i\n",
+        fprintf (fFile, "RequestID: %12ld, Removed: %d, Size: %12d\n",
                  pHashEntry->lRequestID, pHashEntry->cRemovedFlag, pHashEntry->nDataSize);
         pHashEntry = pHashEntry->Next;
       }
@@ -782,12 +782,11 @@ static int cdecl MyAllocHook (int nAllocType, void *pvData,
     return TRUE;
   }
 
-  if (g_ulShowStackAtAlloc > 0) {
+  if (g_ulShowStackAtAlloc > 0)
     AllocCheckFileOpen();  // Open logfile
-  }
 
-   _ASSERT( (nAllocType == _HOOK_ALLOC) || (nAllocType == _HOOK_REALLOC) || (nAllocType == _HOOK_FREE) );
-   _ASSERT( ( _BLOCK_TYPE(nBlockUse) >= 0 ) && ( _BLOCK_TYPE(nBlockUse) < 5 ) );
+   _ASSERT ((nAllocType == _HOOK_ALLOC) || (nAllocType == _HOOK_REALLOC) || (nAllocType == _HOOK_FREE));
+   _ASSERT ((_BLOCK_TYPE(nBlockUse) >= 0) && ( _BLOCK_TYPE(nBlockUse) < 5));
 
   if (nAllocType == _HOOK_FREE) { // freeing
     // Try to get the header information
@@ -813,7 +812,7 @@ static int cdecl MyAllocHook (int nAllocType, void *pvData,
     fprintf (g_fFile, "##### Memory operation: %s a %d-byte '%s' block (# %ld)",
              operation[nAllocType], nSize, blockType[_BLOCK_TYPE(nBlockUse)], lRequest);
     if (pvData)
-       fprintf (g_fFile, " at 0x%X", pvData );
+       fprintf (g_fFile, " at 0x%X", (int)pvData);
     fprintf (g_fFile, "\n");
   }
 
@@ -827,7 +826,7 @@ static int cdecl MyAllocHook (int nAllocType, void *pvData,
         if (bRet == FALSE)
         {
           // RequestID not found!
-          fprintf (g_fFile, "###### RequestID not found in hash table for FREEING (%i)!\n", lRequest);
+          fprintf (g_fFile, "###### RequestID not found in hash table for FREEING (%ld)!\n", lRequest);
         }
       }
     }
@@ -836,7 +835,7 @@ static int cdecl MyAllocHook (int nAllocType, void *pvData,
       if(g_ulShowStackAtAlloc > 0)
       {
         // No valid RequestID found, display error
-        fprintf (g_fFile, "###### No valid RequestID for FREEING! (0x%X)\n", pvData);
+        fprintf (g_fFile, "###### No valid RequestID for FREEING! (0x%X)\n", (int)pvData);
       }
     }
   }
@@ -858,7 +857,7 @@ static int cdecl MyAllocHook (int nAllocType, void *pvData,
         if (bRet == FALSE)
         {
           // RequestID not found!
-          fprintf (g_fFile, "###### RequestID not found in hash table for RE-ALLOCATING (%i)!\n", lReallocRequest);
+          fprintf (g_fFile, "###### RequestID not found in hash table for RE-ALLOCATING (%ld)!\n", lReallocRequest);
         }
         else
         {
@@ -944,9 +943,9 @@ static int cdecl MyAllocHook (int nAllocType, void *pvData,
 // ##########################################################################################
 
 #define gle (GetLastError())
-#define MAXNAMELEN 1024 // max name length for found symbols
-#define IMGSYMLEN ( sizeof IMAGEHLP_SYMBOL64 )
-#define TTBUFLEN 8096 // for a temp buffer (2^13)
+#define MAXNAMELEN  1024 // max name length for found symbols
+#define IMGSYMLEN   sizeof(IMAGEHLP_SYMBOL64)
+#define TTBUFLEN    8096 // for a temp buffer (2^13)
 
 
 // SymCleanup()
@@ -1154,8 +1153,8 @@ static BOOL GetModuleListPSAPI (ModuleList &modules, DWORD pid, HANDLE hProcess,
     return FALSE;
   }
 
-  hMods = (HMODULE*) malloc (sizeof(HMODULE) * (TTBUFLEN / sizeof HMODULE));
-  tt = (char*) malloc (sizeof(char) * TTBUFLEN);
+  hMods = (HMODULE*) malloc (TTBUFLEN / sizeof(HMODULE));
+  tt = (char*) malloc (TTBUFLEN);
 
   if ( ! (*pEPM)( hProcess, hMods, TTBUFLEN, &cbNeeded ) )
   {
@@ -1165,23 +1164,23 @@ static BOOL GetModuleListPSAPI (ModuleList &modules, DWORD pid, HANDLE hProcess,
 
   if ( cbNeeded > TTBUFLEN )
   {
-    fprintf (fLogFile, "%lu: More than %lu module handles. Huh?\n", g_dwShowCount, DIM(hMods));
+    fprintf (fLogFile, "%lu: More than %u module handles. Huh?\n", g_dwShowCount, TTBUFLEN/sizeof(HMODULE));
     goto cleanup;
   }
 
   for ( i = 0; i < cbNeeded / sizeof(hMods[0]); i++ )
   {
     // base address, size
-    (*pGMI) (hProcess, hMods[i], &mi, sizeof mi );
+    (*pGMI) (hProcess, hMods[i], &mi, sizeof(mi));
     e.baseAddress = (DWORD) mi.lpBaseOfDll;
     e.size = mi.SizeOfImage;
     // image file name
     tt[0] = 0;
-    (*pGMFNE) (hProcess, hMods[i], tt, TTBUFLEN );
+    (*pGMFNE) (hProcess, hMods[i], tt, TTBUFLEN);
     e.imageName = tt;
     // module name
     tt[0] = 0;
-    (*pGMBN) (hProcess, hMods[i], tt, TTBUFLEN );
+    (*pGMBN) (hProcess, hMods[i], tt, TTBUFLEN);
     e.moduleName = tt;
 
     modules.push_back(e);
@@ -1318,12 +1317,19 @@ static LONG __stdcall CrashHandlerExceptionFilter (const EXCEPTION_POINTERS* pEx
   if (pExPtrs->ExceptionRecord->ExceptionCode == EXCEPTION_STACK_OVERFLOW)
   {
     static char MyStack[1024*128];  // be sure that we have enought space...
-    // it assumes that DS and SS are the same!!! (this is the case for Win32)
+    // it assumes that DS and SS are the same!!! (this is the case for Win32).
     // change the stack only if the selectors are the same (this is the case for Win32)
     //__asm push offset MyStack[1024*128];
     //__asm pop esp;
+
+#ifdef __clang__
+    __asm lea eax, MyStack ;
+    __asm add eax, 1024*128 ;
+    __asm mov esp, eax ;
+#else
     __asm mov eax,offset MyStack[1024*128];
     __asm mov esp,eax;
+#endif
   }
 
   LONG lRet;
@@ -1384,8 +1390,8 @@ ULONG DeInitAllocCheck (void)
 
     // de-init symbol handler etc. (SymCleanup())
     if (pSC != NULL)
-      pSC( GetCurrentProcess() );
-    FreeLibrary( g_hImagehlpDll );
+       pSC (GetCurrentProcess());
+    FreeLibrary (g_hImagehlpDll);
 
     LeaveCriticalSection(&g_csFileOpenClose);
     if (g_pszAllocLogName != NULL) {
@@ -1501,11 +1507,11 @@ static const char *GetAdditionalExpectionCodeText (const EXCEPTION_RECORD *pExce
            switch (pExceptionRecord->ExceptionInformation[0])
            {
              case 0: // read attempt
-                  sprintf (szTemp, " read attempt to address 0x%8.8X ",
+                  sprintf (szTemp, " read attempt to address 0x%8.8lX ",
                            pExceptionRecord->ExceptionInformation[1]);
                   return (szTemp);
              case 1: // write attempt
-                  sprintf (szTemp, " write attempt to address 0x%8.8X ",
+                  sprintf (szTemp, " write attempt to address 0x%8.8lX ",
                            pExceptionRecord->ExceptionInformation[1]);
                   return (szTemp);
              default:
@@ -1573,9 +1579,9 @@ static DWORD StackwalkFilter (const EXCEPTION_POINTERS *ep, DWORD status, const 
      fFile = stdout;
 
   // Write infos about the exception
-  fprintf (fFile, "######## EXCEPTION: 0x%8.8X at address: 0x%8.8X",
+  fprintf (fFile, "######## EXCEPTION: 0x%8.8lX at address: 0x%8.8lX",
            ep->ExceptionRecord->ExceptionCode,
-           ep->ExceptionRecord->ExceptionAddress);
+           (DWORD_PTR)ep->ExceptionRecord->ExceptionAddress);
   fprintf (fFile, ": %s %s\n",
            GetExpectionCodeText(ep->ExceptionRecord->ExceptionCode),
            GetAdditionalExpectionCodeText(ep->ExceptionRecord));
@@ -1680,7 +1686,7 @@ static void ShowStackRM (HANDLE hThread, const CONTEXT *c, FILE *fLogFile,
 
   if (pSym == NULL)
   {
-    pSym = (IMAGEHLP_SYMBOL64 *) malloc( IMGSYMLEN + MAXNAMELEN );
+    pSym = (IMAGEHLP_SYMBOL64 *) malloc( IMGSYMLEN + MAXNAMELEN);
     if (!pSym)
        goto cleanup;
   }
@@ -1700,7 +1706,7 @@ static void ShowStackRM (HANDLE hThread, const CONTEXT *c, FILE *fLogFile,
     symSearchPath = "";
     // current directory
     if ( GetCurrentDirectoryA( TTBUFLEN, tt ) )
-      symSearchPath += tt + std::string( ";" );
+      symSearchPath += tt + std::string( ";");
     // dir with executable
     if ( GetModuleFileNameA( 0, tt, TTBUFLEN ) )
     {
@@ -1717,24 +1723,24 @@ static void ShowStackRM (HANDLE hThread, const CONTEXT *c, FILE *fLogFile,
         if ( *p == ':' ) // we leave colons in place
           ++ p;
         *p = '\0'; // eliminate the exe name and last path sep
-        symSearchPath += tt + std::string( ";" );
+        symSearchPath += tt + std::string( ";");
       }
     }
     // environment variable _NT_SYMBOL_PATH
-    if ( GetEnvironmentVariableA( "_NT_SYMBOL_PATH", tt, TTBUFLEN ) )
-      symSearchPath += tt + std::string( ";" );
+    if (GetEnvironmentVariableA( "_NT_SYMBOL_PATH", tt, TTBUFLEN))
+      symSearchPath += tt + std::string(";");
     // environment variable _NT_ALTERNATE_SYMBOL_PATH
-    if ( GetEnvironmentVariableA( "_NT_ALTERNATE_SYMBOL_PATH", tt, TTBUFLEN ) )
-      symSearchPath += tt + std::string( ";" );
+    if (GetEnvironmentVariableA("_NT_ALTERNATE_SYMBOL_PATH", tt, TTBUFLEN))
+      symSearchPath += tt + std::string(";");
     // environment variable SYSTEMROOT
-    if ( GetEnvironmentVariableA( "SYSTEMROOT", tt, TTBUFLEN ) )
-      symSearchPath += tt + std::string( ";" );
+    if (GetEnvironmentVariableA("SYSTEMROOT", tt, TTBUFLEN ) )
+      symSearchPath += tt + std::string(";");
 
     if ( symSearchPath.size() > 0 ) // if we added anything, we have a trailing semicolon
-      symSearchPath = symSearchPath.substr( 0, symSearchPath.size() - 1 );
+      symSearchPath = symSearchPath.substr (0, symSearchPath.size() - 1);
 
     // why oh why does SymInitialize() want a writeable string?
-    strncpy( tt, symSearchPath.c_str(), TTBUFLEN );
+    strncpy( tt, symSearchPath.c_str(), TTBUFLEN);
     tt[TTBUFLEN - 1] = '\0'; // if strncpy() overruns, it doesn't add the null terminator
 
     // init symbol handler stuff (SymInitialize())
@@ -1751,14 +1757,14 @@ static void ShowStackRM (HANDLE hThread, const CONTEXT *c, FILE *fLogFile,
     symOptions |= SYMOPT_LOAD_LINES;
     symOptions &= ~SYMOPT_UNDNAME;
     symOptions &= ~SYMOPT_DEFERRED_LOADS;
-    pSSO( symOptions ); // SymSetOptions()
+    pSSO (symOptions); // SymSetOptions()
 
     // Enumerate modules and tell dbghlp.dll about them.
     // On NT, this is not necessary, but it won't hurt.
-    EnumAndLoadModuleSymbols( hProcess, GetCurrentProcessId(), fLogFile );
+    EnumAndLoadModuleSymbols (hProcess, GetCurrentProcessId(), fLogFile);
 
     if (tt)
-      free( tt );
+      free (tt);
   }  // bFirstTime = TRUE
 
   bFirstTime = FALSE;
@@ -1772,15 +1778,15 @@ static void ShowStackRM (HANDLE hThread, const CONTEXT *c, FILE *fLogFile,
   s.AddrFrame.Offset = c->Ebp;
   s.AddrFrame.Mode = AddrModeFlat;
 
-  memset( pSym, '\0', IMGSYMLEN + MAXNAMELEN );
+  memset (pSym, '\0', IMGSYMLEN + MAXNAMELEN);
   pSym->SizeOfStruct = IMGSYMLEN;
   pSym->MaxNameLength = MAXNAMELEN;
 
-  memset( &Line, '\0', sizeof Line );
-  Line.SizeOfStruct = sizeof Line;
+  memset( &Line, '\0', sizeof(Line));
+  Line.SizeOfStruct = sizeof(Line);
 
-  memset( &Module, '\0', sizeof Module );
-  Module.SizeOfStruct = sizeof Module;
+  memset( &Module, '\0', sizeof(Module));
+  Module.SizeOfStruct = sizeof(Module);
 
   for ( frameNum = 0; ; ++ frameNum )
   {
@@ -1814,12 +1820,12 @@ static void ShowStackRM (HANDLE hThread, const CONTEXT *c, FILE *fLogFile,
       undFullName[0] = 0;
       offsetFromSymbol = 0;
       // show procedure info (SymGetSymFromAddr())
-      if ( ! (*pSGSFA)( hProcess, s.AddrPC.Offset, &offsetFromSymbol, pSym ) )
+      if (!(*pSGSFA)( hProcess, s.AddrPC.Offset, &offsetFromSymbol, pSym))
       {
         if (g_CallstackOutputType == ACOutput_Advanced)
         {
-          if ( gle != 487 )
-            fprintf (fLogFile, "   SymGetSymFromAddr(): GetLastError = %lu\n", gle );
+          if (gle != 487)
+            fprintf (fLogFile, "   SymGetSymFromAddr(): GetLastError = %lu\n", gle);
           else
             fprintf (fLogFile, "\n");
         }
@@ -1832,13 +1838,13 @@ static void ShowStackRM (HANDLE hThread, const CONTEXT *c, FILE *fLogFile,
         if (g_CallstackOutputType == ACOutput_Advanced)
         {
           if (strlen(undName) > 0)
-            fprintf (fLogFile, "     %s %+ld bytes\n", undName, (long)offsetFromSymbol );
+            fprintf (fLogFile, "     %s %+ld bytes\n", undName, (long)offsetFromSymbol);
           else
           {
-            fprintf (fLogFile, "     Sig:  %s %+ld bytes\n", pSym->Name, (long)offsetFromSymbol );
+            fprintf (fLogFile, "     Sig:  %s %+ld bytes\n", pSym->Name, (long)offsetFromSymbol);
             strcpy(undName, pSym->Name);
           }
-          fprintf (fLogFile, "%lu:     Decl: %s\n", g_dwShowCount, undFullName );
+          fprintf (fLogFile, "%lu:     Decl: %s\n", g_dwShowCount, undFullName);
         }
       }
 
@@ -1850,7 +1856,7 @@ static void ShowStackRM (HANDLE hThread, const CONTEXT *c, FILE *fLogFile,
         {
           if ( (gle != 487) && (frameNum > 0) )  // ignore error for first frame
           {
-            fprintf (fLogFile, "%lu: SymGetLineFromAddr(): GetLastError = %lu\n", g_dwShowCount, gle );
+            fprintf (fLogFile, "%lu: SymGetLineFromAddr(): GetLastError = %lu\n", g_dwShowCount, gle);
           }
         }
         else
@@ -1858,12 +1864,12 @@ static void ShowStackRM (HANDLE hThread, const CONTEXT *c, FILE *fLogFile,
           switch(g_CallstackOutputType)
           {
           case ACOutput_Advanced:
-            fprintf (fLogFile, "%lu:     Line: %s(%lu) %+ld bytes\n", g_dwShowCount,
-              Line.FileName, Line.LineNumber, offsetFromLine );
+               fprintf (fLogFile, "%lu:     Line: %s(%lu) %+ld bytes\n", g_dwShowCount,
+                        Line.FileName, Line.LineNumber, offsetFromLine);
             break;
           case ACOutput_Simple:
-            fprintf (fLogFile, "%lu: %s(%lu) %+ld bytes (%s)\n", g_dwShowCount,
-              Line.FileName, Line.LineNumber, offsetFromLine, undName);
+               fprintf (fLogFile, "%lu: %s(%lu) %+ld bytes (%s)\n", g_dwShowCount,
+                        Line.FileName, Line.LineNumber, offsetFromLine, undName);
             break;
           }
         }
@@ -1875,7 +1881,7 @@ static void ShowStackRM (HANDLE hThread, const CONTEXT *c, FILE *fLogFile,
         if ( ! pSGMI( hProcess, s.AddrPC.Offset, &Module ) )
         {
           if (g_CallstackOutputType == ACOutput_Advanced)
-            fprintf (fLogFile, "%lu: SymGetModuleInfo): GetLastError = %lu\n", g_dwShowCount, gle );
+            fprintf (fLogFile, "%lu: SymGetModuleInfo): GetLastError = %lu\n", g_dwShowCount, gle);
         }
         else
         { // got module info OK
@@ -1883,42 +1889,42 @@ static void ShowStackRM (HANDLE hThread, const CONTEXT *c, FILE *fLogFile,
           switch ( Module.SymType )
           {
           case SymNone:
-            strcpy( ty, "-nosymbols-" );
+            strcpy( ty, "-nosymbols-");
             break;
           case SymCoff:
-            strcpy( ty, "COFF" );
+            strcpy( ty, "COFF");
             break;
           case SymCv:
-            strcpy( ty, "CV" );
+            strcpy( ty, "CV");
             break;
           case SymPdb:
-            strcpy( ty, "PDB" );
+            strcpy( ty, "PDB");
             break;
           case SymExport:
-            strcpy( ty, "-exported-" );
+            strcpy( ty, "-exported-");
             break;
           case SymDeferred:
-            strcpy( ty, "-deferred-" );
+            strcpy( ty, "-deferred-");
             break;
           case SymSym:
-            strcpy( ty, "SYM" );
+            strcpy( ty, "SYM");
             break;
 #if API_VERSION_NUMBER >= 9
           case SymDia:
-            strcpy( ty, "DIA" );
+            strcpy( ty, "DIA");
             break;
 #endif
           default:
-            SNPRINTF (ty, sizeof(ty), "symtype=%ld", (long) Module.SymType );
+            SNPRINTF (ty, sizeof(ty), "symtype=%ld", (long) Module.SymType);
             break;
           }
 
           if (g_CallstackOutputType == ACOutput_Advanced)
           {
-            fprintf (fLogFile, "%lu:     Mod:  %s, base: %08lxh\n", g_dwShowCount,
-              Module.ModuleName, Module.BaseOfImage );
+            fprintf (fLogFile, "%lu:     Mod:  %s, base: 0x%" ADDR_FMT "\n",
+                     g_dwShowCount, Module.ModuleName, ADDR_CAST(Module.BaseOfImage));
             if (Module.SymType == SymNone) { // Gebe nur aus, wenn keine Symbole vorhanden sind!
-              fprintf (fLogFile, "%lu:     Offset: 0x%8.8x\n", g_dwShowCount, s.AddrPC.Offset);
+              fprintf (fLogFile, "%lu:     Offset: 0x%" ADDR_FMT "\n", g_dwShowCount, ADDR_CAST(s.AddrPC.Offset));
               fprintf (fLogFile, "%lu:     Sym:  type: %s, file: %s\n",
                        g_dwShowCount, ty, Module.LoadedImageName);
             }
@@ -1931,7 +1937,7 @@ static void ShowStackRM (HANDLE hThread, const CONTEXT *c, FILE *fLogFile,
     if ( s.AddrReturn.Offset == 0 )
     {
       // avoid misunderstandings in the printf() following the loop
-      SetLastError( 0 );
+      SetLastError (0);
       break;
     }
   }
