@@ -19,11 +19,11 @@
 
 #ifdef __WATCOMC__
   extern void _outchar (char c);
-  #pragma aux _outchar = \
-          "mov ah, 2"    \
-          "int 21h"      \
-          parm [dl]      \
-          modify [ax];
+  #pragma aux _outchar =  \
+          "mov ah, 2"     \
+          "int 21h"       \
+          __parm   [__dl] \
+          __modify [__ax];
 #endif
 
 /*
@@ -42,6 +42,7 @@ static int W32_CALL outch (char chr)
     WriteConsoleA (stdout_hnd, &chr, 1, &written, NULL);
     return (int) written;
   }
+  fputc (chr, stdout);
 
 #elif !(DOSX)
   /* Qemm doesn't like INT 21 without a valid ES reg. intdos() sets up that.
