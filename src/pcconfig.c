@@ -101,16 +101,16 @@ enum ParseMode {
    };
 
 #if defined(USE_DEBUG)
-  #define CONFIG_DBG_MSG(lvl, args) \
-          do { \
-            if (debug_on >= lvl) { \
+  #define CONFIG_DBG_MSG(lvl, args)                                 \
+          do {                                                      \
+            if (debug_on >= lvl) {                                  \
                UINT line = got_eol ? current_line : current_line+1; \
-               if (current_file) \
-                    (*_printf) ("%s (%u): ", current_file, line); \
-               else (*_printf) ("CONFIG: "); \
-               (*_printf) args; \
-               fflush (stdout); \
-            } \
+               if (current_file)                                    \
+                    (*_printf) ("%s (%u): ", current_file, line);   \
+               else (*_printf) ("CONFIG: ");                        \
+               (*_printf) args;                                     \
+               fflush (stdout);                                     \
+            }                                                       \
           } while (0)
 
   static const char *type_name (int type)
@@ -127,11 +127,11 @@ enum ParseMode {
             type == ARG_STRCPY  ? "STRCPY " : "??");
   }
 
-  #define RANGE_CHECK(val,low,high) \
-          do { \
-            if (((val) < (low)) || ((val) > (high))) \
+  #define RANGE_CHECK(val, low, high)                                      \
+          do {                                                             \
+            if (((val) < (low)) || ((val) > (high)))                       \
                CONFIG_DBG_MSG (0, ("Value %ld exceedes range [%d - %d]\n", \
-                                   val, low, high)); \
+                                   val, low, high));                       \
           } while (0)
 #else
   #define CONFIG_DBG_MSG(lvl, args)  ((void)0)
@@ -147,8 +147,8 @@ enum ParseMode {
    * Some makefiles can specify '-Gr' (fastcall for MSVC) and not
    * W32_CALL which normally is 'cdecl'.
    */
-  #define FUNC_TO_W32CALL(func) \
-  static void _##func (const char *fname) { func (fname); }
+  #define FUNC_TO_W32CALL(func) static void _##func (const char *fname) { func (fname); }
+
   FUNC_TO_W32CALL (ReadHostsFile)
   FUNC_TO_W32CALL (ReadServFile)
   FUNC_TO_W32CALL (ReadProtoFile)
@@ -682,7 +682,7 @@ const char *get_argv0 (void)
   else ret = NULL;
 
 #elif (DOSX & PHARLAP)
-  static     char buf[MAX_PATHLEN];
+  static     char buf [MAX_PATHLEN];
   CONFIG_INF cnf;
   UINT       limit;
   CD_DES     descr;
@@ -935,6 +935,71 @@ void W32_CALL tcp_inject_config (const struct config_table *cfg,
   current_line = save_current_line;
 }
 
+#if !defined(USE_BUFFERED_IO)
+/*
+ * A small simple read-ahead cache for sequential file-reads.
+ * 'fc_open()' accepts 'mode = [O_BINARY, O_TEXT]' only.
+ *
+ * Contributed by Mateusz Viste <mateusz@viste.fr>
+ */
+struct FCFILE *fc_open (const char *fname, int mode)
+{
+  struct FCFILE *fid = malloc (sizeof(*fid));
+
+  if (fid == NULL)
+     return (NULL);
+
+  fid->fd = open (fname, O_RDONLY | mode);
+  if (fid->fd < 0)
+  {
+    free (fid);
+    return (NULL);
+  }
+
+  /* Mark cache as empty
+   */
+  fid->cache_pos = sizeof (fid->cache);
+  fid->cache_max = sizeof (fid->cache);
+  return (fid);
+}
+
+void fc_close (struct FCFILE *f)
+{
+  if (f)
+  {
+    close (f->fd);
+    free (f);
+  }
+}
+
+/**
+ * Read next byte from file `f` and write it to `c`.
+ * This will fail miserably if the file is ever rewinded.
+ * Returns 1 on success, non-zero otherwise
+ */
+int fc_readbyte (struct FCFILE *f, char *c)
+{
+  if (f->cache_pos < f->cache_max)
+  {
+    *c = f->cache [f->cache_pos++];
+    return (1);
+  }
+
+  /* Reload cache with fresh content, unless EOF
+   */
+  if ((size_t)f->cache_max < sizeof(f->cache))
+     return(-1);
+
+  f->cache_max = read (f->fd, f->cache, sizeof(f->cache));
+  if (f->cache_max < 1)
+     return (-1);
+
+  *c = f->cache[0];
+  f->cache_pos = 1;
+  return (1);
+}
+#endif  /* USE_BUFFERED_IO */
+
 
 /*
  * Read a character:
@@ -954,11 +1019,11 @@ long tcp_parse_file (WFILE f, const struct config_table *cfg)
 {
   char   key  [MAX_NAMELEN+1];
   char   value[MAX_VALUELEN+1];
-  int    ch, nextch;  /* !! was 'char' */
+  int    ch, nextch;     /* !! was 'char' */
   size_t num;            /* # of char in key/value */
   long   num_read;       /* # of bytes read */
   enum   ParseMode mode;
-  BOOL   quotemode;
+  BOOL   quote_mode;
   BOOL   stripping;
   BOOL   eof;
   BOOL   last_eol = FALSE;
@@ -973,10 +1038,10 @@ long tcp_parse_file (WFILE f, const struct config_table *cfg)
     *key = *value = '\0';
     mode = ModeKeyword;
     num  = 0;
-    got_eol    = FALSE;
-    quotemode  = FALSE;
-    stripping  = TRUE;
-    equal_sign = FALSE;
+    got_eol     = FALSE;
+    quote_mode  = FALSE;
+    equal_sign  = FALSE;
+    stripping   = TRUE;
 
     for (;;)
     {
@@ -1000,12 +1065,12 @@ long tcp_parse_file (WFILE f, const struct config_table *cfg)
 
         case '#':
         case ';':
-             if (!quotemode)
+             if (!quote_mode)
                 mode = ModeComment;
              break;
 
         case '=':
-             if (!quotemode && mode == ModeKeyword)
+             if (!quote_mode && mode == ModeKeyword)
              {
                mode = ModeValue;
                num  = 0;
@@ -1032,7 +1097,7 @@ long tcp_parse_file (WFILE f, const struct config_table *cfg)
               }
               else
               {
-                quotemode ^= 1;
+                quote_mode ^= 1;
                 stripping = FALSE;
                 ch = '\0'; /* Do not add */
               }
@@ -1074,7 +1139,7 @@ long tcp_parse_file (WFILE f, const struct config_table *cfg)
       {
         if (!eof)
            current_line++;
-        if (quotemode)
+        if (quote_mode)
            CONFIG_DBG_MSG (0, ("Missing right \" in quoted string: `%s'\n",
                            value));
         strrtrim (key);

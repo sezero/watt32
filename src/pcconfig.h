@@ -48,28 +48,51 @@ extern const char *expand_var_str (const char *str);
  * Non-DOSX targets where memory is tight doesn't have "#define USE_BUFFERED_IO"
  * by default (see config.h)
  */
+
+#undef FREAD /* In CygWin's /usr/include/sys/_default_fcntl.h */
+
 #if defined(USE_BUFFERED_IO)  /* The normal case */
   typedef FILE*                 WFILE;
 
-  #undef  FREAD /* In CygWin's /usr/include/sys/_default_fcntl.h */
+  #define FOPEN_BIN(fil, name)   (fil = fopen (name, "rb"))
+  #define FOPEN_TXT(fil, name)   (fil = fopen (name, "rt"))
+  #define FOPEN_APP(fil, name)   (fil = fopen (name, "at"))
+  #define FREAD(ptr, fil)        fread ((char*)(ptr), 1, 1, fil)
+  #define FCLOSE(fil)            fclose (fil)
 
-  #define FOPEN_BIN(fil,name)   (fil = fopen (name, "rb"))
-  #define FOPEN_TXT(fil,name)   (fil = fopen (name, "rt"))
-  #define FOPEN_APP(fil,name)   (fil = fopen (name, "at"))
-  #define FREAD(ptr,fil)        fread ((char*)(ptr), 1, 1, fil)
-  #define FCLOSE(fil)           fclose (fil)
+#else
 
-#else                           /* Use these when memory is tight */
-  typedef int                   WFILE;
+  /* Use this simple read-ahead cache when memory is tight.
+   * A 32 byte cache seems plenty to speed-up the reading of
+   * the "wattcp.cfg".
+   */
+  struct FCFILE {
+    int   fd;
+    char  cache [32];
+    short cache_pos;
+    short cache_max;
+  };
 
-  #define FOPEN_BIN(fil,name)   (fil = open (name, O_RDONLY|O_BINARY), (fil != -1))
-  #define FOPEN_TXT(fil,name)   (fil = open (name, O_RDONLY|O_TEXT),   (fil != -1))
+  typedef struct FCFILE*         WFILE;
+
+  #if 0   /* Old version */
+    #define FOPEN_BIN(fil, name)    (fil = open (name, O_RDONLY|O_BINARY), (fil != -1))
+    #define FOPEN_TXT(fil, name)    (fil = open (name, O_RDONLY|O_TEXT),   (fil != -1))
+  #else
+    #define FOPEN_BIN(fil, name)    (fil = fc_open(name, O_BINARY))
+    #define FOPEN_TXT(fil, name)    (fil = fc_open(name, O_TEXT))
+  #endif
+
   #define FOPEN_APP(fil,name)   UNIMPLEMENTED()
-  #define FREAD(ptr,fil)        read (fil, (char*)(ptr), 1)
-  #define FCLOSE(fil)           close (fil)
+  #define FREAD(ptr,fil)        fc_readbyte (fil, (char*)(ptr))
+  #define FCLOSE(fil)           fc_close (fil)
+
+  extern struct FCFILE *fc_open (const char *fname, int mode);
+  extern void           fc_close (struct FCFILE *f);
+  extern int            fc_readbyte (struct FCFILE *f, char *c);
 #endif
 
-extern long tcp_parse_file (WFILE fil, const struct config_table *cfg);
+extern long  tcp_parse_file (WFILE fil, const struct config_table *cfg);
 
 #endif
 
