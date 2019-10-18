@@ -37,7 +37,7 @@
 #undef USE_FSEXT       /* Use djgpp's File Extensions for file I/O functions */
 #undef USE_LOOPBACK    /* Use the simple loopback device */
 #undef USE_EMBEDDED    /* Make an embeddable (ROM-able) target. See note at end */
-#undef USE_BUFFERED_IO /* Use buffered file I/O in pcconfig.c */
+#undef USE_BUFFERED_IO /* Use buffered file I/O in pcconfig.c. Otherwise use a simple read-ahead cache */
 #undef USE_TFTP        /* Include TFTP protocol for simple file retrival */
 #undef USE_UDP_ONLY    /* Exclude all stuff related to the TCP protocol */
 #undef USE_TCP_SACK    /* Include TCP Selective ACK feature (not yet) */
@@ -91,7 +91,7 @@
   #define USE_BSD_API
   #define USE_BSD_FATAL
   #define USE_LOOPBACK
-  #define USE_BUFFERED_IO
+//#define USE_BUFFERED_IO
   #define USE_TFTP
   #define USE_MULTICAST
   #define OPT_DEFINED
@@ -101,7 +101,7 @@
  * Add some more options for djgpp, HighC, 32-bit Watcom/DMC and Win32/64
  */
 #if defined(__DJGPP__) || defined(__HIGHC__) || defined(WATCOM386) || \
-    defined(DMC386) || defined(WIN32) || defined(WIN64)
+    defined(DMC386) || defined(_WIN32) || defined(_WIN64)
   #define USE_ECHO_DISC
   #define USE_RARP
   #define USE_IPV6
@@ -142,7 +142,7 @@
 /*
  * Select malloc debuggers on Windows
  */
-#if defined(WIN32) && defined(_MSC_VER) && defined(_DEBUG)  /* cl -MDd -D_DEBUG */
+#if defined(_WIN32) && defined(_MSC_VER) && defined(_DEBUG)  /* cl -MDd -D_DEBUG */
   #define USE_CRTDBG                       /* use CrtDebug; faster than Fortify? */
 /*#define USE_MPATROL */
 
@@ -150,21 +150,26 @@
 /*#define USE_MPATROL */
 /*#define USE_FORTIFY */
 
-#elif defined(WIN32) && defined(__WATCOMC__)
+#elif defined(_WIN32) && defined(__WATCOMC__)
 /* #define USE_STACKWALKER */ /* Not possible */
 
 #elif defined(__CYGWIN__) && !defined(NDEBUG)
 /* #define USE_FORTIFY */
 #endif
 
-#if defined(WIN32) && defined(_MSC_VER) && !defined(__clang__)
- /*
-  * Use BugTrap DLL loaded at runtime.
-  * Ref: http://www.intellesoft.net/default.shtml and
-  *      https://github.com/bchavez/BugTrap
-  */
-/*#define USE_BUGTRAP */
-/*#define USE_STACKWALKER */
+#if defined(_WIN32) && !defined(_WIN64)
+  #if defined(__clang__)
+    #define USE_STACKWALKER   /* Test the C++ code in stkwalk.cpp with clang-cl */
+
+  #elif defined(_MSC_VER) && !defined(__clang__)
+   /*
+    * Use BugTrap DLL loaded at runtime.
+    * Ref: http://www.intellesoft.net/default.shtml and
+    *      https://github.com/bchavez/BugTrap
+    */
+  /* #define USE_BUGTRAP */
+  /* #define USE_STACKWALKER */
+  #endif
 #endif
 
 /*
@@ -199,28 +204,30 @@
 /*
  * Test some illegal combinations.
  */
-#if defined(USE_IPV6) && !defined(USE_BSD_API)
-#error USE_IPV6 requires USE_BSD_API
-#endif
+#if defined(USE_BSD_API)
+  #if defined(USE_UDP_ONLY)
+    #error USE_UDP_ONLY and USE_BSD_API are meaningless
+  #endif
+#else
+  #if defined(USE_IPV6)
+    #error USE_IPV6 requires USE_BSD_API
+  #endif
 
-#if defined(USE_BIND) && !defined(USE_BSD_API)
-#error USE_BIND requires USE_BSD_API
+  #if defined(USE_BIND)
+    #error USE_BIND requires USE_BSD_API
+  #endif
 #endif
 
 #if defined(USE_SCTP) && !defined(USE_IPV6)
-#error USE_SCTP requires USE_IPV6
-#endif
-
-#if defined(USE_UDP_ONLY) && defined(USE_BSD_API)
-#error USE_UDP_ONLY and USE_BSD_API are meaningless
+  #error USE_SCTP requires USE_IPV6
 #endif
 
 #if defined(USE_UDP_ONLY) && defined(USE_DYNIP_CLI)
-#error USE_UDP_ONLY and USE_DYNIP_CLI are meaningless
+  #error USE_UDP_ONLY and USE_DYNIP_CLI are meaningless
 #endif
 
 #if defined(USE_PROFILER) && (!DOSX || !defined(HAVE_UINT64))
-#error Cannot define USE_PROFILER for this target
+  #error Cannot define USE_PROFILER for this target
 #endif
 
 #if defined(__TURBOC__) && (__TURBOC__ <= 0x301)
@@ -263,8 +270,8 @@
 #undef MIXING_DJGPP_203_AND_204
 
 /*
- * If building .html-documentation with doxygen, document everything.
- * Add some stuff doxygen doesn't know about.
+ * If building .html-documentation with Doxygen, document everything.
+ * Abd add some stuff Doxygen doesn't know about.
  */
 #if defined(DOXYGEN)
   #define W32_NAMESPACE(x)  x
