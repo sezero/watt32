@@ -702,6 +702,28 @@ int __stdcall __WSAFDIsSet (int s, winsock_fd_set *fd)
   return (0);
 }
 
+/*
+ * Add these with an extra leading '_' too.
+ */
+W32_FUNC int __stdcall _WSAStartup (WORD version_required, WSADATA *wsa_data);
+W32_FUNC int __stdcall _WSACleanup (void);
+W32_FUNC int __stdcall ___WSAFDIsSet (int s, winsock_fd_set *fd);
+
+int __stdcall _WSAStartup (WORD version_required, WSADATA *wsa_data)
+{
+  return WSAStartup (version_required, wsa_data);
+}
+
+int __stdcall _WSACleanup (void)
+{
+  return WSACleanup();
+}
+
+int __stdcall ___WSAFDIsSet (int s, winsock_fd_set *fd)
+{
+  return __WSAFDIsSet (s, fd);
+}
+
 #ifdef NOT_USED
 static BOOL CALLBACK callback (LPSTR cp)
 {
