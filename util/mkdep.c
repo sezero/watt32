@@ -38,9 +38,11 @@ int usage (const char *who_am_i)
   return (-1);
 }
 
+#if 0
 void print_deps (const char *ipath, char *fname)
 {
 }
+#endif
 
 int main (int argc, char **argv)
 {
@@ -182,4 +184,3 @@ int main (int argc, char **argv)
 
   return (num_files > 0 ? 0 : 1);
 }
-
