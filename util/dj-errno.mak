@@ -7,15 +7,14 @@
 #
 # To build using a cross-compiler under Linux or Windows:
 #	make -f dj-errno.mak CROSS=1
-#
 
 ifneq ($(CROSS),)
-DJGCC=i586-pc-msdosdjgpp-gcc
+CC=i586-pc-msdosdjgpp-gcc
 else
-DJGCC=gcc
+CC=gcc
 endif
 
 all: dj_err.exe
 
 dj_err.exe: errnos.c
-	$(DJGCC) -Wall -W -s -I../inc -o dj_err.exe errnos.c
+	$(CC) -Wall -W -s -I../inc -o dj_err.exe errnos.c
