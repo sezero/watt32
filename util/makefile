@@ -1,16 +1,16 @@
 #
-#  GNU make makefile for the MkMake/MkDep/MkLang/MkImp/bin32c
+#  GNU make makefile for the MkMake/MkDep/MkLang/MkImp/bin2c
 #  utilities used during Watt-32 developement
 #
-#  DOS versions:   Requires djgpp2 + SLang 1.3+ library installed.
-#  Win32 versions: Requires MingW + Slang 1.3+ installed.
-#  Linux versions: Requires gcc + Slang 1.3+ installed.
+#  DOS versions:   Requires djgpp2
+#  Win32 versions: Requires MinGW
+#  Linux versions: Requires gcc (or clang)
+#
+#  MkMake additionally requires SLang 1.3+ library installed.
+#
 
 .SUFFIXES: .exe .l .y
 
-#
-# Change to suite:
-#
 SLANG_ROOT_DOS   ?= $(DJDIR)/contrib/slang.210
 SLANG_LIB_DOS    ?= $(SLANG_ROOT_DOS)/src/djgobjs/libslang.a
 
@@ -21,7 +21,7 @@ SLANG_LIB_WIN_CL ?= $(SLANG_ROOT_WIN)/src/mw32objs/wslang32.lib
 CC     = gcc
 CFLAGS = -Wall -g # -s
 
-all: mkmake.exe mkdep.exe mklang.exe mkimp.exe dxegen.exe bin2c.exe
+all: mkmake.exe mkdep.exe mklang.exe mkimp.exe bin2c.exe
 
 win32: $(addprefix win32/, mkmake.exe mkdep.exe mklang.exe bin2c.exe)
 
@@ -40,9 +40,6 @@ mkmake.exe: mkmake.c
 	$(CC) $(CFLAGS) -I$(SLANG_ROOT_DOS)/src -o $@ $^ $(SLANG_LIB_DOS)
 
 bin2c.exe: bin2c.c
-	$(CC) $(CFLAGS) -o $@ $^
-
-dxegen.exe: dxegen.c
 	$(CC) $(CFLAGS) -o $@ $^
 
 mkimp.c: mkimp.l
@@ -89,8 +86,7 @@ linux/bin2c: bin2c.c
 	$(CC) $(CFLAGS) -o $@ $^
 
 clean:
-	@rm -f *.o mk*.exe dxegen.exe bin2c.exe \
-               win32/mk*.exe win32/bin2.exe \
-               linux/mk*.exe linux/bin2.exe \
-               mkimp.c mkimp_gr.c
-
+	@rm -f *.o mk*.exe bin2c.exe \
+               linux/mk* linux/bin2c \
+               win32/mk*.exe win32/bin2c.exe
+#              mkimp.c mkimp_gr.c
