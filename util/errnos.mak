@@ -15,7 +15,7 @@
 PROGRAMS = bcc_err.exe  \
            tcc_err.exe  \
            wc_err.exe   \
-           ms32_err.exe \
+           vc_err.exe   \
            hc_err.exe   \
            dj_err.exe   \
            lcc_err.exe  \
