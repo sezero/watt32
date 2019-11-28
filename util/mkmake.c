@@ -49,7 +49,7 @@ static void Usage (void)
 
 static int process_makefile (const char *infname, const char *outfname)
 {
-  char  buf[1024], *p;
+  char  buf[1024];
   FILE *out = stdout;
   FILE *in;
 
@@ -77,33 +77,26 @@ static int process_makefile (const char *infname, const char *outfname)
   {
 #if !(defined(__MSDOS__)||defined(_DOS)||defined(_WIN32)||defined(WIN32))
     /* fopen(fname,"rt") doesn't convert dos line endings on linux/unix */
-    p = strrchr(buf,'\r');
+    char *p = strrchr (buf,'\r');
     if (p != NULL) {
        *p = '\n';
         p[1] = 0;
     }
 #endif
 
-    p = buf;
-#if 1
-    while (*p == ' ')
-         p++;
-#endif
-    if (!SLprep_line_ok(p,pt))
+    if (!SLprep_line_ok(buf,pt))
        continue;
 
     if (line_cont_ch != '\\')   /* WATCOM */
     {
-      unsigned int len = strlen (p);
+      unsigned int len = strlen (buf);
 
-      while (len > 0 && isspace(p[len-1]))
+      while (len > 0 && isspace(buf[len-1]))
          len--;
-      if (len > 0 && p[len-1] == '\\')
-         p[len-1] = line_cont_ch;
+      if (len > 0 && buf[len-1] == '\\')
+         buf[len-1] = line_cont_ch;
     }
-    if (p > buf)
-      fprintf (out, "%*s", p-buf, " ");
-    fputs (p, out);
+    fputs (buf, out);
   }
   if (out != stdout)
      fclose (out);
