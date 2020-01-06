@@ -1,6 +1,7 @@
 @echo off
 setlocal
 prompt $P$G
+if %BUILDER%. == MinGW. echo on
 
 ::
 :: 'APPVEYOR_PROJECT_NAME=Watt-32' unless testing this "appveyor-script.bat build" locally using 'cmd'.
