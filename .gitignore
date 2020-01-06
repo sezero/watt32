@@ -51,9 +51,10 @@
 *.yam
 *.old
 *.zip
-./*.bat
-./src/*.mak
-./src/tests/*.mak
+*.depend*
+array-bounds.c
+src/*.mak
+src/tests/*.mak
 blkfile*
 bin/go-*.bat
 bin/BLAT/
@@ -128,6 +129,7 @@ smb/
 smb2/
 snmp/
 zip/
+CI/
 core
 CORE
 
