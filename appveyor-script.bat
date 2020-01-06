@@ -1,7 +1,7 @@
 @echo off
 setlocal
 prompt $P$G
-if %BUILDER%. == MinGW. echo on
+:: if %BUILDER%. == MinGW. echo on
 
 ::
 :: 'APPVEYOR_PROJECT_NAME=Watt-32' unless testing this "appveyor-script.bat build" locally using 'cmd'.
@@ -17,10 +17,15 @@ if %APPVEYOR_PROJECT_NAME%. == . (
 
 ::
 :: It seems the cmd doesn't parse a 'set PATH=some space value' inside an 'if .. (' block.
-:: So put these here.
+:: So put this here.
+:: Also add stuff for 'util/pkg-conf.mak'.
 ::
-if %BUILDER%-%CPU%. == MinGW-x86. set PATH=c:\msys64\MinGW32\bin;%PATH%
-if %BUILDER%-%CPU%. == MinGW-x64. set PATH=c:\msys64\MinGW64\bin;%PATH%
+if %BUILDER%. == MinGW. (
+  if %CPU%. == x86. (set PATH=c:\msys64\MinGW32\bin;%PATH%) else (set PATH=c:\msys64\MinGW64\bin;%PATH%)
+  md lib\pkgconfig 2> NUL
+  set MINGW32=%APPVEYOR_BUILD_FOLDER_UNIX%
+  set MINGW64=%APPVEYOR_BUILD_FOLDER_UNIX%
+)
 
 ::
 :: Then set PATH for 'make' + 'sh' and the 'vcvarsall.bat' crap.
