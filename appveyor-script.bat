@@ -1,6 +1,5 @@
 @echo off
 setlocal
-:: echo on
 prompt $P$G
 
 ::
@@ -46,7 +45,8 @@ if %BUILDER%. == . (
 cd %APPVEYOR_BUILD_FOLDER%\src
 
 ::
-:: Generate a 'src\oui-generated.c' file.
+:: Generate a 'src\oui-generated.c' file from 'src\oui.txt (do not download it every time).
+:: Currently used for VisualC only.
 ::
 set CL=
 if %BUILDER%. == VisualC. (
@@ -56,6 +56,9 @@ if %BUILDER%. == VisualC. (
   echo --------------------------------------------------------------------
 )
 
+::
+:: The order of these 'if'-tests is the same as in 'appveyor.yml'.
+::
 if %BUILDER%-%CPU%. == VisualC-x86. (
   call %VCVARSALL_BAT% x86
   call configur.bat visualc
@@ -74,6 +77,34 @@ if %BUILDER%-%CPU%. == VisualC-x64. (
   exit /b
 )
 
+if %BUILDER%-%CPU%. == clang-x86. (
+  call configur.bat clang
+  echo Building clean all for x86
+  make -f clang32.mak clean all
+  exit /b
+)
+
+if %BUILDER%-%CPU%. == clang-x64. (
+  call configur.bat clang
+  echo Building clean all for x64
+  make -f clang64.mak clean all
+  exit /b
+)
+
+if %BUILDER%-%CPU%. == MinGW-x86. (
+  call configur.bat mingw64
+  echo Building clean all for x86
+  make -f MinGW64_32.mak clean all
+  exit /b
+)
+
+if %BUILDER%-%CPU%. == MinGW-x64. (
+  call configur.bat mingw64
+  echo Building clean all for x64
+  make -f MinGW64_64.mak clean all
+  exit /b
+)
+
 if %BUILDER%. == djgpp. (
   curl -O -# http://www.watt-32.net/CI/dj-win.zip
   7z x -y -o%DJGPP% dj-win.zip > NUL
@@ -84,4 +115,3 @@ if %BUILDER%. == djgpp. (
   make -f djgpp.mak clean all
   exit /b
 )
-

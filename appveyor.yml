@@ -4,6 +4,14 @@ environment:
       CPU:     x86
     - BUILDER: VisualC
       CPU:     x64
+    - BUILDER: clang-cl
+      CPU:     x86
+#
+# Not yet:
+#     CPU:     x64
+#   - BUILDER: MinGW
+#     CPU:     x86
+#     CPU:     x64
     - BUILDER: djgpp
       CPU:     x86
 
