@@ -44,6 +44,8 @@ if %BUILDER%. == . (
 
 cd %APPVEYOR_BUILD_FOLDER%\src
 
+if %1. == test. goto :test
+
 ::
 :: Generate a 'src\oui-generated.c' file from 'src\oui.txt (do not download it every time).
 :: Currently used for VisualC only.
@@ -53,7 +55,7 @@ if %BUILDER%. == VisualC. (
   echo Generating src\oui-generated.c
   python make-oui.py > oui-generated.c
   if ERRORLEVEL 0 set CL=-DHAVE_OUI_GENERATATED_C
-  echo --------------------------------------------------------------------
+  echo --------------------------------------------------------------------------------------------------
 )
 
 ::
@@ -92,6 +94,7 @@ if %BUILDER%-%CPU%. == clang-x64. (
 )
 
 if %BUILDER%-%CPU%. == MinGW-x86. (
+  set PATH=c:\msys64\MinGW32\bin;%PATH%
   call configur.bat mingw64
   echo Building clean all for x86
   make -f MinGW64_32.mak clean all
@@ -99,6 +102,7 @@ if %BUILDER%-%CPU%. == MinGW-x86. (
 )
 
 if %BUILDER%-%CPU%. == MinGW-x64. (
+  set PATH=c:\msys64\MinGW64\bin;%PATH%
   call configur.bat mingw64
   echo Building clean all for x64
   make -f MinGW64_64.mak clean all
@@ -116,3 +120,7 @@ if %BUILDER%. == djgpp. (
   make -f djgpp.mak clean all
   exit /b
 )
+exit /b
+
+:test
+  echo Test will come here later
