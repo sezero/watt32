@@ -71,7 +71,12 @@ def write_oui_data (f):
   f.write (OUI_HEAD % (OUI_URL, __file__, time.ctime()))
 
   for p in sorted(prefixes):
-    f.write ("    { 0x%.2s%.2s%.2s, \"%s\" },\n" % (p[0:], p[3:], p[6:], fix_line(prefixes[p])))
+    try:
+      f.write ("    { 0x%.2s%.2s%.2s, \"%s\" },\n" % (p[0:], p[3:], p[6:], prefixes[p]))
+    except UnicodeEncodeError:
+      f.write ("    { 0x%.2s%.2s%.2s, \"%s\" },\n" % (p[0:], p[3:], p[6:], "??"))
+      pass
+
   f.write ("    { 0xFFFFFF, NULL } /* Since XEROX CORPORATION has value 0, use this */\n  };\n")
   f.write (OUI_BOTTOM % len(prefixes));
   info ("Wrote %d OUI records.\n" % len(prefixes))
@@ -84,19 +89,6 @@ def url_progress (blocks, block_size, total_size):
     percent = 100 * (blocks * block_size) / total_size
     kBbyte_so_far = (blocks * block_size) / 1024
     info ("Got %d kBytes (%u%%)\r" % (kBbyte_so_far, percent))
-
-#
-# Replace all non-ASCII >= 128 to '?'.
-# todo: Cut string at last ['.', ',', "Ltd", "INC"]
-#
-def fix_line (s):
-  for i in range(len(s)):
-    try:
-      x = s[i]
-    except UnicodeError:
-      s[i] = '?'
-      pass
-  return s
 
 #
 # Parse the lines from the download 'oui-generated.txt' file.
@@ -125,7 +117,7 @@ def parse_oui_txt (lines):
       continue
     prefix = line [0:8]
     vendor = line [line.rindex('(hex)')+5:].lstrip()
-    prefixes [prefix] = vendor # fix_line (vendor)
+    prefixes [prefix] = vendor
 
 #
 # Check if a local 'fname' exist. Otherwise download it from 'url'.

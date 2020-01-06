@@ -1201,11 +1201,6 @@ static const struct search_list neighbour_states[] = {
   };
 #endif
 
-struct tok {
-       unsigned    v;
-       const char *s;
-     };
-
 #define SMI_IETF 0
 
 #if defined(HAVE_OUI_GENERATATED_C)
