@@ -1737,16 +1737,16 @@ build\pellesc\64bit\cflags_buf.h:
 	echo $(CFLAGS) | $(W32_BIN2C) -            > build\pellesc\64bit\cflags_buf.h
 
 build\visualc\32bit\release\cflags_buf.h: $(C_ARGS)
-	echo $(CFLAGS) $(CL) | $(W32_BIN2C) -      > build\visualc\32bit\release\cflags_buf.h
+	- echo $(CFLAGS) $(CL) | $(W32_BIN2C) -    > build\visualc\32bit\release\cflags_buf.h
 
 build\visualc\32bit\debug\cflags_buf.h: $(C_ARGS)
-	echo $(CFLAGS) $(CL) | $(W32_BIN2C) -      > build\visualc\32bit\debug\cflags_buf.h
+	- echo $(CFLAGS) $(CL) | $(W32_BIN2C) -    > build\visualc\32bit\debug\cflags_buf.h
 
 build\visualc\64bit\release\cflags_buf.h: $(C_ARGS)
-	echo $(CFLAGS) $(CL) | $(W32_BIN2C) -      > build\visualc\64bit\release\cflags_buf.h
+	- echo $(CFLAGS) $(CL) | $(W32_BIN2C) -    > build\visualc\64bit\release\cflags_buf.h
 
 build\visualc\64bit\debug\cflags_buf.h: $(C_ARGS)
-	echo $(CFLAGS) $(CL) | $(W32_BIN2C) -      > build\visualc\64bit\debug\cflags_buf.h
+	- echo $(CFLAGS) $(CL) | $(W32_BIN2C) -    > build\visualc\64bit\debug\cflags_buf.h
 
 @ifdef WATCOM
 build\watcom\small\cflags_buf.h: $(C_ARGS)
