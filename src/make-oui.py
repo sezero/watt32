@@ -77,7 +77,7 @@ def write_oui_data (f):
       f.write ("    { 0x%.2s%.2s%.2s, \"%s\" },\n" % (p[0:], p[3:], p[6:], "??"))
       pass
 
-  f.write ("    { 0xFFFFFF, NULL } /* Since XEROX CORPORATION has value 0, use this */\n  };\n")
+  f.write ("    { 0xFFFFFF, NULL } /* Since XEROX CORPORATION has value 0, use this */")
   f.write (OUI_BOTTOM % len(prefixes));
   info ("Wrote %d OUI records.\n" % len(prefixes))
 
