@@ -106,6 +106,7 @@ if %BUILDER%-%CPU%. == MinGW-x64. (
 )
 
 if %BUILDER%. == djgpp. (
+  echo Downloading Andrew Wu's DJGPP cross compiler
   curl -O -# http://www.watt-32.net/CI/dj-win.zip
   7z x -y -o%DJGPP% dj-win.zip > NUL
   rm -f dj-win.zip

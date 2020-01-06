@@ -4,7 +4,7 @@ environment:
       CPU:     x86
     - BUILDER: VisualC
       CPU:     x64
-    - BUILDER: clang-cl
+    - BUILDER: clang
       CPU:     x86
 #
 # Not yet:
