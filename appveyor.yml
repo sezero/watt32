@@ -1,0 +1,10 @@
+environment:
+  matrix:
+    - BUILDER: VisualC
+      CPU:     x86
+    - BUILDER: djgpp
+      CPU:     x86
+
+build_script:
+    - cmd: appveyor-script.bat build
+
