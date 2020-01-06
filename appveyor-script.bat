@@ -8,7 +8,7 @@ if %BUILDER%. == MinGW. echo on
 ::
 if %APPVEYOR_PROJECT_NAME%. == . (
   set BUILDER=djgpp
-  set BUILDER=VisualC
+  set BUILDER=MinGW
   set APPVEYOR_PROJECT_NAME=Watt-32
   set APPVEYOR_BUILD_FOLDER=%CD%
   set APPVEYOR_BUILD_FOLDER_UNIX=e:/net/watt
@@ -59,15 +59,24 @@ if %BUILDER%. == VisualC. (
   echo --------------------------------------------------------------------------------------------------
 )
 
-::
-:: The order of these 'if'-tests is the same as in 'appveyor.yml'.
-::
+if %BUILDER%-%CPU%. == MinGW-x86. (
+  set PATH=c:\msys64\MinGW32\bin;%PATH%
+  call configur.bat mingw64
+  echo Building clean all for x86
+  make -f MinGW64_32.mak clean all
+  exit /b
+)
+
+if %BUILDER%-%CPU%. == MinGW-x64. (
+  set PATH=c:\msys64\MinGW64\bin;%PATH%
+  call configur.bat mingw64
+  echo Building clean all for x64
+  make -f MinGW64_64.mak clean all
+  exit /b
+)
+
 if %BUILDER%-%CPU%. == VisualC-x86. (
   call %VCVARSALL_BAT% x86
-  echo -------------------------------------------------------------------------------
-  where ml64.exe
-  locate ml64.exe
-  echo -------------------------------------------------------------------------------
   call configur.bat visualc
   set CL=-D_WIN32_WINNT=0x0601 %CL%
   echo Building release clean all for x86
@@ -85,6 +94,7 @@ if %BUILDER%-%CPU%. == VisualC-x64. (
 )
 
 if %BUILDER%-%CPU%. == clang-x86. (
+  call %VCVARSALL_BAT% x86
   call configur.bat clang
   echo Building clean all for x86
   make -f clang32.mak clean all
@@ -92,26 +102,12 @@ if %BUILDER%-%CPU%. == clang-x86. (
 )
 
 if %BUILDER%-%CPU%. == clang-x64. (
+  call %VCVARSALL_BAT% x64
   call configur.bat clang
   echo Building clean all for x64
   make -f clang64.mak clean all
   exit /b
 )
-
-if %BUILDER%-%CPU%. == MinGW-x86. (
-  set PATH=c:\msys64\MinGW32\bin;%PATH%
-  call configur.bat mingw64
-  echo Building clean all for x86
-  make -f MinGW64_32.mak clean all
-  exit /b
-)
-
-if %BUILDER%-%CPU%. == MinGW-x64. (
-  set PATH=c:\msys64\MinGW64\bin;%PATH%
-  call configur.bat mingw64
-  echo Building clean all for x64
-  make -f MinGW64_64.mak clean all
-  exit /b
 )
 
 if %BUILDER%. == djgpp. (
