@@ -7,23 +7,25 @@ if %BUILDER%. == MinGW. echo on
 :: 'APPVEYOR_PROJECT_NAME=Watt-32' unless testing this "appveyor-script.bat build" locally using 'cmd'.
 ::
 if %APPVEYOR_PROJECT_NAME%. == . (
-  set BUILDER=djgpp
-  set BUILDER=MinGW
   set APPVEYOR_PROJECT_NAME=Watt-32
-  set APPVEYOR_BUILD_FOLDER=%CD%
   set APPVEYOR_BUILD_FOLDER_UNIX=e:/net/watt
   set APPVEYOR_LOCAL=1
-  set VCVARSALL_BAT=NUL
 ) else (
   set APPVEYOR_LOCAL=0
   set APPVEYOR_BUILD_FOLDER_UNIX=c:/projects/Watt-32
-  set VCVARSALL_BAT="c:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\vcvarsall.bat"
 )
 
 ::
-:: Set PATH for 'make' + 'sh' etc.
+:: It seems the cmd doesn't parse a 'set PATH=some space value' inside an 'if .. (' block.
+:: So put these here.
 ::
-if %APPVEYOR_LOCAL%. == 0. set PATH=c:\msys64\usr\bin;%PATH%
+if %BUILDER%-%CPU%. == MinGW-x86. set PATH=c:\msys64\MinGW32\bin;%PATH%
+if %BUILDER%-%CPU%. == MinGW-x64. set PATH=c:\msys64\MinGW64\bin;%PATH%
+
+::
+:: Then set PATH for 'make' + 'sh' and the 'vcvarsall.bat' crap.
+::
+set PATH=c:\msys64\usr\bin;c:\Program Files (x86)\Microsoft Visual Studio 14.0\VC;%PATH%
 
 ::
 :: Set the dir for djgpp cross-environment.
@@ -36,14 +38,14 @@ set DJ_PREFIX=%DJGPP%/bin/i586-pc-msdosdjgpp-
 :: In case my curl was built with Wsock-Trace
 ::
 set WSOCK_TRACE_LEVEL=0
-set WATT_ROOT=%APPVEYOR_BUILD_FOLDER%
+set WATT_ROOT=%CD%
 
 if %BUILDER%. == . (
   echo BUILDER target not specified!
   exit /b 1
 )
 
-cd %APPVEYOR_BUILD_FOLDER%\src
+cd src
 
 if %1. == test. goto :test
 
@@ -59,25 +61,9 @@ if %BUILDER%. == VisualC. (
   echo --------------------------------------------------------------------------------------------------
 )
 
-if %BUILDER%-%CPU%. == MinGW-x86. (
-  set PATH=c:\msys64\MinGW32\bin;%PATH%
-  call configur.bat mingw64
-  echo Building clean all for x86
-  make -f MinGW64_32.mak clean all
-  exit /b
-)
-
-if %BUILDER%-%CPU%. == MinGW-x64. (
-  set PATH=c:\msys64\MinGW64\bin;%PATH%
-  call configur.bat mingw64
-  echo Building clean all for x64
-  make -f MinGW64_64.mak clean all
-  exit /b
-)
-
 if %BUILDER%-%CPU%. == VisualC-x86. (
-  call %VCVARSALL_BAT% x86
-  call configur.bat visualc
+  call vcvarsall.bat x86
+  call configur.bat  visualc
   set CL=-D_WIN32_WINNT=0x0601 %CL%
   echo Building release clean all for x86
   nmake -nologo -f visualc-release.mak clean all
@@ -85,8 +71,8 @@ if %BUILDER%-%CPU%. == VisualC-x86. (
 )
 
 if %BUILDER%-%CPU%. == VisualC-x64. (
-  call %VCVARSALL_BAT% x64
-  call configur.bat visualc
+  call vcvarsall.bat x64
+  call configur.bat  visualc
   set CL=-D_WIN32_WINNT=0x0601 %CL%
   echo Building release clean all for x64
   nmake -nologo -f visualc-release_64.mak clean all
@@ -94,21 +80,35 @@ if %BUILDER%-%CPU%. == VisualC-x64. (
 )
 
 if %BUILDER%-%CPU%. == clang-x86. (
-  call %VCVARSALL_BAT% x86
-  call configur.bat clang
+  call vcvarsall.bat x86
+  call configur.bat  clang
   echo Building clean all for x86
   make -f clang32.mak clean all
   exit /b
 )
 
 if %BUILDER%-%CPU%. == clang-x64. (
-  call %VCVARSALL_BAT% x64
-  call configur.bat clang
+  call vcvarsall.bat x64
+  call configur.bat  clang
   echo Building clean all for x64
   make -f clang64.mak clean all
   exit /b
 )
+
+if %BUILDER%-%CPU%. == MinGW-x86. (
+  call configur.bat mingw64
+  echo Building clean all for x86
+  make -f MinGW64_32.mak clean all
+  exit /b
 )
+
+if %BUILDER%-%CPU%. == MinGW-x64. (
+  call configur.bat mingw64
+  echo Building clean all for x64
+  make -f MinGW64_64.mak clean all
+  exit /b
+)
+
 
 if %BUILDER%. == djgpp. (
   echo Downloading Andrew Wu's DJGPP cross compiler
