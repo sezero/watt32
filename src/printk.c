@@ -98,6 +98,7 @@ int MS_CDECL _printk (const char *fmt, ...)
   if (_printk_file && fmt && left > 0)
   {
     va_list args;
+
     va_start (args, fmt);
     len = _vsnprintk (printk_ptr, left, fmt, args);
     printk_ptr += len;
