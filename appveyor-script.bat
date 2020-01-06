@@ -63,6 +63,10 @@ if %BUILDER%. == VisualC. (
 ::
 if %BUILDER%-%CPU%. == VisualC-x86. (
   call %VCVARSALL_BAT% x86
+  echo -------------------------------------------------------------------------------
+  where ml64.exe
+  locate ml64.exe
+  echo -------------------------------------------------------------------------------
   call configur.bat visualc
   set CL=-D_WIN32_WINNT=0x0601 %CL%
   echo Building release clean all for x86
