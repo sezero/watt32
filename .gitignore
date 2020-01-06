@@ -115,6 +115,7 @@ src/reconn.udp
 src/lang.c
 src/pkt_stub.h
 src/Python/watt32_swig_wrap.c
+inc/sys/*.err
 dist/
 docs/
 ertos/
