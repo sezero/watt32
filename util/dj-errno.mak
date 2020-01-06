@@ -4,7 +4,8 @@
 # Targets:
 #   dj_err.exe:
 #     A plain DOS version built using good old djgpp under DOS.
-#     Or the Windows hosted djgpp cross compiler.
+#     Or the Windows hosted djgpp cross compiler
+#     (see the github.com link below).
 #
 #   win32/dj_err.exe:
 #     A MinGW compiled version that can run under Windows.
