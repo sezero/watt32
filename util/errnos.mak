@@ -19,7 +19,7 @@ PROGRAMS = bcc_err.exe  \
            hc_err.exe   \
            dj_err.exe   \
            lcc_err.exe  \
-           clang_err.exe
+           win32/clang_err.exe
 
 #
 # These are the Windows version for some of the above;
@@ -30,7 +30,8 @@ WIN_PROGRAMS = win32/wc_err.exe  \
                win32/bcc_err.exe \
                win32/dj_err.exe
 
-all: $(PROGRAMS) $(WIN_PROGRAMS)
+all:   $(PROGRAMS) $(WIN_PROGRAMS)
+win32: $(WIN_PROGRAMS)
 
 bcc_err.exe: errnos.c
 	bcc -I..\inc -ml -ebcc_err.exe errnos.c
@@ -71,7 +72,7 @@ mw_err.exe: errnos.c
 #
 ls_err.exe: errnos.c
 	cl386 /E0 /I..\inc /e=ls_err.exe errnos.c
-    #  cl386 /L$(LADSOFT)\lib /E0 /I..\inc /e=ls_err.exe -$$D=DOS32A errnos.c
+    # cl386 /L$(LADSOFT)\lib /E0 /I..\inc /e=ls_err.exe -$$D=DOS32A errnos.c
 
 lcc_err.exe: errnos.c
 	lcc -I..\inc -A errnos.c
@@ -81,8 +82,10 @@ po_err.exe: errnos.c
 	pocc -Ze -c -I$(PELLESC)\include -I$(PELLESC)\include\win -I..\inc errnos.c
 	polink -out:$@ -libpath:$(PELLESC)\lib errnos.obj
 
-clang_err.exe: errnos.c
-	clang-cl -D_CRT_SECURE_NO_DEPRECATE -I../inc -o clang_err.exe errnos.c
+win32/clang_err.exe: errnos.c
+	clang-cl -c -D_CRT_SECURE_NO_DEPRECATE -I../inc -o clang_err.obj errnos.c
+	link -nologo -out:win32/clang_err.exe clang_err.obj
+	rm -f clang_err.obj
 
 #
 # These targets requires GNU-make syntax.
@@ -91,12 +94,12 @@ clang_err.exe: errnos.c
 dj_err.exe:
 	$(MAKE) -f dj-errno.mak dj_err.exe
 
-win32/dj_err.exe:
+win32/dj_err.exe::
 	$(MAKE) -f dj-errno.mak win32/dj_err.exe
 
 clean:
-	@del bcc_err.exe clang_err.exe wc_err.exe hc_err.exe \
-             tcc_err.exe dj_err.exe mw_err.exe mw64_err.exe ls_err.exe \
-             lcc.exe po_err.exe vc_err.exe win32\wc_err.exe \
-             win32\bcc_err.exe errnos.obj
+	@del bcc_err.exe win32\clang_err.exe wc_err.exe hc_err.exe \
+         tcc_err.exe dj_err.exe mw_err.exe mw64_err.exe ls_err.exe \
+         lcc.exe po_err.exe vc_err.exe win32\wc_err.exe \
+         win32\bcc_err.exe errnos.obj
 
