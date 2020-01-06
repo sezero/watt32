@@ -48,7 +48,8 @@ cd %APPVEYOR_BUILD_FOLDER%\src
 if %BUILDER%-%CPU%. == VisualC-x86. (
   call %VCVARSALL_BAT% x86
   call configur.bat visualc
-  set CL=-D_WIN32_WINNT=0x0601
+  set CL=-D_WIN32_WINNT=0x0601 -DHAVE_OUI_GENERATATED_C
+  python make-oui.py
   nmake -f visualc-release.mak clean all
   exit /b
 )
@@ -56,7 +57,8 @@ if %BUILDER%-%CPU%. == VisualC-x86. (
 if %BUILDER%-%CPU%. == VisualC-x64. (
   call %VCVARSALL_BAT% x64
   call configur.bat visualc
-  set CL=-D_WIN32_WINNT=0x0601
+  python make-oui.py
+  set CL=-D_WIN32_WINNT=0x0601 -DHAVE_OUI_GENERATATED_C
   nmake -f visualc-release_64.mak clean all
   exit /b
 )

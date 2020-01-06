@@ -1208,7 +1208,9 @@ struct tok {
 
 #define SMI_IETF 0
 
-#include "oui-generated.c"
+#if defined(HAVE_OUI_GENERATATED_C)
+  #include "oui-generated.c"
+#endif
 
 static const char *get_phys_address (const void *a, ULONG len, BOOL show_manuf)
 {
@@ -1232,7 +1234,9 @@ static const char *get_phys_address (const void *a, ULONG len, BOOL show_manuf)
     else *p = '\0';
   }
 
-  /* Get the manufacturer name for this MAC-address.
+#if defined(HAVE_OUI_GENERATATED_C)
+  /*
+   * Get the manufacturer name for this MAC-address.
    */
   if (show_manuf)
   {
@@ -1245,6 +1249,7 @@ static const char *get_phys_address (const void *a, ULONG len, BOOL show_manuf)
     *p++ = ')';
     *p++ = '\0';
   }
+#endif
   return (work_buf);
 }
 
