@@ -10,7 +10,7 @@ extern BOOL get_tv_from_tsc (const struct ulong_long *tsc,
                              struct timeval *tv);
 #endif
 
-#if defined(_WIN32)
+#if defined(_WIN32) || defined(WIN32)
   extern uint64      FILETIME_to_unix_epoch (const FILETIME *ft);
   extern const char *ULONGLONG_to_ctime (ULONGLONG ts);
 #endif

@@ -403,7 +403,7 @@ extern CONST char  DATA_DECL x86_vendor_id[13];
 
 /*
  * And finally a RDTSC + CPUID hack for 64-bit CPUs.
- * Use the one in cpumodel0.asm.
+ * Use the one in cpumodel.asm.
  */
 #elif defined(_MSC_VER) && defined(_M_X64) && 0
   #pragma intrinsic   (__rdtsc)

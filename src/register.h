@@ -58,7 +58,7 @@
 #define CR0_PAGE_LEVEL_CACHE_DISABLE    0x40000000
 #define CR0_PAGING                      0x80000000
 
-#if defined(IN_ASM_FILE)  /* Only set in .S-files ued by GCC */
+#if defined(IN_ASM_FILE)  /* Only set in .S-files used by GCC */
   #if defined(__DJGPP__)
     #include <machine/asm.h>
 
@@ -83,96 +83,96 @@
 
 #else
 
-/*
- * Definition of eflags registers has a bit field structure.
- */
-typedef struct {
   /*
-   * first byte : bits 0->7
+   * Definition of eflags registers has a bit field structure.
    */
-  unsigned int carry                : 1;
-  unsigned int                      : 1;
-  unsigned int parity               : 1;
-  unsigned int                      : 1;
+  typedef struct {
+    /*
+     * first byte : bits 0->7
+     */
+    unsigned int carry                : 1;
+    unsigned int                      : 1;
+    unsigned int parity               : 1;
+    unsigned int                      : 1;
 
-  unsigned int auxiliary_carry      : 1;
-  unsigned int                      : 1;
-  unsigned int zero                 : 1;      /* result is zero */
-  unsigned int sign                 : 1;      /* result is less than zero */
-  /*
-   * Second byte : bits 7->15
-   */
-  unsigned int trap                 : 1;
-  unsigned int intr_enable          : 1;      /* set => intr on */
-  unsigned int direction            : 1;      /* set => autodecrement */
-  unsigned int overflow             : 1;
+    unsigned int auxiliary_carry      : 1;
+    unsigned int                      : 1;
+    unsigned int zero                 : 1;      /* result is zero */
+    unsigned int sign                 : 1;      /* result is less than zero */
+    /*
+     * Second byte : bits 7->15
+     */
+    unsigned int trap                 : 1;
+    unsigned int intr_enable          : 1;      /* set => intr on */
+    unsigned int direction            : 1;      /* set => autodecrement */
+    unsigned int overflow             : 1;
 
-  unsigned int IO_privilege         : 2;
-  unsigned int nested_task          : 1;
-  unsigned int                      : 1;
-  /*
-   * Third byte : bits 15->23
-   */
-  unsigned int resume               : 1;
-  unsigned int virtual_mode         : 1;
-  unsigned int aligment_check       : 1;
-  unsigned int virtual_intr         : 1;
-  unsigned int virtual_intr_pending : 1;
-  unsigned int id                   : 1;
-  unsigned int                      : 2;
-  /*
-   * fourth byte : bits 24->31 : UNUSED
-   */
-  unsigned int                      : 8;
-} eflags_bits;
+    unsigned int IO_privilege         : 2;
+    unsigned int nested_task          : 1;
+    unsigned int                      : 1;
+    /*
+     * Third byte : bits 15->23
+     */
+    unsigned int resume               : 1;
+    unsigned int virtual_mode         : 1;
+    unsigned int aligment_check       : 1;
+    unsigned int virtual_intr         : 1;
+    unsigned int virtual_intr_pending : 1;
+    unsigned int id                   : 1;
+    unsigned int                      : 2;
+    /*
+     * fourth byte : bits 24->31 : UNUSED
+     */
+    unsigned int                      : 8;
+  } eflags_bits;
 
-typedef union {
-        eflags_bits   eflags;
-        unsigned int  i;
-      } eflags;
+  typedef union {
+          eflags_bits   eflags;
+          unsigned int  i;
+        } eflags;
 
-/*
- * Definition of CR registers has a bit field structure.
- */
-typedef struct {
   /*
-   * first byte : bits 0->7
+   * Definition of CR registers has a bit field structure.
    */
-  unsigned int protection_enable        : 1;
-  unsigned int monitor_coproc           : 1;
-  unsigned int coproc_soft_emul         : 1;
-  unsigned int floating_instr_except    : 1;
+  typedef struct {
+    /*
+     * first byte : bits 0->7
+     */
+    unsigned int protection_enable        : 1;
+    unsigned int monitor_coproc           : 1;
+    unsigned int coproc_soft_emul         : 1;
+    unsigned int floating_instr_except    : 1;
 
-  unsigned int extension_type           : 1;
-  unsigned int numeric_error            : 1;
-  unsigned int                          : 2;
-  /*
-   * second byte 8->15 : UNUSED
-   */
-  unsigned int                          : 8;
-  /*
-   * third byte 16->23
-   */
-  unsigned int write_protect            : 1;
-  unsigned int                          : 1;
-  unsigned int aligment_mask            : 1;
-  unsigned int                          : 1;
+    unsigned int extension_type           : 1;
+    unsigned int numeric_error            : 1;
+    unsigned int                          : 2;
+    /*
+     * second byte 8->15 : UNUSED
+     */
+    unsigned int                          : 8;
+    /*
+     * third byte 16->23
+     */
+    unsigned int write_protect            : 1;
+    unsigned int                          : 1;
+    unsigned int aligment_mask            : 1;
+    unsigned int                          : 1;
 
-  unsigned int                          : 4;
-  /*
-   * fourth byte 24->31
-   */
-  unsigned int                          : 4;
-  unsigned int                          : 1;
-  unsigned int no_write_through         : 1;
-  unsigned int page_level_cache_disable : 1;
-  unsigned int paging                   : 1;
-} cr0_bits;
+    unsigned int                          : 4;
+    /*
+     * fourth byte 24->31
+     */
+    unsigned int                          : 4;
+    unsigned int                          : 1;
+    unsigned int no_write_through         : 1;
+    unsigned int page_level_cache_disable : 1;
+    unsigned int paging                   : 1;
+  } cr0_bits;
 
-typedef union {
-        cr0_bits      cr0;
-        unsigned long i;
-      } cr0;
+  typedef union {
+          cr0_bits      cr0;
+          unsigned long i;
+        } cr0;
 
 #endif  /* IN_ASM_FILE */
 

@@ -227,6 +227,8 @@ int W32_CALL recvmsg (int s, struct msghdr *msg, int flags)
     return (-1);
   }
 
+  msg->msg_flags = flags;
+
   for (i = bytes = 0; i < count; i++)
   {
 #if (DOSX)
@@ -240,7 +242,7 @@ int W32_CALL recvmsg (int s, struct msghdr *msg, int flags)
 #endif
 
     len = receive (NULL, s, iov[i].iov_base, iov[i].iov_len,
-                   flags, (struct sockaddr*)msg->msg_name,
+                   msg->msg_flags, (struct sockaddr*)msg->msg_name,
                    (size_t*)&msg->msg_namelen);
     if (len < 0)
     {
