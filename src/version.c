@@ -227,8 +227,21 @@ const char * W32_CALL wattcpVersion (void)
 #elif defined(__LCC__) && defined(WIN32)
   p += sprintf (p, "lcc-win32, ");
 
-#elif defined(__ICC__)      /**\todo test this */
+#elif defined(__ICC__)
+ /*
+  * The old ICC Intel compiler is completely untested.
+  */
   p += sprintf (p, "Intel C %d.%d, ", __ICC__/100, __ICC__ % 100);
+
+#elif defined(__INTEL_COMPILER__)
+ /*
+  * The more recent Intel compiler is also completely untested.
+  * (costs a lot of money).
+  */
+  p += sprintf (p, "Intel C %d.%d.%d, ",
+                __INTEL_COMPILER / 100,
+                __INTEL_COMPILER % 100,
+                __INTEL_COMPILER_UPDATE);
 #endif
 
   p = strchr (buf, '\0');
@@ -565,7 +578,7 @@ const char * W32_CALL wattcpBuildCC (void)
 #endif    /* CFLAGS_BUF */
 
 
-static const char *capa[] = {
+static const char *capabilities[] = {
 #if defined(USE_DEBUG)
            "debug",
 #endif
@@ -671,17 +684,17 @@ const char * W32_CALL wattcpCapabilities (void)
   char  *p = buf;
   int    i;
 
-  for (i = 0; capa[i]; i++)
+  for (i = 0; capabilities[i]; i++)
   {
     *p++ = '/';
-    if (p + strlen(capa[i]) - 2 >= buf + sizeof(buf))
+    if (p + strlen(capabilities[i]) - 2 >= buf + sizeof(buf))
     {
       *p++ = '.';
       *p++ = '.';
       break;
     }
-    strcpy (p, capa[i]);
-    p += strlen (capa[i]);
+    strcpy (p, capabilities[i]);
+    p += strlen (capabilities[i]);
   }
   *p = '\0';
   return (buf);
@@ -705,81 +718,81 @@ const char *gcc_get_cpu_tune (void)
   static char ret[20];
   const char *p = NULL;
 
-  #if defined(__x86_64__)           /* -m64 (MinGW64, AMD) */
-    p = "x86-64";
-  #endif
+#if defined(__x86_64__)           /* -m64 (MinGW64, AMD) */
+  p = "x86-64";
+#endif
 
-  #if defined(__tune_i386__)        /* -mtune=i386 (default for -m32) */
-    p = "386";
-  #endif
+#if defined(__tune_i386__)        /* -mtune=i386 (default for -m32) */
+  p = "386";
+#endif
 
-  #if defined(__tune_i486__)        /* -mtune=i486 */
-    p = "486";
-  #endif
+#if defined(__tune_i486__)        /* -mtune=i486 */
+  p = "486";
+#endif
 
-  #if defined(__tune_i586__)        /* -mtune=i586 */
-    p = "586";
-  #endif
+#if defined(__tune_i586__)        /* -mtune=i586 */
+  p = "586";
+#endif
 
-  #if defined(__tune_i686__)        /* -mtune=pentiumpro */
-    p = "686";
-  #endif
+#if defined(__tune_i686__)        /* -mtune=pentiumpro */
+  p = "686";
+#endif
 
-  #if defined(__tune_pentium__)     /* -mtune=pentium */
-    p = "Pent";
-  #endif
+#if defined(__tune_pentium__)     /* -mtune=pentium */
+  p = "Pent";
+#endif
 
-  #if defined(__tune_pentium3__)    /* -mtune=pentium3 */
-    p = "Pent3";
-  #endif
+#if defined(__tune_pentium3__)    /* -mtune=pentium3 */
+  p = "Pent3";
+#endif
 
-  #if defined(__tune_pentium4__)    /* -mtune=pentium4 */
-    p = "Pent4";
-  #endif
+#if defined(__tune_pentium4__)    /* -mtune=pentium4 */
+  p = "Pent4";
+#endif
 
-  #if defined(__tune_pentiumpro__)  /* -mtune=pentiumpro */
-    p = "PentPro";
-  #endif
+#if defined(__tune_pentiumpro__)  /* -mtune=pentiumpro */
+  p = "PentPro";
+#endif
 
-  #if defined(__tune_nocona__)      /* -mtune=nocona,prescott */
-    p = "nocona";
-  #endif
+#if defined(__tune_nocona__)      /* -mtune=nocona,prescott */
+  p = "nocona";
+#endif
 
-  #if defined(__tune_core2__)       /* -mtune=core2 */
-    p = "Core2";
-  #endif
+#if defined(__tune_core2__)       /* -mtune=core2 */
+  p = "Core2";
+#endif
 
-  #if defined(__tune_corei7__)      /* -mtune=corei7 */
-    p = "CoreI7";
-  #endif
+#if defined(__tune_corei7__)      /* -mtune=corei7 */
+  p = "CoreI7";
+#endif
 
-  #if defined(__tune_k6__)          /* -mtune=k6 */
-    p = "K6";
-  #endif
+#if defined(__tune_k6__)          /* -mtune=k6 */
+  p = "K6";
+#endif
 
-  #if defined(__tune_athlon__)      /* -mtune=athlon */
-    p = "Athlon";
-  #endif
+#if defined(__tune_athlon__)      /* -mtune=athlon */
+  p = "Athlon";
+#endif
 
-  #if defined(__tune_k8__)          /* -mtune=k8,opteron */
-    p = "K8";
-  #endif
+#if defined(__tune_k8__)          /* -mtune=k8,opteron */
+  p = "K8";
+#endif
 
-  #if defined(__tune_amdfam10__)    /* -mtune=amdfam10 */
-    p = "K8";
-  #endif
+#if defined(__tune_amdfam10__)    /* -mtune=amdfam10 */
+  p = "K8";
+#endif
 
-  #if defined(__tune_bdver1__)      /* -mtune=bdver1 */
-    p = "BDv1";
-  #endif
+#if defined(__tune_bdver1__)      /* -mtune=bdver1 */
+  p = "BDv1";
+#endif
 
-  #if defined(__tune_bdver2__)      /* -mtune=bdver2 */
-    p = "BDv2";
-  #endif
+#if defined(__tune_bdver2__)      /* -mtune=bdver2 */
+  p = "BDv2";
+#endif
 
-  #if defined(__tune_btver1__)      /* -mtune=btver1 */
-    p = "BTv1";
-  #endif
+#if defined(__tune_btver1__)      /* -mtune=btver1 */
+  p = "BTv1";
+#endif
 
   if (!p)
      return (", ");
