@@ -803,10 +803,10 @@ $(OBJDIR)\cpumodel.obj: cpumodel.asm
 # Use of %CL% set by configur.bat
 #
 .cpp{$(OBJDIR)}.obj:
-	$(CC) -c @$(C_ARGS) $(CL) -EHsc -Fo.\$*.obj $<
+	$(CC) -c @$(C_ARGS) -EHsc -Fo.\$*.obj $<
 
 .c{$(OBJDIR)}.obj:
-	$(CC) -c @$(C_ARGS) $(CL) -Fo.\$*.obj $<
+	$(CC) -c @$(C_ARGS) -Fo.\$*.obj $<
 
 .asm{$(OBJDIR)}.obj:
 	$(AS) $(AFLAGS) -Fo .\$*.obj $<

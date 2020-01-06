@@ -51,10 +51,14 @@ if %1. == test. goto :test
 
 ::
 :: Generate a 'src\oui-generated.c' file from 'src\oui.txt (do not download it every time).
-:: Currently used for VisualC only.
+:: For VisualC / clang-cl only since only those uses '%CL%'.
 ::
+set USES_CL=0
 set CL=
-if %BUILDER%. == VisualC. (
+if %BUILDER%. == VisualC. set USES_CL=1
+if %BUILDER%. == clang.   set USES_CL=1
+
+if %USES_CL%. == 1. (
   echo Generating src\oui-generated.c
   python make-oui.py > oui-generated.c
   if ERRORLEVEL 0 set CL=-DHAVE_OUI_GENERATATED_C
@@ -108,7 +112,6 @@ if %BUILDER%-%CPU%. == MinGW-x64. (
   make -f MinGW64_64.mak clean all
   exit /b
 )
-
 
 if %BUILDER%. == djgpp. (
   echo Downloading Andrew Wu's DJGPP cross compiler

@@ -324,6 +324,15 @@ echo neterr.c: build\clang\syserr.c >> build\clang\watt32.dep
 ..\util\win32\clang_err -s > build\clang\syserr.c
 ..\util\win32\clang_err -e > ..\inc\sys\clang.err
 
+::
+:: If %CL% does not contain a '_WIN32_WINNT' already, add a '-D_WIN32_WINNT=0x0601' to %CL%.
+::
+echo %CL% | %SystemRoot%\system32\find.exe "_WIN32_WINNT" > NUL
+if errorlevel 1 (
+  echo Setting "%%CL=_WIN32_WINNT=0x0601". Change to suite your OS or SDK.
+  set CL=%CL% -D_WIN32_WINNT=0x0601
+)
+
 echo Run GNU make to make target(s):
 echo   E.g. "make -f clang32.mak"
 echo     or "make -f clang64.mak"
