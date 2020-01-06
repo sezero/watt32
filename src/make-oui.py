@@ -7,9 +7,13 @@ from __future__ import print_function
 import sys, os, time, re, getopt, codecs
 
 prefixes = dict()
+PY3 = (sys.version_info[0] >= 3)
 
 def info (s):
-  os.write (2, s)
+  if PY3:
+    os.write (2, bytes(s,"UTF-8"))
+  else:
+    os.write (2, s)
 
 OUI_URL = "http://standards-oui.ieee.org/oui.txt"
 OUI_TXT = 'oui.txt'
