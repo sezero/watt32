@@ -45,16 +45,22 @@ if %BUILDER%. == . (
 
 cd %APPVEYOR_BUILD_FOLDER%\src
 
+::
+:: Generate a 'src\oui-generated.c' file.
+::
 set CL=
 if %BUILDER%. == VisualC. (
+  echo Generating src\oui-generated.c
   python make-oui.py > oui-generated.c
   if ERRORLEVEL 0 set CL=-DHAVE_OUI_GENERATATED_C
+  echo --------------------------------------------------------------------
 )
 
 if %BUILDER%-%CPU%. == VisualC-x86. (
   call %VCVARSALL_BAT% x86
   call configur.bat visualc
   set CL=-D_WIN32_WINNT=0x0601 %CL%
+  echo Building release clean all for x86
   nmake -nologo -f visualc-release.mak clean all
   exit /b
 )
@@ -63,6 +69,7 @@ if %BUILDER%-%CPU%. == VisualC-x64. (
   call %VCVARSALL_BAT% x64
   call configur.bat visualc
   set CL=-D_WIN32_WINNT=0x0601 %CL%
+  echo Building release clean all for x64
   nmake -nologo -f visualc-release_64.mak clean all
   exit /b
 )
@@ -73,6 +80,7 @@ if %BUILDER%. == djgpp. (
   rm -f dj-win.zip
 
   call configur.bat djgpp
+  echo Building clean all for djgpp
   make -f djgpp.mak clean all
   exit /b
 )
