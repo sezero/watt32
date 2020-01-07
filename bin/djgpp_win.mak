@@ -11,7 +11,7 @@ OBJ_DIR = djgpp.obj
 #
 # Set to 1 to make DPMI-host (cwsdstub.exe) contained in .exe-file
 #
-DPMI_STUB = 1
+DPMI_STUB ?= 1
 
 #
 # Define 'MAKE_MAP = 1' if you like a .map-file
