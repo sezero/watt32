@@ -886,7 +886,7 @@ CFLAGS  = -nologo -MD -Ox -Zi -Zo -GS- -I. -I../inc \
           -D_WINSOCK_DEPRECATED_NO_WARNINGS         \
           -DBUILD_WINDOWS
 
-# CFLAGS += -Wno-\#pragma-messages
+CFLAGS += -Wno-\#pragma-messages
 
 #
 # Enable full Microsoft Visual C++ compatibility
