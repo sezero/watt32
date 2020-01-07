@@ -1,14 +1,12 @@
 @echo off
 setlocal
 prompt $P$G
-:: if %BUILDER%. == MinGW. echo on
 
 ::
 :: 'APPVEYOR_PROJECT_NAME=Watt-32' unless testing this "appveyor-script.bat [build_src | build_bin | test]"
 :: locally using 'cmd'.
 ::
 if %APPVEYOR_PROJECT_NAME%. == . (
-  echo on
   set BUILDER=VisualC
   set APPVEYOR_PROJECT_NAME=Watt-32
   set APPVEYOR_BUILD_FOLDER_UNIX=e:/net/watt
@@ -66,6 +64,12 @@ set CL=
 if %BUILDER%. == VisualC. set USES_CL=1
 if %BUILDER%. == clang.   set USES_CL=1
 
+::
+:: Assume 'CPU=x86'
+::
+set BITS=32
+if %CPU%. == x64. set BITS=64
+
 if %USES_CL%. == 1. (
   echo Generating src\oui-generated.c
   python make-oui.py > oui-generated.c
@@ -73,47 +77,25 @@ if %USES_CL%. == 1. (
   echo --------------------------------------------------------------------------------------------------
 )
 
-if %BUILDER%-%CPU%. == VisualC-x86. (
+if %BUILDER%. == VisualC. (
   call configur.bat visualc
   set CL=-D_WIN32_WINNT=0x0601 %CL%
-  echo Building release for x86
-  nmake -nologo -f visualc-release.mak
+  echo Building release for %CPU%
+  nmake -nologo -f visualc-release_%BITS%.mak
   exit /b
 )
 
-if %BUILDER%-%CPU%. == VisualC-x64. (
-  call configur.bat visualc
-  set CL=-D_WIN32_WINNT=0x0601 %CL%
-  echo Building release for x64
-  nmake -nologo -f visualc-release_64.mak
-  exit /b
-)
-
-if %BUILDER%-%CPU%. == clang-x86. (
+if %BUILDER%. == clang. (
   call configur.bat clang
-  echo Building for x86
-  make -f clang32.mak
+  echo Building for %CPU%
+  make -f clang%BITS%.mak
   exit /b
 )
 
-if %BUILDER%-%CPU%. == clang-x64. (
-  call configur.bat clang
-  echo Building for x64
-  make -f clang64.mak
-  exit /b
-)
-
-if %BUILDER%-%CPU%. == MinGW-x86. (
+if %BUILDER%. == MinGW. (
   call configur.bat mingw64
-  echo Building for x86
-  make -f MinGW64_32.mak
-  exit /b
-)
-
-if %BUILDER%-%CPU%. == MinGW-x64. (
-  call configur.bat mingw64
-  echo Building for x64
-  make -f MinGW64_64.mak
+  echo Building for %CPU%
+  make -f MinGW64_%BITS%.mak
   exit /b
 )
 
@@ -137,15 +119,31 @@ exit /b 1
 :: Build some example programs in './bin'
 ::
 :build_bin
-set PROGS=ping.exe finger.exe tcpinfo.exe ident.exe htget.exe bping.exe tcpinfo.exe tracert.exe country.exe
+
+if %CPU%. == x64. (
+  echo No build_bin for x64 yet.
+  exit /b 0
+)
+
+::
+:: './bin/' programs to build for djgpp and Visual-C:
+::
+set PROGS_DJ=bping.exe ping.exe finger.exe tcpinfo.exe ident.exe htget.exe ^
+             tcpinfo.exe tracert.exe country.exe
+
+set PROGS_VC=ping.exe finger.exe tcpinfo.exe host.exe htget.exe ^
+             popdump.exe tracert.exe revip.exe con-test.exe gui-test.exe ^
+             rexec.exe cookie.exe daytime.exe dayserv.exe lpq.exe lpr.exe ^
+             ntime.exe ph.exe stat.exe vlsm.exe whois.exe ident.exe country.exe
+
 cd bin
 if %BUILDER%. == djgpp. (
-  make -f djgpp_win.mak DPMI_STUB=0 %PROGS%
+  make -f djgpp_win.mak DPMI_STUB=0 %PROGS_DJ%
   exit /b
 )
 
 if %BUILDER%. == VisualC. (
-  nmake -f visualc.mak %PROGS%
+  nmake -f visualc.mak %PROGS_VC%
   exit /b
 )
 
