@@ -30,8 +30,8 @@
 *.obj
 *.o
 *.wo
+*.ho
 *.o32
-*.rc
 *.srv
 *.upx
 *.win
