@@ -8,11 +8,8 @@ prompt $P$G
 ::
 if %APPVEYOR_PROJECT_NAME%. == . (
   set BUILDER=VisualC
-  set APPVEYOR_PROJECT_NAME=Watt-32
   set APPVEYOR_BUILD_FOLDER_UNIX=e:/net/watt
-  set APPVEYOR_LOCAL=1
 ) else (
-  set APPVEYOR_LOCAL=0
   set APPVEYOR_BUILD_FOLDER_UNIX=c:/projects/Watt-32
 )
 
@@ -146,18 +143,6 @@ if %BUILDER%. == VisualC. (
   nmake -f visualc.mak %PROGS_VC%
   exit /b
 )
-
-echo -- CD: ------------------------------------------------------------------
-echo %CD%
-
-echo -- PATH: ----------------------------------------------------------------
-set PATH
-
-echo -- CL: ------------------------------------------------------------------
-set CL
-
-echo -- WATT_ROOT: -----------------------------------------------------------
-set WATT_ROOT
 
 exit /b
 
