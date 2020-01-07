@@ -16,11 +16,9 @@ environment:
       CPU:     x86
 
 build_script:
-    - cmd: appveyor-script.bat build
+    - cmd: appveyor-script.bat build_src
+    - cmd: appveyor-script.bat build_bin
 
-#
-# To-do
-#
-# test_script:
-#    - cmd: appveyor-script.bat test
+test_script:
+    - cmd: appveyor-script.bat test
 
