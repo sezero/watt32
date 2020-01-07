@@ -15,6 +15,12 @@ environment:
     - BUILDER: djgpp
       CPU:     x86
 
+matrix:
+  #
+  # Immediately finish build if one of the above jobs fails.
+  #
+  fast_finish: true
+
 install:
   #
   # Set the PATH for 'make' + 'sh' used by 'MinGW', 'djgpp', 'CygWin' etc.
