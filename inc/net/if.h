@@ -2,8 +2,6 @@
  * Network interface data.
  */
 
-/*      $NetBSD: if.h,v 1.29 1997/10/02 19:41:57 is Exp $       */
-
 /*
  * Copyright (c) 1982, 1986, 1989, 1993
  *  The Regents of the University of California.  All rights reserved.
@@ -89,11 +87,11 @@ struct socket { int dummy; };
  */
 struct  if_data {
     /* generic interface information */
-    u_char  ifi_type;       /* ethernet, tokenring, etc. */
+    u_char  ifi_type;           /* ethernet, tokenring, etc. */
     u_char  ifi_addrlen;        /* media address length */
-    u_char  ifi_hdrlen;     /* media header length */
-    u_long  ifi_mtu;        /* maximum transmission unit */
-    u_long  ifi_metric;     /* routing metric (external only) */
+    u_char  ifi_hdrlen;         /* media header length */
+    u_long  ifi_mtu;            /* maximum transmission unit */
+    u_long  ifi_metric;         /* routing metric (external only) */
     u_long  ifi_baudrate;       /* linespeed */
     /* volatile statistics */
     u_long  ifi_ipackets;       /* packets received on interface */
@@ -101,13 +99,13 @@ struct  if_data {
     u_long  ifi_opackets;       /* packets sent on interface */
     u_long  ifi_oerrors;        /* output errors on interface */
     u_long  ifi_collisions;     /* collisions on csma interfaces */
-    u_long  ifi_ibytes;     /* total number of octets received */
-    u_long  ifi_obytes;     /* total number of octets sent */
+    u_long  ifi_ibytes;         /* total number of octets received */
+    u_long  ifi_obytes;         /* total number of octets sent */
     u_long  ifi_imcasts;        /* packets received via multicast */
     u_long  ifi_omcasts;        /* packets sent via multicast */
     u_long  ifi_iqdrops;        /* dropped on input, this interface */
     u_long  ifi_noproto;        /* destined for unsupported protocol */
-        struct  timeval ifi_lastchange; /* last updated */
+    struct  timeval ifi_lastchange; /* last updated */
 };
 
 /*
@@ -127,23 +125,23 @@ TAILQ_HEAD(ifnet_head, ifnet);          /* the actual queue head */
 #define IF_NAMESIZE     IFNAMSIZ
 #endif
 
-struct ifnet {              /* and the entries */
-    void    *if_softc;      /* lower-level data for this if */
-        TAILQ_ENTRY(ifnet) if_list;         /* all struct ifnets are chained */
-        TAILQ_HEAD(xx, ifaddr) if_addrlist; /* linked list of addresses per if */
-    char    if_xname[IFNAMSIZ]; /* external name (name + unit) */
-    int if_pcount;      /* number of promiscuous listeners */
-    caddr_t if_bpf;         /* packet filter structure */
-    u_short if_index;       /* numeric abbreviation for this if */
-    short   if_timer;       /* time 'til if_watchdog called */
-    short   if_flags;       /* up/down, broadcast, etc. */
-    short   if__pad1;       /* be nice to m68k ports */
-    struct  if_data if_data;    /* statistics and other data about if */
+struct ifnet {                                 /* and the entries */
+    void                  *if_softc;           /* lower-level data for this if */
+    TAILQ_ENTRY(ifnet)     if_list;            /* all struct ifnets are chained */
+    TAILQ_HEAD(xx, ifaddr) if_addrlist;        /* linked list of addresses per if */
+    char                   if_xname[IFNAMSIZ]; /* external name (name + unit) */
+    int                    if_pcount;          /* number of promiscuous listeners */
+    caddr_t                if_bpf;             /* packet filter structure */
+    u_short                if_index;           /* numeric abbreviation for this if */
+    short                  if_timer;           /* time 'til if_watchdog called */
+    short                  if_flags;           /* up/down, broadcast, etc. */
+    short                  if__pad1;           /* be nice to m68k ports */
+    struct  if_data        if_data;            /* statistics and other data about if */
 /* procedure handles */
     int (*if_output)        /* output routine (enqueue) */
                 (struct ifnet *, struct mbuf *, struct sockaddr *,
                  struct rtentry *);
-    void    (*if_start)     /* initiate output routine */
+    void (*if_start)     /* initiate output routine */
                 (struct ifnet *);
     int (*if_ioctl)     /* ioctl routine */
                 (struct ifnet *, u_long, caddr_t);
@@ -247,17 +245,17 @@ struct ifnet {              /* and the entries */
  * together so all addresses for an interface can be located.
  */
 struct ifaddr {
-    struct  sockaddr *ifa_addr; /* address of interface */
-    struct  sockaddr *ifa_dstaddr;  /* other end of p-to-p link */
-#define ifa_broadaddr   ifa_dstaddr /* broadcast address interface */
-    struct  sockaddr *ifa_netmask;  /* used to determine subnet */
-    struct  ifnet *ifa_ifp;     /* back-pointer to interface */
-        TAILQ_ENTRY(ifaddr) ifa_list;   /* list of addresses for interface */
-    void    (*ifa_rtrequest)    /* check or clean routes (+ or -)'d */
-                (int, struct rtentry *, struct sockaddr *);
-    u_short ifa_flags;      /* mostly rt_flags for cloning */
-    short   ifa_refcnt;     /* count of references */
-    int ifa_metric;     /* cost of going out this interface */
+    struct  sockaddr   *ifa_addr;        /* address of interface */
+    struct  sockaddr   *ifa_dstaddr;     /* other end of p-to-p link */
+#define ifa_broadaddr   ifa_dstaddr      /* broadcast address interface */
+    struct  sockaddr   *ifa_netmask;     /* used to determine subnet */
+    struct  ifnet      *ifa_ifp;         /* back-pointer to interface */
+    TAILQ_ENTRY(ifaddr) ifa_list;        /* list of addresses for interface */
+    void              (*ifa_rtrequest)   /* check or clean routes (+ or -)'d */
+                         (int, struct rtentry *, struct sockaddr *);
+    u_short             ifa_flags;       /* mostly rt_flags for cloning */
+    short               ifa_refcnt;      /* count of references */
+    int                 ifa_metric;      /* cost of going out this interface */
 };
 #define IFA_ROUTE   RTF_UP      /* route installed */
 
@@ -266,13 +264,13 @@ struct ifaddr {
  * from sysctl and the routing socket.
  */
 struct if_msghdr {
-    u_short ifm_msglen; /* to skip over non-understood messages */
-    u_char  ifm_version;    /* future binary compatability */
-    u_char  ifm_type;   /* message type */
-    int ifm_addrs;  /* like rtm_addrs */
-    int ifm_flags;  /* value of if_flags */
-    u_short ifm_index;  /* index for associated ifp */
-    struct  if_data ifm_data;/* statistics and other data about if */
+    u_short         ifm_msglen;   /* to skip over non-understood messages */
+    u_char          ifm_version;  /* future binary compatability */
+    u_char          ifm_type;     /* message type */
+    int             ifm_addrs;    /* like rtm_addrs */
+    int             ifm_flags;    /* value of if_flags */
+    u_short         ifm_index;    /* index for associated ifp */
+    struct  if_data ifm_data;     /* statistics and other data about if */
 };
 
 /*
@@ -282,11 +280,11 @@ struct if_msghdr {
 struct ifa_msghdr {
     u_short ifam_msglen;    /* to skip over non-understood messages */
     u_char  ifam_version;   /* future binary compatability */
-    u_char  ifam_type;  /* message type */
-    int ifam_addrs; /* like rtm_addrs */
-    int ifam_flags; /* value of ifa_flags */
-    u_short ifam_index; /* index for associated ifp */
-    int ifam_metric;    /* value of ifa_metric */
+    u_char  ifam_type;      /* message type */
+    int     ifam_addrs;     /* like rtm_addrs */
+    int     ifam_flags;     /* value of ifa_flags */
+    u_short ifam_index;     /* index for associated ifp */
+    int     ifam_metric;    /* value of ifa_metric */
 };
 
 /*
@@ -300,7 +298,7 @@ struct ifreq {
     union {
         struct  sockaddr ifru_addr;
         struct  sockaddr ifru_dstaddr;
-                struct  sockaddr ifru_hwaddr;
+        struct  sockaddr ifru_hwaddr;
         struct  sockaddr ifru_broadaddr;
         short   ifru_flags;
         int ifru_metric;
