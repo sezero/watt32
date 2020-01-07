@@ -32,9 +32,9 @@ install:
   #
   - cmd: if %BUILDER%. == VisualC.         call "c:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\vcvarsall.bat" %CPU%
   - cmd: if %BUILDER%. == clang.           call "c:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\vcvarsall.bat" %CPU%
-# - cmd: if %BUILDER%-%CPU%. == MinGW-x86. set PATH=c:\msys64\MinGW32\bin;%PATH%
-# - cmd: if %BUILDER%-%CPU%. == MinGW-x64. set PATH=c:\msys64\MinGW64\bin;%PATH%
-  - cmd: if %BUILDER%. == MinGW            set PATH=c:\mingw-w64\x86_64-7.2.0-posix-seh-rt_v5-rev1\bin;%PATH%
+  - cmd: if %BUILDER%-%CPU%. == MinGW-x86. set PATH=c:\msys64\MinGW32\bin;%PATH%
+  - cmd: if %BUILDER%-%CPU%. == MinGW-x64. set PATH=c:\msys64\MinGW64\bin;%PATH%
+# - cmd: if %BUILDER%. == MinGW            set PATH=c:\mingw-w64\x86_64-7.2.0-posix-seh-rt_v5-rev1\bin;%PATH%
 
 build_script:
     - cmd: appveyor-script.bat build_src
