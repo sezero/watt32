@@ -948,11 +948,9 @@ all: $(C_ARGS) $(OBJDIR)/cflags.h $(OBJDIR)/cflags_buf.h $(TARGETS)
 	@echo All done
 
 ../lib/x86/wattcp_clang.lib: $(OBJS)
-	rm -f $@
 	$(AR) -machine:x86 -out:$@ $(OBJS)
 
 ../lib/x64/wattcp_clang.lib: $(OBJS)
-	rm -f $@
 	$(AR) -machine:x64 -out:$@ $(OBJS)
 
 $(C_ARGS): $(MAKEFILE_LIST)
