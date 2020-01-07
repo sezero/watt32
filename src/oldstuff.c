@@ -158,12 +158,12 @@ WORD _w32_inchksum (const void *ptr, int len)
 
 DWORD intel (DWORD val)
 {
-  return __ntohl (val);
+  return __NtoHL (val);
 }
 
 WORD intel16 (WORD val)
 {
-  return __ntohs (val);
+  return __NtoHS (val);
 }
 #endif  /* WATT32_NO_INLINE_INTEL */
 

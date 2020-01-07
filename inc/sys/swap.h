@@ -50,13 +50,13 @@ __BEGIN_DECLS
 #define htonl(x)  intel(x)
 
 #if defined(__GNUC__) && defined(__i386__) && !defined(__NO_INLINE__) /* gcc -O0 on 'x86' */
-  #define intel(x)   __ntohl(x)
-  #define intel16(x) __ntohs(x)
+  #define intel(x)   __NtoHL(x)
+  #define intel16(x) __NtoHS(x)
 
   /*
    * Ripped (and adapted) from <linux/include/asm-386/byteorder.h>
    */
-  /*@unused@*/ W32_GCC_INLINE unsigned long __ntohl (unsigned long x)
+  /*@unused@*/ W32_GCC_INLINE unsigned long __NtoHL (unsigned long x)
   {
     __asm__ __volatile (
              "xchgb %b0, %h0\n\t"   /* swap lower bytes  */
@@ -66,7 +66,7 @@ __BEGIN_DECLS
     return (x);
   }
 
-  /*@unused@*/ W32_GCC_INLINE unsigned short __ntohs (unsigned short x)
+  /*@unused@*/ W32_GCC_INLINE unsigned short __NtoHS (unsigned short x)
   {
     __asm__ __volatile__ (
               "xchgb %b0, %h0"       /* swap bytes */
@@ -75,16 +75,16 @@ __BEGIN_DECLS
   }
 
 #elif defined(__GNUC__) && defined(__x86_64__) && !defined(__NO_INLINE__)  /* gcc -O0 on 'x64' */
-  #define intel(x)   __ntohl(x)
-  #define intel16(x) __ntohs(x)
+  #define intel(x)   __NtoHL(x)
+  #define intel16(x) __NtoHS(x)
 
-  /*@unused@*/ W32_GCC_INLINE unsigned short __ntohs (unsigned short x)
+  /*@unused@*/ W32_GCC_INLINE unsigned short __NtoHS (unsigned short x)
   {
     x = ((x & 0x00FF) << 8) | ((x & 0xFF00) >> 8);
     return (x);
   }
 
-  /*@unused@*/ W32_GCC_INLINE unsigned long __ntohl (unsigned long x)
+  /*@unused@*/ W32_GCC_INLINE unsigned long __NtoHL (unsigned long x)
   {
     x = ((x & 0x000000FF) << 24) |
         ((x & 0x0000FF00) <<  8) |
@@ -94,17 +94,17 @@ __BEGIN_DECLS
   }
 
 #elif defined(__POCC__) && 0 && !defined(_M_X64)    /* PellesC 32-bit */
-  #define intel(x)   __ntohl(x)
-  #define intel16(x) __ntohs(x)
+  #define intel(x)   __NtoHL(x)
+  #define intel16(x) __NtoHS(x)
 
-  __declspec(naked) static unsigned short __fastcall __ntohs (unsigned short x)   /* MSVC form */
+  __declspec(naked) static unsigned short __fastcall __NtoHS (unsigned short x)   /* MSVC form */
   {
     __asm xchg  cl, ch    /* 'x' is in ecx */
     __asm movzx eax, cx
     __asm ret
   }
 
-  __declspec(naked) static unsigned long __fastcall __ntohl (unsigned long x)  /* MSVC form */
+  __declspec(naked) static unsigned long __fastcall __NtoHL (unsigned long x)  /* MSVC form */
   {
     __asm xchg cl, ch    /* 'x' is in ecx */
     __asm ror  ecx, 16
@@ -118,21 +118,21 @@ __BEGIN_DECLS
       !defined(_M_X64) &&          /* Not for 64-bit compilers */ \
       !defined(__clang__)          /* Disable this for Clang until problem spotted */
 
-  #define intel(x)   __ntohl(x)
-  #define intel16(x) __ntohs(x)
+  #define intel(x)   __NtoHL(x)
+  #define intel16(x) __NtoHS(x)
 
   /*
    * Clang has problems with __fastcall, so use __cdecl.
    */
   #if defined(__clang__)
-    __declspec(naked) static unsigned short __cdecl __ntohs (unsigned short x)
+    __declspec(naked) static unsigned short __cdecl __NtoHS (unsigned short x)
     {
       __asm mov  ax, [esp+4]
       __asm xchg al, ah
       __asm ret
     }
 
-    __declspec(naked) static unsigned long __cdecl __ntohl (unsigned long x)
+    __declspec(naked) static unsigned long __cdecl __NtoHL (unsigned long x)
     {
       __asm mov  eax, [esp+4]
       __asm xchg al, ah
@@ -142,14 +142,14 @@ __BEGIN_DECLS
     }
 
   #else
-    __declspec(naked) static unsigned short __fastcall __ntohs (unsigned short x)
+    __declspec(naked) static unsigned short __fastcall __NtoHS (unsigned short x)
     {
       __asm xchg  cl, ch    /* 'x' is in ecx */
       __asm movzx eax, cx
       __asm ret
     }
 
-    __declspec(naked) static unsigned long __fastcall __ntohl (unsigned long x)
+    __declspec(naked) static unsigned long __fastcall __NtoHL (unsigned long x)
     {
       __asm xchg cl, ch    /* 'x' is in ecx */
       __asm ror  ecx, 16
@@ -160,36 +160,36 @@ __BEGIN_DECLS
   #endif
 
 #elif defined(__WATCOMC__) && defined(__FLAT__)  /* Watcom 32-bit */
-  #define intel(x)   __ntohl(x)
-  #define intel16(x) __ntohs(x)
+  #define intel(x)   __NtoHL(x)
+  #define intel16(x) __NtoHS(x)
 
-  extern unsigned long __ntohl (unsigned long x);
-  #pragma aux  __ntohl =       \
+  extern unsigned long __NtoHL (unsigned long x);
+  #pragma aux  __NtoHL =       \
               "xchg al, ah"    \
               "ror  eax, 16"   \
               "xchg al, ah"    \
               __parm   [__eax] \
               __modify [__eax];
 
-  extern unsigned short __ntohs (unsigned short x);
-  #pragma aux __ntohs =       \
+  extern unsigned short __NtoHS (unsigned short x);
+  #pragma aux __NtoHS =       \
               "xchg al, ah"   \
               __parm   [__ax] \
               __modify [__ax];
 
 #elif defined(__WATCOMC__) && !defined(__FLAT__)  /* Watcom 16-bit */
-  #define intel(x)   __ntohl(x)
-  #define intel16(x) __ntohs(x)
+  #define intel(x)   __NtoHL(x)
+  #define intel16(x) __NtoHS(x)
 
-  extern unsigned long __ntohl (unsigned long x);
-  #pragma aux  __ntohl =           \
+  extern unsigned long __NtoHL (unsigned long x);
+  #pragma aux  __NtoHL =           \
               "xchg al, dh"        \
               "xchg ah, dl"        \
               __parm   [__dx __ax] \
               __modify [__dx __ax];
 
-  extern unsigned short __ntohs (unsigned short x);
-  #pragma aux __ntohs =        \
+  extern unsigned short __NtoHS (unsigned short x);
+  #pragma aux __NtoHS =        \
               "xchg al, ah"    \
               __parm   [__ax]  \
               __modify [__ax];
@@ -220,24 +220,24 @@ __BEGIN_DECLS
     #include <dos.h>
   #endif
 
-  #define intel(x)    __ntohl(x)
-  #define intel16(x)  __ntohs(x)
+  #define intel(x)    __NtoHL(x)
+  #define intel16(x)  __NtoHS(x)
 
-  #define __ntohs(x)  (_AX = x, \
+  #define __NtoHS(x)  (_AX = x, \
                        __emit__(0x86,0xC4),      /* xchg ah, al */ \
                        _AX)
 
-  #define __ntohl(x)  (_EAX = x, \
+  #define __NtoHL(x)  (_EAX = x, \
                        __emit__(0x86,0xC4),      /* xchg ah, al  */ \
                        __emit__(0xC1,0xC8,0x10), /* ror  eax, 16 */ \
                        __emit__(0x86,0xC4),      /* xchg ah, al  */ \
                        _EAX)
 
 #elif defined(__CCDL__) && defined(__386__)       /* LadSoft 386 */
-  #define intel(x)    __ntohl(x)
-  #define intel16(x)  __ntohs(x)
+  #define intel(x)    __NtoHL(x)
+  #define intel16(x)  __NtoHS(x)
 
-  static unsigned long __ntohl (unsigned long x)
+  static unsigned long __NtoHL (unsigned long x)
   {
     asm { mov  eax, [x]
           xchg al, ah
@@ -247,7 +247,7 @@ __BEGIN_DECLS
     return (_EAX);
   }
 
-  static unsigned short __ntohs (unsigned short x)
+  static unsigned short __NtoHS (unsigned short x)
   {
     asm { mov  ax, [x]
           xchg al, ah
@@ -258,16 +258,16 @@ __BEGIN_DECLS
   /* This crashes mysteriously if we use _bswap()
    */
 #elif defined(__LCC__) && 0              /* LCC-Win32 */
-  #define intel(x)    __ntohl(x)
-  #define intel16(x)  __ntohs(x)
+  #define intel(x)    __NtoHL(x)
+  #define intel16(x)  __NtoHS(x)
   #if 0
     #include <intrinsics.h>
     #define W32_LCC_INTRINSICS_INCLUDED  /* header guard is missing */
-    #define __ntohl(x)   (unsigned long) _bswap(x)
-    #define __ntohs(x)  ((unsigned short) (_bswap(x) >> 16))
+    #define __NtoHL(x)   (unsigned long) _bswap(x)
+    #define __NtoHS(x)  ((unsigned short) (_bswap(x) >> 16))
 
   #else
-    unsigned long inline __declspec(naked) __ntohl (unsigned long x)
+    unsigned long inline __declspec(naked) __NtoHL (unsigned long x)
     {
       _asm ("movl (%esp), %eax");
       _asm ("xchg %ah, %al");
@@ -275,7 +275,7 @@ __BEGIN_DECLS
       _asm ("xchg %ah, %al");
     }
 
-    unsigned short inline __declspec(naked) __ntohs (unsigned short x)
+    unsigned short inline __declspec(naked) __NtoHS (unsigned short x)
     {
       _asm ("movs (%esp), %ax");
       _asm ("xchg %ah, %al");
