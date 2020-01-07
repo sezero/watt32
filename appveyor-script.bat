@@ -141,15 +141,18 @@ set PROGS_VC=ping.exe finger.exe tcpinfo.exe host.exe htget.exe ^
 
 cd bin
 if %BUILDER%. == djgpp. (
+  echo Building PROGS_DJ=%PROGS_DJ%
   make -f djgpp_win.mak DPMI_STUB=0 %PROGS_DJ%
   exit /b
 )
 
 if %BUILDER%. == VisualC. (
-  nmake -f visualc.mak %PROGS_VC%
+  echo Building PROGS_VC=%PROGS_VC%
+  nmake -nologo -f visualc.mak %PROGS_VC%
   exit /b
 )
 
+echo No 'build_bin' for 'BUILDER=%BUILDER%' yet.
 exit /b
 
 ::
@@ -158,6 +161,4 @@ exit /b
 :test
 cd src\tests
 echo Test will come here later
-echo -- CD: ------------------------------------------------------------------
-echo %CD%
 exit /b
