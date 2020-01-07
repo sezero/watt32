@@ -19,10 +19,10 @@ install:
   #
   # Set the PATH for 'make' + 'sh' used by 'MinGW', 'djgpp', 'CygWin' etc.
   #
-  set PATH=c:\msys64\usr\bin
+  - cmd: set PATH=c:\msys64\usr\bin
 
   #
-  # Set compiler environment for MSVC first.
+  # Set compiler environment for MSVC/clang-cl first.
   #
   - cmd: if %BUILDER%. == VisualC.         call "c:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\vcvarsall.bat" %CPU%
   - cmd: if %BUILDER%. == clang.           call "c:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\vcvarsall.bat" %CPU%
