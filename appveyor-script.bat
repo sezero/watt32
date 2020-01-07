@@ -8,7 +8,8 @@ prompt $P$G
 :: locally using 'cmd'.
 ::
 if %APPVEYOR_PROJECT_NAME%. == . (
-  :: if %BUILDER%. == MinGW. echo on
+  echo on
+  set BUILDER=VisualC
   set APPVEYOR_PROJECT_NAME=Watt-32
   set APPVEYOR_BUILD_FOLDER_UNIX=e:/net/watt
   set APPVEYOR_LOCAL=1
@@ -23,23 +24,10 @@ if %APPVEYOR_PROJECT_NAME%. == . (
 :: MinGW: Add PATH to 'gcc' and stuff for 'util/pkg-conf.mak'.
 ::
 if %BUILDER%. == MinGW. (
-  if %CPU%. == x86. (set PATH=c:\msys64\MinGW32\bin;%PATH%) else (set PATH=c:\msys64\MinGW64\bin;%PATH%)
   md lib\pkgconfig 2> NUL
   set MINGW32=%APPVEYOR_BUILD_FOLDER_UNIX%
   set MINGW64=%APPVEYOR_BUILD_FOLDER_UNIX%
 )
-
-::
-:: Set the PATH for 'make' + 'sh' and the 'vcvarsall.bat' mess.
-::
-:: Note: The parser in the 'cmd' crap doesn't parse things like:
-::       if x (
-::         set PATH="c:\Program Files (x86)\Microsoft.."'
-::
-::       since it think the ')' in the 'set PATH' statement is the end of the 'if (' block!
-::       Even when encloded in '".."'. So put that outside an 'if x (' block.
-::
-set PATH=c:\msys64\usr\bin;c:\Program Files (x86)\Microsoft Visual Studio 14.0\VC;%PATH%
 
 ::
 :: Set the dir for djgpp cross-environment.
@@ -86,8 +74,7 @@ if %USES_CL%. == 1. (
 )
 
 if %BUILDER%-%CPU%. == VisualC-x86. (
-  call vcvarsall.bat x86
-  call configur.bat  visualc
+  call configur.bat visualc
   set CL=-D_WIN32_WINNT=0x0601 %CL%
   echo Building release for x86
   nmake -nologo -f visualc-release.mak
@@ -95,8 +82,7 @@ if %BUILDER%-%CPU%. == VisualC-x86. (
 )
 
 if %BUILDER%-%CPU%. == VisualC-x64. (
-  call vcvarsall.bat x64
-  call configur.bat  visualc
+  call configur.bat visualc
   set CL=-D_WIN32_WINNT=0x0601 %CL%
   echo Building release for x64
   nmake -nologo -f visualc-release_64.mak
@@ -104,16 +90,14 @@ if %BUILDER%-%CPU%. == VisualC-x64. (
 )
 
 if %BUILDER%-%CPU%. == clang-x86. (
-  call vcvarsall.bat x86
-  call configur.bat  clang
+  call configur.bat clang
   echo Building for x86
   make -f clang32.mak
   exit /b
 )
 
 if %BUILDER%-%CPU%. == clang-x64. (
-  call vcvarsall.bat x64
-  call configur.bat  clang
+  call configur.bat clang
   echo Building for x64
   make -f clang64.mak
   exit /b
@@ -134,17 +118,20 @@ if %BUILDER%-%CPU%. == MinGW-x64. (
 )
 
 if %BUILDER%. == djgpp. (
-  echo Downloading Andrew Wu's DJGPP cross compiler
-  curl -O -# http://www.watt-32.net/CI/dj-win.zip
-  7z x -y -o%DJGPP% dj-win.zip > NUL
-  rm -f dj-win.zip
-
+  if not exist %DJGPP%\bin\i586-pc-msdosdjgpp-gcc.exe (
+    echo Downloading Andrew Wu's DJGPP cross compiler
+    curl -O -# http://www.watt-32.net/CI/dj-win.zip
+    7z x -y -o%DJGPP% dj-win.zip > NUL
+    rm -f dj-win.zip
+  )
   call configur.bat djgpp
   echo Building for djgpp
   make -f djgpp.mak
   exit /b
 )
-exit /b
+
+echo Illegal BUILDER / CPU (BUILDER=%BUILDER%, CPU=%CPU%) values!
+exit /b 1
 
 ::
 :: Build some example programs in './bin'

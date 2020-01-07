@@ -15,6 +15,20 @@ environment:
     - BUILDER: djgpp
       CPU:     x86
 
+install:
+  #
+  # Set the PATH for 'make' + 'sh' used by 'MinGW', 'djgpp', 'CygWin' etc.
+  #
+  set PATH=c:\msys64\usr\bin
+
+  #
+  # Set compiler environment for MSVC first.
+  #
+  - cmd: if %BUILDER%. == VisualC.         call "c:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\vcvarsall.bat" %CPU%
+  - cmd: if %BUILDER%. == clang.           call "c:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\vcvarsall.bat" %CPU%
+  - cmd: if %BUILDER%-%CPU%. == MinGW-x86. set PATH=c:\msys64\MinGW32\bin;c:\msys64\usr\bin;%PATH%
+  - cmd: if %BUILDER%-%CPU%. == MinGW-x64. set PATH=c:\msys64\MinGW64\bin;c:\msys64\usr\bin;%PATH%
+
 build_script:
     - cmd: appveyor-script.bat build_src
     - cmd: appveyor-script.bat build_bin
