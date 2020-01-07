@@ -90,6 +90,12 @@ if %BUILDER%. == clang. (
 )
 
 if %BUILDER%. == MinGW. (
+  echo ------- where date.exe --------------------
+  where date.exe
+  echo --------test date.exe ---------------------
+  date.exe  +%%d-%%B-%%Y
+  echo -------------------------------------------
+
   call configur.bat mingw64
   echo Building for %CPU%
   make -f MinGW64_%BITS%.mak
