@@ -145,7 +145,7 @@ if %BUILDER%. == djgpp. (
 )
 
 if %BUILDER%. == VisualC. (
-  nmake %1 -f visualc.mak %PROGS%
+  nmake -f visualc.mak %PROGS%
   exit /b
 )
 
