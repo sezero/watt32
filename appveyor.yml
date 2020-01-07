@@ -6,8 +6,8 @@ environment:
       CPU:     x64
 #   - BUILDER: clang
 #     CPU:     x86
-    - BUILDER: clang
-      CPU:     x64
+#   - BUILDER: clang
+#     CPU:     x64
     - BUILDER: MinGW
       CPU:     x86
 #   - BUILDER: MinGW
