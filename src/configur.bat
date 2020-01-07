@@ -184,7 +184,6 @@ goto next
 ::--------------------------------------------------------------------------
 :visualc
 ::
-echo off
 echo Generating Microsoft Visual-C (x86/x64) makefiles, directories, errnos and dependencies
 %MKMAKE% -o visualc-release.mak    -d build\visualc\32bit\release makefile.all VISUALC WIN32 RELEASE
 %MKMAKE% -o visualc-release_64.mak -d build\visualc\64bit\release makefile.all VISUALC WIN64 RELEASE
@@ -198,14 +197,8 @@ echo neterr.c:  build\visualc\syserr.c                            >> build\visua
 ..\util\vc_err -s > build\visualc\syserr.c
 ..\util\vc_err -e > ..\inc\sys\visualc.err
 
-::
-:: If %CL% does not contain a '_WIN32_WINNT' already, add a '-D_WIN32_WINNT=0x0601' to %CL%.
-::
-echo %CL% | %SystemRoot%\system32\find.exe "_WIN32_WINNT" > NUL
-if errorlevel 1 (
-  echo Setting "%%CL=_WIN32_WINNT=0x0601". Change to suite your OS or SDK.
-  set CL=%CL% -D_WIN32_WINNT=0x0601
-)
+echo Setting "%%CL=_WIN32_WINNT=0x0601". Change to suite your OS or SDK.
+set CL=%CL% -D_WIN32_WINNT=0x0601
 
 echo Run nmake to make target(s):
 echo   E.g. "nmake -f visualc-release.mak"
