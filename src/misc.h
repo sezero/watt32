@@ -68,6 +68,7 @@ extern "C" {
    * More CygWin quirks. No <tchar.h>
    */
   #include <string.h>
+  #include <strings.h>
   #include <wchar.h>
 
   #if defined(UNICODE) || defined(_UNICODE)
