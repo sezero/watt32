@@ -60,6 +60,7 @@
    */
 #elif defined(W32_IS_MINGW64) || defined(__MINGW64__)
   #undef EDEADLOCK
+  #undef ETXTBSY     /* gcc 7.2+ defines this */
   #include <sys/mingw64.err>
 
 #elif defined(__MINGW32__)    /* Original from mingw.org */
