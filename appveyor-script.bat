@@ -137,8 +137,17 @@ exit /b 1
 :: Build some example programs in './bin'
 ::
 :build_bin
+set PROGS=ping.exe finger.exe tcpinfo.exe ident.exe htget.exe bping.exe tcpinfo.exe tracert.exe country.exe
 cd bin
-echo build_bin will come later
+if %BUILDER%. == djgpp. (
+  make -f djgpp_win.mak DPMI_STUB=0 %PROGS%
+  exit /b
+)
+
+if %BUILDER%. == VisualC. (
+  nmake %1 -f visualc.mak %PROGS%
+  exit /b
+)
 
 echo -- CD: ------------------------------------------------------------------
 echo %CD%
