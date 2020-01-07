@@ -656,7 +656,7 @@ CFLAGS = $(CFLAGS) -MD -Ox -GS- # -Gr
 @endif
 
 @ifdef WIN64
-64      = _64
+BITS    = 64
 LDFLAGS = -machine:x64
 AS      = ml64
 AFLAGS  = -c -nologo -DDOSX -DWIN64 -Zi -Fl
@@ -674,7 +674,7 @@ OBJDIR  = build\visualc\64bit\release
 #
 # WIN32
 #
-64      =
+BITS    = 32
 LDFLAGS = -machine:x86
 AS      = ml
 AFLAGS  = -c -nologo -DDOSX -Zi -Fl -coff
@@ -682,12 +682,12 @@ AFLAGS  = -c -nologo -DDOSX -Zi -Fl -coff
 @ifdef DEBUG
 TARGETS = ..\lib\x86\wattcpvc_d.lib ..\lib\x86\wattcpvc_imp_d.lib ..\bin\watt-32d.dll
 OBJDIR  = build\visualc\32bit\debug
-MAKEFIL = visualc-debug$(64).mak
+MAKEFIL = visualc-debug_$(BITS).mak
 
 @else
 TARGETS = ..\lib\x86\wattcpvc.lib ..\lib\x86\wattcpvc_imp.lib ..\bin\watt-32.dll
 OBJDIR  = build\visualc\32bit\release
-MAKEFIL = visualc-release$(64).mak
+MAKEFIL = visualc-release_$(BITS).mak
 @endif
 
 @endif
@@ -1617,7 +1617,7 @@ build\Borland\Win32\watt-32.res: watt-32.rc
 	$(BRC32) -DDEBUG=0 -D__BORLANDC__ -r -i..\inc -fo build\Borland\Win32\watt-32.res watt-32.rc
 
 build/clang/32bit/watt-32.res: watt-32.rc
-	rc -nologo -DRC_DATE="$(DATE)" -DDEBUG=0 -D__clang__ -DBITS=32 -Fo build/clang/32bit/watt-32.res  watt-32.rc
+	rc -nologo -DRC_DATE="$(DATE)" -DDEBUG=0 -D__clang__ -DBITS=32 -Fo build/clang/32bit/watt-32.res watt-32.rc
 
 build/clang/64bit/watt-32.res: watt-32.rc
 	rc -nologo -DRC_DATE="$(DATE)" -DDEBUG=0 -D__clang__ -DBITS=64 -Fo build/clang/64bit/watt-32.res watt-32.rc
@@ -1632,10 +1632,10 @@ build/MinGW32/watt-32.res: watt-32.rc
 	windres -DRC_DATE="$(DATE)" --target=pe-i386 -D__MINGW32__ -DDEBUG=0 -O coff -o $@ -i watt-32.rc
 
 build/MinGW64/32bit/watt-32.res: watt-32.rc
-	windres -DRC_DATE="$(DATE)" --target=pe-i386 -D__MINGW64__ -DDEBUG=0 -O coff -o $@ -i watt-32.rc
+	windres -DRC_DATE="$(DATE)" -DBITS=32 --target=pe-i386 -D__MINGW64__ -DDEBUG=0 -O coff -o $@ -i watt-32.rc
 
 build/MinGW64/64bit/watt-32.res: watt-32.rc
-	windres -DRC_DATE="$(DATE)" -DBITS=$(BITS) --target=pe-x86-64 -D__MINGW64__ -DDEBUG=0 -O coff -o $@ -i watt-32.rc
+	windres -DRC_DATE="$(DATE)" -DBITS=64 --target=pe-x86-64 -D__MINGW64__ -DDEBUG=0 -O coff -o $@ -i watt-32.rc
 
 build/CygWin/32bit/watt-32.res: watt-32.rc
 	windres -DRC_DATE="$(DATE)" -DBITS=32 -I../inc -DDEBUG=0 -D__CYGWIN__ -O coff -o $@ -i watt-32.rc

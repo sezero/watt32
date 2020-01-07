@@ -347,7 +347,7 @@ Follow these steps closely:
    NOTE: "configur.bat visualc" generates makefiles for both release and debug
          modes (cl option `-MD' and `-MDd'). Issue this command for a release
          version:
-           C:\NET\WATT\SRC\> nmake -f visualc-release.mak
+           C:\NET\WATT\SRC\> nmake -f visualc-release_32.mak
 
 
 8. Building the source distribution WATT32S*.ZIP requires these tools:

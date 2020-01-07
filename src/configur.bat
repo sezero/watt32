@@ -185,9 +185,9 @@ goto next
 :visualc
 ::
 echo Generating Microsoft Visual-C (x86/x64) makefiles, directories, errnos and dependencies
-%MKMAKE% -o visualc-release.mak    -d build\visualc\32bit\release makefile.all VISUALC WIN32 RELEASE
+%MKMAKE% -o visualc-release_32.mak -d build\visualc\32bit\release makefile.all VISUALC WIN32 RELEASE
 %MKMAKE% -o visualc-release_64.mak -d build\visualc\64bit\release makefile.all VISUALC WIN64 RELEASE
-%MKMAKE% -o visualc-debug.mak      -d build\visualc\32bit\debug   makefile.all VISUALC WIN32 DEBUG
+%MKMAKE% -o visualc-debug_32.mak   -d build\visualc\32bit\debug   makefile.all VISUALC WIN32 DEBUG
 %MKMAKE% -o visualc-debug_64.mak   -d build\visualc\64bit\debug   makefile.all VISUALC WIN64 DEBUG
 
 %MKDEP%  -s.obj -p$(OBJDIR)\ *.c *.h                               > build\visualc\watt32.dep
@@ -201,7 +201,7 @@ echo Setting "%%CL=_WIN32_WINNT=0x0601". Change to suite your OS or SDK.
 set CL=%CL% -D_WIN32_WINNT=0x0601
 
 echo Run nmake to make target(s):
-echo   E.g. "nmake -f visualc-release.mak"
+echo   E.g. "nmake -f visualc-release_32.mak"
 echo     or "nmake -f visualc-release_64.mak"
 goto next
 
@@ -355,8 +355,8 @@ del bcc_*.mak
 del highc.mak
 del dmars_*.mak
 del ladsoft.mak
-del visualc-release.mak
-del visualc-debug.mak
+del visualc-release_32.mak
+del visualc-debug_32.mak
 del visualc-release_64.mak
 del visualc-debug_64.mak
 del MinGW32.mak
