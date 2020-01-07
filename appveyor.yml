@@ -23,9 +23,9 @@ matrix:
 
 install:
   #
-  # Set the PATH for 'make' + 'sh' used by 'MinGW', 'djgpp', 'CygWin' etc.
+  # Prepend the PATH for 'make' + 'sh' used by 'MinGW', 'djgpp', 'CygWin' etc.
   #
-  - cmd: set PATH=%PATH%;c:\msys64\usr\bin
+  - cmd: set PATH=c:\msys64\usr\bin;%PATH%
 
   #
   # Set compiler environment for MSVC/clang-cl first.
