@@ -288,8 +288,8 @@ static int iface_ioctrl (Socket *socket, long cmd, char *argp)
              _pktdevclass == PDCLASS_ETHER  ||
              _pktdevclass == PDCLASS_ARCNET ||
              _pktdevclass == PDCLASS_FDDI)
-              memcpy (ifr->ifr_addr.sa_data, _eth_addr, sizeof(_eth_addr));
-         else memset (ifr->ifr_addr.sa_data, 0, sizeof(ifr->ifr_addr.sa_data));
+              memcpy (&ifr->ifr_addr.sa_data[0], &_eth_addr, sizeof(_eth_addr));
+         else memset (&ifr->ifr_addr.sa_data[0], '\0', sizeof(ifr->ifr_addr.sa_data));
          break;
 
     case SIOCGIFMTU:                 /* get interface MTU */
@@ -453,17 +453,17 @@ static int iface_ioctrl (Socket *socket, long cmd, char *argp)
          {
            case PDCLASS_ETHER:
                 ifr->ifr_hwaddr.sa_family = ARPHRD_ETHER;
-                memcpy (ifr->ifr_hwaddr.sa_data, _eth_addr,
+                memcpy (&ifr->ifr_hwaddr.sa_data[0], &_eth_addr,
                         sizeof(ifr->ifr_hwaddr.sa_data));
                 break;
            case PDCLASS_TOKEN:
                 ifr->ifr_hwaddr.sa_family = ARPHRD_TOKEN;
-                memcpy (ifr->ifr_hwaddr.sa_data, _eth_addr,
+                memcpy (&ifr->ifr_hwaddr.sa_data[0], &_eth_addr,
                         sizeof(ifr->ifr_hwaddr.sa_data));
                 break;
            case PDCLASS_FDDI:
                 ifr->ifr_hwaddr.sa_family = ARPHRD_FDDI;
-                memcpy (ifr->ifr_hwaddr.sa_data, _eth_addr,
+                memcpy (&ifr->ifr_hwaddr.sa_data[0], &_eth_addr,
                         sizeof(ifr->ifr_hwaddr.sa_data));
                 break;
            case PDCLASS_ARCNET:
