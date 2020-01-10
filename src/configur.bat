@@ -25,6 +25,7 @@ if not exist %WATT_ROOT%\src\makefile.all goto not_set
 ::
 set     MKMAKE=..\util\mkmake.exe
 set      MKDEP=..\util\mkdep.exe
+set     HC_ERR=..\util\hc_err.exe
 set     WC_ERR=..\util\wc_err.exe
 set    BCC_ERR=..\util\bcc_err.exe
 set  W32_BIN2C=..\util\bin2c.exe
@@ -44,6 +45,7 @@ if %OS%. ==. goto is_dos
 ::
 set     MKMAKE=..\util\win32\mkmake.exe
 set      MKDEP=..\util\win32\mkdep.exe
+set     HC_ERR=..\util\win32\hc_err.exe
 set     WC_ERR=..\util\win32\wc_err.exe
 set    BCC_ERR=..\util\win32\bcc_err.exe
 set  W32_BIN2C=..\util\win32\bin2c.exe
@@ -125,8 +127,8 @@ echo Generating Metaware High-C makefile, directory, errnos and dependencies
 %MKDEP%  -s.obj -p$(OBJDIR)/ *.c *.h > build\highc\watt32.dep
 echo neterr.c: build\highc/syserr.c >> build\highc\watt32.dep
 
-..\util\hc_err -s > build\highc\syserr.c
-..\util\hc_err -e > ..\inc\sys\highc.err
+%HC_ERR% -s > build\highc\syserr.c
+%HC_ERR% -e > ..\inc\sys\highc.err
 
 echo Run GNU make to make target:
 echo   "make -f highc.mak"
@@ -303,11 +305,6 @@ goto next
 ::--------------------------------------------------------------------------
 :clang
 ::
-if %OS%. ==. (
-  echo You have to configure clang-cl while on Windows!
-  exit /b 1
-)
-
 echo Generating CLang-Win32 makefile, directory, errnos and dependencies
 %MKMAKE% -o clang32.mak -d build\clang\32bit makefile.all CLANG WIN32
 %MKMAKE% -o clang64.mak -d build\clang\64bit makefile.all CLANG WIN64
@@ -317,14 +314,8 @@ echo neterr.c: build\clang\syserr.c >> build\clang\watt32.dep
 ..\util\win32\clang_err -s > build\clang\syserr.c
 ..\util\win32\clang_err -e > ..\inc\sys\clang.err
 
-::
-:: If %CL% does not contain a '_WIN32_WINNT' already, add a '-D_WIN32_WINNT=0x0601' to %CL%.
-::
-echo %CL% | %SystemRoot%\system32\find.exe "_WIN32_WINNT" > NUL
-if errorlevel 1 (
-  echo Setting "%%CL=_WIN32_WINNT=0x0601". Change to suite your OS or SDK.
-  set CL=%CL% -D_WIN32_WINNT=0x0601
-)
+echo Setting "%%CL=_WIN32_WINNT=0x0601". Change to suite your OS or SDK.
+set CL=%CL% -D_WIN32_WINNT=0x0601
 
 echo Run GNU make to make target(s):
 echo   E.g. "make -f clang32.mak"
