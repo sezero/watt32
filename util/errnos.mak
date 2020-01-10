@@ -18,17 +18,18 @@ PROGRAMS = bcc_err.exe  \
            ms32_err.exe \
            hc_err.exe   \
            dj_err.exe   \
-           lcc_err.exe  \
-           win32/clang_err.exe
+           lcc_err.exe
 
 #
 # These are the Windows version for some of the above;
 # I.e. when building under Windows (%OS%=Windows_NT), one
 # of these MUST be used instead of the above.
 #
-WIN_PROGRAMS = win32/wc_err.exe  \
-               win32/bcc_err.exe \
-               win32/dj_err.exe
+WIN_PROGRAMS = win32/clang_err.exe \
+               win32/wc_err.exe    \
+               win32/bcc_err.exe   \
+               win32/dj_err.exe    \
+             # win32/hc_err.exe
 
 all:   $(PROGRAMS) $(WIN_PROGRAMS)
 win32: $(WIN_PROGRAMS)
@@ -49,7 +50,15 @@ win32/wc_err.exe: errnos.c
 	wcl386 -I..\inc -mf -zq -fe=win32/wc_err.exe -fr=nul errnos.c
 
 hc_err.exe: errnos.c
-	hc386 -I..\inc -Hldopt=-nomap -Hnocopyr -Hpragma=Offwarn(491) -o hc_err.exe errnos.c
+	hc386 -I..\inc -Hldopt=-nomap -Hnocopyr -o hc_err.exe errnos.c
+
+#
+# Does not work
+#
+win32/hc_err.exe: errnos.c
+	hc386 -I..\inc -Hldopt=-nomap -Hnocopyr -nostub -o win32/hc_err.exp errnos.c
+	$(MWBIND) mwsup.exe win32/hc_err.exp win32/hc_err.exe
+	rm -f win32/hc_err.obj
 
 dm_err.exe: errnos.c
 	dmc -ml -g -I..\inc -odm_err.exe errnos.c
@@ -101,5 +110,5 @@ clean:
 	@del bcc_err.exe win32\clang_err.exe wc_err.exe hc_err.exe \
          tcc_err.exe dj_err.exe mw_err.exe mw64_err.exe ls_err.exe \
          lcc.exe po_err.exe vc_err.exe win32\wc_err.exe \
-         win32\bcc_err.exe errnos.obj
+         win32\bcc_err.exe win32\hc_err.exe errnos.obj
 
