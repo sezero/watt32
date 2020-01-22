@@ -1,9 +1,9 @@
-@ifndef CYGWIN CYGWIN64 DJGPP HIGHC MINGW32 MINGW64 VISUALC WATCOM BORLAND
+@ifndef CYGWIN CYGWIN64 DJGPP HIGHC MINGW32 MINGW64 VISUALC WATCOM BORLAND CLANG
 
   This is a master makefile that will generate all ./test GNU-makefiles.
   Currently supported compilers include:
 
-     CYGWIN, CYGWIN64, DJGPP, HIGHC, MINGW32, MINGW64, VISUALC, WATCOM, BORLAND
+     CYGWIN, CYGWIN64, DJGPP, HIGHC, MINGW32, MINGW64, VISUALC, WATCOM, BORLAND, CLANG
 
   Supported memory models and targets include:
 
@@ -97,31 +97,31 @@ BIN_PREFIX =
   PROGRAMS += fsext.$(EXE)
 @endif
 
-VPATH = ..
+VPATH  = ..
+CFLAGS = -DTEST_PROG -DWATT32 -DWATT32_STATIC -I.. -I../../inc
 
 @ifdef IS_GCC
   CC      = $(BIN_PREFIX)gcc
-  CFLAGS  = -O2 -g -W -Wall -Wno-strict-aliasing
+  CFLAGS += -O2 -g -W -Wall -Wno-strict-aliasing
   LDFLAGS = -Wl,--print-map,--sort-common
 
-  define COMP_AND_LINK
+  define compile_and_link
     $(CC) $(CFLAGS) $(LDFLAGS) -o $(1) $(2) $(WATT_LIB) > $(1:.exe=.map)
     echo
   endef
-@endif
 
-LIB_DIR = ../../lib
+@elifdef VISUALC CLANG
+  CFLAGS += -nologo -W3 -MDd           \
+            -D_CRT_SECURE_NO_WARNINGS  \
+            -D_CRT_NONSTDC_NO_WARNINGS \
+            -D_CRT_OBSOLETE_NO_WARNINGS
 
-CFLAGS += -DTEST_PROG -DWATT32 -DWATT32_STATIC -I.. -I../../inc
-
-@ifdef VISUALC
-  CFLAGS += -nologo
-  LDFLAGS = -nologo
+  LDFLAGS = -nologo -map -debug -debugtype:cv -verbose -incremental:no
 @endif
 
 default: all
 
-@ifdef MINGW64 VISUALC CYGWIN64
+@ifdef MINGW64 VISUALC CLANG CYGWIN64
   @ifdef WIN32
     #
     # WIN32 -> 32-bit programs.
@@ -129,7 +129,7 @@ default: all
     LIB_DIR = ../../lib/x86
     @ifdef MINGW64
       CFLAGS += -m32
-    @elifdef VISUALC
+    @elifdef VISUALC CLANG
       LDFLAGS += -machine:x86
     @endif
 
@@ -140,10 +140,12 @@ default: all
     LIB_DIR = ../../lib/x64
     @ifdef MINGW64 CYGWIN64
       CFLAGS += -m64
-    @elifdef VISUALC
+    @elifdef VISUALC CLANG
       LDFLAGS += -machine:x64
     @endif
   @endif
+@else
+  LIB_DIR = ../../lib
 @endif
 
 @ifdef MINGW32
@@ -163,7 +165,17 @@ default: all
   WATT_LIB = $(LIB_DIR)/wattcphf.lib
 
 @elifdef VISUALC
-  WATT_LIB = $(LIB_DIR)/wattcpvc_d.lib
+  CC = cl
+  WATT_LIB = $(LIB_DIR)/wattcpvc.lib
+
+@elifdef CLANG
+  #
+  # In case '%CL%' is set, it may confuse 'clang-cl'. Unset it.
+  #
+  export CL=
+
+  CC = clang-cl
+  WATT_LIB = $(LIB_DIR)/wattcp_clang.lib
 
 @elifdef WATCOM
   WATT_LIB = $(LIB_DIR)/wattcpwc.lib
@@ -181,18 +193,12 @@ default: all
   CC      = gcc
   CFLAGS += -static-libgcc
 
-@elifdef VISUALC
-  CC      = cl
-  CFLAGS += -Zi -W3 -MDd -Ot -EHsc -RTCc -RTCs -RTCu -GF
-
-  LDFLAGS += -map -debug -debugtype:cv -verbose -incremental:no
-  EX_LIBS  = user32.lib
-
-  define COMP_AND_LINK
-    $(CC) $(CFLAGS) -Fe./$(strip $(1)) $(2) -link $(LDFLAGS) $(WATT_LIB) user32.lib advapi32.lib > link.tmp
+@elifdef VISUALC CLANG
+  define compile_and_link
+    $(CC) -c $(CFLAGS) $(2) -Fo.\\
+    link -out:$(strip $(1)) $(LDFLAGS) $(notdir $(2:.c=.obj)) $(WATT_LIB) user32.lib advapi32.lib > link.tmp
     cat link.tmp >> $(1:.exe=.map)
-    rm -f link.tmp $(1:.exe=.obj) $(1:.exe=.lib) $(1:.exe=.exp)
-    # @echo
+    rm -f link.tmp $(1:.exe=.obj) $(1:.exe=.lib) $(1:.exe=.exp) ; echo
   endef
 
 @elifdef HIGHC
@@ -227,7 +233,7 @@ default: all
   LDFLAGS += -mapwidth 132
   LDFLAGS += -pack                       # pack BSS segment
 
-  define COMP_AND_LINK
+  define compile_and_link
     echo '$(CFLAGS)' > highc.arg
     echo '$(LDFLAGS)' > 386link.arg
     $(CC) -c @highc.arg -o $(1:.c=.obj) $(1)
@@ -278,7 +284,7 @@ default: all
     $(error Unknown BORLAND model. Currently only 'FLAT' and 'WIN32'.)
   @endif
 
-  define COMP_AND_LINK
+  define compile_and_link
     $(CC) -q -v4 -y $(CFLAGS) -e$(strip $(1)) $(2) -v -ls -q -r -L $(WATT_LIB)
     rm -f $(1:.exe=.tds)
   endef
@@ -289,25 +295,18 @@ default: all
 all: $(PROGRAMS)
 	@echo 'All done'
 
-# @ifdef IS_GCC
-#   define COMP_AND_LINK
-#     $(CC) $(CFLAGS) $(LDFLAGS) -o $(1) $(2) $(WATT_LIB) > $(1:.exe=.map)
-#     @echo
-#   endef
-# @endif
-
 fingerd.$(EXE): ../listen.c $(WATT_LIB)
-	$(call COMP_AND_LINK, $@, $<)
+	$(call compile_and_link, $@, $<)
 
 wecho.$(EXE): ../echo.c $(WATT_LIB)
-	$(call COMP_AND_LINK, $@, $<)
+	$(call compile_and_link, $@, $<)
 
 %.$(EXE): %.c $(WATT_LIB)
-	$(call COMP_AND_LINK, $@, $<)
+	$(call compile_and_link, $@, $<)
 
 clean realclean vclean:
 	rm -f $(PROGRAMS) $(PROGRAMS:.$(EXE)=.map)
-@ifdef VISUALC
+@ifdef VISUALC CLANG
 	rm -f $(PROGRAMS:.$(EXE)=.pdb) vc1*.pdb
 @endif
 	@echo 'Cleaning done.'

@@ -14,6 +14,7 @@ if %1.==cygwin64. goto cygwin64
 if %1.==djgpp.    goto djgpp
 if %1.==highc.    goto highc
 if %1.==visualc.  goto visualc
+if %1.==clang.    goto clang
 if %1.==watcom.   goto watcom
 if %1.==borland.  goto borland
 if %1.==all.      goto all
@@ -101,6 +102,20 @@ echo   "make -f visualc_64.mak"
 goto next
 
 ::--------------------------------------------------------------------------
+:clang
+::
+echo off
+echo Generating clang-cl (x86/x64) makefiles
+%MKMAKE% -o clang_32.mak makefile.all CLANG WIN32
+%MKMAKE% -o clang_64.mak makefile.all CLANG WIN64
+
+echo Run GNU make to make target(s):
+echo   "make -f clang_32.mak"
+echo   "make -f clang_64.mak"
+echo Depending on which clang-cl.exe (32 or 64-bit) is first on your PATH, use the correct 'clang_32.mak' or 'clang_64.mak'.
+goto next
+
+::--------------------------------------------------------------------------
 :watcom
 ::
 echo Generating Watcom makefiles
@@ -139,7 +154,7 @@ echo Unknown option '%1'.
 :usage
 ::
 echo Configuring Watt-32 tcp/ip targets.
-echo Usage: %0 {watcom, borland, highc, djgpp, mingw32, mingw64, cygwin, cygwin64, visualc, all, clean}
+echo Usage: %0 {watcom, borland, highc, djgpp, mingw32, mingw64, cygwin, cygwin64, visualc, clang, all, clean}
 goto quit
 
 ::--------------------------------------------------------------------------
@@ -147,6 +162,8 @@ goto quit
 ::
 del djgpp.mak
 del highc.mak
+del clang_32.mak
+del clang_64.mak
 del visualc_32.mak
 del visualc_64.mak
 del MinGW64_32.mak
@@ -163,6 +180,7 @@ goto next
 ::
 call %0 watcom   %2
 call %0 djgpp    %2
+call %0 clang    %2
 call %0 visualc  %2
 call %0 mingw32  %2
 call %0 mingw64  %2
