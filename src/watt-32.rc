@@ -44,7 +44,7 @@ APPICON ICON "watt-32.ico"
 #define DBG      ""
 #define DBG_REL  ""
 
-#if defined(_MSC_VER)
+#if defined(_MSC_VER) || defined(__clang__)
   #if defined(DEBUG) && (DEBUG > 0)
     #undef  DBG
     #undef  DBG_REL

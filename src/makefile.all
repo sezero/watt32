@@ -876,17 +876,23 @@ $(OBJDIR)\cpumodel.obj: cpumodel.asm
 !error The only possible targets for CLANG are WIN32 or WIN64
 @endif
 
-CC      = clang-cl
-CFLAGS  = -nologo -MD -Ox -Zi -Zo -GS- -I. -I../inc \
-          -DWIN32 -DWATT32_BUILD                    \
-          -D_CRT_SECURE_NO_WARNINGS                 \
-          -D_CRT_NONSTDC_NO_WARNINGS                \
-          -D_CRT_OBSOLETE_NO_WARNINGS               \
-          -D_WIN32_WINNT=0x0601                     \
-          -D_WINSOCK_DEPRECATED_NO_WARNINGS         \
-          -DBUILD_WINDOWS
+CC     = clang-cl
+CFLAGS = -nologo -Zi -Zo -GS- -I. -I../inc \
+         -DWIN32 -DWATT32_BUILD            \
+         -D_CRT_SECURE_NO_WARNINGS         \
+         -D_CRT_NONSTDC_NO_WARNINGS        \
+         -D_CRT_OBSOLETE_NO_WARNINGS       \
+         -D_WIN32_WINNT=0x0601             \
+         -D_WINSOCK_DEPRECATED_NO_WARNINGS \
+         -DBUILD_WINDOWS
 
 CFLAGS += -Wno-\#pragma-messages
+
+@ifdef DEBUG
+  CFLAGS += -MDd
+@else
+  CFLAGS += -MD -Ox
+@endif
 
 #
 # Enable full Microsoft Visual C++ compatibility
@@ -919,23 +925,33 @@ EX_LIBS  = user32.lib advapi32.lib
 RESOURCE = $(OBJDIR)/watt-32.res
 
 @ifdef WIN64
-64      = _64
-AS      = ml64
-AFLAGS  = -c -nologo -DDOSX -DWIN64 -Zi -Fl
+64     = _64
+AS     = ml64
+AFLAGS = -c -nologo -DDOSX -DWIN64 -Zi -Fl
 
+@ifdef DEBUG
 TARGETS = ../lib/x64/wattcp_clang.lib ../lib/x64/wattcp_clang_imp.lib ../bin/watt-32_64.dll
-OBJDIR  = build/clang/64bit
-C_ARGS =  build/clang/clang64.arg
+OBJDIR  = build/clang/64bit/debug
+@else
+TARGETS = ../lib/x64/wattcp_clang.lib ../lib/x64/wattcp_clang_imp.lib ../bin/watt-32_64.dll
+OBJDIR  = build/clang/64bit/release
+@endif
+
 
 @else
-64      =
-AS      = ml
-AFLAGS  = -c -nologo -DDOSX -Zi -Fl -coff
+64     =
+AS     = ml
+AFLAGS = -c -nologo -DDOSX -Zi -Fl -coff
 
+@ifdef DEBUG
+TARGETS = ../lib/x86/wattcp_clang_d.lib ../lib/x86/wattcp_clang_imp_d.lib ../bin/watt-32d.dll
+OBJDIR  = build/clang/32bit/debug
+@else
 TARGETS = ../lib/x86/wattcp_clang.lib ../lib/x86/wattcp_clang_imp.lib ../bin/watt-32.dll
-OBJDIR  = build/clang/32bit
-C_ARGS =  build/clang/clang32.arg
+OBJDIR  = build/clang/32bit/release
 @endif
+
+C_ARGS = $(OBJDIR)/clang.arg
 
 OBJS := $(subst \,/,$(OBJS))
 
@@ -947,10 +963,19 @@ export CL=
 all: $(C_ARGS) $(OBJDIR)/cflags.h $(OBJDIR)/cflags_buf.h $(TARGETS)
 	@echo All done
 
+#
+# Static library rules:
+#
 ../lib/x86/wattcp_clang.lib: $(OBJS)
 	$(AR) -machine:x86 -out:$@ $(OBJS)
 
+../lib/x86/wattcp_clang_d.lib: $(OBJS)
+	$(AR) -machine:x86 -out:$@ $(OBJS)
+
 ../lib/x64/wattcp_clang.lib: $(OBJS)
+	$(AR) -machine:x64 -out:$@ $(OBJS)
+
+../lib/x64/wattcp_clang_d.lib: $(OBJS)
 	$(AR) -machine:x64 -out:$@ $(OBJS)
 
 $(C_ARGS): $(MAKEFILE_LIST)
@@ -971,6 +996,22 @@ $(C_ARGS): $(MAKEFILE_LIST)
 	link $(LDFLAGS) -machine:x64 -out:$@ -implib:../lib/x64/wattcp_clang_imp.lib $^ $(EX_LIBS) > link.tmp
 	cat link.tmp >> ../bin/watt-32_64.map
 	rm -f ../lib/x64/wattcp_clang_imp.exp
+
+#
+# Import lib + DLL (debug)
+#
+../lib/x86/wattcp_clang_imp_d.lib: ../bin/watt-32d.dll
+../lib/x64/wattcp_clang_imp_d.lib: ../bin/watt-32_64d.dll
+
+../bin/watt-32d.dll: $(OBJS) $(RESOURCE)
+	link $(LDFLAGS) -machine:x86 -out:$@ -implib:../lib/x86/wattcp_clang_imp_d.lib $^ $(EX_LIBS) > link.tmp
+	cat link.tmp >> ../bin/watt-32d.map
+	rm -f ../lib/x86/wattcp_clang_imp_d.exp
+
+../bin/watt-32_64d.dll: $(OBJS) $(RESOURCE)
+	link $(LDFLAGS) -machine:x64 -out:$@ -implib:../lib/x64/wattcp_clang_imp_d.lib $^ $(EX_LIBS) > link.tmp
+	cat link.tmp >> ../bin/watt-32_64d.map
+	rm -f ../lib/x64/wattcp_clang_imp_d.exp
 
 clean:
 	- rm -f $(TARGETS) $(C_ARGS) $(OBJDIR)/*.obj $(OBJDIR)/cflags.h $(OBJDIR)/cflags_buf.h $(RESOURCE) chksum0.lst cpumodel.lst
@@ -1616,11 +1657,17 @@ $(PKT_STUB): asmpkt.nas
 build\Borland\Win32\watt-32.res: watt-32.rc
 	$(BRC32) -DDEBUG=0 -D__BORLANDC__ -r -i..\inc -fo build\Borland\Win32\watt-32.res watt-32.rc
 
-build/clang/32bit/watt-32.res: watt-32.rc
-	rc -nologo -DRC_DATE="$(DATE)" -DDEBUG=0 -D__clang__ -DBITS=32 -Fo build/clang/32bit/watt-32.res watt-32.rc
+build/clang/32bit/release/watt-32.res: watt-32.rc
+	rc -nologo -DRC_DATE="$(DATE)" -DDEBUG=0 -D__clang__ -DBITS=32 -Fo build/clang/32bit/release/watt-32.res watt-32.rc
 
-build/clang/64bit/watt-32.res: watt-32.rc
-	rc -nologo -DRC_DATE="$(DATE)" -DDEBUG=0 -D__clang__ -DBITS=64 -Fo build/clang/64bit/watt-32.res watt-32.rc
+build/clang/32bit/debug/watt-32.res: watt-32.rc
+	rc -nologo -DRC_DATE="$(DATE)" -DDEBUG=1 -D__clang__ -DBITS=32 -Fo build/clang/32bit/debug/watt-32.res watt-32.rc
+
+build/clang/64bit/release/watt-32.res: watt-32.rc
+	rc -nologo -DRC_DATE="$(DATE)" -DDEBUG=0 -D__clang__ -DBITS=64 -Fo build/clang/64bit/release/watt-32.res watt-32.rc
+
+build/clang/64bit/debug/watt-32.res: watt-32.rc
+	rc -nologo -DRC_DATE="$(DATE)" -DDEBUG=1 -D__clang__ -DBITS=64 -Fo build/clang/64bit/debug/watt-32.res watt-32.rc
 
 build\digmars\win32\watt-32.res: watt-32.rc
 	rcc -DDEBUG=0 -D__DMC__ -32 -r -obuild\digmars\win32\watt-32.res watt-32.rc
@@ -1682,12 +1729,6 @@ build\borland\flat\cflags_buf.h: $(C_ARGS)
 
 build\borland\win32\cflags_buf.h: $(C_ARGS)
 	$(W32_BIN2C) $(C_ARGS)                     > build\borland\win32\cflags_buf.h
-
-build/clang/32bit/cflags_buf.h:
-	../util/win32/bin2c.exe $(C_ARGS)          > build/clang/32bit/cflags_buf.h
-
-build/clang/64bit/cflags_buf.h:
-	../util/win32/bin2c.exe $(C_ARGS)          > build/clang/64bit/cflags_buf.h
 
 build/CygWin/32bit/cflags_buf.h:
 	echo $(CFLAGS) | ../util/win32/bin2c.exe - > build/CygWin/32bit/cflags_buf.h
@@ -1759,6 +1800,12 @@ build\watcom\flat\cflags_buf.h: $(C_ARGS)
 build\watcom\win32\cflags_buf.h: $(C_ARGS)
 	$(%W32_BIN2C) $(C_ARGS)                    > build\watcom\win32\cflags_buf.h
 @endif
+
+build/clang/32bit/release/cflags_buf.h \
+build/clang/32bit/debug/cflags_buf.h   \
+build/clang/64bit/release/cflags_buf.h \
+build/clang/64bit/debug/cflags_buf.h:
+	../util/win32/bin2c.exe $(C_ARGS)          > $@
 
 @ifdef DJGPP MINGW32 MINGW64 CYGWIN32 CYGWIN64
 

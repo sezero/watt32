@@ -3,19 +3,37 @@
 #  Gisle Vanem 2004 - 2018
 #
 #  Target:
-#    Clang-CL (Win32/Win64)
+#    Clang-CL (Win32/Win64; depends on '%CPU%')
 #
 # Incase %CL is set, undefine it.
 #
 export CL=
 
 #
-# Set to 1 to link using static ../lib/wattcp_clang.lib
+# Set to 1 to link using a debug library:
+#   ../lib/$(CPU)/wattcp_clang_imp_d.lib - for 'USE_STATIC_LIB = 0'
+#   ../lib/$(CPU)/wattcp_clang_d.lib     - for 'USE_STATIC_LIB = 1'
 #
-STATIC_LIB = 1
+USE_DEBUG_LIB ?= 1
 
-CC     = clang-cl
-CFLAGS = -MD -W3 -O2 -I../inc -D_CRT_SECURE_NO_WARNINGS -D_CRT_NONSTDC_NO_WARNINGS -D_CRT_OBSOLETE_NO_WARNINGS
+#
+# Set to 1 to link using static library:
+#   ../lib/$(CPU)/wattcp_clang.lib    - for release
+#   ../lib/$(CPU)/wattcp_clang_d.lib  - for debug
+#
+USE_STATIC_LIB ?= 0
+
+CC = clang-cl
+
+ifeq ($(USE_DEBUG_LIB),1)
+  CFLAGS     = -MDd
+  LIB_SUFFIX = _d
+else
+  CFLAGS     = -MD
+  LIB_SUFFIX =
+endif
+
+CFLAGS += -W3 -O2 -I../inc -D_CRT_SECURE_NO_WARNINGS -D_CRT_NONSTDC_NO_WARNINGS -D_CRT_OBSOLETE_NO_WARNINGS
 
 #
 # clang is rather picky on these things:
@@ -28,12 +46,12 @@ CFLAGS += -Wno-format-security          \
 
 LDFLAGS = -nologo -map
 
-ifeq ($(STATIC_LIB),1)
+ifeq ($(USE_STATIC_LIB),1)
   CFLAGS   += -DWATT32_STATIC
-  WATT_LIB = ../lib/wattcp_clang.lib
+  WATT_LIB = ../lib/$(CPU)/wattcp_clang$(LIB_SUFFIX).lib
   EX_LIBS  = advapi32.lib user32.lib
 else
-  WATT_LIB = ../lib/wattcp_clang_imp.lib
+  WATT_LIB = ../lib/$(CPU)/wattcp_clang_imp$(LIB_SUFFIX).lib
   EX_LIBS  =
 endif
 
@@ -49,18 +67,22 @@ all: $(PROGS)
 con-test.exe: w32-test.c $(WATT_LIB)
 	$(CC) -c $(CFLAGS) w32-test.c
 	link $(LDFLAGS) -subsystem:console -out:$@ w32-test.obj $(WATT_LIB) $(EX_LIBS)
+	@echo
 
 gui-test.exe: w32-test.c $(WATT_LIB)
 	$(CC) -c -DIS_GUI=1 $(CFLAGS) w32-test.c
 	link $(LDFLAGS) -subsystem:windows -out:$@ w32-test.obj $(WATT_LIB) $(EX_LIBS)
+	@echo
 
 tracert.exe: tracert.c geoip.c $(WATT_LIB)
 	$(CC) -c -DUSE_GEOIP $(CFLAGS) tracert.c geoip.c
 	link $(LDFLAGS) -out:$@ tracert.obj geoip.obj $(WATT_LIB) $(EX_LIBS)
+	@echo
 
 %.exe: %.c $(WATT_LIB)
 	$(CC) -c $(CFLAGS) $<
 	link $(LDFLAGS) -out:$*.exe $*.obj $(WATT_LIB) $(EX_LIBS)
+	@echo
 
 clean:
 	rm -f $(PROGS)

@@ -165,7 +165,8 @@ const char * W32_CALL wattcpVersion (void)
   #endif
 
 #elif defined(__clang__)
-  p += sprintf (p, "clang %d.%d.%d, ", __clang_major__, __clang_minor__, __clang_patchlevel__);
+  p += sprintf (p, "clang %d.%d.%d (%s), ",
+                __clang_major__, __clang_minor__, __clang_patchlevel__, DBG_RELEASE);
 
 #elif defined(_MSC_VER)
   /*
@@ -395,12 +396,22 @@ const char * W32_CALL wattcpVersion (void)
   #define CC_DEFINE      "__clang__"
   #define CC_PROG        "clang-cl"
 
-  #if defined(_WIN64)
-    #define CFLAGS       "build/clang/64bit/cflags.h"
-    #define CFLAGS_BUF   "build/clang/64bit/cflags_buf.h"
+  #if defined(_DEBUG)
+    #if defined(_WIN64)
+      #define CFLAGS       "build/clang/64bit/debug/cflags.h"
+      #define CFLAGS_BUF   "build/clang/64bit/debug/cflags_buf.h"
+    #else
+      #define CFLAGS       "build/clang/32bit/debug/cflags.h"
+      #define CFLAGS_BUF   "build/clang/32bit/debug/cflags_buf.h"
+    #endif
   #else
-    #define CFLAGS       "build/clang/32bit/cflags.h"
-    #define CFLAGS_BUF   "build/clang/32bit/cflags_buf.h"
+    #if defined(_WIN64)
+      #define CFLAGS       "build/clang/64bit/release/cflags.h"
+      #define CFLAGS_BUF   "build/clang/64bit/release/cflags_buf.h"
+    #else
+      #define CFLAGS       "build/clang/32bit/release/cflags.h"
+      #define CFLAGS_BUF   "build/clang/32bit/release/cflags_buf.h"
+    #endif
   #endif
 
 #elif defined(__HIGHC__) /* Pharlap only */

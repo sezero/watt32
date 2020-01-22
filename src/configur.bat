@@ -306,8 +306,10 @@ goto next
 :clang
 ::
 echo Generating CLang-Win32 makefile, directory, errnos and dependencies
-%MKMAKE% -o clang32.mak -d build\clang\32bit makefile.all CLANG WIN32
-%MKMAKE% -o clang64.mak -d build\clang\64bit makefile.all CLANG WIN64
+%MKMAKE% -o clang-release_32.mak -d build\clang\32bit\release makefile.all CLANG WIN32 RELEASE
+%MKMAKE% -o clang-release_64.mak -d build\clang\64bit\release makefile.all CLANG WIN64 RELEASE
+%MKMAKE% -o clang-debug_32.mak   -d build\clang\32bit\debug   makefile.all CLANG WIN32 DEBUG
+%MKMAKE% -o clang-debug_64.mak   -d build\clang\64bit\debug   makefile.all CLANG WIN64 DEBUG
 %MKDEP% -s.obj -p$(OBJDIR)/ *.c *.h  > build\clang\watt32.dep
 echo neterr.c: build\clang\syserr.c >> build\clang\watt32.dep
 
@@ -318,10 +320,9 @@ echo Setting "%%CL=_WIN32_WINNT=0x0601". Change to suite your OS or SDK.
 set CL=%CL% -D_WIN32_WINNT=0x0601
 
 echo Run GNU make to make target(s):
-echo   E.g. "make -f clang32.mak"
-echo     or "make -f clang64.mak"
-echo Depending on which clang-cl.exe (32 or 64-bit) is first on your PATH, use the correct 'clang32.mak' or 'clang64.bat'.
-
+echo   E.g. "make -f clang-release_32.mak"
+echo     or "make -f clang-release_64.mak"
+echo Depending on which clang-cl.exe (32 or 64-bit) is first on your PATH, use the correct 'clang-release_32.mak' or 'clang-release_64.mak'.
 goto next
 
 ::--------------------------------------------------------------------------
@@ -360,9 +361,10 @@ del pellesc.mak
 del pellesc_64.mak
 del highc.mak
 del lcc.mak
-del clang32.mak
-del clang64.mak
-
+del clang-release_32.mak
+del clang-debug_32.mak
+del clang-release_64.mak
+del clang-debug_64.mak
 del build\djgpp\watt32.dep
 del build\borland\watt32.dep
 del build\highc\watt32.dep
