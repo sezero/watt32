@@ -69,7 +69,7 @@ if %CPU%. == x64. set BITS=64
 
 if %USES_CL%. == 1. (
   echo Generating src\oui-generated.c
-  python make-oui.py > oui-generated.c
+  python.exe make-oui.py > oui-generated.c
   if ERRORLEVEL 0 set CL=-DHAVE_OUI_GENERATATED_C
   echo --------------------------------------------------------------------------------------------------
 )
