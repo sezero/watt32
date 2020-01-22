@@ -809,7 +809,7 @@ $(OBJDIR)\cpumodel.obj: cpumodel.asm
 	$(CC) -c @$(C_ARGS) -Fo.\$*.obj $<
 
 .asm{$(OBJDIR)}.obj:
-	$(AS) $(AFLAGS) -Fo .\$*.obj $<
+	$(AS) $(AFLAGS) -Fo.\$*.obj $<
 
 !include build\visualc\watt32.dep
 
@@ -1018,13 +1018,13 @@ clean:
 	@echo Cleaning done
 
 $(OBJDIR)/%.obj: %.c
-	$(CC) -c @$(C_ARGS) -Fo$@ $<
+	$(CC) -c @$(C_ARGS) -Fo.\$@ $<
 
 $(OBJDIR)/%.obj: %.cpp
-	$(CC) -c -TP -EHsc @$(C_ARGS) -Fo$@ $<
+	$(CC) -c -TP -EHsc @$(C_ARGS) -Fo.\$@ $<
 
 $(OBJDIR)/%.obj: %.asm
-	$(AS) $(AFLAGS) -Fo$@ $<
+	$(AS) $(AFLAGS) -Fo.\$@ $<
 
 include build/clang/watt32.dep
 
