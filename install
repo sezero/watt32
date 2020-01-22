@@ -433,30 +433,42 @@ Follow these steps closely:
 
      For Win32 targets (32-bit):
      ----------------------------------------------------------------------------
-     .\lib\x86\wattcpvc.lib       - Visual C,  static lib (release)
-     .\lib\x86\wattcpvc_d.lib     - Visual C,  static lib (debug)
-     .\lib\x86\wattcpvc_imp.lib   - Visual C,  import lib for .\bin\watt-32.dll  (release)
-     .\lib\x86\wattcpvc_imp_d.lib - Visual C,  import lib for .\bin\watt-32d.dll (debug)
-     .\lib\libwatt32.a            - MinGW/,    static lib
-     .\lib\libwatt32.dll.a        - MinGW,     import lib for .\bin\watt-32.dll
-     .\lib\x86\libwatt32.a        - MinGW-w64, static lib
-     .\lib\x86\libwatt32.dll.a    - MinGW-w64, import lib for .\bin\watt-32.dll
-     .\lib\wattcpww.lib           - Watcom C,  static lib
-     .\lib\wattcpww_imp.lib       - Watcom C,  import lib for .\bin\watt-32.dll
-     .\lib\wattcppo_imp.lib       - PellesC,   import lib for .\bin\watt-32.dll
-     .\lib\wattcppo.lib           - PellesC,   static lib
-     .\lib\wattcp_clang_imp.lib   - Clang-cl,  import lib for .\bin\watt-32.dll
-     .\lib\wattcp_clang.lib       - Clang-cl,  static lib
+     .\lib\x86\wattcpvc.lib         - Visual C,  static lib (release)
+     .\lib\x86\wattcpvc_d.lib       - Visual C,  static lib (debug)
+     .\lib\x86\wattcpvc_imp.lib     - Visual C,  import lib for .\bin\watt-32.dll  (release)
+     .\lib\x86\wattcpvc_imp_d.lib   - Visual C,  import lib for .\bin\watt-32d.dll (debug)
+
+     .\lib\libwatt32.a              - MinGW, static lib
+     .\lib\libwatt32.dll.a          - MinGW, import lib for .\bin\watt-32.dll
+     .\lib\x86\libwatt32.a          - MinGW-w64, static lib
+     .\lib\x86\libwatt32.dll.a      - MinGW-w64, import lib for .\bin\watt-32.dll
+
+     .\lib\wattcpww.lib             - Watcom C,  static lib
+     .\lib\wattcpww_imp.lib         - Watcom C,  import lib for .\bin\watt-32.dll
+
+     .\lib\wattcppo_imp.lib         - PellesC,   import lib for .\bin\watt-32.dll
+     .\lib\wattcppo.lib             - PellesC,   static lib
+
+     .\lib\x86\wattcp_clang_imp.lib - Clang-cl,  import lib for .\bin\watt-32.dll
+     .\lib\x86\wattcp_clang.lib     - Clang-cl,  static lib
 
      For Win64 targets (64-bit):
      ----------------------------------------------------------------------------
-     .\lib\x64\wattcpvc.lib       - Visual C,  static lib (release)
-     .\lib\x64\wattcpvc_d.lib     - Visual C,  static lib (debug)
-     .\lib\x64\wattcpvc_imp.lib   - Visual C,  import lib for .\bin\watt-32_64.dll  (release)
-     .\lib\x64\wattcpvc_imp_d.lib - Visual C,  import lib for .\bin\watt-32d_64.dll (debug)
-     .\lib\x64\libwatt32.a        - MinGW-w64, static lib
-     .\lib\x64\libwatt32.dll.a    - MinGW-w64, import lib for .\bin\watt-32_64.dll
+     .\lib\x64\wattcpvc.lib           - Visual C,  static lib (release)
+     .\lib\x64\wattcpvc_d.lib         - Visual C,  static lib (debug)
+     .\lib\x64\wattcpvc_imp.lib       - Visual C,  import lib for .\bin\watt-32_64.dll  (release)
+     .\lib\x64\wattcpvc_imp_d.lib     - Visual C,  import lib for .\bin\watt-32d_64.dll (debug)
 
+     .\lib\x64\libwatt32.a            - MinGW-w64, static lib
+     .\lib\x64\libwatt32.dll.a        - MinGW-w64, import lib for .\bin\watt-32_64.dll
+
+     .\lib\x64\wattcp_clang.lib       - Clang-cl,  static lib (release)
+     .\lib\x64\wattcp_clang_d.lib     - Clang-cl,  static lib (debug)
+     .\lib\x64\wattcp_clang_imp.lib   - Clang-cl,  import lib for .\bin\watt-32_64.dll  (release)
+     .\lib\x64\wattcp_clang_imp_d.lib - Clang-cl,  import lib for .\bin\watt-32_64_d.dll  (debug)
+
+
+     The above 'MinGW' is the old-school version from 'http://mingw.org'. I.e. pretty much a dead project.
      (other compilers are not currently supported for 64-bits.)
 
 
