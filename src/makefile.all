@@ -272,7 +272,6 @@ clean:
 
 -include $(OBJDIR)/watt32.dep
 
-
 ########################################################################
 
 @elifdef BORLAND
@@ -925,30 +924,29 @@ EX_LIBS  = user32.lib advapi32.lib
 RESOURCE = $(OBJDIR)/watt-32.res
 
 @ifdef WIN64
-64     = _64
-AS     = ml64
-AFLAGS = -c -nologo -DDOSX -DWIN64 -Zi -Fl
+  64     = _64
+  AS     = ml64
+  AFLAGS = -c -nologo -DDOSX -DWIN64 -Zi -Fl
 
-@ifdef DEBUG
-TARGETS = ../lib/x64/wattcp_clang.lib ../lib/x64/wattcp_clang_imp.lib ../bin/watt-32_64.dll
-OBJDIR  = build/clang/64bit/debug
+  @ifdef DEBUG
+  TARGETS = ../lib/x64/wattcp_clang.lib ../lib/x64/wattcp_clang_imp.lib ../bin/watt-32_64.dll
+  OBJDIR  = build/clang/64bit/debug
+  @else
+  TARGETS = ../lib/x64/wattcp_clang.lib ../lib/x64/wattcp_clang_imp.lib ../bin/watt-32_64.dll
+  OBJDIR  = build/clang/64bit/release
+  @endif
 @else
-TARGETS = ../lib/x64/wattcp_clang.lib ../lib/x64/wattcp_clang_imp.lib ../bin/watt-32_64.dll
-OBJDIR  = build/clang/64bit/release
-@endif
+  64     =
+  AS     = ml
+  AFLAGS = -c -nologo -DDOSX -Zi -Fl -coff
 
-
-@else
-64     =
-AS     = ml
-AFLAGS = -c -nologo -DDOSX -Zi -Fl -coff
-
-@ifdef DEBUG
-TARGETS = ../lib/x86/wattcp_clang_d.lib ../lib/x86/wattcp_clang_imp_d.lib ../bin/watt-32d.dll
-OBJDIR  = build/clang/32bit/debug
-@else
-TARGETS = ../lib/x86/wattcp_clang.lib ../lib/x86/wattcp_clang_imp.lib ../bin/watt-32.dll
-OBJDIR  = build/clang/32bit/release
+  @ifdef DEBUG
+  TARGETS = ../lib/x86/wattcp_clang_d.lib ../lib/x86/wattcp_clang_imp_d.lib ../bin/watt-32d.dll
+  OBJDIR  = build/clang/32bit/debug
+  @else
+  TARGETS = ../lib/x86/wattcp_clang.lib ../lib/x86/wattcp_clang_imp.lib ../bin/watt-32.dll
+  OBJDIR  = build/clang/32bit/release
+  @endif
 @endif
 
 C_ARGS = $(OBJDIR)/clang.arg
