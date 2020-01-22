@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <sys/types.h>
+#include <tcp.h>
 
 #include "timeit.h"
 
@@ -8,7 +9,7 @@
 
 #define u_int32_t unsigned long
 
-static int __cdecl cmpint (const void *a, const void *b)
+static int cdecl cmpint (const void *a, const void *b)
 {
   return *(int*)a - *(int*)b;
 }
@@ -56,7 +57,7 @@ static void generic_swap (void *_a, void *_b, int size)
  * it less suitable for kernel use.
  */
 void Qsort (void *_base, size_t num, size_t size,
-            int (__cdecl *cmp_func) (const void *, const void *),
+            int (cdecl *cmp_func) (const void *, const void *),
             void (*swap_func) (void *, void *, int size))
 {
   /* pre-scale counters for performance
@@ -118,7 +119,7 @@ void Qsort (void *_base, size_t num, size_t size,
 #define NUM_INTS  10000
 #define NUM_LOOPS 10
 
-int __cdecl main (void)
+int cdecl main (void)
 {
   int *a, i, r = 1;
 

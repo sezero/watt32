@@ -46,7 +46,7 @@ const char *Delta_ms (clock_t dt)
   return (buf);
 }
 
-static unsigned long __cdecl simple_cdecl_one (unsigned long x)
+static unsigned long cdecl simple_cdecl_one (unsigned long x)
 {
   return ((x & 0x000000FF) << 24) |
          ((x & 0x0000FF00) <<  8) |
@@ -55,7 +55,7 @@ static unsigned long __cdecl simple_cdecl_one (unsigned long x)
 }
 
 #if defined(_MSC_VER) && !defined(_M_X64)
-__declspec(naked) static unsigned long __cdecl naked_cdecl_one (unsigned long x)
+__declspec(naked) static unsigned long cdecl naked_cdecl_one (unsigned long x)
 {
   __asm mov  eax, [esp+4]
   __asm xchg al, ah
@@ -64,7 +64,7 @@ __declspec(naked) static unsigned long __cdecl naked_cdecl_one (unsigned long x)
   __asm ret
 }
 
-__declspec(naked) static unsigned long __cdecl naked_fastcall_one (unsigned long x)
+__declspec(naked) static unsigned long cdecl naked_fastcall_one (unsigned long x)
 {
   __asm xchg cl, ch    /* 'x' is in ecx */
   __asm ror  ecx, 16
@@ -75,18 +75,18 @@ __declspec(naked) static unsigned long __cdecl naked_fastcall_one (unsigned long
 
 #elif defined(_MSC_VER) && defined(_M_X64)
 
-static W32_INLINE unsigned long __cdecl naked_cdecl_one (unsigned long x)
+static W32_INLINE unsigned long cdecl naked_cdecl_one (unsigned long x)
 {
   return ntohl(x);
 }
 
-static W32_INLINE unsigned long __cdecl naked_fastcall_one (unsigned long x)
+static W32_INLINE unsigned long cdecl naked_fastcall_one (unsigned long x)
 {
   return ntohl(x);
 }
 
 #elif defined(__GNUC__) && !defined(__x86_64__)
-W32_GCC_INLINE unsigned long __cdecl naked_cdecl_one (unsigned long x)
+W32_GCC_INLINE unsigned long cdecl naked_cdecl_one (unsigned long x)
 {
   __asm__ __volatile (
            "xchgb %b0, %h0\n\t"   /* swap lower bytes  */
@@ -109,7 +109,7 @@ W32_GCC_INLINE unsigned long __fastcall naked_fastcall_one (unsigned long x)
 
 #elif defined(__GNUC__) && defined(__x86_64__)
 #warning Unsupported CPU.
-W32_GCC_INLINE unsigned long __cdecl naked_cdecl_one (unsigned long x)
+W32_GCC_INLINE unsigned long cdecl naked_cdecl_one (unsigned long x)
 {
   return ntohl(x);
 }
@@ -121,12 +121,12 @@ W32_GCC_INLINE unsigned long __fastcall naked_fastcall_one (unsigned long x)
 }
 
 #elif defined(__BORLANDC__) && defined(__FLAT__)
-static __inline unsigned long __cdecl naked_cdecl_one (unsigned long x)
+static __inline unsigned long cdecl naked_cdecl_one (unsigned long x)
 {
   return ntohl(x);
 }
 
-static __inline unsigned long __cdecl naked_fastcall_one (unsigned long x)
+static __inline unsigned long cdecl naked_fastcall_one (unsigned long x)
 {
   return ntohl(x);
 }
@@ -170,6 +170,9 @@ void intrin_byteswap (const void *buf, size_t max)
 #elif defined(__MINGW32__) || defined(__CYGWIN__)
   for (i = 0; i < max; i++)
      __bswapd (*val++);
+#else
+  (void) i;
+  (void) max;
 #endif
 }
 
@@ -299,7 +302,7 @@ void Usage (const char *argv0)
   exit (-1);
 }
 
-int __cdecl main (int argc, char **argv)
+int cdecl main (int argc, char **argv)
 {
   int   ch, i;
   char *buf = NULL;
