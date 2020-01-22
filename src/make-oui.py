@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 #
-# Generates a 'oui-generated.c' for tcpdump.
+# Generates a 'oui-generated.c' for Watt-32 and 'winadinf.c'.
 #
 from __future__ import print_function
 
