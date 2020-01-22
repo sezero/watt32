@@ -3,7 +3,7 @@ setlocal
 prompt $P$G
 
 ::
-:: 'APPVEYOR_PROJECT_NAME=Watt-32' unless testing this "appveyor-script.bat [build_src | build_bin | test]"
+:: 'APPVEYOR_PROJECT_NAME=Watt-32' unless testing this "appveyor-script.bat [build_src | build_bin | build_tests]"
 :: locally using 'cmd'.
 ::
 if %APPVEYOR_PROJECT_NAME%. == . (
@@ -42,11 +42,11 @@ if %BUILDER%. == . (
   exit /b 1
 )
 
-if %1. == build_src. goto :build_src
-if %1. == build_bin. goto :build_bin
-if %1. == test.      goto :test
+if %1. == build_src.   goto :build_src
+if %1. == build_bin.   goto :build_bin
+if %1. == build_tests. goto :build_tests
 
-echo Usage: %~dp0%0 ^[build_src ^| build_bin ^| test^]
+echo Usage: %~dp0%0 ^[build_src ^| build_bin ^| build_tests^]
 exit /b 1
 
 :build_src
@@ -90,12 +90,6 @@ if %BUILDER%. == clang. (
 )
 
 if %BUILDER%. == MinGW. (
-  echo ------- where date.exe --------------------
-  where date.exe
-  echo --------test date.exe ---------------------
-  c:\msys64\usr\bin\date.exe +%%d-%%B-%%Y
-  echo -------------------------------------------
-
   call configur.bat mingw64
   echo Building for %CPU%
   make -f MinGW64_%BITS%.mak
@@ -158,7 +152,8 @@ exit /b
 ::
 :: Build (and run?) some test programs in './src/tests'
 ::
-:test
+:build_tests
 cd src\tests
 echo Test will come here later
+call configur.bat %BUILDER%
 exit /b
