@@ -26,7 +26,7 @@ int main (int argc, char **argv)
     const char *tstr;
 
     gettimeofday2 (&tv, NULL);
-    tstr = ctime (&tv.tv_sec);
+    tstr = ctime ((const time_t*)&tv.tv_sec);
     printf ("%10lu.%06lu, %s",
             tv.tv_sec, tv.tv_usec, tstr ? tstr : "illegal\n");
     usleep (500000);
