@@ -4,7 +4,7 @@
  * This program originally by John E. Davis for the S-Lang library
  *
  * Modified for Waterloo tcp/ip by G.Vanem 1998
- * Requires S-Lang compiled with djgpp 2.01+, MingW or MSVC.
+ * Requires S-Lang compiled with djgpp 2.01+, MinGW or MSVC.
  */
 
 #include <stdio.h>
@@ -22,8 +22,19 @@
 int   verbose = 0;
 char *in_makefile  = NULL;
 char *out_makefile = NULL;
-char  line_cont_ch = '\\';  /* if this is not '\\' and a line ends in '\\' */
-                            /* then change it to this. (Watcom needs '&') */
+
+/* Option '-w' converts '\\' to '&'.
+ *
+ * This is used in './src/makefile.all' which should generate Wmake makefiles for WATCOM targets.
+ * This is NOT used in './src/tests/makefile.all' which generates GNU-makefiles only.
+ */
+int watcom_endings = 0;
+
+/* If this is '&' and a line ends in '\\',
+ * then change line-endings to '&' for Watcom's wmake.
+ */
+char line_cont_ch = '\\';
+
 #if (SLANG_VERSION < 20000)
   SLPreprocess_Type _pt, *pt;
 #else
@@ -33,9 +44,10 @@ char  line_cont_ch = '\\';  /* if this is not '\\' and a line ends in '\\' */
 void Usage (void)
 {
   fprintf (stderr,
-           "Usage: mkmake [-v] [-ofile] [-ddir] makefile.all [DEF1 [DEF2 ...]]\n"
+           "Usage: mkmake [-v] [-w] [-o file] [-d dir] makefile.all [DEF1 [DEF2 ...]]\n"
            "options:\n"
            "     -v:  be verbose\n"
+           "     -w:  convert '\\' line-endings to '&' for DEF1 == WATCOM\n"
            "     -o:  write parsed `makefile.all' to file (default is stdout)\n"
            "     -d:  creates subdirectory (or subdirectories)\n"
            "     DEF1 DEF2 ... are preprocessor defines in `makefile.all'\n");
@@ -78,14 +90,14 @@ void process_makefile (const char *infname, const char *outfname)
     if (!SLprep_line_ok(p,pt))
        continue;
 
-    if (line_cont_ch != '\\')   /* WATCOM */
+    if (line_cont_ch == '&')   /* WATCOM */
     {
       unsigned int len = strlen (p);
 
       while (len > 0 && isspace(p[len-1]))
          len--;
       if (len > 0 && p[len-1] == '\\')
-         p[len-1] = line_cont_ch;
+         p[len-1] = '&';
     }
     if (p > buf)
       fprintf (out, "%*s", p-buf, " ");
@@ -155,7 +167,7 @@ int main (int argc, char **argv)
 {
   int i, ch;
 
-  while ((ch = getopt(argc,argv,"?o:d:v")) != EOF)
+  while ((ch = getopt(argc,argv,"?o:d:vw")) != EOF)
      switch (ch)
      {
        case 'o': out_makefile = optarg;
@@ -163,6 +175,8 @@ int main (int argc, char **argv)
        case 'd': make_dirs (optarg);
                  break;
        case 'v': verbose++;
+                 break;
+       case 'w': watcom_endings = 1;
                  break;
        case '?':
        default:  Usage();
@@ -196,7 +210,7 @@ int main (int argc, char **argv)
   {
     char *arg = strupr (argv[i]);
 
-    if (!strcmp(arg,"WATCOM"))
+    if (watcom_endings && !strcmp(arg,"WATCOM"))
        line_cont_ch = '&';
     SLdefine_for_ifdef (arg);
   }

@@ -102,11 +102,11 @@ goto next
 :watcom
 ::
 echo Generating Watcom makefiles, directories, errnos and dependencies
-%MKMAKE% -o watcom_s.mak -d build\watcom\small makefile.all WATCOM SMALL
-%MKMAKE% -o watcom_l.mak -d build\watcom\large makefile.all WATCOM LARGE
-%MKMAKE% -o watcom_f.mak -d build\watcom\flat  makefile.all WATCOM FLAT
-%MKMAKE% -o watcom_x.mak -d build\watcom\x32vm makefile.all WATCOM FLAT X32VM
-%MKMAKE% -o watcom_w.mak -d build\watcom\win32 makefile.all WATCOM WIN32
+%MKMAKE% -w -o watcom_s.mak -d build\watcom\small makefile.all WATCOM SMALL
+%MKMAKE% -w -o watcom_l.mak -d build\watcom\large makefile.all WATCOM LARGE
+%MKMAKE% -w -o watcom_f.mak -d build\watcom\flat  makefile.all WATCOM FLAT
+%MKMAKE% -w -o watcom_x.mak -d build\watcom\x32vm makefile.all WATCOM FLAT X32VM
+%MKMAKE% -w -o watcom_w.mak -d build\watcom\win32 makefile.all WATCOM WIN32
 %MKDEP%  -s.obj -p$(OBJDIR)\ *.c *.h  > build\watcom\watt32.dep
 echo neterr.c: build\watcom\syserr.c >> build\watcom\watt32.dep
 
