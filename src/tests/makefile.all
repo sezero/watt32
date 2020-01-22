@@ -16,9 +16,16 @@
 #
 # GNU Makefile for Watt-32 test programs.
 #
+default: all
+
+ifneq (1,1)
+!error "This is GNU-make. No pesky Nmake allowed please!"
+endif
 
 #
 # Set to 1 if "USE_IPV6" is defined in ../config.h
+#
+# Use '$(eval $(shell grep -m1 'define USE_IPV6' ../config.h))' ?
 #
 USE_IPV6 = 1
 
@@ -118,8 +125,6 @@ CFLAGS = -DTEST_PROG -DWATT32 -DWATT32_STATIC -I.. -I../../inc
 
   LDFLAGS = -nologo -map -debug -debugtype:cv -verbose -incremental:no
 @endif
-
-default: all
 
 @ifdef MINGW64 VISUALC CLANG CYGWIN64
   @ifdef WIN32
@@ -305,7 +310,7 @@ wecho.$(EXE): ../echo.c $(WATT_LIB)
 	$(call compile_and_link, $@, $<)
 
 clean realclean vclean:
-	rm -f $(PROGRAMS) $(PROGRAMS:.$(EXE)=.map)
+	rm -f $(PROGRAMS) $(PROGRAMS:.$(EXE)=.map) echo.obj listen.obj
 @ifdef VISUALC CLANG
 	rm -f $(PROGRAMS:.$(EXE)=.pdb) vc1*.pdb
 @endif
