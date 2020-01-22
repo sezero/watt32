@@ -871,10 +871,6 @@ $(OBJDIR)\cpumodel.obj: cpumodel.asm
 
 @elifdef CLANG
 
-@ifndef WIN32 WIN64
-!error The only possible targets for CLANG are WIN32 or WIN64
-@endif
-
 CC     = clang-cl
 CFLAGS = -nologo -Zi -Zo -GS- -I. -I../inc \
          -DWIN32 -DWATT32_BUILD            \
