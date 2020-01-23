@@ -10,14 +10,11 @@
  *       even if you run Win-XP SP3. Provided you have an up-to-date
  *       Windows SDK. With MSVC, the SDK version can easily be forced
  *       using the env-var "CL". E.g. "set CL=-D_WIN32_WINNT=0x601" for
- *       Win-Vista. This is done for "configur.bat visualc".
- *       The test of '_WIN32_WINNT' below ensures this variable is '0x501'
- *       or higher (Win-XP SP1+).
+ *       Win-Vista. But the generated 'visual-*.mak' and 'clang-*.mak' files
+ *       have now have a '-D_WIN32_WINNT=0x0601'.
  *
  *       BUT this requires extreme care. The code should check against
  *       e.g. '_watt_os_ver >= 0x0601' or 'WINVER' at runtime.
- *
- *
  */
 #ifndef _w32_WINADINF_H
 #define _w32_WINADINF_H
@@ -45,8 +42,9 @@
 
 /*
  * Change this for your MinGW.
+ * '-D_WIN32_WINNT' is now set in the generated 'MinGW*.mak' files.
  */
-#if defined(__MINGW64_VERSION_MAJOR)
+#if defined(__MINGW64_VERSION_MAJOR) && 0
   #undef  _WIN32_WINNT
   #define _WIN32_WINNT 0x0601
   #undef  WINVER
@@ -89,7 +87,7 @@
 
 /*
  * Get the maximum features out of the local "ws2tcpip.h", "iphlpapi.h" etc. headers.
- * aybe not such a good idea.
+ * Maybe not such a good idea.
  */
 #if defined(_WIN32_MAXVER) && (_WIN32_MAXVER > _WIN32_WINNT) && 0
   #undef _WIN32_WINNT

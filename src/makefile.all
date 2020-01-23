@@ -613,7 +613,7 @@ $(LINKARG): $(__MAKEFILES__)
 
 #
 # A perculiar feature (or bug?) with the MS linker is that the import
-# libs (..\lib\wattcpvc_imp.lib + ..\lib\wattcpvc_imp_d.lib) can get
+# libs (..\lib\$(CPU)\wattcpvc_imp.lib + ..\lib\$(CPU)\wattcpvc_imp_d.lib) can get
 # older than the target .dll they represent. Hence the below 'touch'
 # commands.
 #
@@ -634,7 +634,7 @@ $(LINKARG): $(__MAKEFILES__)
 !error The only possible targets for VISUALC are WIN32 or WIN64
 @endif
 
-CFLAGS = -nologo -Zi -W3 -DWATT32_BUILD -I. -I../inc
+CFLAGS = -nologo -Zi -W3 -DWATT32_BUILD -D_WIN32_WINNT=0x0601 -I. -I../inc
 
 #
 # Just a test
@@ -873,7 +873,7 @@ $(OBJDIR)\cpumodel.obj: cpumodel.asm
 
 CC     = clang-cl
 CFLAGS = -nologo -Zi -Zo -GS- -I. -I../inc \
-         -DWIN32 -DWATT32_BUILD            \
+         -DWATT32_BUILD                    \
          -D_CRT_SECURE_NO_WARNINGS         \
          -D_CRT_NONSTDC_NO_WARNINGS        \
          -D_CRT_OBSOLETE_NO_WARNINGS       \
@@ -1227,7 +1227,9 @@ $(OBJDIR)\cpumodel.obj: cpumodel.asm
 @elifdef MINGW32
 
 CC      = gcc
-CFLAGS  = -O2 -g -Wall -Wno-strict-aliasing -mthreads -pipe -I. -I../inc -DWATT32_BUILD
+CFLAGS  = -O2 -g -Wall -Wno-strict-aliasing -mthreads -pipe -I. -I../inc \
+          -DWATT32_BUILD -D_WIN32_WINNT=0x0601 -DWINVER=0x0601
+
 LDFLAGS = -shared -Wl,--enable-stdcall-fixup,--print-map,--sort-common,--cref
 
 #
@@ -1320,7 +1322,8 @@ else
   CFLAGS = -O0 -g2 -fgnu89-inline
 endif
 
-CFLAGS += -Wall -Wundef -Wno-strict-aliasing -I. -I../inc -DWATT32_BUILD
+CFLAGS += -Wall -Wundef -Wno-strict-aliasing -I. -I../inc \
+          -DWATT32_BUILD -D_WIN32_WINNT=0x0601 -DWINVER=0x0601
 LDFLAGS = -shared -Wl,--enable-stdcall-fixup,--print-map,--sort-common,--cref
 
 #

@@ -199,9 +199,6 @@ echo neterr.c:  build\visualc\syserr.c                            >> build\visua
 ..\util\vc_err -s > build\visualc\syserr.c
 ..\util\vc_err -e > ..\inc\sys\visualc.err
 
-echo Setting "%%CL=_WIN32_WINNT=0x0601". Change to suite your OS or SDK.
-set CL=%CL% -D_WIN32_WINNT=0x0601
-
 echo Run nmake to make target(s):
 echo   E.g. "nmake -f visualc-release_32.mak"
 echo     or "nmake -f visualc-release_64.mak"
@@ -315,9 +312,6 @@ echo neterr.c: build\clang\syserr.c >> build\clang\watt32.dep
 
 ..\util\win32\clang_err -s > build\clang\syserr.c
 ..\util\win32\clang_err -e > ..\inc\sys\clang.err
-
-echo Setting "%%CL=_WIN32_WINNT=0x0601". Change to suite your OS or SDK.
-set CL=%CL% -D_WIN32_WINNT=0x0601
 
 echo Run GNU make to make target(s):
 echo   E.g. "make -f clang-release_32.mak"

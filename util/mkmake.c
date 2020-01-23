@@ -147,22 +147,6 @@ int make_dirs (char *dir)
   return MKDIR (dir);
 }
 
-#if (SLANG_VERSION >= 20000)
-static int get_win_ver (SLprep_Type *pt, char *expr)
-{
-  char *p;
-
-  p = strstr (expr, "@(get_win_ver)");
-
-  if (verbose)
-     fprintf (stdout, "expr: '%s', p: '%s'", expr, p);
-
-  if (p)
-     strcpy (p, "0x0501");
-  return (1);
-}
-#endif
-
 int main (int argc, char **argv)
 {
   int i, ch;
@@ -203,7 +187,6 @@ int main (int argc, char **argv)
   SLprep_set_prefix (pt, "@");
   SLprep_set_comment (pt, "#", "#");
   SLprep_set_flags (pt, SLPREP_BLANK_LINES_OK | SLPREP_COMMENT_LINES_OK);
-  SLprep_set_eval_hook (pt, get_win_ver);
 #endif
 
   for (i = 0; i < argc; i++)
