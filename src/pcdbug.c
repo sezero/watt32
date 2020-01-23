@@ -1278,7 +1278,7 @@ static const char *ip6_next_hdr (BYTE nxt)
   }
 }
 
-const char *icmp6_options (const BYTE *opt, int tot_len)
+static const char *icmp6_options (const BYTE *opt, int tot_len)
 {
   static char buf[50];
   char  *p = buf;
@@ -2826,11 +2826,6 @@ int dbug_putc (int c)
   }
 #endif
   return fputc (c, dbg_file.stream);
-}
-
-int db_write_raw (const char *buf) /* old name */
-{
-  return dbug_write (buf);
 }
 
 static void dbug_close (void)
