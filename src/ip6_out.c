@@ -49,6 +49,9 @@
 /* \if USE_IPV6 */
 #if defined(USE_IPV6)
 
+W32_GCC_PRAGMA (GCC diagnostic push)
+W32_GCC_PRAGMA (GCC diagnostic ignored "-Wmissing-braces")
+
 struct in6_addr in6addr_my_ip = {{ 0,0,0,0,0,0,0,0,
                                    0,0,0,0,0,0,0,0 }};
 
@@ -68,6 +71,8 @@ const struct in6_addr in6addr_allr_mc  = {{ 0xFF,2,0,0,0,0,0,0,
                                             0,0,0,0,0,0,0,2 }};
 
 const BYTE in6addr_mapped[12] = { 0,0,0,0, 0,0,0,0, 0,0,0xFF,0xFF };
+
+W32_GCC_PRAGMA (GCC diagnostic pop)
 
 int  _default6_ttl = 255;    /* TTL on outgoing packets */
 

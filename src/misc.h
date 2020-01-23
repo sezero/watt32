@@ -309,6 +309,16 @@ extern const char *qword_str (uint64 val);
 
   #if defined(__GNUC__)
     #if defined(__DJGPP__) || defined(__CYGWIN__) || defined(__MINGW64_VERSION_MAJOR)
+      /*
+       * Per the above gcc mess, the use of 'x64_FMT' could trigger a warning that
+       * can be suppressed using:
+       *   W32_GCC_PRAGMA (GCC diagnostic push)
+       *   W32_GCC_PRAGMA (GCC diagnostic ignored "-Wformat")
+       *
+       * prior to using the 'x64_FMT' format. And a:
+       *   W32_GCC_PRAGMA (GCC diagnostic pop)
+       * after the last use.
+       */
       #define S64_FMT        "lld"
       #define U64_FMT        "llu"
       #define X64_FMT        "llX"

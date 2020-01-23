@@ -115,6 +115,9 @@ uint64 FILETIME_to_unix_epoch (const FILETIME *ft)
   return (res);
 }
 
+W32_GCC_PRAGMA (GCC diagnostic push)
+W32_GCC_PRAGMA (GCC diagnostic ignored "-Wformat")
+
 const char *ULONGLONG_to_ctime (ULONGLONG ts)
 {
   LARGE_INTEGER ft;
@@ -135,6 +138,8 @@ const char *ULONGLONG_to_ctime (ULONGLONG ts)
   else SNPRINTF (buf, sizeof(buf), "%lu/%" U64_FMT, (u_long)t, ts);
   return (buf);
 }
+
+W32_GCC_PRAGMA (GCC diagnostic pop)
 
 W32_FUNC int W32_CALL W32_NAMESPACE (gettimeofday) (
          struct timeval  *tv,
