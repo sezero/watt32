@@ -46,10 +46,6 @@ install:
   - cmd: if %BUILDER%. == clang.           call "c:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\vcvarsall.bat" %CPU%
   - cmd: if %BUILDER%-%CPU%. == mingw-x86. set PATH=c:\msys64\MinGW32\bin;%PATH%
   - cmd: if %BUILDER%-%CPU%. == mingw-x64. set PATH=c:\msys64\MinGW64\bin;%PATH%
-  #
-  # A fix for the cmd  issue in 'appveyor-build.bat'?
-  #
-  - cmd: if %BUILDER%. == watcom. set PATH=c:\projects\Watt-32\CI\Watcom\binnt;%PATH%
 
 build_script:
     - cmd: appveyor-script.bat build_src

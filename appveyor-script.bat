@@ -54,9 +54,7 @@ set WATCOM_ZIP=%WATCOM%\watcom20.zip
 :: on a AppVeyor build several "C:\Program Files (x86)\Microsoft xxx" strings
 :: are in the 'PATH' !
 ::
-if %APPVEYOR_PROJECT_NAME%. == . (
-  set PATH=%WATCOM%\binnt;%PATH%
-)
+set PATH=%WATCOM%\binnt;%PATH%
 
 ::
 :: In case my curl was built with Wsock-Trace
