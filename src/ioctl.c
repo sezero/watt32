@@ -247,6 +247,22 @@ static struct ifnet *tok_ifnet (void)
 #endif
 
 /*
+ * Ensure we do not 'memcpy()' too much from a '_eth_addr' which is only 6 bytes.
+ * The size of 'ifr_hwaddr.sa_data[]' could be 16.
+ *
+ * With gcc 7.x, a warning for:
+ *   memcpy (&ifr->ifr_hwaddr.sa_data[0], &_eth_addr,
+ *           sizeof(ifr->ifr_hwaddr.sa_data));
+ *
+ * was issued:
+ *   ioctl.c:466:17: warning: 'memcpy' forming offset [7, 14] is out of the bounds [0, 6] of object
+ *   '_eth_addr' with type 'eth_address' {aka 'unsigned char[6]'} [-Warray-bounds]
+ */
+#define FILL_hwaddr_sa_data(data, eth)       \
+        memset (& data, '\0', sizeof(data)); \
+        memcpy (& data, & eth, sizeof(eth))
+
+/*
  * Handler for interface request get/set commands
  */
 static int iface_ioctrl (Socket *socket, long cmd, char *argp)
@@ -453,18 +469,15 @@ static int iface_ioctrl (Socket *socket, long cmd, char *argp)
          {
            case PDCLASS_ETHER:
                 ifr->ifr_hwaddr.sa_family = ARPHRD_ETHER;
-                memcpy (&ifr->ifr_hwaddr.sa_data[0], &_eth_addr,
-                        sizeof(ifr->ifr_hwaddr.sa_data));
+                FILL_hwaddr_sa_data (ifr->ifr_hwaddr.sa_data, _eth_addr);
                 break;
            case PDCLASS_TOKEN:
                 ifr->ifr_hwaddr.sa_family = ARPHRD_TOKEN;
-                memcpy (&ifr->ifr_hwaddr.sa_data[0], &_eth_addr,
-                        sizeof(ifr->ifr_hwaddr.sa_data));
+                FILL_hwaddr_sa_data (ifr->ifr_hwaddr.sa_data, _eth_addr);
                 break;
            case PDCLASS_FDDI:
                 ifr->ifr_hwaddr.sa_family = ARPHRD_FDDI;
-                memcpy (&ifr->ifr_hwaddr.sa_data[0], &_eth_addr,
-                        sizeof(ifr->ifr_hwaddr.sa_data));
+                FILL_hwaddr_sa_data (ifr->ifr_hwaddr.sa_data, _eth_addr);
                 break;
            case PDCLASS_ARCNET:
                 ifr->ifr_hwaddr.sa_family  = ARPHRD_ARCNET;
@@ -473,7 +486,7 @@ static int iface_ioctrl (Socket *socket, long cmd, char *argp)
            case PDCLASS_SLIP:
            case PDCLASS_PPP:
                 ifr->ifr_hwaddr.sa_family = 0;
-                memset (ifr->ifr_hwaddr.sa_data, 0,
+                memset (ifr->ifr_hwaddr.sa_data, '\0',
                         sizeof(ifr->ifr_hwaddr.sa_data));
                 break;
            default:
