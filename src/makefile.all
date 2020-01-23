@@ -381,7 +381,7 @@ IMPLIB = $(BCCDIR)\bin\implib
 
 .SWAP
 
-all: $(PKT_STUB) $(C_ARGS) $(OBJDIR)\cflags.h $(OBJDIR)\cflags_buf.h $(TARGETS)
+all: $(PKT_STUB) $(C_ARGS) $(OBJDIR)\cflags.h $(OBJDIR)\cflagsbf.h $(TARGETS)
 	@echo All done
 
 ..\lib\wattcpbs.lib: $(OBJS)
@@ -543,7 +543,7 @@ CFLAGS += -zq -fr=nul -wx -fpi -DWATT32_BUILD -I. -I..\inc -I$(%WATCOM)\h
 AS = wasm
 AR = wlib -q -b -c
 
-all: $(PKT_STUB) $(C_ARGS) $(OBJDIR)\cflags.h $(OBJDIR)\cflags_buf.h $(TARGET)
+all: $(PKT_STUB) $(C_ARGS) $(OBJDIR)\cflags.h $(OBJDIR)\cflagsbf.h $(TARGET)
 
 @ifdef WIN32
 $(WATTDLL) ..\lib\wattcpww_imp.lib: $(OBJS) $(RESOURCE) $(LINKARG)
@@ -718,7 +718,7 @@ EX_LIBS  = user32.lib advapi32.lib
 RESOURCE = $(OBJDIR)\watt-32.res
 C_ARGS   = $(OBJDIR)\cl.arg
 
-all: $(C_ARGS) $(OBJDIR)\cflags.h $(OBJDIR)\cflags_buf.h $(TARGETS)
+all: $(C_ARGS) $(OBJDIR)\cflags.h $(OBJDIR)\cflagsbf.h $(TARGETS)
 	@echo All done
 
 $(C_ARGS): $(MAKEFIL)
@@ -832,7 +832,7 @@ LDFLAGS  = -subsystem console -dll -dynamic
 EX_LIBS  = user32.lib advapi32.lib
 RESOURCE = $(OBJDIR)\watt-32.res
 
-all: $(OBJDIR)\cflags_buf.h $(TARGETS)
+all: $(OBJDIR)\cflagsbf.h $(TARGETS)
 	@echo All done
 
 ..\lib\wattcp_lcc.lib: $(OBJS)
@@ -851,7 +851,7 @@ all: $(OBJDIR)\cflags_buf.h $(TARGETS)
 clean:
 	- @del $(TARGETS)
 	- @del $(OBJDIR)\*.obj
-	- @del $(OBJDIR)\cflags_buf.h
+	- @del $(OBJDIR)\cflagsbf.h
 	- @del $(RESOURCE)
 	- @del *.lst
 	@echo Cleaning done
@@ -954,7 +954,7 @@ OBJS := $(subst \,/,$(OBJS))
 #
 export CL=
 
-all: $(C_ARGS) $(OBJDIR)/cflags.h $(OBJDIR)/cflags_buf.h $(TARGETS)
+all: $(C_ARGS) $(OBJDIR)/cflags.h $(OBJDIR)/cflagsbf.h $(TARGETS)
 	@echo All done
 
 #
@@ -1008,7 +1008,7 @@ $(C_ARGS): $(MAKEFILE_LIST)
 	rm -f ../lib/x64/wattcp_clang_imp_d.exp
 
 clean:
-	- rm -f $(TARGETS) $(C_ARGS) $(OBJDIR)/*.obj $(OBJDIR)/cflags.h $(OBJDIR)/cflags_buf.h $(RESOURCE) chksum0.lst cpumodel.lst
+	- rm -f $(TARGETS) $(C_ARGS) $(OBJDIR)/*.obj $(OBJDIR)/cflags.h $(OBJDIR)/cflagsbf.h $(RESOURCE) chksum0.lst cpumodel.lst
 	@echo Cleaning done
 
 $(OBJDIR)/%.obj: %.c
@@ -1048,7 +1048,7 @@ AR     = 386lib -nobanner
 
 OBJS := $(subst \,/,$(OBJS))
 
-all: $(PKT_STUB) $(C_ARGS) $(OBJDIR)/cflags_buf.h $(TARGET)
+all: $(PKT_STUB) $(C_ARGS) $(OBJDIR)/cflagsbf.h $(TARGET)
 	@echo All done
 
 $(TARGET): $(OBJS)
@@ -1057,7 +1057,7 @@ $(TARGET): $(OBJS)
 	$(AR) $(TARGET) @$(OBJDIR)/lib.arg
 
 clean:
-	rm -f $(OBJDIR)/*.obj $(OBJDIR)/cflags_buf.h chksum0.lst cpumodel.lst $(TARGET) pkt_stub.h
+	rm -f $(OBJDIR)/*.obj $(OBJDIR)/cflagsbf.h chksum0.lst cpumodel.lst $(TARGET) pkt_stub.h
 	@echo Cleaning done
 
 $(OBJDIR)/chksum0.obj: chksum0.asm
@@ -1089,7 +1089,7 @@ TARGET  = ..\lib\wattcplf.lib
 
 .SWAP
 
-all: $(PKT_STUB) $(OBJDIR)\cflags_buf.h $(TARGET)
+all: $(PKT_STUB) $(OBJDIR)\cflagsbf.h $(TARGET)
 	@echo All done
 
 $(TARGET): $(OBJS)
@@ -1169,7 +1169,7 @@ CFLAGS = $(CFLAGS) -I. -I..\inc -I$(DIGMARS)\include -c -r -Jm -C -DWATT32_BUILD
 C_ARGS = $(OBJDIR)\dmc.arg
 LIBARG = $(OBJDIR)\lib.arg
 
-all: $(PKT_STUB) $(C_ARGS) $(OBJDIR)/cflags.h $(OBJDIR)/cflags_buf.h $(TARGET)
+all: $(PKT_STUB) $(C_ARGS) $(OBJDIR)/cflags.h $(OBJDIR)/cflagsbf.h $(TARGET)
 	@echo All done
 
 @ifdef WIN32
@@ -1279,7 +1279,7 @@ ifeq ($(USE_MPATROL),1)
   EX_LIBS = -lmpatrol -lbfd -liberty -lintl -limagehlp
 endif
 
-all: $(OBJDIR)/cflags.h $(OBJDIR)/cflags_buf.h $(TARGETS)
+all: $(OBJDIR)/cflags.h $(OBJDIR)/cflagsbf.h $(TARGETS)
 	@echo All done
 
 ../lib/libwatt32.a: $(OBJS)
@@ -1300,7 +1300,7 @@ $(OBJDIR)/%.o: %.S
 	$(AS) $(AFLAGS) $(OBJDIR)/$*.iS -o $@
 
 clean:
-	rm -f $(TARGETS) $(OBJDIR)/*.o $(OBJDIR)/*.iS $(RESOURCE) $(OBJDIR)/cflags.h $(OBJDIR)/cflags_buf.h
+	rm -f $(TARGETS) $(OBJDIR)/*.o $(OBJDIR)/*.iS $(RESOURCE) $(OBJDIR)/cflags.h $(OBJDIR)/cflagsbf.h
 	@echo Cleaning done
 
 -include $(OBJDIR)/watt32.dep
@@ -1366,7 +1366,7 @@ OBJS := $(subst .obj,.o,$(OBJS))
 #
 # OBJS := $(OBJDIR)/cpumodel.o $(OBJDIR)/chksum0.o $(OBJS)
 
-all: $(OBJDIR)/cflags.h $(OBJDIR)/cflags_buf.h $(TARGETS)
+all: $(OBJDIR)/cflags.h $(OBJDIR)/cflagsbf.h $(TARGETS)
 	@echo All done
 
 ../lib/x86/libwatt32.a: $(OBJS)
@@ -1394,7 +1394,7 @@ $(OBJDIR)/%.o: %.S
 	$(AS) $(AFLAGS) $(OBJDIR)/$*.iS -o $@
 
 clean:
-	rm -f $(TARGETS) $(OBJDIR)/*.o $(OBJDIR)/*.iS $(RESOURCE) $(OBJDIR)/cflags.h $(OBJDIR)/cflags_buf.h
+	rm -f $(TARGETS) $(OBJDIR)/*.o $(OBJDIR)/*.iS $(RESOURCE) $(OBJDIR)/cflags.h $(OBJDIR)/cflagsbf.h
 	@echo Cleaning done
 
 -include $(OBJDIR)/watt32.dep
@@ -1419,7 +1419,7 @@ RESOURCE = $(OBJDIR)/watt-32.res
 OBJS := $(subst \,/,$(OBJS))
 OBJS := $(subst .obj,.o,$(OBJS))
 
-all: $(OBJDIR)/cflags.h $(OBJDIR)/cflags_buf.h $(TARGETS)
+all: $(OBJDIR)/cflags.h $(OBJDIR)/cflagsbf.h $(TARGETS)
 	@echo All done
 
 ../lib/x86/libwatt32-cygwin.a: $(OBJS)
@@ -1442,7 +1442,7 @@ $(OBJDIR)/%.o: %.S
 	$(AS) $(AFLAGS) $(OBJDIR)/$*.iS -o $@
 
 clean:
-	rm -f $(TARGETS) $(OBJDIR)/*.o $(OBJDIR)/*.iS $(RESOURCE) $(OBJDIR)/cflags.h $(OBJDIR)/cflags_buf.h
+	rm -f $(TARGETS) $(OBJDIR)/*.o $(OBJDIR)/*.iS $(RESOURCE) $(OBJDIR)/cflags.h $(OBJDIR)/cflagsbf.h
 	@echo Cleaning done
 
 -include $(OBJDIR)/watt32.dep
@@ -1466,7 +1466,7 @@ RESOURCE = $(OBJDIR)/watt-32.res
 OBJS := $(subst \,/,$(OBJS))
 OBJS := $(subst .obj,.o,$(OBJS))
 
-all: $(OBJDIR)/cflags.h $(OBJDIR)/cflags_buf.h $(TARGETS)
+all: $(OBJDIR)/cflags.h $(OBJDIR)/cflagsbf.h $(TARGETS)
 	@echo All done
 
 ../lib/x64/libwatt32-cygwin.a: $(OBJS)
@@ -1492,7 +1492,7 @@ $(OBJDIR)/%.o: %.S
 	$(AS) $(AFLAGS) $(OBJDIR)/$*.iS -o $@ > $*.lst
 
 clean:
-	rm -f $(TARGETS) $(OBJDIR)/*.o $(OBJDIR)/*.iS $(RESOURCE) $(OBJDIR)/cflags.h $(OBJDIR)/cflags_buf.h
+	rm -f $(TARGETS) $(OBJDIR)/*.o $(OBJDIR)/*.iS $(RESOURCE) $(OBJDIR)/cflags.h $(OBJDIR)/cflagsbf.h
 	@echo Cleaning done
 
 -include $(OBJDIR)/watt32.dep
@@ -1542,7 +1542,7 @@ LDFLAGS =  $(LDFLAGS) -dll -map -libpath:$(PELLESC)\lib -libpath:$(WINLIB) \
 
 EX_LIBS = user32.lib kernel32.lib advapi32.lib
 
-all: $(OBJDIR)\cflags_buf.h $(TARGETS)
+all: $(OBJDIR)\cflagsbf.h $(TARGETS)
 	@echo All done
 
 ..\lib\x86\wattcppo.lib: $(OBJS)
@@ -1565,7 +1565,7 @@ clean:
 	- @del $(TARGETS)
 	- @del $(RESOURCE)
 	- @del $(OBJDIR)\*.obj
-	- @del $(OBJDIR)\cflags_buf.h
+	- @del $(OBJDIR)\cflagsbf.h
 	- @del *.lst
 	@echo Cleaning done
 
@@ -1709,99 +1709,102 @@ build\watcom\win32\watt-32.res: watt-32.rc
 	wrc -dDEBUG=0 -D__WATCOMC__ -q -r -zm -fo=build\watcom\win32\watt-32.res watt-32.rc
 
 #
-# Rules for creating cflags_buf.h. A file with a C-array of the CFLAGS used.
-# Included in version.c.
+# Rules for creating 'cflagsbf.h'. A file with a C-array of the 'CFLAGS' used.
+# Included in 'version.c'.
 #
 # $(W32_BIN2C) should be set by .\configur.bat to point to either
 # ..\util\bin2.exe or ..\util\win32\bin2c.exe.
 #
-build\build\borland\small\cflags_buf.h: $(C_ARGS)
-	$(W32_BIN2C) $(C_ARGS)                     > build\borland\small\cflags_buf.h
+# PS. 'cflagsbf.h' was previously named 'cflags_buf.h'. But that may cause troubles
+#     on plain DOS with only 8+3 files.
+#
+build\build\borland\small\cflagsbf.h: $(C_ARGS)
+	$(W32_BIN2C) $(C_ARGS)                     > build\borland\small\cflagsbf.h
 
-build\borland\large\cflags_buf.h: $(C_ARGS)
-	$(W32_BIN2C) $(C_ARGS)                     > build\borland\large\cflags_buf.h
+build\borland\large\cflagsbf.h: $(C_ARGS)
+	$(W32_BIN2C) $(C_ARGS)                     > build\borland\large\cflagsbf.h
 
-build\borland\flat\cflags_buf.h: $(C_ARGS)
-	$(W32_BIN2C) $(C_ARGS)                     > build\borland\flat\cflags_buf.h
+build\borland\flat\cflagsbf.h: $(C_ARGS)
+	$(W32_BIN2C) $(C_ARGS)                     > build\borland\flat\cflagsbf.h
 
-build\borland\win32\cflags_buf.h: $(C_ARGS)
-	$(W32_BIN2C) $(C_ARGS)                     > build\borland\win32\cflags_buf.h
+build\borland\win32\cflagsbf.h: $(C_ARGS)
+	$(W32_BIN2C) $(C_ARGS)                     > build\borland\win32\cflagsbf.h
 
-build/CygWin/32bit/cflags_buf.h:
-	echo $(CFLAGS) | ../util/win32/bin2c.exe - > build/CygWin/32bit/cflags_buf.h
+build/CygWin/32bit/cflagsbf.h:
+	echo $(CFLAGS) | ../util/win32/bin2c.exe - > build/CygWin/32bit/cflagsbf.h
 
-build/CygWin/64bit/cflags_buf.h:
-	echo $(CFLAGS) | ../util/win32/bin2c.exe - > build/CygWin/64bit/cflags_buf.h
+build/CygWin/64bit/cflagsbf.h:
+	echo $(CFLAGS) | ../util/win32/bin2c.exe - > build/CygWin/64bit/cflagsbf.h
 
-build\digmars\small\cflags_buf.h: $(C_ARGS)
-	$(W32_BIN2C) $(C_ARGS)                     > build\digmars\small\cflags_buf.h
+build\digmars\small\cflagsbf.h: $(C_ARGS)
+	$(W32_BIN2C) $(C_ARGS)                     > build\digmars\small\cflagsbf.h
 
-build\digmars\large\cflags_buf.h: $(C_ARGS)
-	$(W32_BIN2C) $(C_ARGS)                     > build\digmars\large\cflags_buf.h
+build\digmars\large\cflagsbf.h: $(C_ARGS)
+	$(W32_BIN2C) $(C_ARGS)                     > build\digmars\large\cflagsbf.h
 
-build\digmars\x32vm\cflags_buf.h: $(C_ARGS)
-	$(W32_BIN2C) $(C_ARGS)                     > build\digmars\x32vm\cflags_buf.h
+build\digmars\x32vm\cflagsbf.h: $(C_ARGS)
+	$(W32_BIN2C) $(C_ARGS)                     > build\digmars\x32vm\cflagsbf.h
 
-build\digmars\phar\cflags_buf.h: $(C_ARGS)
-	$(W32_BIN2C) $(C_ARGS)                     > build\digmars\phar\cflags_buf.h
+build\digmars\phar\cflagsbf.h: $(C_ARGS)
+	$(W32_BIN2C) $(C_ARGS)                     > build\digmars\phar\cflagsbf.h
 
-build\digmars\win32\cflags_buf.h: $(C_ARGS)
-	$(W32_BIN2C) $(C_ARGS)                     > build\digmars\win32\cflags_buf.h
+build\digmars\win32\cflagsbf.h: $(C_ARGS)
+	$(W32_BIN2C) $(C_ARGS)                     > build\digmars\win32\cflagsbf.h
 
-build\highc\cflags_buf.h: $(C_ARGS)
-	$(W32_BIN2C) $(C_ARGS)                     > build\highc\cflags_buf.h
+build\highc\cflagsbf.h: $(C_ARGS)
+	$(W32_BIN2C) $(C_ARGS)                     > build\highc\cflagsbf.h
 
-build\ladsoft\cflags_buf.h:
-	echo $(CFLAGS) | $(W32_BIN2C) -            > build\ladsoft\cflags_buf.h
+build\ladsoft\cflagsbf.h:
+	echo $(CFLAGS) | $(W32_BIN2C) -            > build\ladsoft\cflagsbf.h
 
-build\lcc\cflags_buf.h:
-	echo $(CFLAGS) | $(W32_BIN2C) -            > build\lcc\cflags_buf.h
+build\lcc\cflagsbf.h:
+	echo $(CFLAGS) | $(W32_BIN2C) -            > build\lcc\cflagsbf.h
 
-build/MinGW32/cflags_buf.h:
-	echo $(CFLAGS) | ../util/win32/bin2c.exe - > build/MinGW32/cflags_buf.h
+build/MinGW32/cflagsbf.h:
+	echo $(CFLAGS) | ../util/win32/bin2c.exe - > build/MinGW32/cflagsbf.h
 
-build/MinGW64/32bit/cflags_buf.h:
-	echo $(CFLAGS) | ../util/win32/bin2c.exe - > build/MinGW64/32bit/cflags_buf.h
+build/MinGW64/32bit/cflagsbf.h:
+	echo $(CFLAGS) | ../util/win32/bin2c.exe - > build/MinGW64/32bit/cflagsbf.h
 
-build/MinGW64/64bit/cflags_buf.h:
-	echo $(CFLAGS) | ../util/win32/bin2c.exe - > build/MinGW64/64bit/cflags_buf.h
+build/MinGW64/64bit/cflagsbf.h:
+	echo $(CFLAGS) | ../util/win32/bin2c.exe - > build/MinGW64/64bit/cflagsbf.h
 
-build\pellesc\32bit\cflags_buf.h:
-	echo $(CFLAGS) | $(W32_BIN2C) -            > build\pellesc\32bit\cflags_buf.h
+build\pellesc\32bit\cflagsbf.h:
+	echo $(CFLAGS) | $(W32_BIN2C) -            > build\pellesc\32bit\cflagsbf.h
 
-build\pellesc\64bit\cflags_buf.h:
-	echo $(CFLAGS) | $(W32_BIN2C) -            > build\pellesc\64bit\cflags_buf.h
+build\pellesc\64bit\cflagsbf.h:
+	echo $(CFLAGS) | $(W32_BIN2C) -            > build\pellesc\64bit\cflagsbf.h
 
-build\visualc\32bit\release\cflags_buf.h: $(C_ARGS)
-	- echo $(CFLAGS) $(CL) | $(W32_BIN2C) -    > build\visualc\32bit\release\cflags_buf.h
+build\visualc\32bit\release\cflagsbf.h: $(C_ARGS)
+	- echo $(CFLAGS) $(CL) | $(W32_BIN2C) -    > build\visualc\32bit\release\cflagsbf.h
 
-build\visualc\32bit\debug\cflags_buf.h: $(C_ARGS)
-	- echo $(CFLAGS) $(CL) | $(W32_BIN2C) -    > build\visualc\32bit\debug\cflags_buf.h
+build\visualc\32bit\debug\cflagsbf.h: $(C_ARGS)
+	- echo $(CFLAGS) $(CL) | $(W32_BIN2C) -    > build\visualc\32bit\debug\cflagsbf.h
 
-build\visualc\64bit\release\cflags_buf.h: $(C_ARGS)
-	- echo $(CFLAGS) $(CL) | $(W32_BIN2C) -    > build\visualc\64bit\release\cflags_buf.h
+build\visualc\64bit\release\cflagsbf.h: $(C_ARGS)
+	- echo $(CFLAGS) $(CL) | $(W32_BIN2C) -    > build\visualc\64bit\release\cflagsbf.h
 
-build\visualc\64bit\debug\cflags_buf.h: $(C_ARGS)
-	- echo $(CFLAGS) $(CL) | $(W32_BIN2C) -    > build\visualc\64bit\debug\cflags_buf.h
+build\visualc\64bit\debug\cflagsbf.h: $(C_ARGS)
+	- echo $(CFLAGS) $(CL) | $(W32_BIN2C) -    > build\visualc\64bit\debug\cflagsbf.h
 
 @ifdef WATCOM
-build\watcom\small\cflags_buf.h: $(C_ARGS)
-	$(%W32_BIN2C) $(C_ARGS)                    > build\watcom\small\cflags_buf.h
+build\watcom\small\cflagsbf.h: $(C_ARGS)
+	$(%W32_BIN2C) $(C_ARGS)                    > build\watcom\small\cflagsbf.h
 
-build\watcom\large\cflags_buf.h: $(C_ARGS)
-	$(%W32_BIN2C) $(C_ARGS)                    > build\watcom\large\cflags_buf.h
+build\watcom\large\cflagsbf.h: $(C_ARGS)
+	$(%W32_BIN2C) $(C_ARGS)                    > build\watcom\large\cflagsbf.h
 
-build\watcom\flat\cflags_buf.h: $(C_ARGS)
-	$(%W32_BIN2C) $(C_ARGS)                    > build\watcom\flat\cflags_buf.h
+build\watcom\flat\cflagsbf.h: $(C_ARGS)
+	$(%W32_BIN2C) $(C_ARGS)                    > build\watcom\flat\cflagsbf.h
 
-build\watcom\win32\cflags_buf.h: $(C_ARGS)
-	$(%W32_BIN2C) $(C_ARGS)                    > build\watcom\win32\cflags_buf.h
+build\watcom\win32\cflagsbf.h: $(C_ARGS)
+	$(%W32_BIN2C) $(C_ARGS)                    > build\watcom\win32\cflagsbf.h
 @endif
 
-build/clang/32bit/release/cflags_buf.h \
-build/clang/32bit/debug/cflags_buf.h   \
-build/clang/64bit/release/cflags_buf.h \
-build/clang/64bit/debug/cflags_buf.h:
+build/clang/32bit/release/cflagsbf.h \
+build/clang/32bit/debug/cflagsbf.h   \
+build/clang/64bit/release/cflagsbf.h \
+build/clang/64bit/debug/cflagsbf.h:
 	../util/win32/bin2c.exe $(C_ARGS)          > $@
 
 @ifdef DJGPP MINGW32 MINGW64 CYGWIN32 CYGWIN64

@@ -296,6 +296,10 @@ const char * W32_CALL wattcpVersion (void)
   return (buf);
 }
 
+/*
+ * Since plain DOS is limited to 8+3 files, the 'cflags_buf.h' files
+ * were renamed to 'cflagsbf.h'.
+ */
 #if defined(__DJGPP__)
   #define CC_DEFINE      "__DJGPP__"
   #define CC_PROG        "gcc"
@@ -306,22 +310,22 @@ const char * W32_CALL wattcpVersion (void)
 
   #if defined(WIN32)
     #define CFLAGS       "build/borland/win32/cflags.h"
-    #define CFLAGS_BUF   "build/borland/win32/cflags_buf.h"
+    #define CFLAGS_BUF   "build/borland/win32/cflagsbf.h"
     #define CC_PROG      "bcc32"
 
   #elif defined(__FLAT__)
     #define CFLAGS       "build/borland/flat/cflags.h"
-    #define CFLAGS_BUF   "build/borland/flat/cflags_buf.h"
+    #define CFLAGS_BUF   "build/borland/flat/cflagsbf.h"
     #define CC_PROG      "bcc32"
 
   #elif defined(__LARGE__)
     #define CFLAGS       "build/borland/large/cflags.h"
-    #define CFLAGS_BUF   "build/borland/large/cflags_buf.h"
+    #define CFLAGS_BUF   "build/borland/large/cflagsbf.h"
     #define CC_PROG      "bcc"
 
   #elif defined(__SMALL__)
     #define CFLAGS       "build/borland/small/cflags.h"
-    #define CFLAGS_BUF   "build/borland/small/cflags_buf.h"
+    #define CFLAGS_BUF   "build/borland/small/cflagsbf.h"
     #define CC_PROG      "bcc"
   #endif
 
@@ -345,19 +349,19 @@ const char * W32_CALL wattcpVersion (void)
 
   #elif defined(__LARGE__)
     #define CFLAGS       "build/digmars/large/cflags.h"
-    #define CFLAGS_BUF   "build/digmars/large/cflags_buf.h"
+    #define CFLAGS_BUF   "build/digmars/large/cflagsbf.h"
 
   #elif defined(WIN32)
     #define CFLAGS       "build/digmars/win32/cflags.h"
-    #define CFLAGS_BUF   "build/digmars/win32/cflags_buf.h"
+    #define CFLAGS_BUF   "build/digmars/win32/cflagsbf.h"
 
   #elif (DOSX == PHARLAP)
     #define CFLAGS       "build/digmars/phar/cflags.h"
-    #define CFLAGS_BUF   "build/digmars/phar/cflags_buf.h"
+    #define CFLAGS_BUF   "build/digmars/phar/cflagsbf.h"
 
   #elif (DOSX == X32VM)
     #define CFLAGS       "build/digmars/x32vm/cflags.h"
-    #define CFLAGS_BUF   "build/digmars/x32vm/cflags_buf.h"
+    #define CFLAGS_BUF   "build/digmars/x32vm/cflagsbf.h"
 
   #else
     #error What!?
@@ -369,23 +373,23 @@ const char * W32_CALL wattcpVersion (void)
 
   #if defined(WIN64) || defined(_M_X64)
     #define CFLAGS         "build/pellesc/64bit/cflags.h"
-    #define CFLAGS_BUF     "build/pellesc/64bit/cflags_buf.h"
+    #define CFLAGS_BUF     "build/pellesc/64bit/cflagsbf.h"
   #else
     #define CFLAGS         "build/pellesc/32bit/cflags.h"
-    #define CFLAGS_BUF     "build/pellesc/32bit/cflags_buf.h"
+    #define CFLAGS_BUF     "build/pellesc/32bit/cflagsbf.h"
   #endif
 
 #elif defined(__LCC__)   /* Win32 only */
   #define CC_DEFINE      "__LCC__"
   #define CC_PROG        "lcc"
   #define CFLAGS         "build/lcc/cflags.h"
-  #define CFLAGS_BUF     "build/lcc/cflags_buf.h"
+  #define CFLAGS_BUF     "build/lcc/cflagsbf.h"
 
 #elif defined(__CCDL__)  /* DOS4GW only */
   #define CC_DEFINE      "__CCDL__"
   #define CC_PROG        "cc386"
   #define CFLAGS         "build/ladsoft/cflags.h"
-  #define CFLAGS_BUF     "build/ladsoft/cflags_buf.h"
+  #define CFLAGS_BUF     "build/ladsoft/cflagsbf.h"
 
 #elif defined(__ICC__)   /* Not yet */
   #define CC_DEFINE      "__ICC__"
@@ -399,18 +403,18 @@ const char * W32_CALL wattcpVersion (void)
   #if defined(_DEBUG)
     #if defined(_WIN64)
       #define CFLAGS       "build/clang/64bit/debug/cflags.h"
-      #define CFLAGS_BUF   "build/clang/64bit/debug/cflags_buf.h"
+      #define CFLAGS_BUF   "build/clang/64bit/debug/cflagsbf.h"
     #else
       #define CFLAGS       "build/clang/32bit/debug/cflags.h"
-      #define CFLAGS_BUF   "build/clang/32bit/debug/cflags_buf.h"
+      #define CFLAGS_BUF   "build/clang/32bit/debug/cflagsbf.h"
     #endif
   #else
     #if defined(_WIN64)
       #define CFLAGS       "build/clang/64bit/release/cflags.h"
-      #define CFLAGS_BUF   "build/clang/64bit/release/cflags_buf.h"
+      #define CFLAGS_BUF   "build/clang/64bit/release/cflagsbf.h"
     #else
       #define CFLAGS       "build/clang/32bit/release/cflags.h"
-      #define CFLAGS_BUF   "build/clang/32bit/release/cflags_buf.h"
+      #define CFLAGS_BUF   "build/clang/32bit/release/cflagsbf.h"
     #endif
   #endif
 
@@ -424,22 +428,22 @@ const char * W32_CALL wattcpVersion (void)
 
   #if defined(WIN32)
     #define CFLAGS       "build/watcom/win32/cflags.h"
-    #define CFLAGS_BUF   "build/watcom/win32/cflags_buf.h"
+    #define CFLAGS_BUF   "build/watcom/win32/cflagsbf.h"
     #define CC_PROG      "wcc386"
 
   #elif defined(__SMALL__)
     #define CFLAGS       "build/watcom/small/cflags.h"
-    #define CFLAGS_BUF   "build/watcom/small/cflags_buf.h"
+    #define CFLAGS_BUF   "build/watcom/small/cflagsbf.h"
     #define CC_PROG      "wcc"
 
   #elif defined(__LARGE__)
     #define CFLAGS       "build/watcom/large/cflags.h"
-    #define CFLAGS_BUF   "build/watcom/large/cflags_buf.h"
+    #define CFLAGS_BUF   "build/watcom/large/cflagsbf.h"
     #define CC_PROG      "wcc"
 
   #elif defined(__FLAT__)
     #define CFLAGS       "build/watcom/flat/cflags.h"
-    #define CFLAGS_BUF   "build/watcom/flat/cflags_buf.h"
+    #define CFLAGS_BUF   "build/watcom/flat/cflagsbf.h"
     #define CC_PROG      "wcc386"
 
   #else
@@ -454,19 +458,19 @@ const char * W32_CALL wattcpVersion (void)
   #define CC_DEFINE      "__MINGW64__"
   #define CC_PROG        "gcc"
   #define CFLAGS         "build/MinGW64/64bit/cflags.h"
-  #define CFLAGS_BUF     "build/MinGW64/64bit/cflags_buf.h"
+  #define CFLAGS_BUF     "build/MinGW64/64bit/cflagsbf.h"
 
 #elif defined(__MINGW32__) && defined(__MINGW64_VERSION_MAJOR)
   #define CC_DEFINE      "__MINGW32__"
   #define CC_PROG        "gcc"
   #define CFLAGS         "build/MinGW64/32bit/cflags.h"
-  #define CFLAGS_BUF     "build/MinGW64/32bit/cflags_buf.h"
+  #define CFLAGS_BUF     "build/MinGW64/32bit/cflagsbf.h"
 
 #elif defined(__MINGW32__)    /* The old-school MinGW from <mingw.org> */
   #define CC_DEFINE      "__MINGW32__"
   #define CC_PROG        "gcc"
   #define CFLAGS         "build/MinGW32/cflags.h"
-  #define CFLAGS_BUF     "build/MinGW32/cflags_buf.h"
+  #define CFLAGS_BUF     "build/MinGW32/cflagsbf.h"
 
 #elif defined(__CYGWIN__)
   #define CC_DEFINE      "__CYGWIN__"
@@ -489,18 +493,18 @@ const char * W32_CALL wattcpVersion (void)
     #if defined(_DEBUG)
       #if defined(_WIN64)
         #define CFLAGS      "build/visualc/64bit/debug/cflags.h"
-        #define CFLAGS_BUF  "build/visualc/64bit/debug/cflags_buf.h"
+        #define CFLAGS_BUF  "build/visualc/64bit/debug/cflagsbf.h"
       #else
         #define CFLAGS      "build/visualc/32bit/debug/cflags.h"
-        #define CFLAGS_BUF  "build/visualc/32bit/debug/cflags_buf.h"
+        #define CFLAGS_BUF  "build/visualc/32bit/debug/cflagsbf.h"
       #endif
     #else
       #if defined(_WIN64)
         #define CFLAGS      "build/visualc/64bit/release/cflags.h"
-        #define CFLAGS_BUF  "build/visualc/64bit/release/cflags_buf.h"
+        #define CFLAGS_BUF  "build/visualc/64bit/release/cflagsbf.h"
       #else
         #define CFLAGS      "build/visualc/32bit/release/cflags.h"
-        #define CFLAGS_BUF  "build/visualc/32bit/release/cflags_buf.h"
+        #define CFLAGS_BUF  "build/visualc/32bit/release/cflagsbf.h"
       #endif
     #endif
   #endif
@@ -542,7 +546,7 @@ const char * W32_CALL wattcpBuildCC (void)
 #if defined(CFLAGS_BUF)
   /*
    * Generated array for CFLAGS.
-   * Ref: cflags_buf.h rules in respective makefile.
+   * Ref: cflagsbf.h rules in respective makefile.
    *
    * Since the makefiles contains "\xx" for some targets (except gcc),
    * the below '#include CFLAGS' is mishandled by the C-preprocessor;
