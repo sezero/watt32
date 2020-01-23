@@ -14,7 +14,7 @@ export CL=
 #   ../lib/$(CPU)/wattcp_clang_imp_d.lib - for 'USE_STATIC_LIB = 0'
 #   ../lib/$(CPU)/wattcp_clang_d.lib     - for 'USE_STATIC_LIB = 1'
 #
-USE_DEBUG_LIB ?= 1
+USE_DEBUG_LIB ?= 0
 
 #
 # Set to 1 to link using static library:
