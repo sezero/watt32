@@ -9,6 +9,7 @@ if %1. == djgpp. goto start
 :start
 if %1.==mingw32.  goto mingw32
 if %1.==mingw64.  goto mingw64
+if %1.==mingw.    goto mingw64
 if %1.==cygwin.   goto cygwin
 if %1.==cygwin64. goto cygwin64
 if %1.==djgpp.    goto djgpp
