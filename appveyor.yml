@@ -7,8 +7,6 @@ skip_commits:
 
 environment:
   matrix:
-    - BUILDER: watcom
-      CPU:     x86
     - BUILDER: visualc
       CPU:     x86
     - BUILDER: visualc
@@ -22,6 +20,8 @@ environment:
     - BUILDER: mingw
       CPU:     x64
     - BUILDER: djgpp
+      CPU:     x86
+    - BUILDER: watcom
       CPU:     x86
 
 matrix:
