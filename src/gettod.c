@@ -117,6 +117,7 @@ uint64 FILETIME_to_unix_epoch (const FILETIME *ft)
 
 W32_GCC_PRAGMA (GCC diagnostic push)
 W32_GCC_PRAGMA (GCC diagnostic ignored "-Wformat")
+W32_GCC_PRAGMA (GCC diagnostic ignored "-Wformat-extra-args")
 
 const char *ULONGLONG_to_ctime (ULONGLONG ts)
 {
