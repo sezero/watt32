@@ -50,6 +50,15 @@ set WATCOM=%APPVEYOR_BUILD_FOLDER%\CI\Watcom
 set WATCOM_ZIP=%WATCOM%\watcom20.zip
 
 ::
+:: Shit for brains 'cmd' cannot have this inside a 'if x (' block since
+:: on a AppVeyor build several "C:\Program Files (x86)\Microsoft xxx" strings
+:: are in the 'PATH' !
+::
+if %APPVEYOR_PROJECT_NAME%. == . (
+  set PATH=%WATCOM%\binnt;%PATH%
+)
+
+::
 :: In case my curl was built with Wsock-Trace
 ::
 set WSOCK_TRACE_LEVEL=0
@@ -134,14 +143,13 @@ if %BUILDER%. == djgpp. (
 )
 
 if %BUILDER%. == watcom. (
-  set PATH=%WATCOM%\binnt;%PATH%
   set NT_INCLUDE=%WATCOM%\h;%WATCOM%\h\nt
 
   if not exist %WATCOM%\binnt\wmake.exe (
     mkdir %WATCOM%
     echo Downloading OpenWatcom 2.0
     curl -o %WATCOM_ZIP% -# http://www.watt-32.net/CI/watcom20.zip
-    7z x -o%WATCOM% %WATCOM_ZIP%
+    7z x -y -o%WATCOM% %WATCOM_ZIP% > NUL
   )
   call configur.bat watcom
   echo Building for Watcom/Win32
