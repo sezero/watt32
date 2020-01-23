@@ -1,3 +1,10 @@
+#
+# Skipping commits affecting these files.
+#
+skip_commits:
+   files:
+    - '**/*.md'
+
 environment:
   matrix:
     - BUILDER: VisualC
