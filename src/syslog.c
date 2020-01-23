@@ -268,7 +268,7 @@ static int openloghost (char **errbuf)
 {
   struct servent *sp;
   struct hostent *hp;
-  static char buf [80];
+  static char buf [200];
 
   *errbuf = NULL;
 
