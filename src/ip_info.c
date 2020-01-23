@@ -1,7 +1,8 @@
-#define WIN32_LEAN_AND_MEAN
-#define _WIN32_WINNT 0x0501
-
 /*
+ * This file is NOT part of Watt-32. It is just a test-program
+ * used during coding of winadinf.c.
+ *
+ * Building with:
  * MinGW:
  *   gcc -Wall ip_info.c -o ip_info.exe -lws2_32 -liphlpapi
  *
@@ -11,6 +12,13 @@
  * OpenWatcom:
  *   wcl386 -q -w3 -bt=nt ip_info.c ws2_32.lib iphlpapi.lib
  */
+
+#define WIN32_LEAN_AND_MEAN
+
+#if !defined(_WIN32_WINNT) || (_WIN32_WINNT < 0x0501)
+  #undef _WIN32_WINNT
+  #define _WIN32_WINNT 0x0501
+#endif
 
 #include <stdio.h>
 #include <malloc.h>
