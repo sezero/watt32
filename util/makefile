@@ -3,7 +3,7 @@
 #  utilities used during Watt-32 developement
 #
 #  DOS versions:   Requires djgpp2 + SLang 1.3+ library installed.
-#  Win32 versions: Requires MingW + Slang 1.3+ installed.
+#  Win32 versions: Requires MinGW + Slang 1.3+ installed.
 #  Linux versions: Requires gcc + Slang 1.3+ installed.
 
 .SUFFIXES: .exe .l .y

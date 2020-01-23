@@ -1,6 +1,6 @@
 /*
  * Simple tool for generating dependencies from .c/.h files.
- * Requires djgpp or MingW.
+ * Requires djgpp or MinGW.
  *
  * Notes: This isn't a C-preprocessor, so it doesn't correctly handle
  * "#include" files inside "#if" blocks. Output dependencies are always

@@ -1442,7 +1442,7 @@ static const char *vendor_version (const char **vendor)
   sprintf (buf, "%d.%d", __MINGW64_VERSION_MAJOR, __MINGW64_VERSION_MINOR);
   v = "__MINGW64__";
 
-#elif defined(__MINGW32__)       /* mingw.org MinGW. MingW-RT-4+ defines '__MINGW_MAJOR_VERSION' */
+#elif defined(__MINGW32__)       /* mingw.org MinGW. MinGW-RT-4+ defines '__MINGW_MAJOR_VERSION' */
   #if defined(__MINGW_MAJOR_VERSION)
     sprintf (buf, "%d.%d", __MINGW_MAJOR_VERSION, __MINGW_MINOR_VERSION);
   #else

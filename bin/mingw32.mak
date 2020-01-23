@@ -3,7 +3,7 @@
 #  Gisle Vanem 2004
 #
 #  Target:
-#    GNU C 3+ (MingW)
+#    GNU C 3+ (MinGW)
 #
 
 .SUFFIXES: .exe
@@ -58,7 +58,7 @@ PROGS = ping.exe     popdump.exe  rexec.exe    tcpinfo.exe  cookie.exe   \
         ident.exe    country.exe  con-test.exe gui-test.exe tracert.exe
 
 all: $(PROGS)
-	@echo 'MingW32 binaries done.'
+	@echo 'MinGW32 binaries done.'
 
 con-test.exe: w32-test.c $(WATT_LIB)
 	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ $^ $(EXTRAS) $(MAPFILE)
@@ -91,9 +91,9 @@ else
 endif
 
 depend:
-	$(CC) $(SOURCES) $(DEP_CFLAGS) > .depend.MingW32
+	$(CC) $(SOURCES) $(DEP_CFLAGS) > .depend.MinGW32
 
--include .depend.MingW32
+-include .depend.MinGW32
 
 #
 # These are needed for MSYS' make (sigh)

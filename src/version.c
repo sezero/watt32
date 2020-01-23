@@ -257,7 +257,7 @@ const char * W32_CALL wattcpVersion (void)
   p += sprintf (p, "MinGW-w64 %d.%d (%s), ",
                 __MINGW64_VERSION_MAJOR, __MINGW64_VERSION_MINOR, __MINGW64_VERSION_STATE);
 
-#elif defined(__MINGW32__)          /* mingw.org MinGW. MingW-RT-4+ defines '__MINGW_MAJOR_VERSION' */
+#elif defined(__MINGW32__)          /* mingw.org MinGW. MinGW-RT-4+ defines '__MINGW_MAJOR_VERSION' */
   #if defined(__MINGW_MAJOR_VERSION)
     p += sprintf (p, "MinGW %d.%d, ", __MINGW_MAJOR_VERSION, __MINGW_MINOR_VERSION);
   #else

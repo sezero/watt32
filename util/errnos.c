@@ -299,7 +299,7 @@ static const char *VendorVersion (void)
 #elif defined(__MINGW32__) && defined(__MINGW64_VERSION_MAJOR)
   sprintf (buf, "%d.%d", __MINGW64_VERSION_MAJOR, __MINGW64_VERSION_MINOR);
 
-#elif defined(__MINGW32__) && defined(__MINGW_MAJOR_VERSION)  /* MingW-RT 4.0+ */
+#elif defined(__MINGW32__) && defined(__MINGW_MAJOR_VERSION)  /* MinGW-RT 4.0+ */
   sprintf (buf, "%d.%d", __MINGW_MAJOR_VERSION, __MINGW_MINOR_VERSION);
 
 #elif defined(__MINGW32__)

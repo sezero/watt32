@@ -72,7 +72,7 @@ PROGS = ping.exe     popdump.exe  rexec.exe    tcpinfo.exe  cookie.exe   \
         ident.exe    country.exe  con-test.exe gui-test.exe tracert.exe
 
 all: $(PROGS)
-	@echo 'MingW64-w64 binaries done. $$(CPU)=$(CPU).'
+	@echo 'MinGW64-w64 binaries done. $$(CPU)=$(CPU).'
 
 tracert.exe: EXTRAS += geoip.c -DUSE_GEOIP # -DPROBE_PROTOCOL=IPPROTO_TCP
 
@@ -105,9 +105,9 @@ else
 endif
 
 depend:
-	$(CC) $(SOURCES) $(DEP_CFLAGS) > .depend.MingW64
+	$(CC) $(SOURCES) $(DEP_CFLAGS) > .depend.MinGW64
 
--include .depend.MingW64
+-include .depend.MinGW64
 
 #
 # These are needed for MSYS' make (sigh)

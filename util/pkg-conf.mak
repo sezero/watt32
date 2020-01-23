@@ -112,7 +112,7 @@ FORCE:
 check_make:
 	@echo 'Make version: $(MAKE_VERSION).'
 ifeq ($(findstring pc-mingw32,$(MAKE_VERSION)),pc-mingw32)
-	@echo 'MingW32.'
+	@echo 'MinGW32.'
 endif
 ifeq ($(findstring pc-msys,$(MAKE_VERSION)),pc-msys)
 	@echo 'MSys.'
