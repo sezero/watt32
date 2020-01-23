@@ -508,7 +508,13 @@ LINKARG = $(OBJDIR)\wlink.arg
 C_ARGS  = $(OBJDIR)\$(CC).arg
 
 AFLAGS += -zq -fr=nul -w3 -d1
-CFLAGS += -zq -fr=nul -wx -fpi -DWATT32_BUILD -I. -I..\inc -I$(%WATCOM)\h
+CFLAGS += -zq -fr=nul -wx -fpi
+
+#
+# Since Watcom's internal (?) 'echo' sometimes fails to handle so many arguments in
+# the 'cflags.h' rule below.
+#
+EXTRA_CFLAGS = -DWATT32_BUILD -I. -I..\inc -I$(%WATCOM)\h
 
 #
 # WCC386-flags used:
@@ -578,7 +584,7 @@ $(OBJDIR)\cpumodel.obj: cpumodel.asm
 
 $(C_ARGS): $(MAKEFIL)
 	%create $^@
-	%append $^@ $(CFLAGS)
+	%append $^@ $(CFLAGS) $(EXTRA_CFLAGS)
 
 clean: .SYMBOLIC
 	- @del $(OBJDIR)\*.obj
@@ -1587,10 +1593,10 @@ doxygen:
 lang.c: lang.l
 	flex -8 -t lang.l > lang.c
 
+@ifdef DJGPP MINGW32 MINGW64 CLANG CYGWIN32 CYGWIN64 CLANG HIGHC DIGMARS
 #
 # GNU-Make rules uses shell 'sh' commands:
 #
-@ifdef DJGPP MINGW32 MINGW64 CLANG CYGWIN32 CYGWIN64 CLANG HIGHC DIGMARS
 $(OBJDIR)/cflags.h: $(MAKEFILE_LIST)
 	echo 'const char *w32_cflags = "$(CFLAGS)";' > $(OBJDIR)/cflags.h
 	echo 'const char *w32_cc     = "$(CC)";'    >> $(OBJDIR)/cflags.h
@@ -1601,9 +1607,15 @@ $(OBJDIR)\cflags.h: $(MAKEFIL)
 	echo const char *w32_cc     = '"$(CC)";'    >> $(OBJDIR)\cflags.h
 
 @else
+#
+# This is for Watcom etc. which could possibly not handle all the arguments in
+# the 'CFLAGS'. We to do this in several steps creatings multiline string!
+#
 $(OBJDIR)\cflags.h: $(MAKEFIL)
-	echo const char *w32_cflags = "$(CFLAGS)";  > $(OBJDIR)\cflags.h
-	echo const char *w32_cc     = "$(CC)";     >> $(OBJDIR)\cflags.h
+	echo const char *w32_cflags =       > $(OBJDIR)\cflags.h
+	echo            "$(CFLAGS)"        >> $(OBJDIR)\cflags.h
+	echo            "$(EXTRA_CFLAGS);" >> $(OBJDIR)\cflags.h
+	echo const char *w32_cc = "$(CC)"; >> $(OBJDIR)\cflags.h
 @endif
 
 @ifdef DJGPP
