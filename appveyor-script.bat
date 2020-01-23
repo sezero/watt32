@@ -48,6 +48,7 @@ set DJ_PREFIX=%DJGPP%/bin/i586-pc-msdosdjgpp-
 ::
 set WATCOM=%APPVEYOR_BUILD_FOLDER%\CI\Watcom
 set WATCOM_ZIP=%WATCOM%\watcom20.zip
+set NT_INCLUDE=%WATCOM%\h;%WATCOM%\h\nt
 
 ::
 :: Shit for brains 'cmd' cannot have this inside a 'if x (' block since
@@ -141,8 +142,6 @@ if %BUILDER%. == djgpp. (
 )
 
 if %BUILDER%. == watcom. (
-  set NT_INCLUDE=%WATCOM%\h;%WATCOM%\h\nt
-
   if not exist %WATCOM%\binnt\wmake.exe (
     mkdir %WATCOM%
     echo Downloading OpenWatcom 2.0
