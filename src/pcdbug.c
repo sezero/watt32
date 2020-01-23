@@ -2108,7 +2108,7 @@ static BOOL dbug_filter (void)
 
 static const char *pcdbug_driver_ver (void)
 {
-  static char buf[20];
+  static char buf[30];
   WORD major, minor, unused, build;
 
   if (!pkt_get_drvr_ver(&major,&minor,&unused,&build))
