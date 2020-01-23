@@ -5,6 +5,6 @@
 Until I manage to create a proper `README.md` file, here is the
 original [README](`README`) file.
 
-And also the [README.TOO](`README.TOO`) file.
+And also the [`README.TOO`](README.TOO) file.
 
-Refer the [install](`INSTALL`) file for how to build and use the Watt-32 library.
+Refer the [`install`](INSTALL) file for how to build and use the Watt-32 library.
