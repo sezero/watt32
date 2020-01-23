@@ -21,6 +21,11 @@ if %APPVEYOR_PROJECT_NAME%. == . (
 )
 
 ::
+:: Some weird issue with a Appveyor run and 'BUILDER == watcom'.
+::
+if %BUILDER%. == watcom. echo on
+
+::
 :: Stuff common to '[build_src | build_bin | build_tests]'
 ::
 :: MinGW: Add PATH to 'gcc' and stuff for 'util/pkg-conf.mak'.
