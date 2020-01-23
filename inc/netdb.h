@@ -274,57 +274,68 @@ W32_FUNC int  * W32_CALL __h_errno_location (void);
  * as a built-in, we do not provide any prototypes for these yet.
  */
 #if defined(_REENTRANT) && !defined(__MINGW64_VERSION_MAJOR)
-  W32_FUNC struct hostent *
-  W32_CALL gethostbyaddr_r (
-           const char *addr, int len, int type, struct hostent *result,
-           char *buffer, int buflen, int *h_errnop );
+  W32_FUNC int W32_CALL gethostbyaddr_r (
+           const void      *addr, socklen_t len, int type,
+           struct hostent  *ret, char *buf, size_t buflen,
+           struct hostent **result, int *h_errnop);
 
-  W32_FUNC struct hostent *
-  W32_CALL gethostbyname_r (
-           const char *name, struct hostent *result,
-           char *buffer, int buflen, int *h_errnop);
+  W32_FUNC int W32_CALL gethostbyname_r (
+           const char      *name,
+           struct hostent  *ret, char *buf, size_t buflen,
+           struct hostent **result, int *h_errnop);
 
-  W32_FUNC struct hostent *
-  W32_CALL gethostent_r (
-           struct hostent *result, char *buffer, int buflen, int *h_errnop);
+  W32_FUNC int W32_CALL gethostent_r (
+           struct hostent  *ret, char *buf, size_t buflen,
+           struct hostent **result, int *h_errnop);
 
-  W32_FUNC struct netent *
-  W32_CALL getnetbyaddr_r (
-           long net, int type, struct netent *result, char *buffer, int buflen);
+  W32_FUNC int W32_CALL getnetbyaddr_r (
+           uint32_t net, int type, struct netent *result_buf, char *buf,
+           size_t buflen, struct netent **result, int *h_errnop);
 
-  W32_FUNC struct netent *
-  W32_CALL getnetbyname_r (
-           const char *name, struct netent *result, char *buffer, int buflen);
+  W32_FUNC int W32_CALL getnetbyname_r (
+           const char *name, struct netent *result_buf, char *buf,
+           size_t buflen, struct netent **result, int *h_errnop);
 
-  W32_FUNC struct netent *
-  W32_CALL getnetent_r (
-           struct netent *result, char *buffer, int buflen);
+  W32_FUNC int W32_CALL getnetent_r (
+           struct netent *result_buf, char *buf,
+           size_t buflen, struct netent **result, int *h_errnop);
 
-  W32_FUNC struct protoent *
-  W32_CALL getprotobyname_r (
-           const char *name, struct protoent *result, char *buffer, int buflen);
+  W32_FUNC int W32_CALL getprotobyname_r (
+           const char *name, struct protoent *result_buf, char *buf,
+           size_t buflen, struct protoent **result);
 
-  W32_FUNC struct protoent *
-  W32_CALL getprotobynumber_r (
-           int proto, struct protoent *result, char *buffer, int buflen);
+  W32_FUNC int W32_CALL getprotobynumber_r (
+           int proto, struct protoent *result_buf, char *buf,
+           size_t buflen, struct protoent **result);
 
-  W32_FUNC struct protoent *
-  W32_CALL getprotoent_r (
-           struct protoent *result, char *buffer, int buflen);
+  W32_FUNC int W32_CALL getprotoent_r (
+           struct protoent *result_buf, char *buf,
+           size_t buflen, struct protoent **result);
 
-  W32_FUNC struct servent *
-  W32_CALL getservbyname_r (
-           const char *name, const char *proto, struct servent *result,
-           char *buffer, int buflen);
+  W32_FUNC int W32_CALL getservbyname_r (
+           const char *name, const char *proto,
+           struct servent *result_buf, char *buf,
+           size_t buflen, struct servent **result);
 
-  W32_FUNC struct servent *
-  W32_CALL getservbyport_r (
-           int port, const char *proto, struct servent *result,
-           char *buffer, int buflen);
+  W32_FUNC int W32_CALL getservbyport_r (
+           int port, const char *proto,
+           struct servent *result_buf, char *buf,
+           size_t buflen, struct servent **result);
 
-  W32_FUNC struct servent *
-  W32_CALL getservent_r (
-           struct servent *result, char *buffer, int buflen);
+  W32_FUNC int W32_CALL getservent_r (
+           struct servent *result_buf, char *buf,
+           size_t buflen, struct servent **result);
+
+  W32_FUNC int W32_CALL sethostent_r (
+                        int stay_open, struct hostent *buffer);
+
+  W32_FUNC int W32_CALL endhostent_r (
+                        struct hostent *buffer);
+
+  W32_FUNC int W32_CALL setprotoent_r (
+                        int stay_open, struct protoent *buffer);
+
+  W32_FUNC int W32_CALL endprotoent_r (struct protoent *buffer);
 
 #endif /* _REENTRANT && !__MINGW64_VERSION_MAJOR */
 
