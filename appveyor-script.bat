@@ -7,9 +7,10 @@ prompt $P$G
 :: locally using 'cmd'.
 ::
 if %APPVEYOR_PROJECT_NAME%. == . (
-  set BUILDER=visualc
-  set BUILDER=watcom
-
+  if %BUILDER%. == . (
+    echo BUILDER not set!
+    exit /b 1
+  )
   if %WATT_ROOT%. == . (
     echo WATT_ROOT not set!
     exit /b 1
@@ -55,7 +56,10 @@ set NT_INCLUDE=%WATCOM%\h;%WATCOM%\h\nt
 :: on a AppVeyor build several "C:\Program Files (x86)\Microsoft xxx" strings
 :: are in the 'PATH' !
 ::
-set PATH=%WATCOM%\binnt;%PATH%
+:: And append the '%WATCOM%\binnt' to the 'PATH' since Watcom has an 'cl.exe'
+:: which we do not want to use for 'BUILDER=visualc'.
+::
+set PATH=%PATH%;%WATCOM%\binnt
 
 ::
 :: In case my curl was built with Wsock-Trace
@@ -149,12 +153,8 @@ if %BUILDER%. == watcom. (
     7z x -y -o%WATCOM% %WATCOM_ZIP% > NUL
   )
   call configur.bat watcom
-  echo ----------------------------------------------------------------
   echo Building for Watcom/Win32
   wmake -f watcom_w.mak
-  echo ----------------------------------------------------------------
-  echo Building for Watcom/large
-  wmake -f watcom_l.mak
   exit /b
 )
 
