@@ -116,6 +116,10 @@
 #define __reserved
 #endif
 
+W32_GCC_PRAGMA (GCC diagnostic push)
+W32_GCC_PRAGMA (GCC diagnostic ignored "-Wformat")
+W32_GCC_PRAGMA (GCC diagnostic ignored "-Wformat-extra-args")
+
 /**
  * We only need 1 set of function-pointers for each loaded .DLL.
  *
