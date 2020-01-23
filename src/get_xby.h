@@ -136,11 +136,17 @@ W32_FUNC const char *W32_CALL GetEtherName (const eth_address *eth);
 W32_FUNC void        W32_CALL DumpHostsCache (void);
 W32_FUNC void        W32_CALL DumpEthersCache (void);
 
+W32_FUNC void        W32_CALL ReopenHostFile (void);
+W32_FUNC void        W32_CALL ReopenNetworksFile (void);
+W32_FUNC void        W32_CALL ReopenProtoFile (void);
+W32_FUNC void        W32_CALL ReopenServFile (void);
+
 #if defined(USE_BSD_API) && defined(USE_IPV6)  /* gethost6.c */
   W32_FUNC void        W32_CALL ReadHosts6File  (const char *fname);
   W32_FUNC void        W32_CALL CloseHost6File  (void);
   W32_FUNC void        W32_CALL DumpHosts6Cache (void);
   W32_FUNC const char *W32_CALL GetHosts6File   (void);
+  W32_FUNC void        W32_CALL ReopenHost6File (void);
 #endif
 
 #endif

@@ -160,7 +160,6 @@ W32_FUNC WORD   W32_CALL sock_dataready  (sock_type *s);
 W32_FUNC int    W32_CALL sock_established(sock_type *s);
 W32_FUNC int    W32_CALL sock_close      (sock_type *s);
 W32_FUNC int    W32_CALL sock_abort      (sock_type *s);
-
 W32_FUNC WORD   W32_CALL sock_mode       (sock_type *s, WORD mode);
 W32_FUNC int    W32_CALL sock_sselect    (const sock_type *s, int waitstate);
 W32_FUNC int    W32_CALL sock_timeout    (sock_type *s, int seconds);
@@ -176,6 +175,11 @@ W32_FUNC size_t W32_CALL sock_rbleft     (const sock_type *s);
 W32_FUNC size_t W32_CALL sock_tbsize     (const sock_type *s);
 W32_FUNC size_t W32_CALL sock_tbused     (const sock_type *s);
 W32_FUNC size_t W32_CALL sock_tbleft     (const sock_type *s);
+
+/* These 2 needs 'USE_BSD_API':
+ */
+W32_FUNC int    W32_CALL sock_fgets      (char *buf, int max, FILE *stream);
+W32_FUNC int    W32_CALL sock_fputs      (const char *text, FILE *stream);
 
 W32_FUNC VoidProc W32_CALL sock_yield    (tcp_Socket *s, VoidProc fn);
 
@@ -193,16 +197,20 @@ W32_FUNC int W32_CALL udp_listen (udp_Socket *s, WORD lport, DWORD ina, WORD por
 W32_FUNC int W32_CALL tcp_listen (tcp_Socket *s, WORD lport, DWORD ina, WORD port, ProtoHandler handler, WORD timeout);
 W32_FUNC int W32_CALL tcp_established (const tcp_Socket *s);
 
-
 /*
- * less general functions
+ * Less general functions
  */
 W32_FUNC int   W32_CALL tcp_cbreak (int mode);
 W32_FUNC char *W32_CALL rip        (char *s);
 W32_FUNC int   W32_CALL watt_kbhit (void);
 W32_FUNC int   W32_CALL priv_addr  (DWORD ip);
 
-#define tcp_cbrk(mode)  tcp_cbreak(mode) /* old name */
+/**
+ * Some deprecated functions.
+ */
+W32_FUNC int           W32_CALL tcp_cbrk (int mode);
+W32_FUNC unsigned long W32_CALL set_ttimeout (unsigned ticks);
+W32_FUNC WORD          W32_CALL inchksum (const void *ptr, int len);
 
 /*
  * Set MD5 secret for TCP option 19 (RFC-2385).
@@ -332,10 +340,15 @@ W32_DATA unsigned      tcp_max_idle;
 
 #if !defined(WATT32_NO_OLDIES)
   /*
-   * Old compatibility
+   * Old compatibility stuff:
    */
   #define wathndlcbrk  _watt_handle_cbreak
   #define watcbroke    _watt_cbroke
+
+  #if !defined(WATT32_BUILD)
+    #define inchksum(buf, len)  in_checksum (buf, len)
+    #define tcp_cbrk(mode)      tcp_cbreak (mode)
+  #endif
 #endif
 
 /*
@@ -549,9 +562,6 @@ W32_DATA int   (W32_CALL *_eth_xmit_hook) (const void *buf, unsigned len);
 
 W32_FUNC WORD W32_CALL in_checksum (const void *buf, unsigned len);
 
-#define inchksum(buf,len)  in_checksum(buf, len)
-
-
 /*
  * Some applications (tracert.c) may need pcarp.c functions.
  */
@@ -637,7 +647,6 @@ W32_FUNC int   W32_CALL addwattcpd  (VoidProc p);
 W32_FUNC int   W32_CALL delwattcpd  (VoidProc p);
 W32_FUNC void  W32_CALL stopwattcpd (void);
 
-
 /*
  * BSD functions for read/write/select
  */
@@ -709,6 +718,7 @@ W32_FUNC int W32_CALL num_mcast_active  (void);
  */
 #if defined(__DJGPP__)
   #include <unistd.h>
+  #include <dos.h>          /* struct time */
   #define WATT32_NO_GETOPT
 
 #elif defined(__WATCOMC__) && (__WATCOMC__ >= 1250) /* OW 1.5+ */
@@ -775,6 +785,9 @@ W32_FUNC void W32_CALL print_icmp_stats (void);
 W32_FUNC void W32_CALL print_igmp_stats (void);
 W32_FUNC void W32_CALL print_udp_stats  (void);
 W32_FUNC void W32_CALL print_tcp_stats  (void);
+W32_FUNC void W32_CALL print_cache_stats(void);
+W32_FUNC void W32_CALL print_rarp_stats (void);
+W32_FUNC void W32_CALL print_icmp6_stats(void);
 W32_FUNC void W32_CALL print_all_stats  (void);
 W32_FUNC void W32_CALL reset_stats      (void);
 
@@ -884,15 +897,22 @@ W32_FUNC WORD         W32_CALL pkt_get_drvr_class (void);   /* Driver class */
  * Controlling timer interrupt handler for background processing.
  * Not recommended, little tested
  */
-#if !defined(WATT32_ON_WINDOWS)
-  W32_FUNC void W32_CALL backgroundon  (void);
-  W32_FUNC void W32_CALL backgroundoff (void);
-  W32_FUNC void W32_CALL backgroundfn  (VoidProc func);
-#endif
+W32_FUNC void W32_CALL backgroundon (void);
+W32_FUNC void W32_CALL backgroundoff (void);
+W32_FUNC void W32_CALL backgroundfn  (VoidProc func);
 
 /*
- * Misc functions
+ * Misc internal or deprecated functions:
  */
+W32_FUNC int         W32_CALL _w32_kbhit (void);
+W32_FUNC int         W32_CALL _w32_getch (void);
+W32_FUNC char *      W32_CALL _w32_itoa (int value, char *buf, int radix);
+W32_FUNC const char *W32_CALL _w32_inet_ntop (int af, const void *src, char *dst, size_t size);
+W32_FUNC int         W32_CALL _w32_inet_pton (int af, const char *src, void *dst);
+W32_FUNC WORD        W32_CALL _w32_inchksum (const void *ptr, int len);
+W32_FUNC const char *W32_CALL _w32_ExpandVarStr (const char *str);
+W32_FUNC int         W32_CALL _w32_ffs (int i);
+
 #if !defined(__DJGPP__) && !defined(__CYGWIN__) && \
     !(defined(__WATCOMC__) && (__WATCOMC__ >= 1240))
   W32_FUNC int W32_CALL ffs (int mask);
@@ -907,9 +927,13 @@ W32_FUNC WORD         W32_CALL pkt_get_drvr_class (void);   /* Driver class */
   W32_FUNC void W32_CALL delay (unsigned int msec);
 #endif
 
+#if defined(__DJGPP__) || defined(__DMC__)
+  W32_FUNC time_t W32_CALL dostounix (struct date *d, struct time *t);
+  W32_FUNC void   W32_CALL unixtodos (time_t time, struct date *d, struct time *t);
+#endif
+
 W32_FUNC unsigned W32_CALL Random (unsigned a, unsigned b);
 W32_FUNC void     W32_CALL RandomWait (unsigned a, unsigned b);
-
 
 /*
  * Tracing to RS-232 serial port, by Gundolf von Bachhaus <GBachhaus@gmx.net>

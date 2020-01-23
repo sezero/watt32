@@ -236,9 +236,12 @@ else
   BIN_PREFIX =
 endif
 
-CFLAGS = -O2 -g -I. -I../inc -W -Wall -Wno-strict-aliasing -DWATT32_BUILD \
-       # -fno-strength-reduce -ffast-math \
-       # -ffunction-sections -fomit-frame-pointer -gcoff
+CFLAGS = -O2 -g -I. -I../inc -DWATT32_BUILD -W -Wall -Wno-strict-aliasing
+
+#
+# This is handy warning:
+#
+CFLAGS += -Wmissing-prototypes
 
 CC     = $(BIN_PREFIX)gcc
 AS     = $(BIN_PREFIX)as
@@ -885,6 +888,11 @@ CFLAGS = -nologo -Zi -Zo -GS- -I. -I../inc \
          -DBUILD_WINDOWS
 
 CFLAGS += -Wno-\#pragma-messages
+
+#
+# This is handy warning:
+#
+CFLAGS += -Wmissing-prototypes
 
 @ifdef DEBUG
   CFLAGS += -MDd

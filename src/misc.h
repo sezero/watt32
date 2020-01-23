@@ -161,8 +161,9 @@ extern   void   memdbg_init      (void);
 extern   void   memdbg_post_init (void);
 extern   FILE  *fopen_excl       (const char *file, const char *mode);
 
-extern void     unfinished     (const char *func, const char *file, unsigned line);
-extern void     unimplemented  (const char *func, const char *file, unsigned line);
+extern void     unfinished      (const char *func, const char *file, unsigned line);
+extern void     unimplemented   (const char *func, const char *file, unsigned line);
+extern unsigned _get_frame_size (const char *x);
 
 #define UNFINISHED()    unfinished (__FUNCTION__, __FILE__, __LINE__)
 #define UNIMPLEMENTED() unimplemented (__FUNCTION__, __FILE__, __LINE__)

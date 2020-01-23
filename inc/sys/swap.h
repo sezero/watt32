@@ -36,9 +36,10 @@ __BEGIN_DECLS
   W32_FUNC unsigned short W32_CALL htons (unsigned short);
   W32_FUNC unsigned long  W32_CALL ntohl (unsigned long);
   W32_FUNC unsigned long  W32_CALL htonl (unsigned long);
-  W32_FUNC unsigned long  cdecl   _w32_intel   (unsigned long x);
-  W32_FUNC unsigned short cdecl   _w32_intel16 (unsigned short x);
 #endif
+
+W32_FUNC unsigned long  cdecl _w32_intel   (unsigned long x);
+W32_FUNC unsigned short cdecl _w32_intel16 (unsigned short x);
 
 #undef  ntohs
 #undef  htons

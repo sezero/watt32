@@ -95,6 +95,22 @@
 #include "bsdname.h"
 #include "gettod.h"
 
+#if defined(__DJGPP__)
+  #include <sys/resource.h>
+  #include <sys/fsext.h>
+  #include <unistd.h>
+  #if (DJGPP_MINOR >= 4)
+  #include <libc/fd_props.h>
+  #endif
+
+  /* in fsext.c */
+  extern int _fsext_demux (__FSEXT_Fnumber func, int *rv, va_list _args);
+
+#elif defined(__CYGWIN__)
+  #include <cygwin/version.h>
+
+  extern long _get_osfhandle (int);   /* in cygwin1.dll (no prototype) */
+#endif
 
 /*
  * Various sizes

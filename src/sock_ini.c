@@ -1045,6 +1045,7 @@ int W32_CALL watt_sock_init (size_t tcp_Sock_size, size_t udp_Sock_size, size_t 
  * Old compatibility (if user didn't include <tcp.h>
  */
 #undef sock_init
+int W32_CALL sock_init (void);
 int W32_CALL sock_init (void)
 {
   return watt_sock_init (0, 0, sizeof(time_t));

@@ -17,11 +17,13 @@
 #include "timer.h"
 #include "pcdns.h"
 
+#undef tcp_cbrk
+#undef inchksum
+
 /**
  * \deprecated.
  * Actually simply a macro in <tcp.h>
  */
-#undef tcp_cbrk
 int tcp_cbrk (int mode)
 {
   return tcp_cbreak (mode);
@@ -125,7 +127,6 @@ void unixtodos (time_t time, struct date *d, struct time *t)
 }
 #endif
 
-#undef inchksum
 WORD inchksum (const void *ptr, int len)
 {
 #ifdef HAVE_IN_CHECKSUM_FAST
@@ -155,6 +156,9 @@ WORD _w32_inchksum (const void *ptr, int len)
 #undef htonl
 #undef ntohs
 #undef ntohl
+
+W32_GCC_PRAGMA (GCC diagnostic push)
+W32_GCC_PRAGMA (GCC diagnostic ignored "-Wmissing-prototypes")
 
 DWORD intel (DWORD val)
 {

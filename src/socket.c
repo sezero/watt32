@@ -43,23 +43,6 @@
 
 #if defined(USE_BSD_API)
 
-#if defined(__DJGPP__)
-  #include <sys/resource.h>
-  #include <sys/fsext.h>
-  #include <unistd.h>
-  #if (DJGPP_MINOR >= 4)
-  #include <libc/fd_props.h>
-  #endif
-
-  /* in fsext.c */
-  extern int _fsext_demux (__FSEXT_Fnumber func, int *rv, va_list _args);
-
-#elif defined(__CYGWIN__)
-  #include <cygwin/version.h>
-
-  extern long _get_osfhandle (int);   /* in cygwin1.dll (no prototype) */
-#endif
-
 static int     sk_block = 0;          /* sock_daemon() semaphore */
 static int     sk_last  = SK_FIRST+1; /* highest socket number + 1 */
 static Socket *sk_list  = NULL;

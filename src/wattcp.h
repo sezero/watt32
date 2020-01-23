@@ -722,6 +722,16 @@ typedef union sock_type {
         _raw6_Socket raw6;
       } sock_type;
 
+/* Prototype some more internal functions:
+ */
+extern int _tcp_fsm (_tcp_Socket **s, const in_Header *ip);
+
+extern const char *i486model (unsigned int nr);
+extern const char *i586model (unsigned int nr);
+extern const char *Cx86model (void);
+extern const char *i686model (unsigned int nr);
+extern const char *AMDmodel (void);
+
 #include "../inc/tcp.h"
 
 #endif /* _w32_WATTCP_H */

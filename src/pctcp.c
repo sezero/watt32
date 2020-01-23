@@ -140,8 +140,6 @@ W32_CLANG_PACK_WARN_DEF()
 
   _tcp_Socket *_tcp_allsocs = NULL;       /**< list of tcp-sockets */
 
-  extern int _tcp_fsm (_tcp_Socket **s, const in_Header *ip);
-
   static _tcp_Socket *tcp_findseq (const in_Header *ip, const tcp_Header *tcp);
   static void         tcp_sockreset (_tcp_Socket *s, BOOL proxy);
 

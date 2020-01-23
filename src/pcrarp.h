@@ -5,5 +5,6 @@
 
 extern WORD _rarptimeout;
 extern int  _dorarp (void);
+extern BOOL _rarp_handler (const rarp_Header *rh, BOOL brdcast);
 
 #endif

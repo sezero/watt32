@@ -242,6 +242,10 @@ extern struct pkt_info *_pkt_inf;
   extern void *pkt_tx_buf (void);
 #endif
 
+/* pcpkt2.c */
+extern DWORD pkt_rx_dropped (void);
+extern int   pkt_test_reordering (void);
+
 #if defined(USE_FAST_PKT)
   extern int  pkt_append_recv (const void *tx, unsigned len);
   extern int  pkt_buffers_used (void);
