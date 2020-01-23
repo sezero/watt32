@@ -40,5 +40,5 @@ build_script:
     - cmd: appveyor-script.bat build_bin
 
 test_script:
-    - cmd: appveyor-script.bat test
+    - cmd: appveyor-script.bat build_tests
 
