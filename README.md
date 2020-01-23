@@ -1,4 +1,4 @@
-## Watt-32 TCP/IP:
+## Watt-32 TCP/IP
 
 [![Build Status](https://ci.appveyor.com/api/projects/status/github/gvanem/watt-32?branch=master&svg=true)](https://ci.appveyor.com/project/gvanem/watt-32)
 
