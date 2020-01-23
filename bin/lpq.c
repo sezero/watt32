@@ -103,7 +103,7 @@ int MS_CDECL main (int argc, char **argv)
   if ((host_ip = lookup_host(host,NULL)) == 0)
      Abort (dom_strerror(dom_errno));
 
-  srand (time(NULL));
+  srand ((unsigned int)time(NULL));
   localport = 255 + (rand() & 255);
   localport = LOCAL_PORT;
 
