@@ -1222,7 +1222,7 @@ static void EnumAndLoadModuleSymbols (HANDLE hProcess, DWORD pid, FILE *fLogFile
   }
 }
 
-int InitStackWalk (void)
+static int InitStackWalk (void)
 {
   if (g_bInitialized)
      return (0);
@@ -1666,7 +1666,7 @@ static void ShowStackRM (HANDLE hThread, const CONTEXT *c, FILE *fLogFile,
   memset (&s, 0, sizeof(s));
 
   if (!g_bInitialized && bFirstTime)
-    InitStackWalk();
+     InitStackWalk();
 
   if (g_bInitialized == FALSE)
   {
