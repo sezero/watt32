@@ -2343,6 +2343,13 @@ static int _pkt_win_print_GetIpForwardTable2 (void)
                 "     4: A result of 6to4 tunneling.\n");
   return ((rc1 == NO_ERROR || rc2 == NO_ERROR) ? 1 : 0);
 }
+
+#else
+static int _pkt_win_print_GetIpForwardTable2 (void)
+{
+  unimplemented ("_pkt_win_print_GetIpForwardTable2", __FILE__, __LINE__);
+  return (0);
+}
 #endif
 
 /*
