@@ -7,19 +7,21 @@ skip_commits:
 
 environment:
   matrix:
-    - BUILDER: VisualC
+    - BUILDER: visualc
       CPU:     x86
-    - BUILDER: VisualC
+    - BUILDER: visualc
       CPU:     x64
 #   - BUILDER: clang
 #     CPU:     x86
 #   - BUILDER: clang
 #     CPU:     x64
-    - BUILDER: MinGW
+    - BUILDER: mingw
       CPU:     x86
-    - BUILDER: MinGW
+    - BUILDER: mingw
       CPU:     x64
     - BUILDER: djgpp
+      CPU:     x86
+    - BUILDER: watcom
       CPU:     x86
 
 matrix:
@@ -27,6 +29,8 @@ matrix:
   # Immediately finish build if one of the above jobs fails.
   #
   fast_finish: true
+  allow_failures:
+     - BUILDER: watcom
 
 install:
   #
@@ -36,11 +40,12 @@ install:
 
   #
   # Set compiler environment for MSVC/clang-cl first.
+  # (the env-vars for 'BUILDER=watcom' is done in 'appveyor-script.bat').
   #
-  - cmd: if %BUILDER%. == VisualC.         call "c:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\vcvarsall.bat" %CPU%
+  - cmd: if %BUILDER%. == visualc.         call "c:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\vcvarsall.bat" %CPU%
   - cmd: if %BUILDER%. == clang.           call "c:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\vcvarsall.bat" %CPU%
-  - cmd: if %BUILDER%-%CPU%. == MinGW-x86. set PATH=c:\msys64\MinGW32\bin;%PATH%
-  - cmd: if %BUILDER%-%CPU%. == MinGW-x64. set PATH=c:\msys64\MinGW64\bin;%PATH%
+  - cmd: if %BUILDER%-%CPU%. == mingw-x86. set PATH=c:\msys64\MinGW32\bin;%PATH%
+  - cmd: if %BUILDER%-%CPU%. == mingw-x64. set PATH=c:\msys64\MinGW64\bin;%PATH%
 
 build_script:
     - cmd: appveyor-script.bat build_src

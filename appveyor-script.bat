@@ -3,22 +3,29 @@ setlocal
 prompt $P$G
 
 ::
-:: 'APPVEYOR_PROJECT_NAME=Watt-32' unless testing this "appveyor-script.bat [build_src | build_bin | build_tests]"
+:: 'APPVEYOR_PROJECT_NAME==Watt-32' unless testing this "appveyor-script.bat [build_src | build_bin | build_tests]"
 :: locally using 'cmd'.
 ::
 if %APPVEYOR_PROJECT_NAME%. == . (
-  set BUILDER=VisualC
+  set BUILDER=visualc
+  set BUILDER=watcom
+
+  if %WATT_ROOT%. == . (
+    echo WATT_ROOT not set!
+    exit /b 1
+  )
+  set APPVEYOR_BUILD_FOLDER=%WATT_ROOT%
   set APPVEYOR_BUILD_FOLDER_UNIX=e:/net/watt
 ) else (
   set APPVEYOR_BUILD_FOLDER_UNIX=c:/projects/Watt-32
 )
 
 ::
-:: Stuff common to '[build_src | build_bin | test]'
+:: Stuff common to '[build_src | build_bin | build_tests]'
 ::
 :: MinGW: Add PATH to 'gcc' and stuff for 'util/pkg-conf.mak'.
 ::
-if %BUILDER%. == MinGW. (
+if %BUILDER%. == mingw. (
   md lib\pkgconfig 2> NUL
   set MINGW32=%APPVEYOR_BUILD_FOLDER_UNIX%
   set MINGW64=%APPVEYOR_BUILD_FOLDER_UNIX%
@@ -32,11 +39,24 @@ set DJGPP=%APPVEYOR_BUILD_FOLDER_UNIX%/CI/djgpp
 set DJ_PREFIX=%DJGPP%/bin/i586-pc-msdosdjgpp-
 
 ::
+:: Set env-var for building with Watcom 2.0
+::
+set WATCOM=%APPVEYOR_BUILD_FOLDER%\CI\Watcom
+set WATCOM_ZIP=%WATCOM%\watcom20.zip
+
+::
 :: In case my curl was built with Wsock-Trace
 ::
 set WSOCK_TRACE_LEVEL=0
-set WATT_ROOT=%CD%
 
+::
+:: For a true AppVeyor build:
+::
+if %WATT_ROOT%. == . set WATT_ROOT=%CD%
+
+::
+:: Sanity check:
+::
 if %BUILDER%. == . (
   echo BUILDER target not specified!
   exit /b 1
@@ -58,7 +78,7 @@ cd src
 ::
 set USES_CL=0
 set CL=
-if %BUILDER%. == VisualC. set USES_CL=1
+if %BUILDER%. == visualc. set USES_CL=1
 if %BUILDER%. == clang.   set USES_CL=1
 
 ::
@@ -74,9 +94,8 @@ if %USES_CL%. == 1. (
   echo --------------------------------------------------------------------------------------------------
 )
 
-if %BUILDER%. == VisualC. (
+if %BUILDER%. == visualc. (
   call configur.bat visualc
-  set CL=-D_WIN32_WINNT=0x0601 %CL%
   echo Building release for %CPU%
   nmake -nologo -f visualc-release_%BITS%.mak
   exit /b
@@ -89,7 +108,7 @@ if %BUILDER%. == clang. (
   exit /b
 )
 
-if %BUILDER%. == MinGW. (
+if %BUILDER%. == mingw. (
   call configur.bat mingw64
   echo Building for %CPU%
   make -f MinGW64_%BITS%.mak
@@ -109,7 +128,23 @@ if %BUILDER%. == djgpp. (
   exit /b
 )
 
-echo Illegal BUILDER / CPU (BUILDER=%BUILDER%, CPU=%CPU%) values!
+if %BUILDER%. == watcom. (
+  set PATH=%WATCOM%\binnt;%PATH%
+  set NT_INCLUDE=%WATCOM%\h;%WATCOM%\h\nt
+
+  if not exist %WATCOM%\binnt\wmake.exe (
+    mkdir %WATCOM%
+    echo Downloading OpenWatcom 2.0
+    curl -o %WATCOM_ZIP% -# http://www.watt-32.net/CI/watcom20.zip
+    7z x -o%WATCOM% %WATCOM_ZIP%
+  )
+  call configur.bat watcom
+  echo Building for Watcom/Win32
+  wmake -f watcom_w.mak
+  exit /b
+)
+
+echo Illegal BUILDER / CPU (BUILDER=%BUILDER%, CPU=%CPU%) values! Remember cmd.exe is case-sensitive.
 exit /b 1
 
 ::
@@ -123,7 +158,7 @@ if %CPU%. == x64. (
 )
 
 ::
-:: './bin/' programs to build for djgpp and Visual-C:
+:: './bin/' programs to build for djgpp, Visual-C and Watcom (Win32):
 ::
 set PROGS_DJ=bping.exe ping.exe finger.exe tcpinfo.exe ident.exe htget.exe ^
              tcpinfo.exe tracert.exe country.exe
@@ -133,6 +168,9 @@ set PROGS_VC=ping.exe finger.exe tcpinfo.exe host.exe htget.exe ^
              rexec.exe cookie.exe daytime.exe dayserv.exe lpq.exe lpr.exe ^
              ntime.exe ph.exe stat.exe vlsm.exe whois.exe ident.exe country.exe
 
+set PROGS_WC=ping.exe htget.exe finger.exe tcpinfo.exe con-test.exe ^
+             gui-test.exe htget.exe tracert.exe
+
 cd bin
 if %BUILDER%. == djgpp. (
   echo Building PROGS_DJ=%PROGS_DJ%
@@ -140,20 +178,26 @@ if %BUILDER%. == djgpp. (
   exit /b
 )
 
-if %BUILDER%. == VisualC. (
+if %BUILDER%. == visualc. (
   echo Building PROGS_VC=%PROGS_VC%
   nmake -nologo -f visualc.mak %PROGS_VC%
   exit /b
 )
 
+if %BUILDER%. == watcom. (
+  echo Building PROGS_WC=%PROGS_WC%
+  wmake -f wc_win.mak %PROGS_WC%
+  exit /b
+)
+
 echo No 'build_bin' for 'BUILDER=%BUILDER%' yet.
-exit /b
+exit /b 0
 
 ::
 :: Build (and run?) some test programs in './src/tests'
 ::
 :build_tests
 cd src\tests
-echo Test will come here later
+echo Test for %BUILDER% will come here later
 call configur.bat %BUILDER%
-exit /b
+exit /b 0
