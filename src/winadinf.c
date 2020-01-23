@@ -1340,7 +1340,8 @@ static const char *socket_addr_str (const SOCKET_ADDRESS *addr)
 }
 #endif
 
-const char *socket_addr_str2 (const SOCKET_ADDRESS *addr)
+#ifdef NOT_USED
+static const char *socket_addr_str2 (const SOCKET_ADDRESS *addr)
 {
   if (addr->iSockaddrLength == 0)
      strcpy (work_buf, NONE_STR);
@@ -1364,6 +1365,7 @@ const char *socket_addr_str2 (const SOCKET_ADDRESS *addr)
   }
   return (work_buf);
 }
+#endif
 
 static const char *get_netmask_prefix (const IP_ADAPTER_PREFIX *pf)
 {
