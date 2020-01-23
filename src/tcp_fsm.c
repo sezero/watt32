@@ -1077,12 +1077,10 @@ static int tcp_process_data (_tcp_Socket *s, const tcp_Header *tcp,
    * if it's after then the peer (or someone else) sent more than we said we
    * could take.
    */
-#if 0
-  if ((unsigned)len - ldiff > s->adv_win)
-#else
+
   /*
    * Thanks to Mikulas Patocka <mikulas@twibright.com> for finding a problem
-   * with the above 'if-test':
+   * with the previous 'if-test':
    *   if we receive a sequence of packets, all the packets are checked
    *   against 's->adv_win', but 's->adv_win' is not decreased as the packets are
    *   received, it remains the same. Consequently a packet that is out of window
@@ -1090,11 +1088,24 @@ static int tcp_process_data (_tcp_Socket *s, const tcp_Header *tcp,
    *
    * Hence this 'if-test' is used instead:
    */
-  if ((unsigned)len - ldiff > s->max_rx_data - s->rx_datalen)
-#endif
+
+  /* First patch by Mikulas Patocka:
+   * checks that end of packet does not land above the TCP window
+   */
+  if ( ((unsigned)len - ldiff > s->max_rx_data - s->rx_datalen) ||
+      /*
+       * Second patch by Mateusz Viste:
+       * checks that end of packet does not land below the TCP window
+       * (legitimate case when remote peer retransmits an already-received
+       * segment that Watt-32 did not acquit due to delayed ack).
+       *
+       * Details at https://github.com/gvanem/Watt-32/issues/2
+       */
+      (ldiff > len) )
   {
     TCP_TRACE (("tcp_process_data (%u): packet ends outside %lu/%lu\n",
                 __LINE__, (u_long)s->recv_next, (u_long)(s->recv_next + s->adv_win)));
+    STAT (tcpstats.tcps_rcvpackafterwin++);
     return (0);
   }
 
