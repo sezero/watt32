@@ -798,9 +798,6 @@ clean:
 $(OBJDIR)\chksum0.obj:  chksum0.asm
 $(OBJDIR)\cpumodel.obj: cpumodel.asm
 
-#
-# Use of %CL% set by configur.bat
-#
 .cpp{$(OBJDIR)}.obj:
 	$(CC) -c @$(C_ARGS) -EHsc -Fo.\$*.obj $<
 
@@ -1776,16 +1773,16 @@ build\pellesc\64bit\cflagsbf.h:
 	echo $(CFLAGS) | $(W32_BIN2C) -            > build\pellesc\64bit\cflagsbf.h
 
 build\visualc\32bit\release\cflagsbf.h: $(C_ARGS)
-	- echo $(CFLAGS) $(CL) | $(W32_BIN2C) -    > build\visualc\32bit\release\cflagsbf.h
+	- echo $(CFLAGS) | $(W32_BIN2C) -          > build\visualc\32bit\release\cflagsbf.h
 
 build\visualc\32bit\debug\cflagsbf.h: $(C_ARGS)
-	- echo $(CFLAGS) $(CL) | $(W32_BIN2C) -    > build\visualc\32bit\debug\cflagsbf.h
+	- echo $(CFLAGS) | $(W32_BIN2C) -          > build\visualc\32bit\debug\cflagsbf.h
 
 build\visualc\64bit\release\cflagsbf.h: $(C_ARGS)
-	- echo $(CFLAGS) $(CL) | $(W32_BIN2C) -    > build\visualc\64bit\release\cflagsbf.h
+	- echo $(CFLAGS) | $(W32_BIN2C) -          > build\visualc\64bit\release\cflagsbf.h
 
 build\visualc\64bit\debug\cflagsbf.h: $(C_ARGS)
-	- echo $(CFLAGS) $(CL) | $(W32_BIN2C) -    > build\visualc\64bit\debug\cflagsbf.h
+	- echo $(CFLAGS) | $(W32_BIN2C) -          > build\visualc\64bit\debug\cflagsbf.h
 
 @ifdef WATCOM
 build\watcom\small\cflagsbf.h: $(C_ARGS)
