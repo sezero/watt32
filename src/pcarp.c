@@ -2124,11 +2124,12 @@ static const char *get_route_flags (WORD flg)
 #endif  /* USE_DEBUG */
 
 
+#if defined(TEST_PROG)
 /*
  * Find the best 'fitting' gateway for destination IP.
  * Return INADDR_ANY if 'ip' is directly reachable.
  */
-DWORD _route_destin (DWORD ip)
+static DWORD _route_destin (DWORD ip)
 {
   DWORD rc = 0;
   int   i;
@@ -2158,8 +2159,6 @@ DWORD _route_destin (DWORD ip)
 //  return (is_on_LAN(ip) ? INADDR_ANY : INADDR_NONE);
 }
 
-
-#if defined(TEST_PROG)
 
 #include "pcdns.h"
 #include "pcbuf.h"
