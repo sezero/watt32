@@ -23,7 +23,7 @@ if %APPVEYOR_PROJECT_NAME%. == . (
 ::
 :: Some weird issue with a Appveyor run and 'BUILDER == watcom'.
 ::
-if %BUILDER%. == watcom. echo on
+:: if %BUILDER%. == watcom. echo on
 
 ::
 :: Stuff common to '[build_src | build_bin | build_tests]'
@@ -150,8 +150,12 @@ if %BUILDER%. == watcom. (
     7z x -y -o%WATCOM% %WATCOM_ZIP% > NUL
   )
   call configur.bat watcom
+  echo ----------------------------------------------------------------
   echo Building for Watcom/Win32
   wmake -f watcom_w.mak
+  echo ----------------------------------------------------------------
+  echo Building for Watcom/large
+  wmake -f watcom_l.mak
   exit /b
 )
 
