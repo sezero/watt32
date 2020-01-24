@@ -166,9 +166,11 @@ gen_cygwin64 ()
 #
 gen_clang ()
 {
-  echo Generating clang-cl (Win32/Win64) makefiles, directories, errnos and dependencies
-  ../util/linux/mkmake -o clang32.mak -d build/clang/32bit makefile.all CLANG WIN32
-  ../util/linux/mkmake -o clang64.mak -d build/clang/64bit makefile.all CLANG WIN64
+  echo Generating clang-cl (Win32/Win64, release/debug) makefiles, directories, errnos and dependencies
+  ../util/linux/mkmake -o clang-release_32.mak -d build/clang/32bit/release makefile.all CLANG WIN32 RELEASE
+  ../util/linux/mkmake -o clang-release_64.mak -d build/clang/64bit/release makefile.all CLANG WIN64 RELEASE
+  ../util/linux/mkmake -o clang-debug_32.mak   -d build/clang/32bit/debug   makefile.all CLANG WIN32 DEBUG
+  ../util/linux/mkmake -o clang-debug_64.mak   -d build/clang/64bit/debug   makefile.all CLANG WIN64 DEBUG
 
   ../util/linux/mkdep -s.obj -p\$\(OBJDIR\)/ *.[ch] > build/clang/watt32.dep
   echo neterr.c: build/clang/syserr.c              >> build/clang/watt32.dep
@@ -178,9 +180,9 @@ gen_clang ()
   wine ../util/win32/clang_err -e > ../inc/sys/clang.err
 
   echo Run GNU make to make target(s):
-  echo   E.g. "make -f clang32.mak"
-  echo     or "make -f clang64.mak"
-  echo Depending on which clang-cl (32 or 64-bit) is first on your PATH, use the correct 'clang32.mak' or 'clang64.bat'.
+  echo   E.g. "make -f clang-release_32.mak"
+  echo     or "make -f clang-release_64.mak"
+  echo Depending on which clang-cl (32 or 64-bit) is first on your PATH, use the correct 'clang-release_32.mak' or 'clang-release_64.mak'.
 }
 
 
@@ -215,7 +217,7 @@ gen_all ()
 
 do_clean ()
 {
-  rm -f djgpp.mak watcom_{f,l,s,w,x}.mak MinGW32.mak MinGW64.mak CygWin.mak CygWin_64.mak clang{32,64}.mak
+  rm -f djgpp.mak watcom_{f,l,s,w,x}.mak MinGW32.mak MinGW64.mak CygWin.mak CygWin_64.mak clang-release_{32,64}.mak clang-debug_{32,64}.mak
   rm -f build/djgpp/watt32.dep build/MinGW32/watt32.dep build/MinGW64/32bit/watt32.dep build/MinGW64/64bit/watt32.dep
   rm -f build/CygWin/watt32.dep build/watcom/watt32.dep build/clang/watt32.dep
   rm -f build/djgpp/syserr.c build/watcom/syserr.c build/MinGW32/syserr.c build/MinGW64/syserr.c build/clang/syserr.c
