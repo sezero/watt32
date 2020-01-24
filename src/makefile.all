@@ -1617,7 +1617,8 @@ $(OBJDIR)\cflags.h: $(MAKEFIL)
 @else
 #
 # This is for Watcom etc. which could possibly not handle all the arguments in
-# the 'CFLAGS'. We to do this in several steps creatings multiline string!
+# the 'CFLAGS'. We to do this in several steps creating a multiline string
+# for 'w32_cflags'!
 #
 $(OBJDIR)\cflags.h: $(MAKEFIL)
 	echo const char *w32_cflags =       > $(OBJDIR)\cflags.h
