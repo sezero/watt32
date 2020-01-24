@@ -468,16 +468,16 @@ $(OBJDIR)\cpumodel.obj: cpumodel.asm
 # And possibly add '-0' to 'CFLAGS'.
 #
 @ifdef SMALL
-CC      = wcc386
-CFLAGS  = -ms -os -zc -s -bt=dos
+CC      = wcc
+CFLAGS  = -ms -0 -os -zc -s -bt=dos
 AFLAGS  = -bt=dos
 TARGET  = ..\lib\wattcpws.lib
 OBJDIR  = build\watcom\small
 MAKEFIL = watcom_s.mak
 
 @elifdef LARGE
-CC      = wcc386
-CFLAGS  = -ml -os -zc -s -bt=dos
+CC      = wcc
+CFLAGS  = -ml -0 -os -zc -s -bt=dos
 AFLAGS  = -bt=dos
 TARGET  = ..\lib\wattcpwl.lib
 OBJDIR  = build\watcom\large
