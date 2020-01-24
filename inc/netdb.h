@@ -34,8 +34,6 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  *
- *      @(#)netdb.h     8.1 (Berkeley) 6/2/93
- *      $Id: netdb.h,v 1.5 1996/08/29 20:00:56 peter Exp $
  * -
  * Portions Copyright (c) 1993 by Digital Equipment Corporation.
  *
