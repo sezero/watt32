@@ -2,8 +2,6 @@
  * Route Daemon definitions.
  */
 
-/*      $NetBSD: routed.h,v 1.10 1997/02/03 22:20:38 christos Exp $     */
-
 /*-
  * Copyright (c) 1983, 1989, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -35,8 +33,6 @@
  * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
- *
- *	@(#)routed.h	8.1 (Berkeley) 6/2/93
  */
 
 #ifndef __PROTOCOL_ROUTED_H

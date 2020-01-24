@@ -2,8 +2,6 @@
  * Dump/restore protocol definitions.
  */
 
-/*      $NetBSD: dumprestore.h,v 1.7 1996/11/30 18:01:52 cgd Exp $      */
-
 /*
  * Copyright (c) 1980, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -40,8 +38,6 @@
  * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
- *
- *	@(#)dumprestore.h	8.2 (Berkeley) 1/21/94
  */
 
 #ifndef __PROTOCOL_DUMPRESTORE_H

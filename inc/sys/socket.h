@@ -35,9 +35,6 @@
  * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
- *
- *      from: @(#)socket.h      7.13 (Berkeley) 4/20/91
- *      $Id: socket.h,v 1.5 1993/06/27 05:59:06 andrew Exp $
  */
 
 #ifndef __SYS_SOCKET_H

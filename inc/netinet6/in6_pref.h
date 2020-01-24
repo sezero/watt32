@@ -1,9 +1,5 @@
 /*!\file netinet6/in6_pref.h
- *
  */
-
-/*      $FreeBSD: src/sys/netinet6/in6_prefix.h,v 1.5 2001/06/11 12:39:05 ume Exp $     */
-/*	$KAME: in6_prefix.h,v 1.10 2001/02/08 16:30:30 itojun Exp $	*/
 
 /*
  * Copyright (C) 1995, 1996, 1997, 1998 and 1999 WIDE Project.
@@ -33,6 +29,8 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
+#ifndef _NETINET6_IN6_PREF_H_
+#define _NETINET6_IN6_PREF_H_
 
 #include <sys/callout.h>
 
@@ -93,3 +91,5 @@ extern struct rr_prhead rr_prefix;
 void in6_rr_timer __P((void *));
 extern struct callout in6_rr_timer_ch;
 int delete_each_prefix  __P((struct rr_prefix *rpp, u_char origin));
+
+#endif /* _NETINET6_IN6_PREF_H_ */

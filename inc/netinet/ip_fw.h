@@ -14,8 +14,6 @@
  * but requiring it would be too onerous.
  *
  * This software is provided ``AS IS'' without any warranties of any kind.
- *
- *      $Id: ip_fw.h,v 1.23.2.1 1997/01/29 13:15:43 adam Exp $
  */
 
 /*

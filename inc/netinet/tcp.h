@@ -2,8 +2,6 @@
  * TCP header and options.
  */
 
-/*      $NetBSD: tcp.h,v 1.8 1995/04/17 05:32:58 cgd Exp $      */
-
 /*
  * Copyright (c) 1982, 1986, 1993
  *      The Regents of the University of California.  All rights reserved.
@@ -35,8 +33,6 @@
  * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
- *
- *      @(#)tcp.h       8.1 (Berkeley) 6/10/93
  */
 
 #ifndef __NETINET_TCP_H

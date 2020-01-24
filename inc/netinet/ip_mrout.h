@@ -37,9 +37,6 @@
  * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
- *
- *      @(#)ip_mroute.h 8.1 (Berkeley) 6/10/93
- * $Id: ip_mroute.h,v 1.10.4.1 1997/02/22 19:47:28 joerg Exp $
  */
 
 #ifndef __NETINET_IP_MROUTE_H
@@ -159,7 +156,7 @@ struct sioc_vif_req {
     u_long ibytes;              /* Input byte count on vif              */
     u_long obytes;              /* Output byte count on vif             */
 };
-    
+
 
 /*
  * The kernel's virtual-interface structure.
@@ -182,8 +179,8 @@ struct vif {
 };
 
 /*
- * The kernel's multicast forwarding cache entry structure 
- * (A field for the type of service (mfc_tos) is to be added 
+ * The kernel's multicast forwarding cache entry structure
+ * (A field for the type of service (mfc_tos) is to be added
  * at a future point)
  */
 struct mfc {
@@ -236,7 +233,7 @@ struct rtdetq {
 #define MAX_UPQ 4               /* max. no of pkts in upcall Q */
 
 /*
- * Token Bucket filter code 
+ * Token Bucket filter code
  */
 #define MAX_BKT_SIZE    10000             /* 10K bytes size             */
 #define MAXQSIZE        10                /* max # of pkts in queue     */

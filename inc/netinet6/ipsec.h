@@ -2,9 +2,6 @@
  *
  */
 
-/*      $FreeBSD: src/sys/netinet6/ipsec.h,v 1.9 2002/04/19 04:46:23 suz Exp $  */
-/*	$KAME: ipsec.h,v 1.53 2001/11/20 08:32:38 itojun Exp $	*/
-
 /*
  * Copyright (C) 1995, 1996, 1997, and 1998 WIDE Project.
  * All rights reserved.
@@ -342,7 +339,7 @@ extern struct mbuf *ipsec_copypkt __P((struct mbuf *));
 extern void ipsec_delaux __P((struct mbuf *));
 extern int ipsec_setsocket __P((struct mbuf *, struct socket *));
 extern struct socket *ipsec_getsocket __P((struct mbuf *));
-extern int ipsec_addhist __P((struct mbuf *, int, u_int32_t)); 
+extern int ipsec_addhist __P((struct mbuf *, int, u_int32_t));
 extern struct ipsec_history *ipsec_gethist __P((struct mbuf *, int *));
 extern void ipsec_clearhist __P((struct mbuf *));
 #endif /* _KERNEL */

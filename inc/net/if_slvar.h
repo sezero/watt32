@@ -2,8 +2,6 @@
  * SLIP interface structures.
  */
 
-/*      $NetBSD: if_slvar.h,v 1.17 1997/03/27 20:36:17 thorpej Exp $    */
-
 /*-
  * Copyright (c) 1991, 1993
  *  The Regents of the University of California.  All rights reserved.
@@ -35,8 +33,6 @@
  * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
- *
- *  @(#)if_slvar.h  8.3 (Berkeley) 2/1/94
  */
 #ifndef __NET_IF_SLVAR_H
 #define __NET_IF_SLVAR_H
@@ -50,28 +46,28 @@
 
 struct sl_softc {
     struct  ifnet sc_if;        /* network-visible interface */
-    int sc_unit;        /* XXX unit number */
+    int sc_unit;                /* XXX unit number */
     struct  ifqueue sc_fastq;   /* interactive output queue */
     struct  tty *sc_ttyp;       /* pointer to tty structure */
-    u_char  *sc_mp;         /* pointer to next available buf char */
-    u_char  *sc_ep;         /* pointer to last available buf char */
-    u_char  *sc_buf;        /* input buffer */
-    u_char  *sc_xxx;        /* XXX don't ask... */
-    u_int   sc_flags;       /* see below */
-    u_int   sc_escape;  /* =1 if last char input was FRAME_ESCAPE */
+    u_char  *sc_mp;             /* pointer to next available buf char */
+    u_char  *sc_ep;             /* pointer to last available buf char */
+    u_char  *sc_buf;            /* input buffer */
+    u_char  *sc_xxx;            /* XXX don't ask... */
+    u_int   sc_flags;           /* see below */
+    u_int   sc_escape;          /* =1 if last char input was FRAME_ESCAPE */
     long    sc_lasttime;        /* last time a char arrived */
     long    sc_abortcount;      /* number of abort esacpe chars */
     long    sc_starttime;       /* time of first abort in window */
-    long    sc_oqlen;       /* previous output queue size */
+    long    sc_oqlen;           /* previous output queue size */
     long    sc_otimeout;        /* number of times output's stalled */
 #ifdef NetBSD
-    int sc_oldbufsize;      /* previous output buffer size */
-    int sc_oldbufquot;      /* previous output buffer quoting */
+    int sc_oldbufsize;          /* previous output buffer size */
+    int sc_oldbufquot;          /* previous output buffer quoting */
 #endif
-#ifdef INET             /* XXX */
+#ifdef INET                     /* XXX */
     struct  slcompress sc_comp; /* tcp compression data */
 #endif
-    caddr_t sc_bpf;         /* BPF data */
+    caddr_t sc_bpf;             /* BPF data */
 };
 
 /* internal flags */

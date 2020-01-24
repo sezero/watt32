@@ -2,8 +2,6 @@
  * Berkeley Packet Filter definitions.
  */
 
-/*      $NetBSD: bpfdesc.h,v 1.13 1997/10/09 18:58:12 christos Exp $    */
-
 /*
  * Copyright (c) 1990, 1991, 1993
  *  The Regents of the University of California.  All rights reserved.
@@ -41,9 +39,6 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  *
- *  @(#)bpfdesc.h   8.1 (Berkeley) 6/10/93
- *
- * @(#) Header: bpfdesc.h,v 1.14 96/06/16 22:28:07 leres Exp  (LBL)
  */
 
 #ifndef __NET_BPF_DESC_H

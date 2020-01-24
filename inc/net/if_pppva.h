@@ -2,9 +2,6 @@
  * PPP structures and declarations.
  */
 
-/*      $NetBSD: if_pppvar.h,v 1.7 1997/05/17 21:12:03 christos Exp $   */
-/*  Id: if_pppvar.h,v 1.3 1996/07/01 01:04:37 paulus Exp     */
-
 /*
  * if_pppvar.h - private structures and declarations for PPP.
  *

@@ -2,8 +2,6 @@
  * Route handling.
  */
 
-/*      $NetBSD: route.h,v 1.11 1997/04/02 21:17:29 christos Exp $      */
-
 /*
  * Copyright (c) 1980, 1986, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -35,15 +33,13 @@
  * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
- *
- *	@(#)route.h	8.5 (Berkeley) 2/8/95
  */
 
 #ifndef __NET_ROUTE_H
 #define __NET_ROUTE_H
 /*
  * Kernel resident routing tables.
- * 
+ *
  * The routing tables are initialized when interface addresses
  * are set by making entries for all directly connected interfaces.
  */

@@ -3,19 +3,18 @@
  */
 
 /*
- * Copyright (c) 1997, Pittsburgh Supercomputing Center, 
+ * Copyright (c) 1997, Pittsburgh Supercomputing Center,
  * Jamshid Mahdavi, Matt Mathis, Jeffrey Semke
  * All rights reserved.
  *
  * Permission to use, copy, modify, and distribute this software and
- * its documentation for any purpose and without fee is hereby granted, 
+ * its documentation for any purpose and without fee is hereby granted,
  * provided that the above copyright notice appear in all copies and
  * that both that copyright notice and this permission notice appear
  * in supporting documentation.
  *
  * This is experimental software under active development and may
  * potentially contain bugs.   Use at your own risk.
- *
  */
 
 #ifndef __NETINET_TCP_SCOREBOARD_H
@@ -23,7 +22,7 @@
 
 /**********************************************************************
  *
- *  Scoreboard module headers: 
+ *  Scoreboard module headers:
  *
  **********************************************************************/
 
@@ -33,7 +32,7 @@
                         (tp)->scrb.last_ack=(tp)->snd_una; \
                         (tp)->snd_retran_data = 0; }
 
-/*  
+/*
  *  Check to see if the scoreboard is empty
  *  scrb_isempty(struct tcpcp *tp)
  */
@@ -50,7 +49,7 @@
  *  first byte following the data to be retransmitted) similar in
  *  fashion to the rest of this code.
  *
- *  scrb_getnextretran(struct tcpcp *tp, tcp_seq *start, tcp_seq *end) 
+ *  scrb_getnextretran(struct tcpcp *tp, tcp_seq *start, tcp_seq *end)
  */
 
 #define scrb_getnextretran(tp,start,end)   \
@@ -58,7 +57,7 @@
              (int)((tcp_seq*)*start = (tcp_seq*)*end = \
              (tcp_seq*)0) \
            : scrb_getnextretran_func(tp,start,end))
-                             
+
 
 /* sender side -- tracks packets sent that WERE selectively acknowledged
  * by the other end.
@@ -69,11 +68,11 @@ struct scrb_entry {
       LIST_ENTRY(scrb_entry) ptrs;    /*  Next/Prev structure pointers */
       tcp_seq start;                  /*  Start of received data block */
       tcp_seq end;                    /*  End of received data block      */
-      tcp_seq retran;                 /*  End of subsequent data 
+      tcp_seq retran;                 /*  End of subsequent data
                                             retransmitted  */
-      tcp_seq snd_max;                /*  Value of snd_max at the time of 
+      tcp_seq snd_max;                /*  Value of snd_max at the time of
                                             retransmission */
-      int     sack_cnt;               /*  FACK ONLY:  Number of reports for 
+      int     sack_cnt;               /*  FACK ONLY:  Number of reports for
                                           this hole */
 };
 
@@ -85,8 +84,8 @@ struct scrb_entry {
  * acknowledged by the other end
  */
 struct scoreboard {
-      tcp_seq last_ack;               /* This value replicates snd_una, 
-                                         but is needed for internal 
+      tcp_seq last_ack;               /* This value replicates snd_una,
+                                         but is needed for internal
                                          scoreboard state.  */
       LIST_HEAD(scrb_head_internal, scrb_entry) head; /* Scoreboard list */
 };

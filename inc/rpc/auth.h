@@ -29,10 +29,6 @@
  * Sun Microsystems, Inc.
  * 2550 Garcia Avenue
  * Mountain View, California  94043
- *
- *	from: @(#)auth.h 1.17 88/02/08 SMI
- *	from: @(#)auth.h	2.3 88/08/07 4.0 RPCSRC
- *	$Id: auth.h,v 1.5 1996/01/31 08:02:11 hsu Exp $
  */
 
 /*
@@ -56,27 +52,27 @@
 #include <sys/socket.h>
 #endif
 
-#define MAX_AUTH_BYTES	400
-#define MAXNETNAMELEN	255	/* maximum length of network user's name */
+#define MAX_AUTH_BYTES  400
+#define MAXNETNAMELEN   255 /* maximum length of network user's name */
 
 /*
  * Status returned from authentication check
  */
 enum auth_stat {
-	AUTH_OK=0,
-	/*
-	 * failed at remote end
-	 */
-	AUTH_BADCRED=1,			/* bogus credentials (seal broken) */
-	AUTH_REJECTEDCRED=2,		/* client should begin new session */
-	AUTH_BADVERF=3,			/* bogus verifier (seal broken) */
-	AUTH_REJECTEDVERF=4,		/* verifier expired or was replayed */
-	AUTH_TOOWEAK=5,			/* rejected due to security reasons */
-	/*
-	 * failed locally
-	*/
-	AUTH_INVALIDRESP=6,		/* bogus response verifier */
-	AUTH_FAILED=7			/* some unknown reason */
+    AUTH_OK=0,
+    /*
+     * failed at remote end
+     */
+    AUTH_BADCRED=1,         /* bogus credentials (seal broken) */
+    AUTH_REJECTEDCRED=2,        /* client should begin new session */
+    AUTH_BADVERF=3,         /* bogus verifier (seal broken) */
+    AUTH_REJECTEDVERF=4,        /* verifier expired or was replayed */
+    AUTH_TOOWEAK=5,         /* rejected due to security reasons */
+    /*
+     * failed locally
+    */
+    AUTH_INVALIDRESP=6,     /* bogus response verifier */
+    AUTH_FAILED=7           /* some unknown reason */
 };
 
 union des_block {
@@ -108,17 +104,17 @@ struct opaque_auth {
  * Auth handle, interface to client side authenticators.
  */
 typedef struct {
-	struct	opaque_auth	ah_cred;
-	struct	opaque_auth	ah_verf;
-	union	des_block	ah_key;
-	struct auth_ops {
+    struct  opaque_auth ah_cred;
+    struct  opaque_auth ah_verf;
+    union   des_block   ah_key;
+    struct auth_ops {
                void    (*ah_nextverf)();
                int     (*ah_marshal)();        /* nextverf & serialize */
                int     (*ah_validate)();       /* validate verifier */
                int     (*ah_refresh)();        /* refresh credentials */
                void    (*ah_destroy)();        /* destroy this structure */
-	} *ah_ops;
-	caddr_t ah_private;
+    } *ah_ops;
+    caddr_t ah_private;
       } AUTH;
 
 
@@ -126,8 +122,8 @@ typedef struct {
  * Authentication ops.
  * The ops and the auth handle provide the interface to the authenticators.
  *
- * AUTH	*auth;
- * XDR	*xdrs;
+ * AUTH *auth;
+ * XDR  *xdrs;
  * struct opaque_auth verf;
  */
 #define AUTH_NEXTVERF(auth)       ((*((auth)->ah_ops->ah_nextverf))(auth))
@@ -155,11 +151,11 @@ extern struct opaque_auth _null_auth;
 /*
  * Unix style authentication
  * AUTH *authunix_create(machname, uid, gid, len, aup_gids)
- *	char *machname;
- *	int uid;
- *	int gid;
- *	int len;
- *	int *aup_gids;
+ *  char *machname;
+ *  int uid;
+ *  int gid;
+ *  int len;
+ *  int *aup_gids;
  */
 
 __BEGIN_DECLS
@@ -171,10 +167,10 @@ extern AUTH *authdes_create         (char*, u_int, struct sockaddr*, des_block*)
 
 __END_DECLS
 
-#define AUTH_NONE	0		/* no authentication */
-#define	AUTH_NULL	0		/* backward compatibility */
-#define	AUTH_UNIX	1		/* unix style (uid, gids) */
-#define	AUTH_SHORT	2		/* short hand unix style */
-#define AUTH_DES	3		/* des style (encrypted timestamps) */
+#define AUTH_NONE   0       /* no authentication */
+#define AUTH_NULL   0       /* backward compatibility */
+#define AUTH_UNIX   1       /* unix style (uid, gids) */
+#define AUTH_SHORT  2       /* short hand unix style */
+#define AUTH_DES    3       /* des style (encrypted timestamps) */
 
 #endif

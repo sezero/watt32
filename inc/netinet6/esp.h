@@ -1,9 +1,5 @@
 /*!\file netinet6/esp.h
- *
  */
-
-/*      $FreeBSD: src/sys/netinet6/esp.h,v 1.6 2002/04/19 04:46:22 suz Exp $    */
-/*      $KAME: esp.h,v 1.19 2001/09/04 08:43:19 itojun Exp $    */
 
 /*
  * Copyright (C) 1995, 1996, 1997, and 1998 WIDE Project.

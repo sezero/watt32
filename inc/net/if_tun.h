@@ -2,8 +2,6 @@
  * Interface tunneling.
  */
 
-/*      $NetBSD: if_tun.h,v 1.6 1996/06/25 22:15:18 pk Exp $    */
-
 /*
  * Copyright (c) 1988, Julian Onions <jpo@cs.nott.ac.uk>
  * Nottingham University 1987.
@@ -16,8 +14,6 @@
  * roots in a similar driver written by Phil Cockcroft (formerly) at
  * UCL. This driver is based much more on read/write/select mode of
  * operation though.
- *
- * : $Header: if_tnreg.h,v 1.1.2.1 1992/07/16 22:39:16 friedl Exp
  */
 
 #ifndef __NET_IF_TUN_H

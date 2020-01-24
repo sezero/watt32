@@ -2,9 +2,6 @@
  * IPv6 Authentication header.
  */
 
-/*      $FreeBSD: src/sys/netinet6/ah6.h,v 1.4 2001/06/11 12:39:03 ume Exp $    */
-/*      $KAME: ah.h,v 1.13 2000/10/18 21:28:00 itojun Exp $     */
-
 /*
  * Copyright (C) 1995, 1996, 1997, and 1998 WIDE Project.
  * All rights reserved.

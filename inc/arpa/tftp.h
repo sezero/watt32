@@ -33,9 +33,6 @@
  * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
- *
- *      @(#)tftp.h      8.1 (Berkeley) 6/2/93
- * $FreeBSD: /repoman/r/ncvs/src/include/arpa/tftp.h,v 1.3.6.1 2002/08/14 21:59:26 peter Exp $
  */
 
 #ifndef __ARPA_TFTP_H

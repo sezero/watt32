@@ -1,9 +1,5 @@
 /*!\file netinet6/in6_pcb.h
- *
  */
-
-/*      $FreeBSD: src/sys/netinet6/in6_pcb.h,v 1.8 2002/06/14 08:35:21 hsu Exp $        */
-/*	$KAME: in6_pcb.h,v 1.13 2001/02/06 09:16:53 itojun Exp $	*/
 
 /*
  * Copyright (C) 1995, 1996, 1997, and 1998 WIDE Project.
@@ -66,8 +62,6 @@
  * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
- *
- *	@(#)in_pcb.h	8.1 (Berkeley) 6/10/93
  */
 
 #ifndef _NETINET6_IN6_PCB_H_

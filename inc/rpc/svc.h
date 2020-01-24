@@ -29,10 +29,6 @@
  * Sun Microsystems, Inc.
  * 2550 Garcia Avenue
  * Mountain View, California  94043
- *
- *  from: @(#)svc.h 1.20 88/02/08 SMI
- *  from: @(#)svc.h 2.2 88/07/29 4.0 RPCSRC
- *  $Id: svc.h,v 1.5 1996/01/30 23:32:29 mpp Exp $
  */
 
 /*

@@ -2,8 +2,6 @@
  * Time Synchronisation Daemon.
  */
 
-/*      $NetBSD: timed.h,v 1.5 1996/04/09 20:40:32 cgd Exp $    */
-
 /*
  * Copyright (c) 1983 Regents of the University of California.
  * All rights reserved.
@@ -35,8 +33,6 @@
  * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
- *
- *	@(#)timed.h	1.10 (Berkeley) 4/3/91
  */
 
 #ifndef __PROTOCOL_TIMED_H
@@ -69,14 +65,14 @@ struct tsp {
 
 #define	tsp_time	tsp_u.tspu_time
 #define	tsp_hopcnt	tsp_u.tspu_hopcnt
- 
+
 /*
  * Command types.
  */
 #define	TSP_ANY			0	/* match any types */
 #define	TSP_ADJTIME		1	/* send adjtime */
 #define	TSP_ACK			2	/* generic acknowledgement */
-#define	TSP_MASTERREQ		3	/* ask for master's name */ 
+#define	TSP_MASTERREQ		3	/* ask for master's name */
 #define	TSP_MASTERACK		4	/* acknowledge master request */
 #define	TSP_SETTIME		5	/* send network time */
 #define	TSP_MASTERUP		6	/* inform slaves that master is up */

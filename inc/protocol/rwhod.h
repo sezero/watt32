@@ -2,8 +2,6 @@
  * Remote WHO daemon.
  */
 
-/*      $NetBSD: rwhod.h,v 1.4 1996/09/23 05:01:08 mycroft Exp $        */
-
 /*
  * Copyright (c) 1983 The Regents of the University of California.
  * All rights reserved.
@@ -36,7 +34,6 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  *
- *	@(#)rwhod.h	5.6 (Berkeley) 4/3/91
  */
 
 #ifndef __PROTOCOL_RWHOD_H

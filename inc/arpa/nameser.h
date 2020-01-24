@@ -54,10 +54,6 @@
  * SOFTWARE.
  * -
  * --Copyright--
- *
- *      @(#)nameser.h        8.2 (Berkeley) 2/16/94
- *        From Id: nameser.h,v 4.9.1.15 1994/07/19 22:51:24 vixie Exp
- *        $Id: nameser.h,v 1.8 1996/08/29 20:01:00 peter Exp $
  */
 
 #ifndef __ARPA_NAMESER_H

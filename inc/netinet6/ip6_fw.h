@@ -2,9 +2,6 @@
  *
  */
 
-/*      $FreeBSD: src/sys/netinet6/ip6_fw.h,v 1.12 2002/04/19 04:46:22 suz Exp $        */
-/*	$KAME: ip6_fw.h,v 1.9 2001/08/01 04:29:57 sumikawa Exp $	*/
-
 /*
  * Copyright (C) 1998, 1999, 2000 and 2001 WIDE Project.
  * All rights reserved.
@@ -171,7 +168,7 @@ struct ip6_fw_chain {
 
 #define IPV6_FW_F_MASK	0xFFFF	/* All possible flag bits mask		*/
 
-/* 
+/*
  * Flags for the 'fw_ipflg' field, for comparing values of ip and its protocols. */
 #define	IPV6_FW_IF_TCPEST 0x00000020	/* established TCP connection	*/
 #define IPV6_FW_IF_TCPMSK 0x00000020	/* mask of all TCP values */

@@ -29,10 +29,6 @@
  * Sun Microsystems, Inc.
  * 2550 Garcia Avenue
  * Mountain View, California  94043
- *
- *	from: @(#)auth_unix.h 1.8 88/02/08 SMI
- *	from: @(#)auth_unix.h	2.2 88/07/29 4.0 RPCSRC
- *	$Id: auth_unix.h,v 1.4 1996/01/30 23:31:42 mpp Exp $
  */
 
 /*
@@ -63,12 +59,12 @@
  * Unix style credentials.
  */
 struct authunix_parms {
-	u_long	 aup_time;
-	char	*aup_machname;
-	int	 aup_uid;
-	int	 aup_gid;
-	u_int	 aup_len;
-	int	*aup_gids;
+    u_long   aup_time;
+    char    *aup_machname;
+    int  aup_uid;
+    int  aup_gid;
+    u_int    aup_len;
+    int *aup_gids;
 };
 
 __BEGIN_DECLS

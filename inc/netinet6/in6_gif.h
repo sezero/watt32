@@ -1,9 +1,5 @@
 /*!\file netinet6/in6_gif.h
- *
  */
-
-/*      $FreeBSD: src/sys/netinet6/in6_gif.h,v 1.3 2000/07/04 16:35:09 itojun Exp $     */
-/*	$KAME: in6_gif.h,v 1.5 2000/04/14 08:36:03 itojun Exp $	*/
 
 /*
  * Copyright (C) 1995, 1996, 1997, and 1998 WIDE Project.

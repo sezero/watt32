@@ -2,8 +2,6 @@
  *
  */
 
-/*      $NetBSD: pfil.h,v 1.8 1997/10/10 05:40:26 mrg Exp $     */
-
 /*
  * Copyright (c) 1996 Matthew R. Green
  * All rights reserved.

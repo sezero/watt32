@@ -29,10 +29,6 @@
  * Sun Microsystems, Inc.
  * 2550 Garcia Avenue
  * Mountain View, California  94043
- *
- *	from: @(#)xdr.h 1.19 87/04/22 SMI
- *	from: @(#)xdr.h	2.2 88/07/29 4.0 RPCSRC
- *	$Id: xdr.h,v 1.4 1996/01/30 23:32:45 mpp Exp $
  */
 
 /*
@@ -262,7 +258,7 @@ extern void     xdr_free       (xdrproc_t, char *);
  * Hack to avoid missing typecast from rpcgen when
  * producing xdr_opaque()
  */
-#define xdr_opaque(xdr,obj,size) __xdr_opaque(xdr,(caddr_t)obj,size) 
+#define xdr_opaque(xdr,obj,size) __xdr_opaque(xdr,(caddr_t)obj,size)
 
 __END_DECLS
 

@@ -1,9 +1,5 @@
 /*!\file netinet6/in6_var.h
- *
  */
-
-/*      $FreeBSD: src/sys/netinet6/in6_var.h,v 1.10 2002/04/19 04:46:22 suz Exp $       */
-/*	$KAME: in6_var.h,v 1.56 2001/03/29 05:34:31 itojun Exp $	*/
 
 /*
  * Copyright (C) 1995, 1996, 1997, and 1998 WIDE Project.
@@ -65,8 +61,6 @@
  * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
- *
- *	@(#)in_var.h	8.1 (Berkeley) 6/10/93
  */
 
 #ifndef _NETINET6_IN6_VAR_H_

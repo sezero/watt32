@@ -2,8 +2,6 @@
  * Ethernet protocol types.
  */
 
-/*      $NetBSD: ethertypes.h,v 1.2 1997/03/15 18:12:19 is Exp $        */
-
 /*
  * Copyright (c) 1982, 1986, 1993
  *  The Regents of the University of California.  All rights reserved.
@@ -35,8 +33,6 @@
  * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
- *
- *  @(#)if_ether.h  8.1 (Berkeley) 6/10/93
  */
 
 /*

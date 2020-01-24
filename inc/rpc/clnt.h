@@ -29,10 +29,6 @@
  * Sun Microsystems, Inc.
  * 2550 Garcia Avenue
  * Mountain View, California  94043
- *
- *	from: @(#)clnt.h 1.31 88/02/08 SMI
- *	from: @(#)clnt.h	2.1 88/07/29 4.0 RPCSRC
- *	$Id: clnt.h,v 1.4 1996/01/30 23:31:48 mpp Exp $
  */
 
 /*
@@ -122,16 +118,16 @@ struct rpc_err {
  * Client is responsible for initializing auth, see e.g. auth_none.c.
  */
 typedef struct {
-        AUTH  *cl_auth;                        /* authenticator */
-	struct clnt_ops {
-                enum clnt_stat(*cl_call)();    /* call remote procedure */
-                void          (*cl_abort)();   /* abort a call */
-                void          (*cl_geterr)();  /* get specific error code */
-                bool_t        (*cl_freeres)(); /* frees results */
-                void          (*cl_destroy)(); /* destroy this structure */
-                bool_t        (*cl_control)(); /* the ioctl() of rpc */
-	} *cl_ops;
-        caddr_t               cl_private;      /* private stuff */
+        AUTH  *cl_auth;                  /* authenticator */
+        struct clnt_ops {
+          enum clnt_stat(*cl_call)();    /* call remote procedure */
+          void          (*cl_abort)();   /* abort a call */
+          void          (*cl_geterr)();  /* get specific error code */
+          bool_t        (*cl_freeres)(); /* frees results */
+          void          (*cl_destroy)(); /* destroy this structure */
+          bool_t        (*cl_control)(); /* the ioctl() of rpc */
+        } *cl_ops;
+        caddr_t         cl_private;      /* private stuff */
 } CLIENT;
 
 
@@ -145,31 +141,32 @@ typedef struct {
 /*
  * enum clnt_stat
  * CLNT_CALL(rh, proc, xargs, argsp, xres, resp, timeout)
- * 	CLIENT *rh;
- *	u_long proc;
- *	xdrproc_t xargs;
- *	caddr_t argsp;
- *	xdrproc_t xres;
- *	caddr_t resp;
- *	struct timeval timeout;
+ *  CLIENT *rh;
+ *  u_long proc;
+ *  xdrproc_t xargs;
+ *  caddr_t argsp;
+ *  xdrproc_t xres;
+ *  caddr_t resp;
+ *  struct timeval timeout;
  */
-#define	CLNT_CALL(rh, proc, xargs, argsp, xres, resp, secs)	\
-	((*(rh)->cl_ops->cl_call)(rh, proc, xargs, argsp, xres, resp, secs))
-#define	clnt_call(rh, proc, xargs, argsp, xres, resp, secs)	\
-	((*(rh)->cl_ops->cl_call)(rh, proc, xargs, argsp, xres, resp, secs))
+#define CLNT_CALL(rh, proc, xargs, argsp, xres, resp, secs) \
+        ((*(rh)->cl_ops->cl_call)(rh, proc, xargs, argsp, xres, resp, secs))
+
+#define clnt_call(rh, proc, xargs, argsp, xres, resp, secs) \
+        ((*(rh)->cl_ops->cl_call)(rh, proc, xargs, argsp, xres, resp, secs))
 
 /*
  * void
  * CLNT_ABORT(rh);
- * 	CLIENT *rh;
+ *  CLIENT *rh;
  */
-#define	CLNT_ABORT(rh)	((*(rh)->cl_ops->cl_abort)(rh))
-#define	clnt_abort(rh)	((*(rh)->cl_ops->cl_abort)(rh))
+#define CLNT_ABORT(rh)  ((*(rh)->cl_ops->cl_abort)(rh))
+#define clnt_abort(rh)  ((*(rh)->cl_ops->cl_abort)(rh))
 
 /*
  * struct rpc_err
  * CLNT_GETERR(rh);
- * 	CLIENT *rh;
+ *  CLIENT *rh;
  */
 #define CLNT_GETERR(rh,errp)  ((*(rh)->cl_ops->cl_geterr)(rh, errp))
 #define clnt_geterr(rh,errp)  ((*(rh)->cl_ops->cl_geterr)(rh, errp))
@@ -178,12 +175,12 @@ typedef struct {
 /*
  * bool_t
  * CLNT_FREERES(rh, xres, resp);
- * 	CLIENT *rh;
- *	xdrproc_t xres;
- *	caddr_t resp;
+ *  CLIENT *rh;
+ *  xdrproc_t xres;
+ *  caddr_t resp;
  */
-#define	CLNT_FREERES(rh,xres,resp) ((*(rh)->cl_ops->cl_freeres)(rh,xres,resp))
-#define	clnt_freeres(rh,xres,resp) ((*(rh)->cl_ops->cl_freeres)(rh,xres,resp))
+#define CLNT_FREERES(rh,xres,resp) ((*(rh)->cl_ops->cl_freeres)(rh,xres,resp))
+#define clnt_freeres(rh,xres,resp) ((*(rh)->cl_ops->cl_freeres)(rh,xres,resp))
 
 /*
  * bool_t
@@ -192,8 +189,8 @@ typedef struct {
  *      u_int request;
  *      char *info;
  */
-#define	CLNT_CONTROL(cl,rq,in) ((*(cl)->cl_ops->cl_control)(cl,rq,in))
-#define	clnt_control(cl,rq,in) ((*(cl)->cl_ops->cl_control)(cl,rq,in))
+#define CLNT_CONTROL(cl,rq,in) ((*(cl)->cl_ops->cl_control)(cl,rq,in))
+#define clnt_control(cl,rq,in) ((*(cl)->cl_ops->cl_control)(cl,rq,in))
 
 /*
  * control operations that apply to both udp and tcp transports
@@ -210,10 +207,10 @@ typedef struct {
 /*
  * void
  * CLNT_DESTROY(rh);
- * 	CLIENT *rh;
+ *  CLIENT *rh;
  */
-#define	CLNT_DESTROY(rh)	((*(rh)->cl_ops->cl_destroy)(rh))
-#define	clnt_destroy(rh)	((*(rh)->cl_ops->cl_destroy)(rh))
+#define CLNT_DESTROY(rh)    ((*(rh)->cl_ops->cl_destroy)(rh))
+#define clnt_destroy(rh)    ((*(rh)->cl_ops->cl_destroy)(rh))
 
 
 /*
@@ -222,10 +219,10 @@ typedef struct {
  * and network administration.
  */
 
-#define RPCTEST_PROGRAM		((u_long)1)
-#define RPCTEST_VERSION		((u_long)1)
-#define RPCTEST_NULL_PROC	((u_long)2)
-#define RPCTEST_NULL_BATCH_PROC	((u_long)3)
+#define RPCTEST_PROGRAM     ((u_long)1)
+#define RPCTEST_VERSION     ((u_long)1)
+#define RPCTEST_NULL_PROC   ((u_long)2)
+#define RPCTEST_NULL_BATCH_PROC ((u_long)3)
 
 /*
  * By convention, procedure 0 takes null arguments and returns them
@@ -245,8 +242,8 @@ __BEGIN_DECLS
  * Memory based rpc (for speed check and testing)
  * CLIENT *
  * clntraw_create(prog, vers)
- *	u_long prog;
- *	u_long vers;
+ *  u_long prog;
+ *  u_long vers;
  */
 extern CLIENT *clntraw_create (u_long, u_long);
 
@@ -254,10 +251,10 @@ extern CLIENT *clntraw_create (u_long, u_long);
  * Generic client creation routine. Supported protocols are "udp" and "tcp"
  * CLIENT *
  * clnt_create(host, prog, vers, prot);
- *	char *host; 	-- hostname
- *	u_long prog;	-- program number
- *	u_long vers;	-- version number
- *	char *prot;	-- protocol
+ *  char *host;     -- hostname
+ *  u_long prog;    -- program number
+ *  u_long vers;    -- version number
+ *  char *prot; -- protocol
  */
 extern CLIENT *clnt_create      (char *, u_long, u_long, char *);
 
@@ -266,12 +263,12 @@ extern CLIENT *clnt_create      (char *, u_long, u_long, char *);
  * TCP based rpc
  * CLIENT *
  * clnttcp_create(raddr, prog, vers, sockp, sendsz, recvsz)
- *	struct sockaddr_in *raddr;
- *	u_long prog;
- *	u_long version;
- *	register int *sockp;
- *	u_int sendsz;
- *	u_int recvsz;
+ *  struct sockaddr_in *raddr;
+ *  u_long prog;
+ *  u_long version;
+ *  register int *sockp;
+ *  u_int sendsz;
+ *  u_int recvsz;
  */
 
 extern CLIENT *clnttcp_create   (struct sockaddr_in *, u_long, u_long,
@@ -281,22 +278,22 @@ extern CLIENT *clnttcp_create   (struct sockaddr_in *, u_long, u_long,
  * UDP based rpc.
  * CLIENT *
  * clntudp_create(raddr, program, version, wait, sockp)
- *	struct sockaddr_in *raddr;
- *	u_long program;
- *	u_long version;
- *	struct timeval wait;
- *	int *sockp;
+ *  struct sockaddr_in *raddr;
+ *  u_long program;
+ *  u_long version;
+ *  struct timeval wait;
+ *  int *sockp;
  *
  * Same as above, but you specify max packet sizes.
  * CLIENT *
  * clntudp_bufcreate(raddr, program, version, wait, sockp, sendsz, recvsz)
- *	struct sockaddr_in *raddr;
- *	u_long program;
- *	u_long version;
- *	struct timeval wait;
- *	int *sockp;
- *	u_int sendsz;
- *	u_int recvsz;
+ *  struct sockaddr_in *raddr;
+ *  u_long program;
+ *  u_long version;
+ *  struct timeval wait;
+ *  int *sockp;
+ *  u_int sendsz;
+ *  u_int recvsz;
  */
 
 extern CLIENT *clntudp_create   (struct sockaddr_in *, u_long, u_long,
@@ -350,7 +347,7 @@ struct rpc_createerr {
 extern struct rpc_createerr rpc_createerr;
 
 
-#define UDPMSGSIZE	8800	/* rpc imposed limit on udp msg size */
-#define RPCSMALLMSGSIZE	400	/* a more reasonable packet size */
+#define UDPMSGSIZE  8800    /* rpc imposed limit on udp msg size */
+#define RPCSMALLMSGSIZE 400 /* a more reasonable packet size */
 
 #endif

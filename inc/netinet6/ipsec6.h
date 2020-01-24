@@ -2,9 +2,6 @@
  *
  */
 
-/*      $FreeBSD: src/sys/netinet6/ipsec6.h,v 1.5 2001/06/11 12:39:06 ume Exp $ */
-/*	$KAME: ipsec.h,v 1.44 2001/03/23 08:08:47 itojun Exp $	*/
-
 /*
  * Copyright (C) 1995, 1996, 1997, and 1998 WIDE Project.
  * All rights reserved.

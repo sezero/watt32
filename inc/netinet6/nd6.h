@@ -2,9 +2,6 @@
  * IPv6 Neighbor Discovery.
  */
 
-/*      $FreeBSD: src/sys/netinet6/nd6.h,v 1.10 2002/04/19 04:46:23 suz Exp $   */
-/*	$KAME: nd6.h,v 1.76 2001/12/18 02:10:31 itojun Exp $	*/
-
 /*
  * Copyright (C) 1995, 1996, 1997, and 1998 WIDE Project.
  * All rights reserved.

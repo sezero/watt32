@@ -2,10 +2,7 @@
  * ATM definitions.
  */
 
-/*      $NetBSD: if_atm.h,v 1.7 1996/11/09 23:02:27 chuck Exp $       */
-
 /*
- *
  * Copyright (c) 1996 Charles D. Cranor and Washington University.
  * All rights reserved.
  *
@@ -35,11 +32,6 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-
-/*
- * net/if_atm.h
- */
-
 #ifndef __NET_IF_ATM_H
 #define __NET_IF_ATM_H
 

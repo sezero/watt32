@@ -34,9 +34,6 @@
  * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
- *
- *      from: @(#)if_ether.h    7.5 (Berkeley) 6/28/90
- *      $Id: if_ether.h,v 1.8 1994/02/02 05:58:54 hpeyerl Exp $
  */
 
 #ifndef __NETINET_IF_ETHER_H

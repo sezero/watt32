@@ -2,9 +2,6 @@
  *
  */
 
-/*      $FreeBSD: src/sys/netinet6/ip6_mroute.h,v 1.5 2002/04/19 04:46:23 suz Exp $     */
-/*	$KAME: ip6_mroute.h,v 1.19 2001/06/14 06:12:55 suz Exp $	*/
-
 /*
  * Copyright (C) 1998 WIDE Project.
  * All rights reserved.
@@ -33,8 +30,6 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-
-/*	BSDI ip_mroute.h,v 2.5 1996/10/11 16:01:48 pjd Exp	*/
 
 /*
  * Definitions for IP multicast forwarding.

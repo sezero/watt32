@@ -2,9 +2,6 @@
  * SLIP/PPP compression.
  */
 
-/*      $NetBSD: slcompress.h,v 1.11 1997/05/17 21:12:11 christos Exp $ */
-/*	Id: slcompress.h,v 1.4 1994/09/21 06:50:08 paulus Exp 	*/
-
 /*
  * Copyright (c) 1989, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -36,8 +33,6 @@
  * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
- *
- *	@(#)slcompress.h	8.1 (Berkeley) 6/10/93
  */
 
 /*
@@ -73,7 +68,7 @@
  * sequence number changes, one change per bit set in the header
  * (there may be no changes and there are two special cases where
  * the receiver implicitly knows what changed -- see below).
- * 
+ *
  * There are 5 numbers which can change (they are always inserted
  * in the following order): TCP urgent pointer, window,
  * acknowlegement, sequence number and IP ID.  (The urgent pointer

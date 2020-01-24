@@ -2,8 +2,6 @@
  * ARP definitions.
  */
 
-/*      $NetBSD: if_arp.h,v 1.12 1997/09/08 02:06:30 mikel Exp $        */
-
 /*
  * Copyright (c) 1986, 1993
  *  The Regents of the University of California.  All rights reserved.
@@ -35,8 +33,6 @@
  * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
- *
- *  @(#)if_arp.h    8.1 (Berkeley) 6/10/93
  */
 
 #ifndef __NET_IF_ARP_H

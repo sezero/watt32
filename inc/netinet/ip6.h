@@ -2,9 +2,6 @@
  * IPv6 definitions.
  */
 
-/*      $FreeBSD: src/sys/netinet/ip6.h,v 1.5 2001/06/11 12:39:00 ume Exp $     */
-/*      $KAME: ip6.h,v 1.18 2001/03/29 05:34:30 itojun Exp $    */
-
 /*
  * Copyright (C) 1995, 1996, 1997, and 1998 WIDE Project.
  * All rights reserved.
@@ -65,8 +62,6 @@
  * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
- *
- *      @(#)ip.h        8.1 (Berkeley) 6/10/93
  */
 
 #ifndef _NETINET_IP6_H_

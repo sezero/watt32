@@ -8,14 +8,12 @@
  *      Authors:
  *      Pedro Roque             <roque@di.fc.ul.pt>
  *
- *      $Id: ipv6.h,v 1.6 1997/04/01 02:22:58 davem Exp $
- *
  *      This program is free software; you can redistribute it and/or
  *      modify it under the terms of the GNU General Public License
  *      as published by the Free Software Foundation; either version
  *      2 of the License, or (at your option) any later version.
  *
- *  NB! Don't ue this file. Use <netinet/in.h> instread.
+ *  NB! Don't use this file. Use <netinet/in.h> instread.
  */
 
 #ifndef _NET_IPV6_H

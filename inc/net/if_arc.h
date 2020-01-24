@@ -2,8 +2,6 @@
  * ARC-net definitions.
  */
 
-/*      $NetBSD: if_arc.h,v 1.6 1997/03/15 18:12:30 is Exp $    */
-
 /*
  * Copyright (c) 1982, 1986, 1993
  *	The Regents of the University of California.  All rights reserved.
@@ -36,8 +34,6 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  *
- * from: NetBSD: if_ether.h,v 1.10 1994/06/29 06:37:55 cgd Exp
- *       @(#)if_ether.h	8.1 (Berkeley) 6/10/93
  */
 
 #ifndef __NET_IF_ARC_H

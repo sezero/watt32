@@ -2,7 +2,7 @@
  * BSD socket I/O control.
  */
 
-/*-
+/*
  * Copyright (c) 1982, 1986, 1990 The Regents of the University of California.
  * All rights reserved.
  *
@@ -33,8 +33,6 @@
  * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
- *
- * @(#)ioctl.h  7.19 (Berkeley) 6/26/91
  */
 
 #ifndef __SYS_IOCTL_H
@@ -42,7 +40,6 @@
 
 /*
  * Commands for ioctlsocket(),  taken from the BSD file fcntl.h.
- *
  *
  * Ioctl's have the command encoded in the lower word,
  * and the size of any in or out parameters in the upper

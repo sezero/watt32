@@ -2,8 +2,6 @@
  * SLIP interface structures.
  */
 
-/*      $NetBSD: if_stripvar.h,v 1.4.8.1 1997/11/17 23:36:16 thorpej Exp $      */
-
 /*
  * Definitions for SLIP interface data structures
  *
@@ -16,34 +14,34 @@
 
 struct strip_softc {
     struct  ifnet sc_if;        /* network-visible interface */
-    int sc_unit;        /* XXX unit number */
+    int sc_unit;                /* XXX unit number */
     struct  ifqueue sc_fastq;   /* interactive output queue */
     struct  tty *sc_ttyp;       /* pointer to tty structure */
-    u_char  *sc_mp;         /* pointer to next available buf char */
-    u_char  *sc_ep;         /* pointer to last available buf char */
-    u_char  *sc_buf;        /* input buffer */
-    u_char  *sc_rxbuf;      /* input destuffing buffer */
-    u_char  *sc_txbuf;      /* output stuffing buffer */
-    u_char  *sc_xxx;        /* XXX don't ask... */
-    u_int   sc_flags;       /* see below */
-    long    sc_oqlen;       /* previous output queue size */
+    u_char  *sc_mp;             /* pointer to next available buf char */
+    u_char  *sc_ep;             /* pointer to last available buf char */
+    u_char  *sc_buf;            /* input buffer */
+    u_char  *sc_rxbuf;          /* input destuffing buffer */
+    u_char  *sc_txbuf;          /* output stuffing buffer */
+    u_char  *sc_xxx;            /* XXX don't ask... */
+    u_int   sc_flags;           /* see below */
+    long    sc_oqlen;           /* previous output queue size */
     long    sc_otimeout;        /* number of times output's stalled */
 #ifdef __NetBSD__
-    int sc_oldbufsize;      /* previous output buffer size */
-    int sc_oldbufquot;      /* previous output buffer quoting */
+    int sc_oldbufsize;          /* previous output buffer size */
+    int sc_oldbufquot;          /* previous output buffer quoting */
 #endif
-#ifdef INET             /* XXX */
+#ifdef INET                     /* XXX */
     struct  slcompress sc_comp; /* tcp compression data */
 #endif
 
-    int sc_state;           /* Radio reset state-machine */
-#define ST_ALIVE    0x0     /*    answered  probe */
-#define ST_PROBE_SENT   0x1     /*    probe sent, answer pending */
-#define ST_DEAD     0x2     /*    no answer to probe; do reset */
+    int sc_state;               /* Radio reset state-machine */
+#define ST_ALIVE       0x0      /*    answered  probe */
+#define ST_PROBE_SENT  0x1      /*    probe sent, answer pending */
+#define ST_DEAD        0x2      /*    no answer to probe; do reset */
 
-    long sc_statetimo;      /* When (secs) current state ends */
+    long sc_statetimo;          /* When (secs) current state ends */
 
-    caddr_t sc_bpf;         /* BPF data */
+    caddr_t sc_bpf;             /* BPF data */
 };
 
 

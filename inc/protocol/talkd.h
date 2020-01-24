@@ -2,8 +2,6 @@
  * Talk server/client definitions.
  */
 
-/*      $NetBSD: talkd.h,v 1.5 1995/03/04 07:59:30 cgd Exp $    */
-
 /*
  * Copyright (c) 1983 Regents of the University of California.
  * All rights reserved.
@@ -35,8 +33,6 @@
  * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
- *
- *	@(#)talkd.h	5.7 (Berkeley) 4/3/91
  */
 
 #ifndef __PROTOCOL_TALKD_H

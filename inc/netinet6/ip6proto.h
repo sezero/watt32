@@ -1,9 +1,5 @@
 /*!\file netinet6/ip6proto.h
- *
  */
-
-/*      $FreeBSD: src/sys/netinet6/ip6protosw.h,v 1.9 2002/04/19 04:46:23 suz Exp $     */
-/*	$KAME: ip6protosw.h,v 1.25 2001/09/26 06:13:03 keiichi Exp $	*/
 
 /*
  * Copyright (C) 1995, 1996, 1997, and 1998 WIDE Project.
@@ -34,8 +30,6 @@
  * SUCH DAMAGE.
  *
  */
-
-/*	BSDI protosw.h,v 2.3 1996/10/11 16:02:40 pjd Exp	*/
 
 /*-
  * Copyright (c) 1982, 1986, 1993
@@ -68,10 +62,7 @@
  * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
- *
- *	@(#)protosw.h	8.1 (Berkeley) 6/2/93
  */
-
 #ifndef _NETINET6_IP6PROTOSW_H_
 #define _NETINET6_IP6PROTOSW_H_
 

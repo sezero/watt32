@@ -1,6 +1,7 @@
 /*!\file netinet/udp.h
  * UDP header.
  */
+
 /*
  * Copyright (c) 1982, 1986, 1993
  *      The Regents of the University of California.  All rights reserved.
@@ -32,9 +33,6 @@
  * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
- *
- *      @(#)udp.h       8.1 (Berkeley) 6/10/93
- * $FreeBSD: src/sys/netinet/udp.h,v 1.7 1999/08/28 00:49:34 peter Exp $
  */
 
 #ifndef _NETINET_UDP_H_

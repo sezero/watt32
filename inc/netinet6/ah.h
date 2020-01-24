@@ -2,9 +2,6 @@
  * Authentication Header.
  */
 
-/*      $FreeBSD: src/sys/netinet6/ah.h,v 1.7 2002/04/19 04:46:22 suz Exp $     */
-/*      $KAME: ah.h,v 1.16 2001/09/04 08:43:19 itojun Exp $     */
-
 /*
  * Copyright (C) 1995, 1996, 1997, and 1998 WIDE Project.
  * All rights reserved.

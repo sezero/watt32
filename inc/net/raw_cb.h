@@ -2,8 +2,6 @@
  *
  */
 
-/*      $NetBSD: raw_cb.h,v 1.11 1996/05/28 23:24:50 pk Exp $   */
-
 /*
  * Copyright (c) 1980, 1986, 1993
  *      The Regents of the University of California.  All rights reserved.
@@ -35,8 +33,6 @@
  * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
- *
- *      @(#)raw_cb.h    8.1 (Berkeley) 6/10/93
  */
 
 #ifndef __NET_RAW_CB_H

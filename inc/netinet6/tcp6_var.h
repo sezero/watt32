@@ -1,6 +1,6 @@
 /*!\file netinet6/tcp6_var.h
- *
  */
+
 /*
  * Copyright (C) 1995, 1996, 1997, and 1998 WIDE Project.
  * All rights reserved.
@@ -28,8 +28,6 @@
  * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
- *
- * $FreeBSD: src/sys/netinet6/tcp6_var.h,v 1.5 2001/11/22 04:50:44 jlemon Exp $
  */
 
 /*
@@ -63,9 +61,6 @@
  * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
- *
- *	@(#)tcp_var.h	8.4 (Berkeley) 5/24/95
- * $FreeBSD: src/sys/netinet6/tcp6_var.h,v 1.5 2001/11/22 04:50:44 jlemon Exp $
  */
 
 #ifndef _NETINET_TCP6_VAR_H_

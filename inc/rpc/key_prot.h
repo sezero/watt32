@@ -11,7 +11,6 @@
 #ifndef __KEY_PROT_H
 #define __KEY_PROT_H
 
-
 /*
  * Copyright (c) 1988 by Sun Microsystems, Inc.
  */

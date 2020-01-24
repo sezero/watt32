@@ -2,8 +2,6 @@
  * Radix search trees.
  */
 
-/*      $NetBSD: radix.h,v 1.9 1997/04/02 21:17:31 christos Exp $       */
-
 /*
  * Copyright (c) 1988, 1989, 1993
  *  The Regents of the University of California.  All rights reserved.
@@ -35,8 +33,6 @@
  * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
- *
- *  @(#)radix.h 8.2 (Berkeley) 10/31/94
  */
 
 #ifndef _NET_RADIX_H_
