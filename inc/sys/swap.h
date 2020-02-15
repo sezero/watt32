@@ -159,34 +159,25 @@ __BEGIN_DECLS
     }
   #endif
 
-#elif defined(__WATCOMC__) && defined(__FLAT__)  /* Watcom 32-bit */
+#elif defined(__WATCOMC__)  /* Watcom */
   #define intel(x)   __ntohl(x)
   #define intel16(x) __ntohs(x)
 
   extern unsigned long __ntohl (unsigned long x);
-  #pragma aux  __ntohl =       \
+  #if defined(__I86__)  /* Watcom 16-bit */
+    #pragma aux  __ntohl =     \
+              "xchg al, dh"        \
+              "xchg ah, dl"        \
+              __parm   [__dx __ax] \
+              __modify [__dx __ax];
+  #else /* Watcom 32-bit */
+    #pragma aux  __ntohl =         \
               "xchg al, ah"    \
               "ror  eax, 16"   \
               "xchg al, ah"    \
               __parm   [__eax] \
               __modify [__eax];
-
-  extern unsigned short __ntohs (unsigned short x);
-  #pragma aux __ntohs =       \
-              "xchg al, ah"   \
-              __parm   [__ax] \
-              __modify [__ax];
-
-#elif defined(__WATCOMC__) && !defined(__FLAT__)  /* Watcom 16-bit */
-  #define intel(x)   __ntohl(x)
-  #define intel16(x) __ntohs(x)
-
-  extern unsigned long __ntohl (unsigned long x);
-  #pragma aux  __ntohl =           \
-              "xchg al, dh"        \
-              "xchg ah, dl"        \
-              __parm   [__dx __ax] \
-              __modify [__dx __ax];
+  #endif
 
   extern unsigned short __ntohs (unsigned short x);
   #pragma aux __ntohs =        \
