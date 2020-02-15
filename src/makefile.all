@@ -461,21 +461,17 @@ $(OBJDIR)\cpumodel.obj: cpumodel.asm
 
 .EXTENSIONS: .l
 
-#
-# Replace 'wcc386' with 'wcc' for Watcom 1.9 or older.
-# And possibly add '-0' to 'CFLAGS'.
-#
 @ifdef SMALL
-CC      = wcc386
-CFLAGS  = -ms -os -zc -s -bt=dos
+CC      = wcc
+CFLAGS  = -ms -0 -os -zc -s -bt=dos
 AFLAGS  = -bt=dos
 TARGET  = ..\lib\wattcpws.lib
 OBJDIR  = build\watcom\small
 MAKEFIL = watcom_s.mak
 
 @elifdef LARGE
-CC      = wcc386
-CFLAGS  = -ml -os -zc -s -bt=dos
+CC      = wcc
+CFLAGS  = -ml -0 -os -zc -s -bt=dos
 AFLAGS  = -bt=dos
 TARGET  = ..\lib\wattcpwl.lib
 OBJDIR  = build\watcom\large
@@ -509,7 +505,7 @@ LINKARG = $(OBJDIR)\wlink.arg
 C_ARGS  = $(OBJDIR)\$(CC).arg
 
 AFLAGS += -zq -fr=nul -w3 -d1
-CFLAGS += -zq -fr=nul -wx -fpi -DWATT32_BUILD -I. -I..\inc -I$(%WATCOM)\h
+CFLAGS += -zq -fr=nul -wx -fpi -DWATT32_BUILD -I. -I..\inc
 
 #
 # WCC386-flags used:
