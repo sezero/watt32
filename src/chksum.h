@@ -26,7 +26,7 @@ extern int  _ip6_icmp_checksum (const in6_Header *ip, const void *icmp, unsigned
 
   #if defined(__WATCOMC__)
     /* No decoration. Args on stack. All regs preserved */
-    #pragma aux (cdecl) _w32_in_checksum_fast "_*" parm caller[];
+    #pragma aux (__cdecl) _w32_in_checksum_fast "_*" __parm __caller[];
   #elif defined(__HIGHC__)
     #pragma alias (_w32_in_checksum_fast, "_w32_in_checksum_fast")
   #endif

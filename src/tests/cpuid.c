@@ -18,7 +18,7 @@ CPUID_DATA cpuid (int);
             "mov [esi+4],ebx"  \
             "mov [esi+8],ecx"  \
             "mov [esi+12],edx" \
-            __modify [eax ebx ecx edx] __parm [eax];
+            __modify [__eax __ebx __ecx __edx] __parm [__eax];
 
 
 int main (void)

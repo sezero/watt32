@@ -825,7 +825,7 @@ static void release_real_mem (void)
  * _exit() is called.
  */
 #ifdef __WATCOMC__
-#pragma aux pkt_release loadds;
+#pragma aux pkt_release __loadds;
 #endif
 
 #if defined(__GNUC__)

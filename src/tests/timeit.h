@@ -83,7 +83,7 @@
           "nop"            \
           "nop"            \
           "nop"            \
-          modify [eax edx];
+          __modify [__eax __edx];
 
   extern void _invd_cache (void);
   #pragma aux _invd_cache = \
