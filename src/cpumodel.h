@@ -299,9 +299,8 @@ extern CONST char  DATA_DECL x86_vendor_id[13];
 #endif
 
 
-#if 0 && (defined(__BORLANDC__) || defined(__DMC__)) && \
-         (defined(__SMALL__) || defined(__LARGE__)) && \
-         defined(__SMALL32__)
+#if 0 && (DOSX == 0) && (defined(__BORLANDC__) || defined(__DMC__)) && \
+         (defined(__SMALL__) || defined(__LARGE__))
   /*
    * Save FPU state.
    */

@@ -781,7 +781,7 @@ extern const char *short_strerror (int errnum);
   #define PUSHF_CLI()     __asm__ __volatile__ ("pushfl; cli" ::: "memory")
   #define POPF()          __asm__ __volatile__ ("popfl"       ::: "memory")
 
-#elif (defined(__SMALL__) || defined(__LARGE__)) && !defined(__SMALL32__)
+#elif (DOSX == 0) && (defined(__SMALL__) || defined(__LARGE__))
   #if defined(__BORLANDC__) /* prevent spawning tasm.exe */
     #define PUSHF_CLI()   __emit__ (0x9C,0xFA)
     #define POPF()        __emit__ (0x9D)

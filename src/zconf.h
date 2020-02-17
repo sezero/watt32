@@ -108,7 +108,7 @@
 #    ifndef SYS16BIT
 #      define SYS16BIT
 #    endif
-#    if defined(__DMC__) && defined(__SMALL32__)
+#    if defined(DMC386)
 #      undef SYS16BIT
 #    endif
 #  endif

@@ -1165,7 +1165,7 @@ void W32_CALL sock_sig_exit (const char *msg, int sig)
 #elif defined(__DMC__) && 0
   #if defined(WIN32)
     #pragma comment (lib, "wattcpd_imp.lib")
-  #elif defined(__SMALL32__)
+  #elif defined(DMC386)
     #pragma comment (lib, "wattcpDF.lib")
   #elif defined(__SMALL__)
     #pragma comment (lib, "wattcpDS.lib")

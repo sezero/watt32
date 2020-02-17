@@ -53,11 +53,16 @@
 #undef USE_DYNIP_CLI   /* Support DynDNS.org name/IP client */
 #undef USE_SCTP        /* Stream Control Transfer Protocol; experimental */
 
+#if (DOSX == 0)
+/*
+ * configure 16-bit targets
+ */
+
 /*
  * Building small-model applications doesn't leave
  * much room for the fancy stuff :-(
  */
-#if !defined(OPT_DEFINED) && defined(__SMALL__) && !defined(__SMALL32__)
+#if !defined(OPT_DEFINED) && defined(__SMALL__)
   #define USE_UDP_ONLY     /* test udp-only (cookie,ping) */
   #define OPT_DEFINED
 #endif
@@ -76,6 +81,11 @@
   #define USE_DEBUG
   #define OPT_DEFINED
 #endif
+
+#else 
+/*
+ * configure 32/64-bit targets
+ */
 
 /*
  * Otherwise, for all targets define these options:
@@ -100,8 +110,8 @@
 /*
  * Add some more options for djgpp, HighC, 32-bit Watcom/DMC and Win32/64
  */
-#if defined(__DJGPP__) || defined(__HIGHC__) || defined(WATCOM386) || \
-    defined(DMC386) || defined(_WIN32) || defined(_WIN64)
+#if defined(__DJGPP__) || defined(__HIGHC__) || defined(__WATCOMC__) || \
+    defined(__DMC__) || defined(_WIN32) || defined(_WIN64)
   #define USE_ECHO_DISC
   #define USE_RARP
   #define USE_IPV6
@@ -123,14 +133,15 @@
 /* #define USE_FORTIFY */
 #endif
 
-#if (DOSX && DOSX != WINWATT)
+#if (DOSX != WINWATT)
   #define USE_FAST_PKT
 #endif
 
-#if (DOSX) && defined(HAVE_UINT64)
+#if defined(HAVE_UINT64)
   #define USE_PROFILER
 #endif
 
+#endif
 
 /*
  * SCTP needs gzip compress/uncompress.

@@ -19,10 +19,12 @@ void W32_CALL sock_debugdump (const sock_type *s)
   if (s->raw.ip_type == IP4_TYPE)
      return;
 
-#if defined(__SMALL__) && !defined(__SMALL32__)
-  (*_printf) ("next       %04X\n",      s->tcp.next);
-#elif defined(__LARGE__)
-  (*_printf) ("next       %04X:%04X\n", FP_SEG(s->tcp.next), FP_OFF(s->tcp.next));
+#if (DOSX == 0)
+  #if defined(__SMALL__)
+    (*_printf) ("next       %04X\n",      s->tcp.next);
+  #elif defined(__LARGE__)
+    (*_printf) ("next       %04X:%04X\n", FP_SEG(s->tcp.next), FP_OFF(s->tcp.next));
+  #endif
 #else
   (*_printf) ("next       %" ADDR_FMT "\n", ADDR_CAST(s->tcp.next));
 #endif

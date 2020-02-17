@@ -69,38 +69,23 @@
   #error Unsupported memory model (medium/huge)
 #endif
 
-/* 32-bit Digital Mars Compiler defines __SMALL__. So take care when testing
- * for real __SMALL__.
- */
-#if defined(__DMC__) && (__INTSIZE==4) && defined(__SMALL__)
-  #define __SMALL32__
-  #define DMC386
-#endif
-
-#if (defined(__SMALL__) || defined(__LARGE__)) && !defined(__SMALL32__)
-  #undef  DOSX
-  #define DOSX 0
-#endif
-
 /*
  * djgpp 2.x with GNU C 2.7 or later.
  */
 #if defined(__DJGPP__) && defined(__GNUC__)
-  #undef  DOSX
-  #define DOSX      DJGPP
+  #ifndef  DOSX
+    #define DOSX      DJGPP
+  #endif
 #endif
 
 /*
- * Watcom 11.x or OpenWatcom 1.x.
+ * Watcom 11.x or OpenWatcom.
  */
 #if defined(__WATCOMC__) && defined(__386__)
-  #ifndef DOSX              /* If not set in watcom_*.mak file */
-    #undef  DOSX
-    #define DOSX    DOS4GW  /* may be DOS4GW, X32VM, PHARLAP or WINWATT */
-  #endif
+  #define WATCOM386
 
-  #if !defined(__SMALL__) && !defined(__LARGE__)
-  #define WATCOM386 1
+  #ifndef DOSX              /* If not set in watcom_*.mak file */
+    #define DOSX    DOS4GW  /* may be DOS4GW, X32VM, PHARLAP or WINWATT */
   #endif
 #endif
 
@@ -108,8 +93,9 @@
  * Digital Mars Compiler 8.30+
  */
 #if defined(__DMC__) && (__INTSIZE==4)
+  #define DMC386
+
   #ifndef DOSX              /* If not set in dmars_*.mak file */
-    #undef  DOSX
     #define DOSX   PHARLAP  /* may be X32VM, DOS4GW or PHARLAP */
   #endif
 #endif
@@ -130,8 +116,10 @@
    */
   #pragma warn (disable: 2116)
 
-  #undef  DOSX
-  #define DOSX      WINWATT
+  #ifndef  DOSX
+    #define DOSX      WINWATT
+  #endif
+
   #undef _MSC_VER
 #endif
 
@@ -140,9 +128,11 @@
  * but works with Win32 as target.
  */
 #if defined(_MSC_VER) && (_M_IX86 >= 300)
-  #undef  DOSX
-  #define DOSX      WINWATT  /* VC 2.0 can use PHARLAP too */
   #define MSC386
+
+  #ifndef  DOSX
+    #define DOSX      WINWATT  /* VC 2.0 can use PHARLAP too */
+  #endif
 #endif
 
 /*
@@ -156,8 +146,9 @@
   #define __i386__
   #endif
 
-  #undef  DOSX
-  #define DOSX      PHARLAP   /* Is DOS4GW possible? */
+  #ifndef  DOSX
+    #define DOSX      PHARLAP   /* Is DOS4GW possible? */
+  #endif
 #endif
 
 /*
@@ -165,38 +156,46 @@
  */
 #if defined(__BORLANDC__) && defined(__FLAT__) && defined(__DPMI32__)
   #define BORLAND386
-  #undef  DOSX
-  #define DOSX      POWERPAK  /* may also be DOS4GW (for WDOSX targets) */
-                              /* or PHARLAP (not yet) */
-#endif
 
-#if defined(__BORLANDC__) && defined(WIN32)
-  #undef  DOSX
-  #define DOSX      WINWATT
+  #ifndef  DOSX
+    #define DOSX      POWERPAK  /* may also be DOS4GW (for WDOSX targets) */
+                              /* or PHARLAP (not yet) */
+  #endif
 #endif
 
 /*
  * LadSoft (cc386 is rather buggy, so it's not really supported)
  */
 #if defined(__CCDL__) && defined(__386__)
-  #undef  DOSX
-  #define DOSX      DOS4GW
+  #ifndef  DOSX
+    #define DOSX      DOS4GW
+  #endif
 #endif
 
 /*
  * Build for Windows (dll and static lib).
  */
 #if defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(__CYGWIN__)
-  #undef  DOSX
-  #define DOSX      WINWATT
+  #ifndef  DOSX
+    #define DOSX      WINWATT
+  #endif
 #endif
 
-#if defined(__CYGWIN__) && defined(_REENT_ONLY) && defined(WATT32_BUILD)
-  #error "CygWin with _REENT_ONLY is not supported."
+/*
+ * Build for 16-bit DOS.
+ */
+#if defined(__SMALL__) || defined(__LARGE__)
+  #ifndef  DOSX
+    #define DOSX 0
+  #endif
 #endif
 
 #if !defined(DOSX)
   #error DOSX target not defined
+#endif
+
+#if defined(__CYGWIN__) && defined(_REENT_ONLY) && defined(WATT32_BUILD)
+  #error "CygWin with _REENT_ONLY is not supported."
 #endif
 
 #if (defined(MSDOS) || defined(_MSDOS)) && !defined(__MSDOS__)
