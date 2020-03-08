@@ -1305,6 +1305,20 @@ DWORD get_ss_limit (void)
     }
 
   #elif defined(__i386__)
+    #if defined(__DJGPP__)
+      /*
+       * DJGPP neither includes <winnt.h> nor provides '__readfsdword()'.
+       */
+      static DWORD __readfsdword (DWORD offset)
+      {
+        DWORD result;
+        __asm__ __volatile__ (
+                  "movl %%fs:%1,%0"
+                : "=r" (result) ,"=m" ((*(volatile long *) offset)) );
+        return (result);
+      }
+    #endif
+
     static void *_w32_GetCurrentFiber (void)
     {
       return (void*)__readfsdword (0x10);
@@ -2046,7 +2060,7 @@ void foo_70 (void) { puts ("I'm foo_70()"); }
 int main (void)
 {
 #if defined(__MSDOS__)
-  BYTE strat;
+  BYTE strat = 0;
 
   printf ("DOS memory allocation strategy: ");
   if (!get_mem_strat(&strat))
