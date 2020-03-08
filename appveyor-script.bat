@@ -174,7 +174,7 @@ if %CPU%. == x64. (
 ::
 :: './bin/' programs to build for djgpp, Visual-C and Watcom (Win32):
 ::
-set PROGS_DJ=bping.exe ping.exe finger.exe tcpinfo.exe ident.exe htget.exe ^
+set PROGS_DJ=bping.exe ping.exe finger.exe ident.exe htget.exe ^
              tcpinfo.exe tracert.exe country.exe
 
 set PROGS_VC=ping.exe finger.exe tcpinfo.exe host.exe htget.exe ^
