@@ -400,7 +400,8 @@ static struct LoadTable dyn_funcs2[] = {
                         ADD_VALUE ("wlanapi.dll" , WlanGetAvailableNetworkList),
                         ADD_VALUE ("wlanapi.dll" , WlanGetNetworkBssList),
                         ADD_VALUE ("wlanapi.dll" , WlanQueryInterface),
-                        ADD_VALUE ("wlanapi.dll" , WlanReasonCodeToString)
+                        ADD_VALUE ("wlanapi.dll" , WlanReasonCodeToString),
+                        ADD_VALUE ("wlanapi.dll" , WlanGetInterfaceCapability)
                       };
 
 /*
@@ -2527,7 +2528,6 @@ static ULONG internal_print_GetIpForwardTable2 (int family)
 
 static int _pkt_win_print_GetIpForwardTable2 (void)
 {
-  MIB_IPFORWARD_TABLE2 *table2 = NULL;
   ULONG rc1, rc2;
 
   if (!pkt_win_init() || !p_GetIpForwardTable2 || !p_FreeMibTable)
@@ -2890,6 +2890,9 @@ static BOOL wlan_query (HANDLE           client,
   }
   memcpy (data, p, (size_t)size);
   (*p_WlanFreeMemory) (p);
+
+  (void) &p_GetIfEntry;    /* Turn off some warnings */
+  (void) &p_WlanGetInterfaceCapability;
   return (TRUE);
 }
 
