@@ -136,6 +136,10 @@ if %BUILDER%. == djgpp. (
   if not exist %DJGPP%\bin\i586-pc-msdosdjgpp-gcc.exe (
     echo Downloading Andrew Wu's DJGPP cross compiler
     curl -O -# http://www.watt-32.net/CI/dj-win.zip
+    if not errorlevel == 0 (
+      echo The curl download of http://www.watt-32.net/CI/dj-win.zip failed!
+      exit /b
+    )
     7z x -y -o%DJGPP% dj-win.zip > NUL
     rm -f dj-win.zip
   )
@@ -150,6 +154,10 @@ if %BUILDER%. == watcom. (
     mkdir %WATCOM%
     echo Downloading OpenWatcom 2.0
     curl -o %WATCOM_ZIP% -# http://www.watt-32.net/CI/watcom20.zip
+    if not errorlevel == 0 (
+      echo The curl download of http://www.watt-32.net/CI/watcom20.zip failed!
+      exit /b
+    )
     7z x -y -o%WATCOM% %WATCOM_ZIP% > NUL
   )
   call configur.bat watcom
