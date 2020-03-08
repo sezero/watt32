@@ -78,8 +78,8 @@
 #define _w32_AF_INET   2
 #define _w32_AF_INET6  24
 
-#define PRINT_RAS_ERROR(space,ret) \
-        (*_printf) ("%s%s(%u): error: %s\n", space, __FILE__, __LINE__, ras_strerror(ret))
+#define PRINT_RAS_ERROR(spaces, ret) \
+        (*_printf) ("%s%s(%u): error: %s\n", spaces, __FILE__, __LINE__, ras_strerror(ret))
 
 #define TRACE(level, ...)  do {                                         \
                              if (verbose_level >= level) {              \
@@ -228,6 +228,11 @@ DEF_FUNC (DWORD, ConvertInterfaceLuidToNameA,
            __in        size_t    length));
 
 DEF_FUNC (DWORD, GetIfEntry, (__inout MIB_IFROW *if_row));
+
+DEF_FUNC (BOOL, GetIpNetworkConnectionBandwidthEstimates,
+          (__in  NET_IFINDEX                                    index,
+           __in  ADDRESS_FAMILY                                 family,
+           __out MIB_IP_NETWORK_CONNECTION_BANDWIDTH_ESTIMATES *bw_estimates));
 
 
 /* From "rasapi32.dll"
@@ -383,6 +388,7 @@ static struct LoadTable dyn_funcs2[] = {
                         ADD_VALUE ("iphlpapi.dll", GetIpForwardTable2),
                         ADD_VALUE ("iphlpapi.dll", ConvertInterfaceLuidToIndex),
                         ADD_VALUE ("iphlpapi.dll", ConvertInterfaceLuidToNameA),
+                        ADD_VALUE ("iphlpapi.dll", GetIpNetworkConnectionBandwidthEstimates),
                         ADD_VALUE ("rasapi32.dll", RasEnumConnectionsA),
                         ADD_VALUE ("rasapi32.dll", RasGetConnectionStatistics),
                         ADD_VALUE ("rasapi32.dll", RasGetErrorStringA),
@@ -465,7 +471,7 @@ static BOOL pkt_win_init (void)
  */
 static const char *_list_lookup (DWORD value, const struct search_list *list, int num)
 {
-  static char buf[15];
+  static char buf [sizeof("_IF_TYPE_DIGITAL_WRAPPER_OVERHEAD_CHANNEL")+1]; /* Longest return */
 
   while (num > 0 && list->name)
   {
@@ -1093,20 +1099,211 @@ static BOOL skip_filter_iface (const BYTE *descr_a, const wchar_t *descr_w)
   return (memcmp(end_a,(const void*)"-000",4) == 0);
 }
 
+#undef  ADD_VALUE
+#define ADD_VALUE(v) { v, #v }
+
 static const struct search_list if_types[] = {
-                  { IF_TYPE_OTHER,              "Other type" },
-                  { IF_TYPE_ETHERNET_CSMACD,    "Ethernet" },
-                  { IF_TYPE_ISO88025_TOKENRING, "Token Ring" },
-                  { IF_TYPE_FDDI,               "FDDI" },
-                  { IF_TYPE_PPP,                "Point-to-Point" },
-                  { IF_TYPE_SOFTWARE_LOOPBACK,  "Loopback" },
-                  { IF_TYPE_ATM,                "ATM" },
-                  { IF_TYPE_IEEE80211,          "IEEE 802.11 wireless" },
-                  { IF_TYPE_TUNNEL,             "Tunnel" },
-                  { IF_TYPE_IEEE1394,           "IEEE 1394 (Firewire)" },
-                  { IF_TYPE_IEEE80216_WMAN,     "WiMax broadband" },
-                  { IF_TYPE_WWANPP,             "GSM mobile" },
-                  { IF_TYPE_WWANPP2,            "CDMA mobile" }
+                  { _IF_TYPE_OTHER,              "Other type" },
+                  { _IF_TYPE_ETHERNET_CSMACD,    "Ethernet" },
+                  { _IF_TYPE_ISO88025_TOKENRING, "Token Ring" },
+                  { _IF_TYPE_FDDI,               "FDDI" },
+                  { _IF_TYPE_PPP,                "Point-to-Point" },
+                  { _IF_TYPE_SOFTWARE_LOOPBACK,  "Loopback" },
+                  { _IF_TYPE_ATM,                "ATM" },
+                  { _IF_TYPE_IEEE80211,          "IEEE 802.11 wireless" },
+                  { _IF_TYPE_TUNNEL,             "Tunnel" },
+                  { _IF_TYPE_PROP_VIRTUAL,       "Virtual" },
+                  { _IF_TYPE_IEEE1394,           "IEEE 1394 (Firewire)" },
+                  { _IF_TYPE_IEEE80216_WMAN,     "WiMax broadband" },
+                  { _IF_TYPE_WWANPP,             "GSM mobile" },
+                  { _IF_TYPE_WWANPP2,            "CDMA mobile" },
+                  { _IF_TYPE_REGULAR_1822,       "Regular 1822" },
+                  { _IF_TYPE_HDH_1822,           "HDH 1822" },
+                  { _IF_TYPE_DDN_X25,            "DDN X25" },
+                  { _IF_TYPE_RFC877_X25,         "RFC877 X25" },
+                  { _IF_TYPE_IS088023_CSMACD,    "IS088023 CSMACD" },
+                  { _IF_TYPE_ISO88024_TOKENBUS,  "ISO88024 TokenBus" },
+                  { _IF_TYPE_ISO88026_MAN,       "ISO88026 MAN" },
+                  { _IF_TYPE_STARLAN,            "StarLAN" },
+                  { _IF_TYPE_PROTEON_10MBIT,     "Proteon 10MBit" },
+                  { _IF_TYPE_PROTEON_80MBIT,     "Proteon 80MBit" },
+                  { _IF_TYPE_HYPERCHANNEL,       "HyperChannel" },
+                  { _IF_TYPE_LAP_B,              "LAP-B" },
+                  { _IF_TYPE_SDLC,               "SDLC" },
+                  { _IF_TYPE_DS1,                "DS1-MIB" },
+                  { _IF_TYPE_E1,                 "E1" },
+                  ADD_VALUE (_IF_TYPE_BASIC_ISDN),
+                  ADD_VALUE (_IF_TYPE_PRIMARY_ISDN),
+                  ADD_VALUE (_IF_TYPE_PROP_POINT2POINT_SERIAL),
+                  ADD_VALUE (_IF_TYPE_EON),
+                  ADD_VALUE (_IF_TYPE_ETHERNET_3MBIT),
+                  ADD_VALUE (_IF_TYPE_NSIP),
+                  ADD_VALUE (_IF_TYPE_SLIP),
+                  ADD_VALUE (_IF_TYPE_ULTRA),
+                  ADD_VALUE (_IF_TYPE_DS3),
+                  ADD_VALUE (_IF_TYPE_SIP),
+                  ADD_VALUE (_IF_TYPE_FRAMERELAY),
+                  ADD_VALUE (_IF_TYPE_RS232),
+                  ADD_VALUE (_IF_TYPE_PARA),
+                  ADD_VALUE (_IF_TYPE_ARCNET),
+                  ADD_VALUE (_IF_TYPE_ARCNET_PLUS),
+                  ADD_VALUE (_IF_TYPE_MIO_X25),
+                  ADD_VALUE (_IF_TYPE_SONET),
+                  ADD_VALUE (_IF_TYPE_X25_PLE),
+                  ADD_VALUE (_IF_TYPE_ISO88022_LLC),
+                  ADD_VALUE (_IF_TYPE_LOCALTALK),
+                  ADD_VALUE (_IF_TYPE_SMDS_DXI),
+                  ADD_VALUE (_IF_TYPE_FRAMERELAY_SERVICE),
+                  ADD_VALUE (_IF_TYPE_V35),
+                  ADD_VALUE (_IF_TYPE_HSSI),
+                  ADD_VALUE (_IF_TYPE_HIPPI),
+                  ADD_VALUE (_IF_TYPE_MODEM),
+                  ADD_VALUE (_IF_TYPE_AAL5),
+                  ADD_VALUE (_IF_TYPE_SONET_PATH),
+                  ADD_VALUE (_IF_TYPE_SONET_VT),
+                  ADD_VALUE (_IF_TYPE_SMDS_ICIP),
+                  ADD_VALUE (_IF_TYPE_PROP_MULTIPLEXOR),
+                  ADD_VALUE (_IF_TYPE_IEEE80212),
+                  ADD_VALUE (_IF_TYPE_FIBRECHANNEL),
+                  ADD_VALUE (_IF_TYPE_HIPPIINTERFACE),
+                  ADD_VALUE (_IF_TYPE_FRAMERELAY_INTERCONNECT),
+                  ADD_VALUE (_IF_TYPE_AFLANE_8023),
+                  ADD_VALUE (_IF_TYPE_AFLANE_8025),
+                  ADD_VALUE (_IF_TYPE_CCTEMUL),
+                  ADD_VALUE (_IF_TYPE_FASTETHER),
+                  ADD_VALUE (_IF_TYPE_ISDN),
+                  ADD_VALUE (_IF_TYPE_V11),
+                  ADD_VALUE (_IF_TYPE_V36),
+                  ADD_VALUE (_IF_TYPE_G703_64K),
+                  ADD_VALUE (_IF_TYPE_G703_2MB),
+                  ADD_VALUE (_IF_TYPE_QLLC),
+                  ADD_VALUE (_IF_TYPE_FASTETHER_FX),
+                  ADD_VALUE (_IF_TYPE_CHANNEL),
+                  ADD_VALUE (_IF_TYPE_IBM370PARCHAN),
+                  ADD_VALUE (_IF_TYPE_ESCON),
+                  ADD_VALUE (_IF_TYPE_DLSW),
+                  ADD_VALUE (_IF_TYPE_ISDN_S),
+                  ADD_VALUE (_IF_TYPE_ISDN_U),
+                  ADD_VALUE (_IF_TYPE_LAP_D),
+                  ADD_VALUE (_IF_TYPE_IPSWITCH),
+                  ADD_VALUE (_IF_TYPE_RSRB),
+                  ADD_VALUE (_IF_TYPE_ATM_LOGICAL),
+                  ADD_VALUE (_IF_TYPE_DS0),
+                  ADD_VALUE (_IF_TYPE_DS0_BUNDLE),
+                  ADD_VALUE (_IF_TYPE_BSC),
+                  ADD_VALUE (_IF_TYPE_ASYNC),
+                  ADD_VALUE (_IF_TYPE_CNR),
+                  ADD_VALUE (_IF_TYPE_ISO88025R_DTR),
+                  ADD_VALUE (_IF_TYPE_EPLRS),
+                  ADD_VALUE (_IF_TYPE_ARAP),
+                  ADD_VALUE (_IF_TYPE_PROP_CNLS),
+                  ADD_VALUE (_IF_TYPE_HOSTPAD),
+                  ADD_VALUE (_IF_TYPE_TERMPAD),
+                  ADD_VALUE (_IF_TYPE_FRAMERELAY_MPI),
+                  ADD_VALUE (_IF_TYPE_X213),
+                  ADD_VALUE (_IF_TYPE_ADSL),
+                  ADD_VALUE (_IF_TYPE_RADSL),
+                  ADD_VALUE (_IF_TYPE_SDSL),
+                  ADD_VALUE (_IF_TYPE_VDSL),
+                  ADD_VALUE (_IF_TYPE_ISO88025_CRFPRINT),
+                  ADD_VALUE (_IF_TYPE_MYRINET),
+                  ADD_VALUE (_IF_TYPE_VOICE_EM),
+                  ADD_VALUE (_IF_TYPE_VOICE_FXO),
+                  ADD_VALUE (_IF_TYPE_VOICE_FXS),
+                  ADD_VALUE (_IF_TYPE_VOICE_ENCAP),
+                  ADD_VALUE (_IF_TYPE_VOICE_OVERIP),
+                  ADD_VALUE (_IF_TYPE_ATM_DXI),
+                  ADD_VALUE (_IF_TYPE_ATM_FUNI),
+                  ADD_VALUE (_IF_TYPE_ATM_IMA),
+                  ADD_VALUE (_IF_TYPE_PPPMULTILINKBUNDLE),
+                  ADD_VALUE (_IF_TYPE_IPOVER_CDLC),
+                  ADD_VALUE (_IF_TYPE_IPOVER_CLAW),
+                  ADD_VALUE (_IF_TYPE_STACKTOSTACK),
+                  ADD_VALUE (_IF_TYPE_VIRTUALIPADDRESS),
+                  ADD_VALUE (_IF_TYPE_MPC),
+                  ADD_VALUE (_IF_TYPE_IPOVER_ATM),
+                  ADD_VALUE (_IF_TYPE_ISO88025_FIBER),
+                  ADD_VALUE (_IF_TYPE_TDLC),
+                  ADD_VALUE (_IF_TYPE_GIGABITETHERNET),
+                  ADD_VALUE (_IF_TYPE_HDLC),
+                  ADD_VALUE (_IF_TYPE_LAP_F),
+                  ADD_VALUE (_IF_TYPE_V37),
+                  ADD_VALUE (_IF_TYPE_X25_MLP),
+                  ADD_VALUE (_IF_TYPE_X25_HUNTGROUP),
+                  ADD_VALUE (_IF_TYPE_TRANSPHDLC),
+                  ADD_VALUE (_IF_TYPE_INTERLEAVE),
+                  ADD_VALUE (_IF_TYPE_FAST),
+                  ADD_VALUE (_IF_TYPE_IP),
+                  ADD_VALUE (_IF_TYPE_DOCSCABLE_MACLAYER),
+                  ADD_VALUE (_IF_TYPE_DOCSCABLE_DOWNSTREAM),
+                  ADD_VALUE (_IF_TYPE_DOCSCABLE_UPSTREAM),
+                  ADD_VALUE (_IF_TYPE_A12MPPSWITCH),
+                  ADD_VALUE (_IF_TYPE_COFFEE),
+                  ADD_VALUE (_IF_TYPE_CES),
+                  ADD_VALUE (_IF_TYPE_ATM_SUBINTERFACE),
+                  ADD_VALUE (_IF_TYPE_L2_VLAN),
+                  ADD_VALUE (_IF_TYPE_L3_IPVLAN),
+                  ADD_VALUE (_IF_TYPE_L3_IPXVLAN),
+                  ADD_VALUE (_IF_TYPE_DIGITALPOWERLINE),
+                  ADD_VALUE (_IF_TYPE_MEDIAMAILOVERIP),
+                  ADD_VALUE (_IF_TYPE_DTM),
+                  ADD_VALUE (_IF_TYPE_DCN),
+                  ADD_VALUE (_IF_TYPE_IPFORWARD),
+                  ADD_VALUE (_IF_TYPE_MSDSL),
+                  ADD_VALUE (_IF_TYPE_IF_GSN),
+                  ADD_VALUE (_IF_TYPE_DVBRCC_MACLAYER),
+                  ADD_VALUE (_IF_TYPE_DVBRCC_DOWNSTREAM),
+                  ADD_VALUE (_IF_TYPE_DVBRCC_UPSTREAM),
+                  ADD_VALUE (_IF_TYPE_ATM_VIRTUAL),
+                  ADD_VALUE (_IF_TYPE_MPLS_TUNNEL),
+                  ADD_VALUE (_IF_TYPE_SRP),
+                  ADD_VALUE (_IF_TYPE_VOICEOVERATM),
+                  ADD_VALUE (_IF_TYPE_VOICEOVERFRAMERELAY),
+                  ADD_VALUE (_IF_TYPE_IDSL),
+                  ADD_VALUE (_IF_TYPE_COMPOSITELINK),
+                  ADD_VALUE (_IF_TYPE_SS7_SIGLINK),
+                  ADD_VALUE (_IF_TYPE_PROP_WIRELESS_P2P),
+                  ADD_VALUE (_IF_TYPE_FR_FORWARD),
+                  ADD_VALUE (_IF_TYPE_RFC1483),
+                  ADD_VALUE (_IF_TYPE_USB),
+                  ADD_VALUE (_IF_TYPE_IEEE8023AD_LAG),
+                  ADD_VALUE (_IF_TYPE_BGP_POLICY_ACCOUNTING),
+                  ADD_VALUE (_IF_TYPE_FRF16_MFR_BUNDLE),
+                  ADD_VALUE (_IF_TYPE_H323_GATEKEEPER),
+                  ADD_VALUE (_IF_TYPE_H323_PROXY),
+                  ADD_VALUE (_IF_TYPE_MPLS),
+                  ADD_VALUE (_IF_TYPE_MF_SIGLINK),
+                  ADD_VALUE (_IF_TYPE_HDSL2),
+                  ADD_VALUE (_IF_TYPE_SHDSL),
+                  ADD_VALUE (_IF_TYPE_DS1_FDL),
+                  ADD_VALUE (_IF_TYPE_POS),
+                  ADD_VALUE (_IF_TYPE_DVB_ASI_IN),
+                  ADD_VALUE (_IF_TYPE_DVB_ASI_OUT),
+                  ADD_VALUE (_IF_TYPE_PLC),
+                  ADD_VALUE (_IF_TYPE_NFAS),
+                  ADD_VALUE (_IF_TYPE_TR008),
+                  ADD_VALUE (_IF_TYPE_GR303_RDT),
+                  ADD_VALUE (_IF_TYPE_GR303_IDT),
+                  ADD_VALUE (_IF_TYPE_ISUP),
+                  ADD_VALUE (_IF_TYPE_PROP_DOCS_WIRELESS_MACLAYER),
+                  ADD_VALUE (_IF_TYPE_PROP_DOCS_WIRELESS_DOWNSTREAM),
+                  ADD_VALUE (_IF_TYPE_PROP_DOCS_WIRELESS_UPSTREAM),
+                  ADD_VALUE (_IF_TYPE_HIPERLAN2),
+                  ADD_VALUE (_IF_TYPE_PROP_BWA_P2MP),
+                  ADD_VALUE (_IF_TYPE_SONET_OVERHEAD_CHANNEL),
+                  ADD_VALUE (_IF_TYPE_DIGITAL_WRAPPER_OVERHEAD_CHANNEL),
+                  ADD_VALUE (_IF_TYPE_AAL2),
+                  ADD_VALUE (_IF_TYPE_RADIO_MAC),
+                  ADD_VALUE (_IF_TYPE_ATM_RADIO),
+                  ADD_VALUE (_IF_TYPE_IMT),
+                  ADD_VALUE (_IF_TYPE_MVL),
+                  ADD_VALUE (_IF_TYPE_REACH_DSL),
+                  ADD_VALUE (_IF_TYPE_FR_DLCI_ENDPT),
+                  ADD_VALUE (_IF_TYPE_ATM_VCI_ENDPT),
+                  ADD_VALUE (_IF_TYPE_OPTICAL_CHANNEL),
+                  ADD_VALUE (_IF_TYPE_OPTICAL_TRANSPORT),
+                  ADD_VALUE (_IF_TYPE_IEEE802154),
+                  ADD_VALUE (_IF_TYPE_XBOX_WIRELESS)
                 };
 
 static const struct search_list mib_oper_status[] = {
@@ -1194,7 +1391,7 @@ static const struct search_list neighbour_states[] = {
                     { NdisMediumNative802_11,  "IEEE 802.11" },
                     { NdisMediumLoopback,      "Loopback" },
                     { NdisMediumWiMAX,         "WiMax" },
-                    { NdisMediumIP,            "IP?" }
+                    { NdisMediumIP,            "IP" }
                   };
 
   static const struct search_list access_types[] = {
@@ -1742,18 +1939,25 @@ static void print_ip_interface_details (const NET_LUID *luid, int family, int in
 #endif  /* __WATCOMC__ */
 }
 
+static const char *get_if_type (DWORD if_type)
+{
+  const char *ret = _list_lookup (if_type, if_types, DIM(if_types));
+
+  if (!strncmp(ret,"_IF_TYPE_",9))
+     ret += 9;
+  return (ret);
+}
+
 static void print_mib_if_row2 (DWORD index, const MIB_IF_ROW2 *row)
 {
   (*_printf) ("  GUID:           %s\n", get_guid_str(&row->InterfaceGuid));
   (*_printf) ("    Alias:        %.*" WIDESTR_FMT "\n", IF_MAX_STRING_SIZE, row->Alias);
   (*_printf) ("    Description:  %.*" WIDESTR_FMT "\n", IF_MAX_STRING_SIZE, row->Description);
   (*_printf) ("    MAC-address:  %s\n", get_phys_address(&row->PhysicalAddress,row->PhysicalAddressLength,TRUE));
-
   (*_printf) ("    MTU:          %lu\n", row->Mtu);
-  (*_printf) ("    Type:         %s (%lu)\n",
-              _list_lookup(row->Type, if_types, DIM(if_types)), row->Type);
+  (*_printf) ("    Type:         %s (%lu)\n", get_if_type(row->Type), row->Type);
 
-  if (row->Type == IF_TYPE_TUNNEL)
+  if (row->Type == _IF_TYPE_TUNNEL)
      (*_printf) ("    Tunnel type:  %s (%d)\n",
                  _list_lookup(row->TunnelType, tunnel_types, DIM(tunnel_types)), row->TunnelType);
 
@@ -2394,6 +2598,7 @@ static const struct search_list auth_data[] = {
                 };
 
 static const struct search_list compression[] = {
+                  { 0,             "<None>" },
                   { RASCCPCA_MPPC, "MPPC" },
                   { RASCCPCA_STAC, "STAC" }
                 };
@@ -2512,8 +2717,7 @@ static const char *get_best_route2 (NET_LUID *luid, const SOCKADDR_INET *dest)
 static int _pkt_win_print_RasEnumConnections (void)
 {
   DWORD     i, ret;
-  DWORD     len = sizeof(RASCONN);
-  DWORD     num_conn = 0;
+  DWORD     len = 0, num_conn = 0;
   RASCONN  *ras_conn = alloca (len);
 
   if (!pkt_win_init() || !p_RasEnumConnectionsA)
@@ -2523,20 +2727,19 @@ static int _pkt_win_print_RasEnumConnections (void)
 
   /* RasEnumConnections returns the handles of the current active RAS connections
    */
-  ras_conn->dwSize = len;
-  ret = (*p_RasEnumConnectionsA) (ras_conn, &len, &num_conn);
-  if (ret != ERROR_SUCCESS && ret != ERROR_BUFFER_TOO_SMALL)
+  ret = (*p_RasEnumConnectionsA) (NULL, &len, &num_conn);
+  if (num_conn == 0)
+  {
+    (*_printf) ("  No active RAS connections:\n");
+    return (0);
+  }
+  if (ret != ERROR_BUFFER_TOO_SMALL)
   {
     PRINT_RAS_ERROR ("  ", ret);
     return (0);
   }
-
-  if (len > sizeof(RASCONN))  /* Make a biger buffer and call enum again. */
-  {
-    ras_conn = alloca (len);
-    ras_conn->dwSize = sizeof(RASCONN);
-  }
-
+  ras_conn = alloca (len);
+  ras_conn->dwSize = sizeof(RASCONN);
   ret = (*p_RasEnumConnectionsA) (ras_conn, &len, &num_conn);
   if (ret != ERROR_SUCCESS)
   {
@@ -3505,6 +3708,13 @@ quit:
 }
 
 #if defined(ON_WIN_VISTA) && defined(HAVE_NETIOAPI_H)
+
+  static void print_bw_estimate (const NL_BANDWIDTH_INFORMATION *bwi, const char *direction, int indent)
+  {
+    (*_printf) ("%*s%s Bandwidth: %s kbit/s, ", indent, "", direction, dword_str(bwi->Bandwidth/1024));
+    (*_printf) ("Instability: %9s kbit/s, Peaked: %d\n", dword_str(bwi->Instability/1024), bwi->BandwidthPeaked);
+  }
+
   /*
    * Print a NET_LUID union:
    *
@@ -3520,7 +3730,7 @@ quit:
    */
   static void print_net_luid (const NET_LUID *luid, int indent)
   {
-    NET_IFINDEX idx;
+    NET_IFINDEX idx = 0;
     char idx_str [20] = { "?" };
     char if_name [NDIS_IF_MAX_STRING_SIZE+1] = { "?" };
 
@@ -3539,6 +3749,31 @@ quit:
     if (p_ConvertInterfaceLuidToNameA)
        (*p_ConvertInterfaceLuidToNameA) (luid, if_name, sizeof(if_name));
     (*_printf) ("%*sif-name:           %s\n", indent, "", if_name);
+
+    /* Get the network bandwidth rate for the adapter. A Win-8+ function.
+     */
+    if (idx && p_GetIpNetworkConnectionBandwidthEstimates)
+    {
+      MIB_IP_NETWORK_CONNECTION_BANDWIDTH_ESTIMATES bw_estimates;
+      DWORD rc;
+
+      memset (&bw_estimates, '\0', sizeof(bw_estimates));
+      rc = (*p_GetIpNetworkConnectionBandwidthEstimates)(idx, AF_INET, &bw_estimates);
+      if (rc == NO_ERROR)
+      {
+        /* typedef struct {
+         *         ULONG64 Bandwidth;
+         *         ULONG64 Instability;
+         *         BOOLEAN BandwidthPeaked;
+         *       } NL_BANDWIDTH_INFORMATION;
+         */
+        print_bw_estimate (&bw_estimates.InboundBandwidthInformation,  "In ", indent);
+        print_bw_estimate (&bw_estimates.OutboundBandwidthInformation, "Out", indent);
+      }
+      else
+        (*_printf) ("%*sGetIpNetworkConnectionBandwidthEstimates(): %s\n",
+                   indent, "", win_strerror(rc));
+    }
   }
 #endif
 
