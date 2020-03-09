@@ -345,7 +345,7 @@ static void prologue (void)
   last_errno = sys_nerr + 1;
 #elif defined(__POCC__)            /* PellesC is rather limited */
   last_errno = EILSEQ;
-#elif defined(WATT32_DJGPP_MINGW)  /* Same as for MighC */
+#elif defined(WATT32_DJGPP_MINGW)  /* Same as for HighC */
   last_errno = sys_nerr - 1;
 #else
   last_errno = sys_nerr;
