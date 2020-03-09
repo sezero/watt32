@@ -36,6 +36,7 @@ DPMI_STUB = 0
 #
 MAKE_MAP = 0
 
+prefix ?= /dev/env/DJDIR/net/watt
 
 INC_DIR = ../inc
 
@@ -110,3 +111,7 @@ $(PROGS): $(WATTLIB)
 clean:
 	rm -f *.o $(PROGS)
 
+install: ping.exe tcpinfo.exe
+	-mkdir -p "$(prefix)/bin"
+	cp -f ./ping.exe ./tcpinfo.exe "$(prefix)/bin"
+	@echo Install to $(prefix) done
