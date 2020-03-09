@@ -229,11 +229,12 @@ DEF_FUNC (DWORD, ConvertInterfaceLuidToNameA,
 
 DEF_FUNC (DWORD, GetIfEntry, (__inout MIB_IFROW *if_row));
 
-DEF_FUNC (BOOL, GetIpNetworkConnectionBandwidthEstimates,
-          (__in  NET_IFINDEX                                    index,
-           __in  ADDRESS_FAMILY                                 family,
-           __out MIB_IP_NETWORK_CONNECTION_BANDWIDTH_ESTIMATES *bw_estimates));
-
+#if defined(HAVE_NETIOAPI_H)
+  DEF_FUNC (BOOL, GetIpNetworkConnectionBandwidthEstimates,
+            (__in  NET_IFINDEX                                    index,
+             __in  ADDRESS_FAMILY                                 family,
+             __out MIB_IP_NETWORK_CONNECTION_BANDWIDTH_ESTIMATES *bw_estimates));
+#endif
 
 /* From "rasapi32.dll"
  */
@@ -388,7 +389,9 @@ static struct LoadTable dyn_funcs2[] = {
                         ADD_VALUE ("iphlpapi.dll", GetIpForwardTable2),
                         ADD_VALUE ("iphlpapi.dll", ConvertInterfaceLuidToIndex),
                         ADD_VALUE ("iphlpapi.dll", ConvertInterfaceLuidToNameA),
+#if defined(HAVE_NETIOAPI_H)
                         ADD_VALUE ("iphlpapi.dll", GetIpNetworkConnectionBandwidthEstimates),
+#endif
                         ADD_VALUE ("rasapi32.dll", RasEnumConnectionsA),
                         ADD_VALUE ("rasapi32.dll", RasGetConnectionStatistics),
                         ADD_VALUE ("rasapi32.dll", RasGetErrorStringA),
