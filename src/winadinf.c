@@ -229,12 +229,10 @@ DEF_FUNC (DWORD, ConvertInterfaceLuidToNameA,
 
 DEF_FUNC (DWORD, GetIfEntry, (__inout MIB_IFROW *if_row));
 
-#if defined(HAVE_NETIOAPI_H)
-  DEF_FUNC (BOOL, GetIpNetworkConnectionBandwidthEstimates,
-            (__in  NET_IFINDEX                                    index,
-             __in  ADDRESS_FAMILY                                 family,
-             __out MIB_IP_NETWORK_CONNECTION_BANDWIDTH_ESTIMATES *bw_estimates));
-#endif
+DEF_FUNC (BOOL, GetIpNetworkConnectionBandwidthEstimates,
+          (__in  NET_IFINDEX                                    index,
+           __in  ADDRESS_FAMILY                                 family,
+           __out MIB_IP_NETWORK_CONNECTION_BANDWIDTH_ESTIMATES *bw_estimates));
 
 /* From "rasapi32.dll"
  */
@@ -312,9 +310,16 @@ DEF_FUNC (DWORD, WlanGetInterfaceCapability,
            __reserved void                       *pReserved,
            __out      WLAN_INTERFACE_CAPABILITY **ppCapability));
 
+DEF_FUNC (DWORD, WlanGetSupportedDeviceServices,
+          (__in  HANDLE                          hClientHandle,
+           __in  const GUID                     *pInterfaceGuid,
+           __out WLAN_DEVICE_SERVICE_GUID_LIST **svc_guid_list));
+
 DEF_FUNC (void, WlanFreeMemory, (__in void *memory));
 
-DEF_FUNC (int, StringFromGUID2,  /* "ole32.dll" */
+/* From "ole32.dll"
+ */
+DEF_FUNC (int, StringFromGUID2,
           (__in  REFGUID  rguid,
            __out LPOLESTR lpsz,
            __in  int      cchMax));
@@ -356,6 +361,7 @@ static int  setup_info_populate (const char *key_name, struct setup_info_st *inf
 static void setup_info_dump (void);
 static void setup_info_adapter_print (const char *adapter_name);
 static void setup_info_free (void);
+static const char *convert_ch_to_freq (int ch);
 
 static BOOL ipv4_only_iface = TRUE;
 static char work_buf [10000];
@@ -389,9 +395,7 @@ static struct LoadTable dyn_funcs2[] = {
                         ADD_VALUE ("iphlpapi.dll", GetIpForwardTable2),
                         ADD_VALUE ("iphlpapi.dll", ConvertInterfaceLuidToIndex),
                         ADD_VALUE ("iphlpapi.dll", ConvertInterfaceLuidToNameA),
-#if defined(HAVE_NETIOAPI_H)
                         ADD_VALUE ("iphlpapi.dll", GetIpNetworkConnectionBandwidthEstimates),
-#endif
                         ADD_VALUE ("rasapi32.dll", RasEnumConnectionsA),
                         ADD_VALUE ("rasapi32.dll", RasGetConnectionStatistics),
                         ADD_VALUE ("rasapi32.dll", RasGetErrorStringA),
@@ -404,7 +408,8 @@ static struct LoadTable dyn_funcs2[] = {
                         ADD_VALUE ("wlanapi.dll" , WlanGetNetworkBssList),
                         ADD_VALUE ("wlanapi.dll" , WlanQueryInterface),
                         ADD_VALUE ("wlanapi.dll" , WlanReasonCodeToString),
-                        ADD_VALUE ("wlanapi.dll" , WlanGetInterfaceCapability)
+                        ADD_VALUE ("wlanapi.dll" , WlanGetInterfaceCapability),
+                        ADD_VALUE ("wlanapi.dll" , WlanGetSupportedDeviceServices)
                       };
 
 /*
@@ -440,6 +445,7 @@ static BOOL load_dlls (void)
 static void W32_CALL pkt_win_exit (void)
 {
   setup_info_free();
+  convert_ch_to_freq (-1); /* free the 'freq_to_ch_mapping' memory */
 
   if (p_WSACleanup)
     (*p_WSACleanup)();
@@ -2207,7 +2213,6 @@ static int _pkt_win_print_GetAdaptersAddresses (void)
   {
     const char *prefix_fmt;
     const char *extra_indent;
-    char  speed [30];
 
     ipv4_only_iface = TRUE;
     num++;
@@ -2291,10 +2296,14 @@ static int _pkt_win_print_GetAdaptersAddresses (void)
     (*_printf) ("    MTU:                 %s\n", dword_str(addr->Mtu));
 
 #if defined(ON_WIN_VISTA)
-    (*_printf) ("    Tx speed:            %s\n", speed64_string(addr->TransmitLinkSpeed, speed));
-    (*_printf) ("    Rx speed:            %s\n", speed64_string(addr->ReceiveLinkSpeed, speed));
-    (*_printf) ("    WINS servers:        %s\n", get_wins_addrs(addr->FirstWinsServerAddress));
-    (*_printf) ("    Gateways:            %s\n", get_gateway_addrs(addr->FirstGatewayAddress));
+    {
+      char  speed [30];
+
+      (*_printf) ("    Tx speed:            %s\n", speed64_string(addr->TransmitLinkSpeed, speed));
+      (*_printf) ("    Rx speed:            %s\n", speed64_string(addr->ReceiveLinkSpeed, speed));
+      (*_printf) ("    WINS servers:        %s\n", get_wins_addrs(addr->FirstWinsServerAddress));
+      (*_printf) ("    Gateways:            %s\n", get_gateway_addrs(addr->FirstGatewayAddress));
+    }
 
     if (addr->Flags & IP_ADAPTER_IPV4_ENABLED)
     {
@@ -2907,6 +2916,11 @@ static BOOL wlan_query (HANDLE           client,
   return (TRUE);
 }
 
+static void print_wlan_svc_guid_list (const WLAN_DEVICE_SERVICE_GUID_LIST *list)
+{
+  (*_printf) ("list->dwNumberOfItems: %lu\n", list->dwNumberOfItems);
+}
+
 static int _pkt_win_print_WlanEnumInterfaces (void)
 {
   WLAN_INTERFACE_INFO_LIST *if_list = NULL;
@@ -2944,19 +2958,20 @@ static int _pkt_win_print_WlanEnumInterfaces (void)
 
   for (i = 0; i < (int)if_list->dwNumberOfItems; i++)
   {
-    const WLAN_INTERFACE_INFO   *if_info      = (const WLAN_INTERFACE_INFO*) &if_list->InterfaceInfo[i];
-    const GUID                  *guid         = &if_info->InterfaceGuid;
-    WLAN_AVAILABLE_NETWORK_LIST *network_list = NULL;
-    WLAN_BSS_LIST               *bss_list     = NULL;
-    BOOL                         auto_conf;
-    BOOL                         bkg_scan;
-    BOOL                         str_mode;
-    BOOL                         safe_mode;
-    ULONG                        ch_number, op_mode, rssi;
-    WLAN_RADIO_STATE             radio_state;
-    WLAN_STATISTICS              wlan_stats;
-    WLAN_CONNECTION_ATTRIBUTES   conn_attr;
-    WLAN_AUTH_CIPHER_PAIR_LIST2  auth_pairs;
+    const WLAN_INTERFACE_INFO     *if_info       = (const WLAN_INTERFACE_INFO*) &if_list->InterfaceInfo[i];
+    const GUID                    *guid          = &if_info->InterfaceGuid;
+    WLAN_AVAILABLE_NETWORK_LIST   *network_list  = NULL;
+    WLAN_BSS_LIST                 *bss_list      = NULL;
+    WLAN_DEVICE_SERVICE_GUID_LIST *svc_guid_list = NULL;
+    BOOL                           auto_conf;
+    BOOL                           bkg_scan;
+    BOOL                           str_mode;
+    BOOL                           safe_mode;
+    ULONG                          ch_number, op_mode, rssi;
+    WLAN_RADIO_STATE               radio_state;
+    WLAN_STATISTICS                wlan_stats;
+    WLAN_CONNECTION_ATTRIBUTES     conn_attr;
+    WLAN_AUTH_CIPHER_PAIR_LIST2    auth_pairs;
 
     (*_printf) ("  Index:           %d\n", i);
     (*_printf) ("  Description:     %" WIDESTR_FMT "\n", if_info->strInterfaceDescription);
@@ -2991,7 +3006,7 @@ static int _pkt_win_print_WlanEnumInterfaces (void)
        (*_printf) ("%s\n", NONE_STR);
     else
     if (wlan_query(client, guid, wlan_intf_opcode_channel_number, sizeof(ch_number), &ch_number))
-      (*_printf) ("%lu\n", ch_number);
+      (*_printf) ("%lu  (%s MHz)\n", ch_number, convert_ch_to_freq(ch_number));
 
     (*_printf) ("  Streaming mode:     ");
     if (wlan_query(client, guid, wlan_intf_opcode_media_streaming_mode, sizeof(str_mode), &str_mode))
@@ -3053,6 +3068,18 @@ static int _pkt_win_print_WlanEnumInterfaces (void)
 
     if (bss_list)
       (*p_WlanFreeMemory) (bss_list);
+
+#if 0   /* Does not work */
+    (*_printf) ("  \n  From WlanGetSupportedDeviceServices():\n");
+
+    res = (*p_WlanGetSupportedDeviceServices) (client, guid, &svc_guid_list);
+    if (res == ERROR_SUCCESS && svc_guid_list)
+         print_wlan_svc_guid_list (svc_guid_list);
+    else (*_printf) ("    error: %s\n", win_strerror(res));
+
+    if (svc_guid_list)
+      (*p_WlanFreeMemory) (svc_guid_list);
+#endif
   }
 
   if (if_list)
@@ -3317,91 +3344,92 @@ static double filetime_sec (const FILETIME *filetime)
  * 2.4GHz: https://en.wikipedia.org/wiki/List_of_WLAN_channels#2.4_GHz_(802.11b/g/n/ax)
  * 5GHz:   https://en.wikipedia.org/wiki/List_of_WLAN_channels#5_GHz_(802.11a/h/j/n/ac/ax)
  */
+static const struct search_list ch_mapping24[] = {
+                              { 2412, "1",  },
+                              { 2417, "2",  },
+                              { 2422, "3",  },
+                              { 2427, "4",  },
+                              { 2432, "5",  },
+                              { 2437, "6",  },
+                              { 2442, "7",  },
+                              { 2447, "8",  },
+                              { 2452, "9",  },
+                              { 2457, "10", },
+                              { 2462, "11", },
+                              { 2467, "12", },
+                              { 2472, "13", },
+                              { 2484, "14"  }
+                            };
+static const struct search_list ch_mapping50[] = {
+                              { 5035, "7"   },
+                              { 5040, "8"   },
+                              { 5045, "9"   },
+                              { 5055, "11"  },
+                              { 5060, "12"  },
+                              { 5080, "16"  },
+                              { 5160, "32"  },
+                              { 5170, "34"  },
+                              { 5180, "36"  },
+                              { 5190, "38"  },
+                              { 5200, "40"  },
+                              { 5210, "42"  },
+                              { 5220, "44"  },
+                              { 5230, "46"  },
+                              { 5240, "48"  },
+                              { 5250, "50"  },
+                              { 5260, "52"  },
+                              { 5270, "54"  },
+                              { 5280, "56"  },
+                              { 5290, "58"  },
+                              { 5300, "60"  },
+                              { 5310, "62"  },
+                              { 5320, "64"  },
+                              { 5340, "68"  },
+                              { 5480, "96"  },
+                              { 5500, "100" },
+                              { 5510, "102" },
+                              { 5520, "104" },
+                              { 5530, "106" },
+                              { 5540, "108" },
+                              { 5550, "110" },
+                              { 5560, "112" },
+                              { 5570, "114" },
+                              { 5580, "116" },
+                              { 5590, "118" },
+                              { 5600, "120" },
+                              { 5610, "122" },
+                              { 5620, "124" },
+                              { 5630, "126" },
+                              { 5640, "128" },
+                              { 5660, "132" },
+                              { 5670, "134" },
+                              { 5680, "136" },
+                              { 5690, "138" },
+                              { 5700, "140" },
+                              { 5710, "142" },
+                              { 5720, "144" },
+                              { 5745, "149" },
+                              { 5755, "151" },
+                              { 5765, "153" },
+                              { 5775, "155" },
+                              { 5785, "157" },
+                              { 5795, "159" },
+                              { 5805, "161" },
+                              { 5825, "165" },
+                              { 5845, "169" },
+                              { 5865, "173" },
+                              { 4915, "183" },
+                              { 4920, "184" },
+                              { 4925, "185" },
+                              { 4935, "187" },
+                              { 4940, "188" },
+                              { 4945, "189" },
+                              { 4960, "192" },
+                              { 4980, "196" }
+                           };
+
 static const char *convert_freq_to_ch (DWORD freq)
 {
-  static const struct search_list ch_mapping24[] = {
-                                { 2412, "1",  },
-                                { 2417, "2",  },
-                                { 2422, "3",  },
-                                { 2427, "4",  },
-                                { 2432, "5",  },
-                                { 2437, "6",  },
-                                { 2442, "7",  },
-                                { 2447, "8",  },
-                                { 2452, "9",  },
-                                { 2457, "10", },
-                                { 2462, "11", },
-                                { 2467, "12", },
-                                { 2472, "13", },
-                                { 2484, "14"  }
-                              };
-  static const struct search_list ch_mapping50[] = {
-                                { 5035, "7"   },
-                                { 5040, "8"   },
-                                { 5045, "9"   },
-                                { 5055, "11"  },
-                                { 5060, "12"  },
-                                { 5080, "16"  },
-                                { 5160, "32"  },
-                                { 5170, "34"  },
-                                { 5180, "36"  },
-                                { 5190, "38"  },
-                                { 5200, "40"  },
-                                { 5210, "42"  },
-                                { 5220, "44"  },
-                                { 5230, "46"  },
-                                { 5240, "48"  },
-                                { 5250, "50"  },
-                                { 5260, "52"  },
-                                { 5270, "54"  },
-                                { 5280, "56"  },
-                                { 5290, "58"  },
-                                { 5300, "60"  },
-                                { 5310, "62"  },
-                                { 5320, "64"  },
-                                { 5340, "68"  },
-                                { 5480, "96"  },
-                                { 5500, "100" },
-                                { 5510, "102" },
-                                { 5520, "104" },
-                                { 5530, "106" },
-                                { 5540, "108" },
-                                { 5550, "110" },
-                                { 5560, "112" },
-                                { 5570, "114" },
-                                { 5580, "116" },
-                                { 5590, "118" },
-                                { 5600, "120" },
-                                { 5610, "122" },
-                                { 5620, "124" },
-                                { 5630, "126" },
-                                { 5640, "128" },
-                                { 5660, "132" },
-                                { 5670, "134" },
-                                { 5680, "136" },
-                                { 5690, "138" },
-                                { 5700, "140" },
-                                { 5710, "142" },
-                                { 5720, "144" },
-                                { 5745, "149" },
-                                { 5755, "151" },
-                                { 5765, "153" },
-                                { 5775, "155" },
-                                { 5785, "157" },
-                                { 5795, "159" },
-                                { 5805, "161" },
-                                { 5825, "165" },
-                                { 5845, "169" },
-                                { 5865, "173" },
-                                { 4915, "183" },
-                                { 4920, "184" },
-                                { 4925, "185" },
-                                { 4935, "187" },
-                                { 4940, "188" },
-                                { 4945, "189" },
-                                { 4960, "192" },
-                                { 4980, "196" }
-                             };
   char *ret;
 
   if (freq >= 2400 && freq <= 2500)
@@ -3415,6 +3443,66 @@ static const char *convert_freq_to_ch (DWORD freq)
   return (ret);
 }
 
+static struct search_list *create_freq_to_ch_mapping (size_t *num_p)
+{
+  struct search_list *dst_list;
+  char   freq[7];  /* need 4 digits, but add some slack */
+  char  *freq_start;
+  int    chan;
+  size_t i, j, num = DIM(ch_mapping24) + DIM(ch_mapping50);
+  size_t size = num * (sizeof(*dst_list) + sizeof(freq));
+
+  *num_p = 0;
+  dst_list = malloc (size);
+  if (!dst_list)
+     return (NULL);
+
+  freq_start = (char*)dst_list + (num * sizeof(*dst_list)); /* Put all 'freq' after the 'dst_list[]' */
+
+  for (i = j = 0; i < num; i++, j++)
+  {
+    const struct search_list *src_list = (i < DIM(ch_mapping24)) ? ch_mapping24 + 0 : ch_mapping50 + 0;
+
+    src_list += j;
+    if (i == DIM(ch_mapping24)) /* switch to 'ch_mapping50[]' */
+       j = 0;
+
+    itoa (src_list->type, freq, 10);
+    chan = ATOI (src_list->name);
+    dst_list[i].type = chan;
+    dst_list[i].name = strcpy (freq_start, freq);
+    freq_start += sizeof(freq);
+  }
+  *num_p = num;
+  return (dst_list);
+}
+
+/*
+ * The inverse of the above. Return the freq in MHz units.
+ * But this is not reliable since e.g. ch 7 is in both 2.4 GHz and the 5 GHz band.
+ * So we really need to know the band too.
+ */
+static const char *convert_ch_to_freq (int ch)
+{
+  static struct search_list *freq_to_ch_mapping = NULL;
+  static size_t freq_to_ch_num = 0;
+
+  if (ch < 0)
+  {
+    if (freq_to_ch_mapping)
+       free (freq_to_ch_mapping);
+    freq_to_ch_mapping = NULL;
+    freq_to_ch_num = 0;
+    return (NULL);
+  }
+
+  if (!freq_to_ch_mapping)
+     freq_to_ch_mapping = create_freq_to_ch_mapping (&freq_to_ch_num);
+
+  if (!freq_to_ch_mapping)
+     return ("?");
+  return _list_lookup (ch, freq_to_ch_mapping, freq_to_ch_num);
+}
 
 /*
  * Print the information in a list of Basic Service Set (BSS).

@@ -1049,6 +1049,17 @@
             MIB_IPFORWARD_ROW2 Table [1];
           } MIB_IPFORWARD_TABLE2;
 
+    typedef struct _NL_BANDWIDTH_INFORMATION { /* For Win-SDK, this is in <shared/nldef.h> */
+            ULONG64  Bandwidth;
+            ULONG64  Instability;
+            BOOLEAN  BandwidthPeaked;
+          } NL_BANDWIDTH_INFORMATION;
+
+    typedef struct _MIB_IP_NETWORK_CONNECTION_BANDWIDTH_ESTIMATES {
+            NL_BANDWIDTH_INFORMATION  InboundBandwidthInformation;
+            NL_BANDWIDTH_INFORMATION  OutboundBandwidthInformation;
+          } MIB_IP_NETWORK_CONNECTION_BANDWIDTH_ESTIMATES;
+
     typedef enum _DOT11_RADIO_STATE {
             dot11_radio_state_unknown,
             dot11_radio_state_on,
@@ -1065,6 +1076,12 @@
             DWORD                dwNumberOfPhys;
             WLAN_PHY_RADIO_STATE PhyRadioState [64];
           } WLAN_RADIO_STATE;
+
+    typedef struct _WLAN_DEVICE_SERVICE_GUID_LIST {
+            DWORD   dwNumberOfItems;
+            DWORD   dwIndex;
+            GUID   *DeviceService[1];
+          } WLAN_DEVICE_SERVICE_GUID_LIST;
 
     #if (_WIN32_WINNT < 0x0601)
       #define IP_ADAPTER_UNICAST_ADDRESS     IP_ADAPTER_UNICAST_ADDRESS_XP
