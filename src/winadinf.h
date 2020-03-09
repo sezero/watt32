@@ -188,7 +188,7 @@
   #define HAVE_WINDOT11_H
   #define HAVE_WLANAPI_H
   #define HAVE_WSAQuerySetA
-  #define COMPILE_WINADINF_C  /* We have all stuff need to compile winadinf.c */
+  #define COMPILE_WINADINF_C   /* We have all stuff need to compile winadinf.c */
 
 #elif defined(__POCC__)
   #include <wtypes.h>
@@ -1006,6 +1006,15 @@
           DOT11_AUTH_CIPHER_PAIR pAuthCipherPairList [16];
         } WLAN_AUTH_CIPHER_PAIR_LIST2;
 
+  /*
+   * Hard to check the precence of this typedef in all SDKs. Hence just fake a '2' version.
+   */
+  typedef struct _WLAN_DEVICE_SERVICE_GUID_LIST2 {
+          DWORD   dwNumberOfItems;
+          DWORD   dwIndex;
+          GUID   *DeviceService[1];
+        } WLAN_DEVICE_SERVICE_GUID_LIST2;
+
   #if defined(HAVE_WLANAPI_H) && defined(_STATIC_ASSERT)
   // _STATIC_ASSERT (sizeof(WLAN_AUTH_CIPHER_PAIR_LIST2) == sizeof(WLAN_AUTH_CIPHER_PAIR_LIST));
   #endif
@@ -1076,12 +1085,6 @@
             DWORD                dwNumberOfPhys;
             WLAN_PHY_RADIO_STATE PhyRadioState [64];
           } WLAN_RADIO_STATE;
-
-    typedef struct _WLAN_DEVICE_SERVICE_GUID_LIST {
-            DWORD   dwNumberOfItems;
-            DWORD   dwIndex;
-            GUID   *DeviceService[1];
-          } WLAN_DEVICE_SERVICE_GUID_LIST;
 
     #if (_WIN32_WINNT < 0x0601)
       #define IP_ADAPTER_UNICAST_ADDRESS     IP_ADAPTER_UNICAST_ADDRESS_XP

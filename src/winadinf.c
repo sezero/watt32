@@ -311,9 +311,9 @@ DEF_FUNC (DWORD, WlanGetInterfaceCapability,
            __out      WLAN_INTERFACE_CAPABILITY **ppCapability));
 
 DEF_FUNC (DWORD, WlanGetSupportedDeviceServices,
-          (__in  HANDLE                          hClientHandle,
-           __in  const GUID                     *pInterfaceGuid,
-           __out WLAN_DEVICE_SERVICE_GUID_LIST **svc_guid_list));
+          (__in  HANDLE                           hClientHandle,
+           __in  const GUID                      *pInterfaceGuid,
+           __out WLAN_DEVICE_SERVICE_GUID_LIST2 **svc_guid_list));
 
 DEF_FUNC (void, WlanFreeMemory, (__in void *memory));
 
@@ -2916,7 +2916,7 @@ static BOOL wlan_query (HANDLE           client,
   return (TRUE);
 }
 
-static void print_wlan_svc_guid_list (const WLAN_DEVICE_SERVICE_GUID_LIST *list)
+static void print_wlan_svc_guid_list (const WLAN_DEVICE_SERVICE_GUID_LIST2 *list)
 {
   (*_printf) ("list->dwNumberOfItems: %lu\n", list->dwNumberOfItems);
 }
@@ -2958,20 +2958,20 @@ static int _pkt_win_print_WlanEnumInterfaces (void)
 
   for (i = 0; i < (int)if_list->dwNumberOfItems; i++)
   {
-    const WLAN_INTERFACE_INFO     *if_info       = (const WLAN_INTERFACE_INFO*) &if_list->InterfaceInfo[i];
-    const GUID                    *guid          = &if_info->InterfaceGuid;
-    WLAN_AVAILABLE_NETWORK_LIST   *network_list  = NULL;
-    WLAN_BSS_LIST                 *bss_list      = NULL;
-    WLAN_DEVICE_SERVICE_GUID_LIST *svc_guid_list = NULL;
-    BOOL                           auto_conf;
-    BOOL                           bkg_scan;
-    BOOL                           str_mode;
-    BOOL                           safe_mode;
-    ULONG                          ch_number, op_mode, rssi;
-    WLAN_RADIO_STATE               radio_state;
-    WLAN_STATISTICS                wlan_stats;
-    WLAN_CONNECTION_ATTRIBUTES     conn_attr;
-    WLAN_AUTH_CIPHER_PAIR_LIST2    auth_pairs;
+    const WLAN_INTERFACE_INFO      *if_info       = (const WLAN_INTERFACE_INFO*) &if_list->InterfaceInfo[i];
+    const GUID                     *guid          = &if_info->InterfaceGuid;
+    WLAN_AVAILABLE_NETWORK_LIST    *network_list  = NULL;
+    WLAN_BSS_LIST                  *bss_list      = NULL;
+    WLAN_DEVICE_SERVICE_GUID_LIST2 *svc_guid_list = NULL;
+    BOOL                            auto_conf;
+    BOOL                            bkg_scan;
+    BOOL                            str_mode;
+    BOOL                            safe_mode;
+    ULONG                           ch_number, op_mode, rssi;
+    WLAN_RADIO_STATE                radio_state;
+    WLAN_STATISTICS                 wlan_stats;
+    WLAN_CONNECTION_ATTRIBUTES      conn_attr;
+    WLAN_AUTH_CIPHER_PAIR_LIST2     auth_pairs;
 
     (*_printf) ("  Index:           %d\n", i);
     (*_printf) ("  Description:     %" WIDESTR_FMT "\n", if_info->strInterfaceDescription);
