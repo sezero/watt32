@@ -4,7 +4,7 @@
 #include <dos.h>
 #include <string.h>
 
-int BCDtoDecimal (int in)
+static int BCDtoDecimal (int in)
 {
   int nu, rest;
   int d, result;
@@ -16,7 +16,7 @@ int BCDtoDecimal (int in)
   for (d = 3 ; d >= 0 ; d--)
   {
     nu = (int)(rest/p16);
-    rest -= nu * p16;
+    rest   -= nu * p16;
     result += nu * p10;
     p16 >>= 4;
     p10 /= 10;
@@ -28,7 +28,7 @@ int main (void)
 {
   union REGS regs;
   long  tick, lasttick = 0, key = 0;
-  int   dx, sec, lastsec;
+  int   dx, sec, lastsec = 0;
 
   printf ("Press Esc to quit...\n");
   do
