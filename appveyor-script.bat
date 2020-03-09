@@ -21,6 +21,9 @@ if %APPVEYOR_PROJECT_NAME%. == . (
   set APPVEYOR_BUILD_FOLDER_UNIX=c:/projects/Watt-32
 )
 
+echo Doing '%1' for BUILDER=%BUILDER%.
+
+
 ::
 :: Some weird issue with a Appveyor run and 'BUILDER == watcom'.
 ::
