@@ -179,10 +179,6 @@ int MS_CDECL main (int argc, char **argv)
   int    hi_res       = 0;
   int    ch;
 
-#ifdef __WATCOMC__
-//  strdup (NULL); /* Test */
-#endif
-
 #ifdef USE_EXCEPT
   InstallExcHandler (NULL);
 #endif
