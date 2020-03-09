@@ -643,10 +643,11 @@ static const char *dword_string (DWORD val)
 
 /**
  * Return a number with suffix for a link-speed 32-bit value.
+ *
+ * Assume the given `buf` is at lest 30 bytes.
  */
-static const char *speed_string (DWORD val)
+static const char *speed_string (DWORD val, char *buf)
 {
-  static char buf[30];
   char   suffix = '\0';
   double fl_val;
 
@@ -677,15 +678,16 @@ static const char *speed_string (DWORD val)
 /**
  * Return a number with a suitable suffix for a link-speed
  * of a 64-bit value.
+ *
+ * Assume the given `buf` is at lest 30 bytes.
  */
-static const char *speed64_string (ULONG64 val)
+static const char *speed64_string (ULONG64 val, char *buf)
 {
-  static char buf[30];
   char   suffix = '\0';
   double fl_val;
 
   if (val <= 1000000000ULL)
-     return speed_string ((DWORD)val);
+     return speed_string ((DWORD)val, buf);
 
   fl_val = (double) (val+1);
   if (fl_val >= 1E12)
@@ -1824,6 +1826,8 @@ static int _pkt_win_print_GetIfTable2 (void)
 
 static void print_mib_if_row (DWORD index, const MIB_IFROW *row)
 {
+  char speed[30];
+
   /* Note: The 'row->wszName' may *not* have the same GUID
    * as returned in 'GetAdapteraddresses()' despite it's the same
    * interface. To verify same interface, we can compare the
@@ -1833,7 +1837,7 @@ static void print_mib_if_row (DWORD index, const MIB_IFROW *row)
   (*_printf) ("  Description:    %.*s\n", MAXLEN_IFDESCR, row->bDescr);
 
   (*_printf) ("    MTU:          %lu\n", (u_long)row->dwMtu);
-  (*_printf) ("    Speed:        %s\n", speed_string(row->dwSpeed));
+  (*_printf) ("    Speed:        %s\n", speed_string(row->dwSpeed,speed));
   (*_printf) ("    Status:       %s\n",
               _list_lookup(row->dwOperStatus, mib_oper_status, DIM(mib_oper_status)));
 
@@ -1951,6 +1955,8 @@ static const char *get_if_type (DWORD if_type)
 
 static void print_mib_if_row2 (DWORD index, const MIB_IF_ROW2 *row)
 {
+  char speed [30];
+
   (*_printf) ("  GUID:           %s\n", get_guid_str(&row->InterfaceGuid));
   (*_printf) ("    Alias:        %.*" WIDESTR_FMT "\n", IF_MAX_STRING_SIZE, row->Alias);
   (*_printf) ("    Description:  %.*" WIDESTR_FMT "\n", IF_MAX_STRING_SIZE, row->Description);
@@ -1968,8 +1974,8 @@ static void print_mib_if_row2 (DWORD index, const MIB_IF_ROW2 *row)
   (*_printf) ("    Access type:  %s (%d)\n",
               _list_lookup(row->AccessType, access_types, DIM(access_types)), row->AccessType);
 
-  (*_printf) ("    Tx speed:     %s\n", speed64_string(row->TransmitLinkSpeed));
-  (*_printf) ("    Rx speed:     %s\n", speed64_string(row->ReceiveLinkSpeed));
+  (*_printf) ("    Tx speed:     %s\n", speed64_string(row->TransmitLinkSpeed, speed));
+  (*_printf) ("    Rx speed:     %s\n", speed64_string(row->ReceiveLinkSpeed, speed));
 
   if (verbose_level >= 1)
   {
@@ -2198,6 +2204,7 @@ static int _pkt_win_print_GetAdaptersAddresses (void)
   {
     const char *prefix_fmt;
     const char *extra_indent;
+    char  speed [30];
 
     ipv4_only_iface = TRUE;
     num++;
@@ -2281,8 +2288,8 @@ static int _pkt_win_print_GetAdaptersAddresses (void)
     (*_printf) ("    MTU:                 %s\n", dword_str(addr->Mtu));
 
 #if defined(ON_WIN_VISTA)
-    (*_printf) ("    Tx speed:            %s\n", speed64_string(addr->TransmitLinkSpeed));
-    (*_printf) ("    Rx speed:            %s\n", speed64_string(addr->ReceiveLinkSpeed));
+    (*_printf) ("    Tx speed:            %s\n", speed64_string(addr->TransmitLinkSpeed, speed));
+    (*_printf) ("    Rx speed:            %s\n", speed64_string(addr->ReceiveLinkSpeed, speed));
     (*_printf) ("    WINS servers:        %s\n", get_wins_addrs(addr->FirstWinsServerAddress));
     (*_printf) ("    Gateways:            %s\n", get_gateway_addrs(addr->FirstGatewayAddress));
 
@@ -2753,6 +2760,7 @@ static int _pkt_win_print_RasEnumConnections (void)
     RASPPPIPA  pppIp;
     RASPPPCCP  pppCcp;
     RASPPPLCP  pppLcp;
+    char       speed [30];
 
     memset (&stats, 0, sizeof(stats));
     stats.dwSize = sizeof(stats);
@@ -2776,7 +2784,7 @@ static int _pkt_win_print_RasEnumConnections (void)
     (*_printf) ("    Buffer Overrun Error:    %s\n", dword_string(stats.dwBufferOverrunErr));
     (*_printf) ("    Compression Ratio [In]:  %lu%%\n", (u_long)stats.dwCompressionRatioIn);
     (*_printf) ("    Compression Ratio [Out]: %lu%%\n", (u_long)stats.dwCompressionRatioOut);
-    (*_printf) ("    Speed:                   %s\n", speed_string(stats.dwBps));
+    (*_printf) ("    Speed:                   %s\n", speed_string(stats.dwBps,speed));
     (*_printf) ("    Connection Duration:     %s\n", duration_string(stats.dwConnectDuration));
 
 #if 1
@@ -3205,6 +3213,7 @@ static void print_wlan_current_connection (const WLAN_CONNECTION_ATTRIBUTES *att
 {
   const WLAN_ASSOCIATION_ATTRIBUTES *assoc = &attr->wlanAssociationAttributes;
   const WLAN_SECURITY_ATTRIBUTES    *sec   = &attr->wlanSecurityAttributes;
+  char  speed [30];
   int   dBm;
 
   if (assoc->wlanSignalQuality == 0)
@@ -3238,10 +3247,10 @@ static void print_wlan_current_connection (const WLAN_CONNECTION_ATTRIBUTES *att
               indent, "", (u_long)assoc->wlanSignalQuality, dBm);
 
   (*_printf) ("%*sRx rate:          %s\n",
-              indent, "", speed_string(1000*assoc->ulRxRate));
+              indent, "", speed_string(1000*assoc->ulRxRate,speed));
 
   (*_printf) ("%*sTx rate:          %s\n",
-              indent, "", speed_string(1000*assoc->ulTxRate));
+              indent, "", speed_string(1000*assoc->ulTxRate,speed));
 
   (*_printf) ("%*sSecurity on:      %s\n",
               indent, "", sec->bSecurityEnabled ? "Yes" : "No");
@@ -3711,11 +3720,14 @@ quit:
 }
 
 #if defined(ON_WIN_VISTA) && defined(HAVE_NETIOAPI_H)
-
-  static void print_bw_estimate (const NL_BANDWIDTH_INFORMATION *bwi, const char *direction, int indent)
+  /*
+   * Print a speed value from the 'NL_BANDWIDTH_INFORMATION' record.
+   */
+  static void print_bw_estimate (const char *what, LONG64 Bps, int indent)
   {
-    (*_printf) ("%*s%s Bandwidth: %s kbit/s, ", indent, "", direction, dword_str(bwi->Bandwidth/1024));
-    (*_printf) ("Instability: %9s kbit/s, Peaked: %d\n", dword_str(bwi->Instability/1024), bwi->BandwidthPeaked);
+    char speed[30];
+
+    (*_printf) ("%*s%s: %s", indent, "", what, speed64_string(Bps, speed));
   }
 
   /*
@@ -3764,14 +3776,13 @@ quit:
       rc = (*p_GetIpNetworkConnectionBandwidthEstimates)(idx, AF_INET, &bw_estimates);
       if (rc == NO_ERROR)
       {
-        /* typedef struct {
-         *         ULONG64 Bandwidth;
-         *         ULONG64 Instability;
-         *         BOOLEAN BandwidthPeaked;
-         *       } NL_BANDWIDTH_INFORMATION;
-         */
-        print_bw_estimate (&bw_estimates.InboundBandwidthInformation,  "In ", indent);
-        print_bw_estimate (&bw_estimates.OutboundBandwidthInformation, "Out", indent);
+        print_bw_estimate ("In  Bandwidth", bw_estimates.InboundBandwidthInformation.Bandwidth, indent);
+        print_bw_estimate (", Instability", bw_estimates.InboundBandwidthInformation.Instability, 0);
+        (*_printf) ("\n");
+
+        print_bw_estimate ("Out Bandwidth", bw_estimates.OutboundBandwidthInformation.Bandwidth, indent);
+        print_bw_estimate (", Instability", bw_estimates.OutboundBandwidthInformation.Instability, 0);
+        (*_printf) ("\n");
       }
       else
         (*_printf) ("%*sGetIpNetworkConnectionBandwidthEstimates(): %s\n",
