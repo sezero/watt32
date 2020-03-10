@@ -13,6 +13,7 @@
 # be used with GNU-make.
 #
 PROGRAMS = bcc_err.exe  \
+           dm_err.exe   \
            tcc_err.exe  \
            wc_err.exe   \
            ms32_err.exe \
@@ -29,6 +30,7 @@ WIN_PROGRAMS = win32/clang_err.exe \
                win32/wc_err.exe    \
                win32/bcc_err.exe   \
                win32/dj_err.exe    \
+               win32/dm_err.exe    \
              # win32/hc_err.exe
 
 all:   $(PROGRAMS) $(WIN_PROGRAMS)
@@ -62,6 +64,9 @@ win32/hc_err.exe: errnos.c
 
 dm_err.exe: errnos.c
 	dmc -ml -g -I..\inc -odm_err.exe errnos.c
+
+win32/dm_err.exe: errnos.c
+	dmc -mn -g -I..\inc -owin32\dm_err.exe errnos.c
 
 vc_err.exe: errnos.c
 	cl -nologo -I..\inc -DWIN32 -Fe./vc_err.exe errnos.c

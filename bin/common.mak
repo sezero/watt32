@@ -46,11 +46,6 @@ CALLING_CONVENTION = -3r
 !error WATCOM_EXE not defined.
 !endif
 
-!if !$d(DIGMARS_EXE)
-!error DIGMARS_EXE not defined.
-!endif
-
-
 #########################################################################
 
 .AUTODEPEND
@@ -59,7 +54,6 @@ CALLING_CONVENTION = -3r
 MMODEL        = l
 BCC_CFLAGS    = -c -m$(MMODEL) -v -O -f87 -H=$(TEMP)\bcc.sym
 BCC32_CFLAGS  = -c -WX -v -ls -RT- -O -w-aus -w-stu
-DMC_CFLAGS    = -c -mx -g -ff -r -Jm -a4 -S -I$(DIGMARS)\inc
 WCC386_CFLAGS = -mf -w5 -zc -zq -zm -fr=nul -bt=dos -d2 -fpi -oilrt $(CALLING_CONVENTION)
 HC386_CFLAGS  = -w4 -c -g -O2 -586 -Hsuffix=.o32 -Hnocopyr -Hturboerr \
                 -Hpragma=stack_size_warn(5000) -Hpragma=Offwarn(572)
@@ -76,7 +70,6 @@ LIB = $(WATT_ROOT)\lib
 
 BORLAND_OBJ = $(SRC:.c=.obj)
 HIGHC_OBJ   = $(SRC:.c=.o32)
-DIGMARS_OBJ = $(SRC:.c=.do)
 WATCOM_OBJ  = $(SRC:.c=.wo)
 
 EXES = $(BORLAND_EXE) $(PHARLAP_EXP) $(WATCOM_EXE)
@@ -99,16 +92,6 @@ $(BORLAND_EXE): bcc.arg $(BORLAND_OBJ) $(LIB)\wattcpb$(MMODEL).lib
                   -ml -v -ls -L $(LIB)\wattcpb$(MMODEL).lib $(BORLAND_OBJ)
 |
 !endif
-
-#
-# Digital Mars C (small 32-bit model) target
-#
-$(DIGMARS_EXE): dmc.arg $(DIGMARS_OBJ) $(LIB)\wattcpdf.lib
-                $(DIGMARS)\bindos\link.exe @&&|
-                  cx.obj $(DIGMARS_OBJ), $(DIGMARS_EXE),,
-                  sdx.lib x32.lib $(LIB)\wattcpdf.lib /codeview /noignorecase
-                  /stack:20000 /map:full /de
-|
 
 #
 # Metaware High-C / Pharlap target
@@ -195,9 +178,6 @@ wlink.arg: Makefile $(WATT_ROOT)\bin\common.mak
 .c.wo:
            wcc386 @wcc386.arg $*.c -fo=$*.wo
 
-.c.do:
-           dmc @dmc.arg $*.c -o$*.do
-
 bcc.arg:   $(PREREQUISITES) Makefile $(WATT_ROOT)\bin\common.mak
            @copy &&|
              $(COMMON_DEFS) -DWATT32 -I$(INC)
@@ -210,13 +190,6 @@ bcc32.arg: $(PREREQUISITES) Makefile $(WATT_ROOT)\bin\common.mak
              $(COMMON_DEFS) -DWATT32 -I$(INC)
              $(BCC32_CFLAGS)
              $(BCC_DEFS)
-| $<
-
-dmc.arg:   $(PREREQUISITES) Makefile $(WATT_ROOT)\bin\common.mak
-           @copy &&|
-             $(COMMON_DEFS) -DWATT32 -I$(INC)
-             $(DMC_CFLAGS)
-             $(DMC_DEFS)
 | $<
 
 hc386.arg: $(PREREQUISITES) Makefile $(WATT_ROOT)\bin\common.mak
@@ -240,20 +213,17 @@ clean:
            @del *.obj
            @del *.o32
            @del *.wo
-           @del *.do
            @del *.map
            @del bcc.arg
            @del bcc32.arg
            @del hc386.arg
            @del wcc386.arg
            @del wlink.arg
-           @del dmc.arg
            @del make*.@@@
 
 vclean veryclean scrub: clean
            @del $(BORLAND_EXE)
            @del $(PHARLAP_EXP)
            @del $(WATCOM_EXE)
-           @del $(DIGMARS_EXE)
 
 
