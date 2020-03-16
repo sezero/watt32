@@ -32,9 +32,9 @@ echo Doing '%1' for BUILDER=%BUILDER%.
 ::
 :: Stuff common to '[build_src | build_bin | build_tests]'
 ::
-:: MinGW: Add PATH to 'gcc' and stuff for 'util/pkg-conf.mak'.
+:: mingw/mingw64: Add PATH to 'gcc' and stuff for 'util/pkg-conf.mak'.
 ::
-if %BUILDER%. == mingw. (
+if %BUILDER%. == mingw64. (
   md lib\pkgconfig 2> NUL
   set MINGW32=%APPVEYOR_BUILD_FOLDER_UNIX%
   set MINGW64=%APPVEYOR_BUILD_FOLDER_UNIX%
@@ -134,7 +134,7 @@ if %BUILDER%. == clang. (
   exit /b
 )
 
-if %BUILDER%. == mingw. (
+if %BUILDER%. == mingw64. (
   call configur.bat mingw64
   echo Building for %CPU%
   make -f MinGW64_%BITS%.mak
