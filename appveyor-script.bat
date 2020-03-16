@@ -65,7 +65,8 @@ set NT_INCLUDE=%WATCOM%\h;%WATCOM%\h\nt
 set PATH=%PATH%;%WATCOM%\binnt
 
 ::
-:: Append the PATH to 'clang-cl'
+:: Append the PATH to the 64-bit 'clang-cl'.
+:: Where is the 32-bit 'clang-cl'?
 ::
 set PATH=%PATH%;c:\Program Files\LLVM\bin
 

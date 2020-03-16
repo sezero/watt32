@@ -11,10 +11,10 @@ environment:
       CPU:     x86
     - BUILDER: visualc
       CPU:     x64
-    - BUILDER: clang
-      CPU:     x86
 #   - BUILDER: clang
-#     CPU:     x64
+#     CPU:     x86
+    - BUILDER: clang
+      CPU:     x64
     - BUILDER: mingw
       CPU:     x86
     - BUILDER: mingw
