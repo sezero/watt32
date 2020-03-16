@@ -1708,7 +1708,7 @@ build/clang/32bit/release/cflagsbf.h \
 build/clang/32bit/debug/cflagsbf.h   \
 build/clang/64bit/release/cflagsbf.h \
 build/clang/64bit/debug/cflagsbf.h:
-	$(W32_BIN2C) $(C_ARGS)           > $@
+	$(W32_BIN2C_) $(C_ARGS) > $@
 @endif
 
 @ifdef DJGPP MINGW32 MINGW64 CYGWIN32 CYGWIN64
