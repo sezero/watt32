@@ -173,8 +173,10 @@ WORD intel16 (WORD val)
 
 #if defined(TEST_PROG)
 
-#if !defined(__MSDOS__)
-#error For MSDOS only
+#if defined(__WATCOMC__)
+  #error "Not for Watcom"
+#elif !defined(__MSDOS__)
+  #error For MSDOS only
 #endif
 
 int main (void)
@@ -185,6 +187,7 @@ int main (void)
 
   getdate (&d);
   gettime (&t);
+
   printf ("time now is: %s", ctime(&now));
   now = dostounix (&d, &t);
   printf ("dostounix(): %s", ctime(&now));

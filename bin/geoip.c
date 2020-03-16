@@ -66,7 +66,7 @@
   #pragma GCC diagnostic ignored  "-Wsign-compare"
 #endif
 
-#if !defined(_WIN32) && !defined(__MSDOS__) || defined(__CYGWIN__)
+#if !defined(_WIN32) && !defined(__MSDOS__) && !defined(MSDOS) || defined(__CYGWIN__)
 #define USE_MMAP
 #endif
 
@@ -239,7 +239,7 @@ const char GeoIP_country_continent[254][3] = {
 
 geoipv6_t _GeoIP_lookupaddress_v6 (const char *host);
 
-#if defined(_WIN32) || defined(__MSDOS__)
+#if defined(_WIN32) || defined(__MSDOS__) || defined(MSDOS)
 ssize_t pread (int fd, void *buf, size_t count, off_t offset)
 {
     ssize_t retval;

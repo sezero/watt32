@@ -299,7 +299,6 @@
   #pragma GCC diagnostic ignored "-Wstrict-aliasing"
 #endif
 
-
 #ifdef USE_GEOIP
   #ifndef __CYGWIN__
   #include <direct.h>  /* getcwd() */
@@ -1364,7 +1363,7 @@ int init_geoip (const char *argv0)
   GeoIP_setup_custom_directory (home_dir);
   _GeoIP_setup_dbfilename();
 
-#ifdef __MSDOS__  /* Use SFN */
+#if defined(__MSDOS__) || defined(MSDOS)  /* Use SFN */
   snprintf (file1, sizeof(file1), "%s\\GEOLIT~2.DAT", home_dir);
   snprintf (file2, sizeof(file2), "%s\\GEOLIT~1.DAT", home_dir);
 #else

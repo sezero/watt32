@@ -252,7 +252,9 @@
 #define _getsockname                W32_NAMESPACE (_getsockname)
 #define _getpeername                W32_NAMESPACE (_getpeername)
 
-#if defined(__MSDOS__)
+/* OpenWatcom (small/large) doesn't seems to define '__MSDOS__'.
+ */
+#if defined(__MSDOS__) || defined(MSDOS)
   #define init_timer_isr            W32_NAMESPACE (init_timer_isr)
   #define exit_timer_isr            W32_NAMESPACE (exit_timer_isr)
 #endif

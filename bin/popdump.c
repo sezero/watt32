@@ -27,9 +27,9 @@
 #include <stdlib.h>
 #include <string.h>
 
-#if defined(__MSDOS__)
+#if defined(__MSDOS__) || defined(MSDOS)
   #include <dos.h>
-#elif defined(WIN32)
+#elif defined(_WIN32)
   #define WIN32_LEAN_AND_MEAN    /* Do not include <winsock.h> */
   #include <windows.h>
 #endif
@@ -49,7 +49,7 @@ char buffer[513];
 
 long localdiskspace (void)
 {
-#ifdef WIN32
+#ifdef _WIN32
   ULARGE_INTEGER free;
   GetDiskFreeSpaceEx ("\\", &free, NULL, NULL);
   return (long) free.LowPart;  /* very crude */
@@ -164,7 +164,7 @@ int popdump (const char *userid, const char *password, DWORD host)
       break;
     }
 
-#ifndef WIN32
+#ifndef _WIN32
     if (localdiskspace() < locallength * 2)
     {
       printf("Skipping file # %lu, too big for disk space available\n", process);
@@ -185,7 +185,7 @@ int popdump (const char *userid, const char *password, DWORD host)
     }
     while (buffer[0] != '.' || buffer[1] != 0);
 
-#ifndef WIN32  /* not while testing this */
+#ifndef _WIN32  /* not while testing this */
     sock_printf (&s, "DELE %lu", process);
     sock_wait_input (&s, sock_delay, NULL, &status);
     sock_gets (&s, (BYTE*)&buffer, sizeof(buffer));

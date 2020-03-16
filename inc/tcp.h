@@ -240,7 +240,9 @@ W32_FUNC int    W32_CALL hires_timer  (int on);
 W32_FUNC double         W32_CALL timeval_diff  (const struct timeval *a, const struct timeval *b);
 W32_FUNC struct timeval W32_CALL timeval_diff2 (struct timeval *a, struct timeval *b);
 
-#if defined(__MSDOS__)
+/* OpenWatcom (small/large) doesn't seems to define '__MSDOS__'.
+ */
+#if defined(__MSDOS__) || (defined(__WATCOMC__) && defined(MSDOS))
   W32_FUNC void W32_CALL init_timer_isr (void);
   W32_FUNC void W32_CALL exit_timer_isr (void);
 #endif
@@ -921,14 +923,13 @@ W32_FUNC int         W32_CALL _w32_ffs (int i);
 #if defined(__HIGHC__)
   W32_FUNC int W32_CALL system (const char *cmd);
   pragma Alias (system, "_mw_watt_system");
-#endif
 
-#if defined(__HIGHC__) || (defined(__DMC__) && defined(__MSDOS__))
+#elif defined(__HIGHC__) || (defined(__DMC__) && defined(__MSDOS__))
   W32_FUNC void W32_CALL delay (unsigned int msec);
 #endif
 
 #if defined(__DJGPP__) || defined(__DMC__)
-  W32_FUNC time_t W32_CALL dostounix (struct date *d, struct time *t);
+  W32_FUNC time_t W32_CALL dostounix (const struct date *d, const struct time *t);
   W32_FUNC void   W32_CALL unixtodos (time_t time, struct date *d, struct time *t);
 #endif
 
