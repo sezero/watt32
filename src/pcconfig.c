@@ -1304,7 +1304,6 @@ void netdb_warn (const char *fname)
 /*
  * A test program.
  */
-
 #if defined(TEST_PROG)
 
 const char *cfg_file;
@@ -1328,7 +1327,7 @@ static void W32_CALL not_found2 (const char *key, const char *value)
      set_value (TRUE, value, &ret, sizeof(DWORD));
 }
 
-static long my_injector (int pass, const struct config_table *cfg)
+static long W32_CALL my_injector (int pass, const struct config_table *cfg)
 {
   printf ("my_injector(), pass %d\n", pass);
   tcp_inject_config (cfg, "My_IP", "192.168.0.98");
@@ -1357,6 +1356,12 @@ void Usage (void)
        return (-1);
     return (st.st_size);
   }
+#endif
+
+#if !defined(USE_BUFFERED_IO)
+  #undef  fileno
+  #define fileno(file)   0
+  #define filelength(fd) 0
 #endif
 
 int main (int argc, char **argv)
@@ -1405,4 +1410,5 @@ int main (int argc, char **argv)
   tcp_config (NULL);
   return (0);
 }
-#endif
+#endif  /* TEST_PROG */
+

@@ -9,9 +9,25 @@
 
 #define u_int32_t unsigned long
 
-static int cdecl cmpint (const void *a, const void *b)
+#if defined(__WATCOMC__)
+  #define QSORT_COMPARE __watcall
+#else
+  #define QSORT_COMPARE cdecl
+#endif
+
+static int QSORT_COMPARE cmpint (const void *a, const void *b)
 {
   return *(int*)a - *(int*)b;
+}
+
+/*
+ * Since 'TIME_IT()' wants an 'int function'
+ */
+int qsort2 (void *base, size_t num, size_t size,
+            int (QSORT_COMPARE *cmp_func) (const void *, const void *))
+{
+  qsort (base, num, size, cmp_func);
+  return (1);
 }
 
 /* This is a function ported from the Linux kernel lib/sort.c
@@ -56,9 +72,9 @@ static void generic_swap (void *_a, void *_b, int size)
  * O(n*n) worst-case behavior and extra memory requirements that make
  * it less suitable for kernel use.
  */
-void Qsort (void *_base, size_t num, size_t size,
-            int (cdecl *cmp_func) (const void *, const void *),
-            void (*swap_func) (void *, void *, int size))
+int Qsort (void *_base, size_t num, size_t size,
+           int (QSORT_COMPARE *cmp_func) (const void *, const void *),
+           void (*swap_func) (void *, void *, int size))
 {
   /* pre-scale counters for performance
    */
@@ -97,6 +113,7 @@ void Qsort (void *_base, size_t num, size_t size,
       (*swap_func) (base + r, base + c, size);
     }
   }
+  return (1);
 }
 
 #if defined(_MSC_VER) && (_MSC_VER >= 1200) && defined(_M_IX86) /* MSVC 6+ */
@@ -132,7 +149,7 @@ int cdecl main (void)
     a[i] = r;
   }
 
-  TIME_IT (qsort, (a, NUM_INTS, sizeof(int), cmpint), NUM_LOOPS);
+  TIME_IT (qsort2, (a, NUM_INTS, sizeof(int), cmpint), NUM_LOOPS);
   TIME_IT (Qsort, (a, NUM_INTS, sizeof(int), cmpint, NULL), NUM_LOOPS);
   return (0);
 }

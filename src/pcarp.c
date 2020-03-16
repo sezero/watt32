@@ -2205,7 +2205,7 @@ static int num_fail = 0;
                            NORM_TEXT();                             \
                          } while (0)
 
-static void callback (void)
+static void W32_CALL callback (void)
 {
   static char fan[] = "\\|/-";
   static int  idx = 0;
@@ -2291,7 +2291,7 @@ int main (int argc, char **argv)
   ip = lookup_host (host, NULL);
   if (!ip)
   {
-    printf (dom_strerror(dom_errno));
+    printf ("%s", dom_strerror(dom_errno));
     return (1);
   }
   if (tcp_open(&sock.tcp, 0, ip, 80, NULL))

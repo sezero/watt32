@@ -11,9 +11,9 @@ WORD   test_port = 1234;
 int    sock = -1;
 struct sockaddr_in sock_name;
 
-int  sock_select   (int sock);
-int  sock_loopback (in_Header *ip);
 void AssertFail   (unsigned line);
+int  sock_select   (int sock);
+int  W32_CALL sock_loopback (in_Header *ip);
 
 /*--------------------------------------------------------------------------*/
 
@@ -111,7 +111,7 @@ int fix_tcp_packet (in_Header *ip, tcp_Header *tcp, int ack_len, int data_len)
 
 /*--------------------------------------------------------------------------*/
 
-int sock_loopback (in_Header *ip)
+int W32_CALL sock_loopback (in_Header *ip)
 {
   if (ip->proto == TCP_PROTO)
   {

@@ -1225,7 +1225,7 @@ DWORD get_ss_limit (void)
 #if defined(_MSC_VER) && (_MSC_VER >= 1200)
   #define THREAD_LOCAL __declspec(thread)
 
-#elif defined(__DMC__) && defined(WIN32)
+#elif defined(__DMC__) && defined(_WIN32)
   #define THREAD_LOCAL __declspec(thread)
 
 #elif defined(__CODEGEARC__thread_local)
@@ -1243,7 +1243,7 @@ DWORD get_ss_limit (void)
   #define THREAD_LOCAL
 #endif
 
-#if !defined(WIN32)
+#if !defined(_WIN32)
 #define UINT_PTR unsigned
 #endif
 
@@ -2049,13 +2049,13 @@ static BOOL set_mem_strat (BYTE strat)
 }
 #endif
 
-void foo_10 (void) { puts ("I'm foo_10()"); }
-void foo_20 (void) { puts ("I'm foo_20()"); }
-void foo_30 (void) { puts ("I'm foo_30()"); }
-void foo_40 (void) { puts ("I'm foo_40()"); }
-void foo_50 (void) { puts ("I'm foo_50()"); }
-void foo_60 (void) { puts ("I'm foo_60()"); }
-void foo_70 (void) { puts ("I'm foo_70()"); }
+void W32_CALL foo_10 (void) { puts ("I'm foo_10()"); }
+void W32_CALL foo_20 (void) { puts ("I'm foo_20()"); }
+void W32_CALL foo_30 (void) { puts ("I'm foo_30()"); }
+void W32_CALL foo_40 (void) { puts ("I'm foo_40()"); }
+void W32_CALL foo_50 (void) { puts ("I'm foo_50()"); }
+void W32_CALL foo_60 (void) { puts ("I'm foo_60()"); }
+void W32_CALL foo_70 (void) { puts ("I'm foo_70()"); }
 
 int main (void)
 {
