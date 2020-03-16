@@ -90,7 +90,7 @@ int W32_CALL resolve_ip (DWORD ip, char *name, int len)
  * Only(?) djgpp/DMC besides Borland have "struct time" etc.
  */
 #if defined(__DJGPP__) || defined(__DMC__)
-time_t dostounix (struct date *d, struct time *t)
+W32_FUNC time_t W32_CALL dostounix (const struct date *d, const struct time *t)
 {
   struct tm tm;
 
@@ -107,7 +107,7 @@ time_t dostounix (struct date *d, struct time *t)
   return mktime (&tm);
 }
 
-void unixtodos (time_t time, struct date *d, struct time *t)
+W32_FUNC void W32_CALL unixtodos (time_t time, struct date *d, struct time *t)
 {
   struct tm *tm = localtime (&time);
 
