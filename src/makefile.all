@@ -1646,10 +1646,28 @@ build\highc\cflagsbf.h: $(C_ARGS)
 	$(W32_BIN2C) $(C_ARGS)                     > build\highc\cflagsbf.h
 
 build\ladsoft\cflagsbf.h:
-	echo $(CFLAGS) | $(W32_BIN2C) -            > build\ladsoft\cflagsbf.h
+	echo $(CFLAGS) | $(W32_BIN2C)            - > build\ladsoft\cflagsbf.h
 
 build\lcc\cflagsbf.h:
-	echo $(CFLAGS) | $(W32_BIN2C) -            > build\lcc\cflagsbf.h
+	echo $(CFLAGS) | $(W32_BIN2C)            - > build\lcc\cflagsbf.h
+
+build\pellesc\32bit\cflagsbf.h:
+	echo $(CFLAGS) | $(W32_BIN2C)            - > build\pellesc\32bit\cflagsbf.h
+
+build\pellesc\64bit\cflagsbf.h:
+	echo $(CFLAGS) | $(W32_BIN2C)            - > build\pellesc\64bit\cflagsbf.h
+
+build\visualc\32bit\release\cflagsbf.h: $(C_ARGS)
+	- echo $(CFLAGS) | $(W32_BIN2C)          - > build\visualc\32bit\release\cflagsbf.h
+
+build\visualc\32bit\debug\cflagsbf.h: $(C_ARGS)
+	- echo $(CFLAGS) | $(W32_BIN2C)          - > build\visualc\32bit\debug\cflagsbf.h
+
+build\visualc\64bit\release\cflagsbf.h: $(C_ARGS)
+	- echo $(CFLAGS) | $(W32_BIN2C)          - > build\visualc\64bit\release\cflagsbf.h
+
+build\visualc\64bit\debug\cflagsbf.h: $(C_ARGS)
+	- echo $(CFLAGS) | $(W32_BIN2C)          - > build\visualc\64bit\debug\cflagsbf.h
 
 @ifdef DJGPP MINGW32 MINGW64 CYGWIN32 CYGWIN64
 #
@@ -1662,32 +1680,14 @@ build/CygWin/64bit/cflagsbf.h:
 	echo $(CFLAGS) | $(W32_BIN2C_)           - > build/CygWin/64bit/cflagsbf.h
 
 build/MinGW32/cflagsbf.h:
-	echo $(CFLAGS) | $(W32_BIN2C)            - > build/MinGW32/cflagsbf.h
+	echo $(CFLAGS) | $(W32_BIN2C_)           - > build/MinGW32/cflagsbf.h
 
 build/MinGW64/32bit/cflagsbf.h:
-	echo $(CFLAGS) | $(W32_BIN2C)            - > build/MinGW64/32bit/cflagsbf.h
+	echo $(CFLAGS) | $(W32_BIN2C_)           - > build/MinGW64/32bit/cflagsbf.h
 
 build/MinGW64/64bit/cflagsbf.h:
-	echo $(CFLAGS) | $(W32_BIN2C)            - > build/MinGW64/64bit/cflagsbf.h
+	echo $(CFLAGS) | $(W32_BIN2C_)           - > build/MinGW64/64bit/cflagsbf.h
 @endif
-
-build\pellesc\32bit\cflagsbf.h:
-	echo $(CFLAGS) | $(W32_BIN2C) -            > build\pellesc\32bit\cflagsbf.h
-
-build\pellesc\64bit\cflagsbf.h:
-	echo $(CFLAGS) | $(W32_BIN2C) -            > build\pellesc\64bit\cflagsbf.h
-
-build\visualc\32bit\release\cflagsbf.h: $(C_ARGS)
-	- echo $(CFLAGS) | $(W32_BIN2C) -          > build\visualc\32bit\release\cflagsbf.h
-
-build\visualc\32bit\debug\cflagsbf.h: $(C_ARGS)
-	- echo $(CFLAGS) | $(W32_BIN2C) -          > build\visualc\32bit\debug\cflagsbf.h
-
-build\visualc\64bit\release\cflagsbf.h: $(C_ARGS)
-	- echo $(CFLAGS) | $(W32_BIN2C) -          > build\visualc\64bit\release\cflagsbf.h
-
-build\visualc\64bit\debug\cflagsbf.h: $(C_ARGS)
-	- echo $(CFLAGS) | $(W32_BIN2C) -          > build\visualc\64bit\debug\cflagsbf.h
 
 @ifdef WATCOM
 build\watcom\small\cflagsbf.h: $(C_ARGS)
