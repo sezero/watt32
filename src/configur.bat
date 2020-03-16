@@ -65,7 +65,6 @@ if %1.==cygwin.   goto cygwin32
 if %1.==cygwin32. goto cygwin32
 if %1.==cygwin64. goto cygwin64
 if %1.==djgpp.    goto djgpp
-if %1.==digmars.  goto digmars
 if %1.==ladsoft.  goto ladsoft
 if %1.==lcc.      goto lcc
 if %1.==pellesc.  goto pellesc
@@ -114,7 +113,11 @@ echo neterr.c: build\watcom\syserr.c >> build\watcom\watt32.dep
 %WC_ERR% -e > ..\inc\sys\watcom.err
 
 echo Run wmake to make target(s):
-echo   E.g. "wmake -f watcom_l.mak" for large model
+echo E.g. "wmake -f watcom_l.mak" for large model
+echo      "wmake -f watcom_l.mak" for large model
+echo      "wmake -f watcom_f.mak" for flat model
+echo      "wmake -f watcom_x.mak" for flat/X32VM model
+echo      "wmake -f watcom_w.mak" for Win32
 goto next
 
 ::--------------------------------------------------------------------------
@@ -147,25 +150,6 @@ echo neterr.c: build\ladsoft\syserr.c >> build\ladsoft\watt32.dep
 
 echo Run a Borland compatible make to make target:
 echo   "maker -f ladsoft.mak"
-goto next
-
-::--------------------------------------------------------------------------
-:digmars
-::
-echo Generating Digital Mars makefiles, directories, errnos and dependencies
-%MKMAKE% -o dmars_s.mak -d build\digmars\small makefile.all DIGMARS SMALL
-%MKMAKE% -o dmars_l.mak -d build\digmars\large makefile.all DIGMARS LARGE
-%MKMAKE% -o dmars_x.mak -d build\digmars\x32vm makefile.all DIGMARS FLAT X32VM
-%MKMAKE% -o dmars_p.mak -d build\digmars\phar  makefile.all DIGMARS FLAT PHARLAP
-%MKMAKE% -o dmars_w.mak -d build\digmars\win32 makefile.all DIGMARS WIN32
-%MKDEP%  -s.obj -p$(OBJDIR)\ *.c *.h    > build\digmars\watt32.dep
-echo neterr.c : build\digmars\syserr.c >> build\digmars\watt32.dep
-
-..\util\dm_err -s > build\digmars\syserr.c
-..\util\dm_err -e > ..\inc\sys\digmars.err
-
-echo Run make to make target(s):
-echo   E.g. "maker -f dmars_l.mak" for large model
 goto next
 
 ::--------------------------------------------------------------------------
@@ -270,8 +254,8 @@ goto next
 :pellesc
 ::
 echo Generating PellesC makefile, directory, errnos and dependencies
-%MKMAKE% -o pellesc.mak    -d build\pellesc\32bit makefile.all PELLESC WIN32
-%MKMAKE% -o pellesc_64.mak -d build\pellesc\64bit makefile.all PELLESC WIN64
+%MKMAKE% -o pellesc32.mak -d build\pellesc\32bit makefile.all PELLESC WIN32
+%MKMAKE% -o pellesc64.mak -d build\pellesc\64bit makefile.all PELLESC WIN64
 %MKDEP%  -s.obj -p$(OBJDIR)\ *.c *.h   > build\pellesc\watt32.dep
 echo neterr.c: build\pellesc\syserr.c >> build\pellesc\watt32.dep
 
@@ -279,8 +263,8 @@ echo neterr.c: build\pellesc\syserr.c >> build\pellesc\watt32.dep
 ..\util\po_err -e > ..\inc\sys\pellesc.err
 
 echo Run pomake to make targets:
-echo   E.g. "pomake -f pellesc.mak"
-echo   E.g. "pomake -f pellesc_64.mak"
+echo   E.g. "pomake -f pellesc32.mak"
+echo   E.g. "pomake -f pellesc64.mak"
 goto next
 
 
@@ -328,7 +312,7 @@ echo Unknown option '%1'.
 :usage
 ::
 echo Configuring Watt-32 tcp/ip targets.
-echo Usage: %0 {borland, clang, cygwin, digmars, djgpp, highc, ladsoft,
+echo Usage: %0 {borland, clang, cygwin, djgpp, highc, ladsoft,
 echo                      mingw32, mingw64, pellesc, visualc, watcom, all, clean}
 goto quit
 
@@ -339,7 +323,6 @@ del djgpp.mak
 del watcom_*.mak
 del bcc_*.mak
 del highc.mak
-del dmars_*.mak
 del ladsoft.mak
 del visualc-release_32.mak
 del visualc-debug_32.mak
@@ -351,8 +334,8 @@ del MinGW64_64.mak
 del CygWin32.mak
 del CygWin64.mak
 del watcom_w.mak
-del pellesc.mak
-del pellesc_64.mak
+del pellesc32.mak
+del pellesc64.mak
 del highc.mak
 del lcc.mak
 del clang-release_32.mak
@@ -362,7 +345,6 @@ del clang-debug_64.mak
 del build\djgpp\watt32.dep
 del build\borland\watt32.dep
 del build\highc\watt32.dep
-del build\digmars\watt32.dep
 del build\ladsoft\watt32.dep
 del build\visualc\watt32.dep
 del build\MinGW32\watt32.dep
@@ -379,7 +361,6 @@ del build\djgpp\syserr.c
 del build\watcom\syserr.c
 del build\borland\syserr.c
 del build\highc\syserr.c
-del build\digmars\syserr.c
 del build\ladsoft\syserr.c
 del build\visualc\syserr.c
 del build\MinGW32\syserr.c
@@ -393,7 +374,6 @@ del ..\inc\sys\djgpp.err
 del ..\inc\sys\watcom.err
 del ..\inc\sys\borlandc.err
 del ..\inc\sys\highc.err
-del ..\inc\sys\digmars.err
 del ..\inc\sys\ladsoft.err
 del ..\inc\sys\visualc.err
 del ..\inc\sys\mingw32.err
@@ -410,7 +390,6 @@ goto next
 call %0 borland   %2
 call %0 watcom    %2
 call %0 djgpp     %2
-call %0 digmars   %2
 call %0 ladsoft   %2
 call %0 visualc   %2
 call %0 mingw32   %2
