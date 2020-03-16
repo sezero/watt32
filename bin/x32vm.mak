@@ -1,17 +1,23 @@
 #
-#  Makefile for Waterloo TCP sample applications
+#  A 'wmake' makefile for Waterloo TCP sample applications
 #
 #  Watcom386/X32VM executables.
 #
+SYSTEM = x32vm
+SYSTEM = x32sv
 
-.EXTENSIONS:
-.EXTENSIONS: .exe .obj .c
-
-COMPILE = *wcc386 -mf -3r -w5 -d2 -zq -zm -of -I..\inc -fr=nul -bt=dos
+COMPILE = *wcc386 -mf -3s -w5 -d2 -zq -zm -of -I..\inc -fr=nul -bt=dos
 LINK    = *wlink option quiet, map, verbose, eliminate, caseexact, stack=50k &
-             debug all system x32vm option stub=$(DIGMARS)\lib\zlx.lod
+             debug all system $(SYSTEM)
 
-LIBRARY = library ..\lib\wattcpwf.lib, $(DIGMARS)\lib\x32.lib
+LINK    += option stub=$(%DIGMARS)\lib\zlx.lod
+
+COMPILE += -D_NEED__x32_stacksize
+
+#
+# Allthough 'Digital Mars' is no longer supported, it's 'x32.lib' is needed here.
+#
+LIBRARY = library ..\lib\wattcpwf.lib, $(%DIGMARS)\lib\x32.lib
 
 PROGS = ping.exe    popdump.exe rexec.exe   tcpinfo.exe cookie.exe  &
         daytime.exe dayserv.exe finger.exe  host.exe    lpq.exe     &
@@ -20,15 +26,19 @@ PROGS = ping.exe    popdump.exe rexec.exe   tcpinfo.exe cookie.exe  &
         blather.exe lister.exe
 
 
-all:  $(PROGS)
-      @echo Watcom386/X32VM binaries done
+all: $(PROGS) .SYMBOLIC
+     @echo Watcom386/X32VM binaries done
 
 .c.exe: .PRECIOUS
-      $(COMPILE) $*.c
-      $(LINK) name $*.exe file $*.obj $(LIBRARY)
+     $(COMPILE) $*.c
+     $(COMPILE) x32_stk.c
+     $(LINK) name $*.exe file $*.obj, x32_stk.obj $(LIBRARY)
 
-clean:
-      @del *.obj
-      @del *.map
+clean: .SYMBOLIC
+     - rm -f *.obj
+     - rm -f $(PROGS:.exe=.map)
+
+vclean: clean .SYMBOLIC
+     - rm -f $(PROGS)
 
 
