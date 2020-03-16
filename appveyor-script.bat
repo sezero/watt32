@@ -129,7 +129,7 @@ if %BUILDER%. == visualc. (
 if %BUILDER%. == clang. (
   call configur.bat clang
   echo Building for %CPU%
-  make -f clang%BITS%.mak
+  make -f clang-release_%BITS%.mak
   exit /b
 )
 
