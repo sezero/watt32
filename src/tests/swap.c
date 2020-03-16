@@ -74,7 +74,6 @@ __declspec(naked) static unsigned long cdecl naked_fastcall_one (unsigned long x
 }
 
 #elif defined(_MSC_VER) && defined(_M_X64)
-
 static W32_INLINE unsigned long cdecl naked_cdecl_one (unsigned long x)
 {
   return ntohl(x);
@@ -130,36 +129,50 @@ static __inline unsigned long cdecl naked_fastcall_one (unsigned long x)
 {
   return ntohl(x);
 }
+
+#elif defined(__WATCOMC__) && defined(__386__)
+static W32_INLINE unsigned long cdecl naked_cdecl_one (unsigned long x)
+{
+  return ntohl(x);
+}
+
+static W32_INLINE unsigned long cdecl naked_fastcall_one (unsigned long x)
+{
+  return ntohl(x);
+}
 #endif
 
-void simple_cdecl_ntohl (const void *buf, size_t max)
+int simple_cdecl_ntohl (const void *buf, size_t max)
 {
   unsigned long *val = (unsigned long*)buf;
   size_t   i;
 
   for (i = 0; i < max; i++)
       simple_cdecl_one (*val++);
+  return (1);
 }
 
-void naked_cdecl_ntohl (const void *buf, size_t max)
+int naked_cdecl_ntohl (const void *buf, size_t max)
 {
   unsigned long *val = (unsigned long*)buf;
   size_t   i;
 
   for (i = 0; i < max; i++)
       naked_cdecl_one (*val++);
+  return (1);
 }
 
-void naked_fastcall_ntohl (const void *buf, size_t max)
+int naked_fastcall_ntohl (const void *buf, size_t max)
 {
   unsigned long *val = (unsigned long*)buf;
   size_t   i;
 
   for (i = 0; i < max; i++)
       naked_fastcall_one (*val++);
+  return (1);
 }
 
-void intrin_byteswap (const void *buf, size_t max)
+int intrin_byteswap (const void *buf, size_t max)
 {
   unsigned long *val = (unsigned long*)buf;
   size_t   i;
@@ -167,12 +180,16 @@ void intrin_byteswap (const void *buf, size_t max)
 #if defined(_MSC_VER)
   for (i = 0; i < max; i++)
      _byteswap_ulong (*val++);
+  return (1);
 #elif defined(__MINGW32__) || defined(__CYGWIN__)
   for (i = 0; i < max; i++)
      __bswapd (*val++);
+  return (1);
 #else
+  printf ("%s() not available for %s.", __FUNCTION__, wattcpBuildCC());
   (void) i;
   (void) max;
+  return (0);
 #endif
 }
 
@@ -232,7 +249,8 @@ void test_swap_speed (const char *buf)
   start64 = get_rdtsc();
 
   for (i = 0; i < loops; i++)
-      intrin_byteswap (buf, swap_size/4);
+      if (!intrin_byteswap (buf, swap_size/4))
+         return;
 
   gettimeofday2 (&now, NULL);
   printf ("time ....%.6fs %s\n",

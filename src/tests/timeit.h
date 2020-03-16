@@ -6,12 +6,21 @@
 #include <signal.h>
 #include <setjmp.h>
 
+/*
+ * Do not assume <wattcp.h> was included to define 'uint64'.
+ */
 #if defined(__GNUC__)
   #define uint64 unsigned long long
   #define GCC_INLINE extern __inline__ __attribute__ ((__gnu_inline__))
 
 #elif defined(_MSC_VER)
   #define uint64 unsigned __int64
+
+#elif defined(__WATCOMC__) && defined(__WATCOM_INT64__) && !(defined(__SMALL__) || defined(__LARGE__))
+  #define uint64 unsigned __int64
+
+#else
+  #error "No 'uint64' for this target!?"
 #endif
 
 #if defined(__GNUC__) && defined(__i386__) && !defined(__NO_INLINE__)  /* -O0 */
@@ -175,24 +184,28 @@
   #endif
 #endif
 
-#define TIME_IT(func, args, loops)                      \
-    do {                                                \
-      uint64 x, T = _get_rdtsc();                       \
-      int    i, flen = strlen (#func);                  \
-                                                        \
-      printf ("Timing %s()", #func);                    \
-      for (i = 0; i < 27-flen; i++)                     \
-         putchar ('.');                                 \
-      fflush (stdout);                                  \
-      check_invd();                                     \
-      for (i = 0; i < (int)loops; i++)                  \
-          func args;                                    \
-      x = (_get_rdtsc() - T) / loops;                   \
-      if (x > 1000ULL)                                  \
-           printf (" %8" S64_FMT ".%03u clocks/loop\n", \
-                   x/1000ULL, (unsigned)(x % 1000ULL)); \
-      else printf (" %12" S64_FMT " clocks/loop\n", x); \
-    }                                                   \
+#define TIME_IT(func, args, loops)                        \
+    do {                                                  \
+      uint64 x, T = _get_rdtsc();                         \
+      int    i, _okay = 0, flen = strlen (#func);         \
+                                                          \
+      printf ("Timing %s()", #func);                      \
+      for (i = 0; i < 27-flen; i++)                       \
+          putchar ('.');                                  \
+      fflush (stdout);                                    \
+      check_invd();                                       \
+      for (i = 0; i < (int)loops; i++)                    \
+          if (!func args)                            \
+             break;                                       \
+      _okay = (i == (int)loops);                          \
+      x = (_get_rdtsc() - T) / loops;                     \
+      if (_okay) {                                        \
+        if (x > 1000ULL)                                  \
+             printf (" %8" S64_FMT ".%03u clocks/loop\n", \
+                     x/1000ULL, (unsigned)(x % 1000ULL)); \
+        else printf (" %12" S64_FMT " clocks/loop\n", x); \
+      }                                                   \
+    }                                                     \
     while (0)
 
 #endif  /* __TIMEIT_H */
