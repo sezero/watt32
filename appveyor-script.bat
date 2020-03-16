@@ -65,6 +65,11 @@ set NT_INCLUDE=%WATCOM%\h;%WATCOM%\h\nt
 set PATH=%PATH%;%WATCOM%\binnt
 
 ::
+:: Append the PATH to 'clang-cl'
+::
+set PATH=%PATH%;c:\Program Files\LLVM\bin
+
+::
 :: In case my curl was built with Wsock-Trace
 ::
 set WSOCK_TRACE_LEVEL=0
