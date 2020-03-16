@@ -15,9 +15,9 @@ environment:
 #     CPU:     x86
     - BUILDER: clang
       CPU:     x64
-    - BUILDER: mingw
+    - BUILDER: mingw64
       CPU:     x86
-    - BUILDER: mingw
+    - BUILDER: mingw64
       CPU:     x64
     - BUILDER: djgpp
       CPU:     x86
