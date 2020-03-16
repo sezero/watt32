@@ -599,7 +599,7 @@ static int tcp_do_bootp (BOOL try_bootp, BOOL try_dhcp, BOOL try_rarp)
     if (!survive_bootp)
        return (WERR_BOOTP_FAIL);
 #else
-    outsnl ("BOOTP needed, but library wasn't built with \"USE_BOOTP\"");
+    outsnl ("BOOTP needed, but library was not built with \"USE_BOOTP\"");
 #endif
 
 #if defined(USE_DHCP)
@@ -621,7 +621,7 @@ static int tcp_do_bootp (BOOL try_bootp, BOOL try_dhcp, BOOL try_rarp)
     if (!survive_dhcp)
        return (WERR_DHCP_FAIL);
 #else
-    outsnl ("DHCP needed, but library wasn't built with \"USE_DHCP\"");
+    outsnl ("DHCP needed, but library was not built with \"USE_DHCP\"");
 #endif
 
 #if defined(USE_RARP)
@@ -639,7 +639,7 @@ static int tcp_do_bootp (BOOL try_bootp, BOOL try_dhcp, BOOL try_rarp)
     if (!survive_rarp)
        return (WERR_RARP_FAIL);
 #else
-    outsnl ("RARP needed, but library wasn't built with \"USE_RARP\"");
+    outsnl ("RARP needed, but library was not built with \"USE_RARP\"");
 #endif
   }
   return (WERR_NO_IPADDR);  /* all attempts failed */
@@ -1161,17 +1161,6 @@ void W32_CALL sock_sig_exit (const char *msg, int sig)
     #pragma comment (library, "wattcpML.lib")
   #elif defined(__386__)
     #pragma comment (library, "wattcpMF.lib")
-  #endif
-
-#elif defined(__DMC__) && 0
-  #if defined(WIN32)
-    #pragma comment (lib, "wattcpd_imp.lib")
-  #elif defined(__SMALL32__)
-    #pragma comment (lib, "wattcpDF.lib")
-  #elif defined(__SMALL__)
-    #pragma comment (lib, "wattcpDS.lib")
-  #elif defined(__LARGE__)
-    #pragma comment (lib, "wattcpDL.lib")
   #endif
 #endif
 

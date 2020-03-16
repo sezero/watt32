@@ -40,7 +40,7 @@ DWORD _bootp_host = IP_BCAST_ADDR;
   int _bootp_timeout = 30;
 #endif
 
-#if defined(USE_BOOTP)
+#if defined(USE_BOOTP)  /* Rest of file */
 
 static sock_type *boot_sock;
 
