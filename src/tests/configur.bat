@@ -10,7 +10,8 @@ if %1. == djgpp. goto start
 if %1.==mingw32.  goto mingw32
 if %1.==mingw64.  goto mingw64
 if %1.==mingw.    goto mingw64
-if %1.==cygwin.   goto cygwin
+if %1.==cygwin.   goto cygwin32
+if %1.==cygwin32. goto cygwin32
 if %1.==cygwin64. goto cygwin64
 if %1.==djgpp.    goto djgpp
 if %1.==highc.    goto highc
@@ -48,23 +49,23 @@ echo   make -f MinGW64_64.mak
 goto next
 
 ::--------------------------------------------------------------------------
-:cygwin
+:cygwin32
 ::
-echo Generating CygWin makefile, directory and dependencies
-%MKMAKE% -o CygWin.mak makefile.all CYGWIN WIN32 IS_GCC
+echo Generating CygWin32 makefile, directory and dependencies
+%MKMAKE% -o CygWin32.mak makefile.all CYGWIN32 WIN32 IS_GCC
 
 echo Run GNU make to make target:
-echo   make -f CygWin.mak
+echo   make -f CygWin32.mak
 goto next
 
 ::--------------------------------------------------------------------------
 :cygwin64
 ::
-echo Generating CygWin-64 makefile, directory and dependencies
-%MKMAKE% -o CygWin_64.mak makefile.all CYGWIN64 WIN64 IS_GCC
+echo Generating CygWin64 makefile, directory and dependencies
+%MKMAKE% -o CygWin64.mak makefile.all CYGWIN64 WIN64 IS_GCC
 
 echo Run GNU make to make target:
-echo   make -f CygWin_64.mak
+echo   make -f CygWin64.mak
 goto next
 
 ::--------------------------------------------------------------------------
@@ -155,7 +156,7 @@ echo Unknown option '%1'.
 :usage
 ::
 echo Configuring Watt-32 tcp/ip targets.
-echo Usage: %0 {watcom, borland, highc, djgpp, mingw32, mingw64, cygwin, cygwin64, visualc, clang, all, clean}
+echo Usage: %0 {watcom, borland, highc, djgpp, mingw32, mingw64, cygwin32, cygwin64, visualc, clang, all, clean}
 goto quit
 
 ::--------------------------------------------------------------------------
@@ -163,15 +164,11 @@ goto quit
 ::
 del djgpp.mak
 del highc.mak
-del clang_32.mak
-del clang_64.mak
-del visualc_32.mak
-del visualc_64.mak
-del MinGW64_32.mak
-del MinGW64_64.mak
+del clang_32.mak   clang_64.mak
+del visualc_32.mak visualc_64.mak
+del MinGW64_32.mak MinGW64_64.mak
 del MinGW32.mak
-del CygWin.mak
-del CygWin_64.mak
+del CygWin32.mak   CygWin64.mak
 del watcom_?.mak
 del bcc_?.mak
 goto next
@@ -179,13 +176,12 @@ goto next
 ::------------------------------------------------------------
 :all
 ::
-call %0 watcom   %2
 call %0 djgpp    %2
 call %0 clang    %2
 call %0 visualc  %2
 call %0 mingw32  %2
 call %0 mingw64  %2
-call %0 cygwin   %2
+call %0 cygwin32 %2
 call %0 cygwin64 %2
 call %0 watcom   %2
 call %0 borland  %2

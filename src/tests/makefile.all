@@ -1,15 +1,15 @@
-@ifndef CYGWIN CYGWIN64 DJGPP HIGHC MINGW32 MINGW64 VISUALC WATCOM BORLAND CLANG
+@ifndef SMALL LARGE FLAT WIN32 WIN64
 
-  This is a master makefile that will generate all ./test GNU-makefiles.
-  Currently supported compilers include:
+ This is a master makefile that will generate all ./test GNU-makefiles.
+ Currently supported compilers include:
 
-     CYGWIN, CYGWIN64, DJGPP, HIGHC, MINGW32, MINGW64, VISUALC, WATCOM, BORLAND, CLANG
+    CYGWIN32, CYGWIN64, DJGPP, HIGHC, MINGW32, MINGW64, VISUALC, WATCOM, BORLAND, CLANG
 
-  Supported memory models and targets include:
+ Supported memory models and targets include:
 
-     SMALL, LARGE, FLAT, WIN32, WIN64
+    SMALL, LARGE, FLAT, WIN32, WIN64
 
-@else
+@endif
 #
 # NB! THIS MAKEFILE WAS AUTOMATICALLY GENERATED FROM ./src/tests/Makefile.all.
 #     DO NOT EDIT. Edit Makefile.all and run "configur.bat" <target>.
@@ -73,7 +73,7 @@ ifeq ($(USE_IPV6),1)
   PROGRAMS += get_ai.$(EXE) get_ni.$(EXE) gethost6.$(EXE) presaddr.$(EXE)
 endif
 
-@ifdef DJGPP WATCOM HIGHC BORLAND
+@ifdef DJGPP HIGHC BORLAND
   PROGRAMS += oldstuff.$(EXE) ttime2.$(EXE)
 @endif
 
@@ -150,7 +150,11 @@ CFLAGS = -DTEST_PROG -DWATT32 -DWATT32_STATIC -I.. -I../../inc
     @endif
   @endif
 @else
-  LIB_DIR = ../../lib
+  @ifdef WATCOM
+    LIB_DIR = ..\..\lib
+  @else
+    LIB_DIR = ../../lib
+  @endif
 @endif
 
 @ifdef MINGW32
@@ -160,8 +164,11 @@ CFLAGS = -DTEST_PROG -DWATT32 -DWATT32_STATIC -I.. -I../../inc
 @elifdef MINGW64
   WATT_LIB = $(LIB_DIR)/libwatt32.a
 
-@elifdef CYGWIN CYGWIN64
-  WATT_LIB = $(LIB_DIR)/libwatt32-cygwin.a
+@elifdef CYGWIN32
+  WATT_LIB = $(LIB_DIR)/x86/libwatt32-cygwin.a
+
+@elifdef CYGWIN64
+  WATT_LIB = $(LIB_DIR)/x64/libwatt32-cygwin.a
 
 @elifdef DJGPP
   WATT_LIB = $(LIB_DIR)/libwatt.a
@@ -180,10 +187,19 @@ CFLAGS = -DTEST_PROG -DWATT32 -DWATT32_STATIC -I.. -I../../inc
   export CL=
 
   CC = clang-cl
+  CFLAGS += -Wno-unused-function -Wno-unused-variable -Wno-unused-value
   WATT_LIB = $(LIB_DIR)/wattcp_clang.lib
 
 @elifdef WATCOM
-  WATT_LIB = $(LIB_DIR)/wattcpwc.lib
+  @ifdef SMALL
+    WATT_LIB = $(LIB_DIR)\wattcpws.lib
+  @elifdef LARGE
+    WATT_LIB = $(LIB_DIR)\wattcpwl.lib
+  @elifdef FLAT
+    WATT_LIB = $(LIB_DIR)\wattcpwf.lib
+  @elifdef WIN32
+    WATT_LIB = $(LIB_DIR)\wattcpww.lib
+  @endif
 
 @elifdef BORLAND
   @ifdef FLAT
@@ -194,7 +210,7 @@ CFLAGS = -DTEST_PROG -DWATT32 -DWATT32_STATIC -I.. -I../../inc
 @endif
 
 
-@ifdef CYGWIN CYGWIN64
+@ifdef CYGWIN32 CYGWIN64
   CC      = gcc
   CFLAGS += -static-libgcc
 
@@ -247,34 +263,53 @@ CFLAGS = -DTEST_PROG -DWATT32 -DWATT32_STATIC -I.. -I../../inc
   endef
 
 @elifdef WATCOM
+  LDFLAGS = option quiet, map, eliminate, caseexact
+
   @ifdef SMALL
     CC       = wcc
-    CFLAGS += -ms -0 -os -zc -s -bt=dos
+    CFLAGS  += -ms -0 -os -zc -s -bt=dos
+    LDFLAGS += system dos
 
   @elifdef LARGE
-    CC      = wcc
-    CFLAGS += -ml -0 -os -zc -s -bt=dos
+    CC       = wcc
+    CFLAGS  += -ml -0 -os -zc -s -bt=dos
+    LDFLAGS += system dos
 
   @elifdef FLAT
     #
     # The '-3x' MUST match what 'wattcpwf.lib' was built with.
     #
-    CC      = wcc386
-    CFLAGS += -mf -3r -zff -zgf -zm -s -bt=dos -oilrtfm
+    CC       = wcc
+    CFLAGS  += -mf -3r -zff -zgf -zm -s -bt=dos -oilrtfm
+    LDFLAGS += system dos
 
   @elifdef WIN32
     #
-    # The '-3x' MUST match what 'wattcpw_imp.lib' was built with.
+    # The '-3r/-3s' MUST match what '$(WATT_LIB)' was built with.
     #
     CC       = wcc386
-    CFLAGS  += -mf -3s -zm -zw -bd -bm -d3 -bt=nt -oilrtfm
-    LDFLAGS += system nt dll
+    CFLAGS  += -bt=nt -3s -w6 -d2 -zq -zc -zm -fr=nul -DWIN32
+    LDFLAGS += system nt
 
   @else
     $(error Unknown WATCOM model. Only 'SMALL', 'LARGE', 'FLAT' and 'WIN32'.)
   @endif
 
-  CFLAGS += -zq -fr=nul -wx -fpi
+  LDFLAGS += debug all sort global
+  CFLAGS  += -I..\..\inc -I$(WATCOM)\h
+
+  #
+  # Watcom does not like '/' in it's arguments.
+  # 'wlink' generates this:
+  #   Error! E2030: file clib3s.lib(dstrt386): multiple starting addresses found, already defined in clib3s.lib(cstrtwnt)
+  #
+  # But the .exe-file seems to run fine.
+  #
+  define compile_and_link
+    $(CC) $(subst /,\,$(CFLAGS)) $(subst /,\,$(2))
+    wlink $(LDFLAGS) library $(WATT_LIB) name $(1) file $(notdir $(2:.c=.obj))
+    echo
+  endef
 
 @elifdef BORLAND
   CC = bcc32
@@ -310,9 +345,9 @@ wecho.$(EXE): ../echo.c $(WATT_LIB)
 	$(call compile_and_link, $@, $<)
 
 clean realclean vclean:
-	rm -f $(PROGRAMS) $(PROGRAMS:.$(EXE)=.map) echo.obj listen.obj
+	rm -f $(PROGRAMS) $(PROGRAMS:.exe=.obj) $(PROGRAMS:.$(EXE)=.map) echo.obj listen.obj
 @ifdef VISUALC CLANG
-	rm -f $(PROGRAMS:.$(EXE)=.pdb) vc1*.pdb
+	rm -f $(PROGRAMS:.$(EXE)=.pdb) link.tmp vc1*.pdb
 @endif
 	@echo 'Cleaning done.'
 
@@ -516,5 +551,4 @@ wecho.$(EXE): $(addprefix ../, \
                 echo.c wattcp.h strings.h pcconfig.h pctcp.h pcdbug.h misc.h \
                 run.h netaddr.h echo.h) $(WATT_LIB)
 
-@endif
 
