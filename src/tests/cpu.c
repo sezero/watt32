@@ -383,15 +383,36 @@ void print_cpuid_info (void)
 }
 
 /*
- * https://software.intel.com/en-us/articles/intel-digital-random-number-generator-drng-software-implementation-guide?wapkw=rng
+ * [1] https://software.intel.com/en-us/articles/intel-digital-random-number-generator-drng-software-implementation-guide?wapkw=rng
  */
 #define DRNG_HAS_RDRAND 0x1
 #define DRNG_HAS_RDSEED 0x2
 
+/*
+ * Try this inline asm-snippet from [1] with Clang-cl too.
+ */
+#if defined(__GNUC__) || defined(__clang__)
+  int get_rdrand32 (DWORD *rand)
+  {
+    unsigned char ok;
+    __asm__ volatile ("rdrand %0; setc %1"
+        : "=r" (*rand), "=qm" (ok));
+    return (int) ok;
+  }
+
+#elif defined(_MSC_VER)
+  int get_rdrand32 (DWORD *rand)
+  {
+    return _rdrand32_step (rand);
+  }
+#else
+  #define get_rdrand32(val_p) FALSE
+#endif
+
 void get_DRND_info (void)
 {
   DWORD eax, ebx, ecx, edx;
-  int rc = 0;
+  int i, rc = 0;
 
   get_cpuid (1, &eax, &ebx, &ecx, &edx);
   if ((ecx & 0x40000000) == 0x40000000)
@@ -403,8 +424,18 @@ void get_DRND_info (void)
      rc |= DRNG_HAS_RDSEED;
 
   puts ("");
-  printf ("Have DRAND: %s\n", rc & DRNG_HAS_RDRAND ? "Yes" : "No");
-  printf ("Have RSEED: %s\n", rc & DRNG_HAS_RDSEED ? "Yes" : "No");
+  printf ("Have RDRAND: %s\n", rc & DRNG_HAS_RDRAND ? "Yes" : "No");
+  printf ("Have RSEED:  %s\n", rc & DRNG_HAS_RDSEED ? "Yes" : "No");
+
+  /* Try the RDRAND instruction a few times.
+   */
+  if (rc & DRNG_HAS_RDRAND)
+     for (i = 0; i < 5; i++)
+     {
+       DWORD val = 0;
+       BOOL  ok = get_rdrand32 (&val);
+       printf ("  RDRAND: %10lu %s\n", val, ok ? "OK" : "FAIL");
+     }
 }
 
 void print_misc_regs (void)
