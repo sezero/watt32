@@ -23,12 +23,6 @@ if %APPVEYOR_PROJECT_NAME%. == . (
 
 echo Doing '%1' for BUILDER=%BUILDER%.
 
-
-::
-:: Some weird issue with a Appveyor run and 'BUILDER == watcom'.
-::
-:: if %BUILDER%. == watcom. echo on
-
 ::
 :: Stuff common to '[build_src | build_bin | build_tests]'
 ::
@@ -114,7 +108,7 @@ set BITS=32
 if %CPU%. == x64. set BITS=64
 
 if %USES_CL%. == 1. (
-  echo Generating src\oui-generated.c
+  echo Generating src\oui-generated.c.
   python.exe make-oui.py > oui-generated.c
   if ERRORLEVEL 0 set CL=-DHAVE_OUI_GENERATATED_C
   echo --------------------------------------------------------------------------------------------------
@@ -122,28 +116,35 @@ if %USES_CL%. == 1. (
 
 if %BUILDER%. == visualc. (
   call configur.bat visualc
-  echo Building release for %CPU%
+  echo Building release for %CPU%.
   nmake -nologo -f visualc-release_%BITS%.mak
   exit /b
 )
 
 if %BUILDER%. == clang. (
   call configur.bat clang
-  echo Building for %CPU%
+  echo Building for %CPU%.
   make -f clang-release_%BITS%.mak
+  exit /b
+)
+
+if %BUILDER%. == mingw32. (
+  call configur.bat mingw32
+  echo Building for x86 only.
+  make -f MinGW32.mak
   exit /b
 )
 
 if %BUILDER%. == mingw64. (
   call configur.bat mingw64
-  echo Building for %CPU%
+  echo Building for %CPU%.
   make -f MinGW64_%BITS%.mak
   exit /b
 )
 
 if %BUILDER%. == djgpp. (
   if not exist %DJGPP%\bin\i586-pc-msdosdjgpp-gcc.exe (
-    echo Downloading Andrew Wu's DJGPP cross compiler
+    echo Downloading Andrew Wu's DJGPP cross compiler.
     curl -O -# http://www.watt-32.net/CI/dj-win.zip
     if not errorlevel == 0 (
       echo The curl download of http://www.watt-32.net/CI/dj-win.zip failed!
@@ -153,7 +154,7 @@ if %BUILDER%. == djgpp. (
     rm -f dj-win.zip
   )
   call configur.bat djgpp
-  echo Building for djgpp
+  echo Building for djgpp.
   make -f djgpp.mak
   exit /b
 )
@@ -161,7 +162,7 @@ if %BUILDER%. == djgpp. (
 if %BUILDER%. == watcom. (
   if not exist %WATCOM%\binnt\wmake.exe (
     mkdir %WATCOM%
-    echo Downloading OpenWatcom 2.0
+    echo Downloading OpenWatcom 2.0.
     curl -o %WATCOM_ZIP% -# http://www.watt-32.net/CI/watcom20.zip
     if not errorlevel == 0 (
       echo The curl download of http://www.watt-32.net/CI/watcom20.zip failed!
@@ -170,7 +171,7 @@ if %BUILDER%. == watcom. (
     7z x -y -o%WATCOM% %WATCOM_ZIP% > NUL
   )
   call configur.bat watcom
-  echo Building for Watcom/Win32
+  echo Building for Watcom/Win32.
   wmake -f watcom_w.mak
   exit /b
 )
