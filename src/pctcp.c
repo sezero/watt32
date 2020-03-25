@@ -1057,7 +1057,7 @@ _udp_Socket *_udp_handler (const in_Header *ip, BOOL broadcast)
   const BYTE       *data;
   const udp_Header *udp = NULL;
 
-  SIO_TRACE (("_udp_handler"));
+  TCP_TRACE_MSG (("_udp_handler\n"));
 
   if (is_ip4)
   {
@@ -1179,6 +1179,11 @@ _udp_Socket *_udp_handler (const in_Header *ip, BOOL broadcast)
    */
   data = (const BYTE*) (udp+1);
   len -= sizeof(*udp);
+
+  /* Figure out the pcdhcp.c problems
+   */
+  if (udp->srcPort == 67 || udp->dstPort == 67)
+     TCP_CONSOLE_MSG (1, ("DHCP-data len: %d\n", len));
 
   if (s->protoHandler)
   {

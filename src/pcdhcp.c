@@ -660,6 +660,11 @@ static int DHCP_offer (const struct dhcp *in)
            TRACE (("got end-option\n"));
            return (got_offer);
 
+      case DHCP_OPT_BROADCAST_ADDR:
+           ip = intel (*(DWORD*)(opt+2));
+           TRACE (("Ignoring option BROADCAST_ADDR: %s\n", INET_NTOA(ip)));
+           break;
+
       default:
            TRACE (("Ignoring option %d\n", *opt));
            break;
@@ -698,6 +703,21 @@ static int DHCP_is_nack (void)
 
   return (opt[0] == DHCP_OPT_MSG_TYPE && opt[1] == 1 && opt[2] == DHCP_NAK);
 }
+
+/*
+ * A callback for ICMP-messages.
+ * Does nothing yet.
+ */
+static int W32_CALL DHCP_icmp_callback (void *s, BYTE icmp_type, BYTE icmp_code)
+{
+  TRACE (("DHCP_icmp_callback(): icmp_type: %d, icmp_code: %d \n", icmp_type, icmp_code));
+
+  ARGSUSED (s);
+  ARGSUSED (icmp_type);
+  ARGSUSED (icmp_code);
+  return (0);
+}
+
 
 /**
  * Possibly send a DHCP release.
@@ -773,8 +793,12 @@ static sock_type *dhcp_open (const char *msg, BOOL use_broadcast)
     free (sock);
     sock = NULL;
   }
-  TRACE (("DHCP open: bc(%d) srvr(%s)\n",
+  TRACE (("DHCP open: brdcast(%d) srvr(%s)\n",
           use_broadcast, INET_NTOA(dhcp_server)));
+
+  if (sock)
+     sock->icmp_callb = DHCP_icmp_callback;
+
   return (sock_type*)sock;   /* sock is free'd in DHCP_exit() */
 }
 
@@ -995,6 +1019,10 @@ static void DHCP_state_REBOOTING (int event)
  */
 static void W32_CALL dhcp_fsm (void)
 {
+  printf ("In %s(): send_timeout: %lu, state: %s\n", __FUNCTION__, send_timeout, state_name());
+
+  WATT_YIELD();
+
   if (sock_dataready(sock))
   {
     int len = sock_fastread (sock, (BYTE*)&dhcp_in, sizeof(dhcp_in));
@@ -1023,7 +1051,7 @@ static void W32_CALL dhcp_fsm (void)
     }
   }
 
-  if (chk_timeout(send_timeout))
+  if (send_timeout == (DWORD)-1 || chk_timeout(send_timeout))
   {
     send_timeout = 0UL;
     TRACE (("%s/SEND_TIMEOUT: ", state_name()));
@@ -1080,9 +1108,15 @@ int DHCP_do_boot (void)
   erase_config();           /* delete old configuration */
   DAEMON_ADD (dhcp_fsm);    /* add "background" daemon */
 
-  /* kick start DISCOVER message
+#if 0
+  /* kick start DISCOVER message after 100 msec.
    */
   send_timeout = set_timeout (100);
+#else
+  /* kick start DISCOVER message now please
+   */
+  send_timeout = (DWORD)-1;
+#endif
 
   if (DHCP_state != DHCP_state_RENEWING &&
       DHCP_state != DHCP_state_REBINDING)
