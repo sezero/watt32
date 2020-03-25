@@ -485,7 +485,7 @@ MAKEFIL = watcom_l.mak
 
 @elifdef FLAT
 CC      = wcc386
-CFLAGS  = -mf -3s -zff -zgf -zm -s -bt=dos -oilrtfm # -I$(%PHARLAP)\include
+CFLAGS  = -mf -3r -zff -zgf -zm -s -bt=dos -oilrtfm # -I$(%PHARLAP)\include
 AFLAGS  = -bt=dos -3r -dDOSX -dDOS4GW
 TARGET  = ..\lib\wattcpwf.lib
 OBJDIR  = build\watcom\flat
