@@ -16,6 +16,12 @@ LINK   = *wlink
 LFLAGS = option quiet, map, eliminate, caseexact &
          system nt debug all sort global library ..\lib\wattcpww_imp.lib
 
+#
+# Turn off these:
+#   Warning! W1027: file clibl.lib(strerror.c): redefinition of strerror_ ignored
+#
+LFLAGS += disable wl1027
+
 PROGS = ping.exe     popdump.exe rexec.exe   tcpinfo.exe &
         cookie.exe   daytime.exe dayserv.exe finger.exe  &
         host.exe     lpq.exe     lpr.exe     ntime.exe   &
