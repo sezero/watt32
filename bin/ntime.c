@@ -85,7 +85,7 @@ time_t ntime (DWORD host, time_t *now)
       time (now);
       sock_read (&sock, (char*)&host_tm, sizeof(host_tm));
 
-      host_tm = ntohl (host_tm);  /* convert to host order */
+      host_tm = ntohl ((DWORD)host_tm);  /* convert to host order */
       sock_close (&sock);
       sock_wait_closed (&sock, sock_delay, NULL, &status);
       return (host_tm);

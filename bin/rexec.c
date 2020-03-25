@@ -51,7 +51,7 @@ int exec (char *hostname, WORD port, char *name, char *pass, char *cmd)
   char   buffer [1024];
   static tcp_Socket rsh_sock;
 
-  srand (time(NULL));
+  srand ((unsigned int)time(NULL));
   lport = (rand() & 512) + 512;       /* return 511 < port < 1024 */
 
   if ((host = lookup_host(hostname,NULL)) == 0)

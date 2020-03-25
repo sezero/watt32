@@ -242,7 +242,9 @@ static void W32_CALL callback (void)
 
 int htget (const char *host, int port, const char *path)
 {
-  struct in_addr a,b;
+#ifndef SAVE_SPACE
+  struct in_addr a, b;
+#endif
   DWORD  hostaddr;
   int    status = 0;
   int    connected = 0;

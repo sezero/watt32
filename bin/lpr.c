@@ -152,7 +152,7 @@ static int lpr (char *localhostname, char *printer,  char *rhostname,
   char   remotename [80];
   static char cmdfile [1024];
   DWORD  remaining;
-  WORD   found;
+  size_t found;
   FILE   *f;
 
   if ((*class == 0) || (*class == ' '))
@@ -246,7 +246,8 @@ static int lpr (char *localhostname, char *printer,  char *rhostname,
   {
     printf ("Transferred: %lu %c  \r",
             ((filesize - remaining + 1L)*100L)/(filesize+1), 37);
-    if ((found = fread (buffer,1,sizeof(buffer),f)) == 0)
+    found = fread (buffer, 1, sizeof(buffer), f);
+    if (found == 0)
        break;
 
     sock_write(s, buffer, found);
