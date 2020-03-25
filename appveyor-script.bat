@@ -68,6 +68,9 @@ set DOS_INCLUDE=%WATCOM%\h
 :: on a AppVeyor build several "C:\Program Files (x86)\Microsoft xxx" strings
 :: are in the 'PATH' !
 ::
+set PATH=%PATH%;c:\Program Files\LLVM\bin
+
+::
 :: And append the '%WATCOM%\binnt' to the 'PATH' since Watcom has an 'cl.exe'
 :: which we do not want to use for 'BUILDER=visualc'.
 ::
@@ -80,12 +83,11 @@ set PATH=%PATH%;%WATCOM%\binnt
 ::
 if not %APPVEYOR_PROJECT_NAME%. == . (
   if %BUILDER%. == clang. (
-    if %CPU%. == x64. (
-      set PATH=%PATH%;c:\Program Files\LLVM\bin
-    ) else (
+    if %CPU%. == x86. (
       %_ECHO% "\e[1;33mDownloading and installing a 32-bit LLVM...'.\e[0m"
       appveyor DownloadFile https://prereleases.llvm.org/win-snapshots/LLVM-10.0.0-e20a1e486e1-win32.exe -FileName llvm-installer.exe
       start /wait llvm-installer.exe /S /D%APPVEYOR_BUILD_FOLDER%\LLVM-install
+      echo on
       set PATH=%APPVEYOR_BUILD_FOLDER%\LLVM-install\bin;%PATH%
       clang-cl -v
       %_ECHO% "\e[1;33mDone\n--------------------------------------------------------'.\e[0m"
