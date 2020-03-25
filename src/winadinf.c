@@ -828,7 +828,9 @@ static void setup_info_dump (void)
  * (there can be only one). Print some details for this physical adapter.
  *
  * For a software adapter (like the "Loopback" or a "QoS Packet Scheduler")
- * all these will be "<unknown>".
+ * all these will be `"<unknown>"` or `"SWD\xx"`.
+ *
+ * For physical adapters, the `DeviceInstanceID` starts with `"PCI\\"` or `"USB\\"`
  */
 static void setup_info_adapter_print (const char *adapter_name)
 {
