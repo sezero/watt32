@@ -23,6 +23,9 @@ environment:
       CPU:     x86
     - BUILDER: watcom
       CPU:     x86
+#     MODEL:   small  # todo: split up the 'watcom matrix'
+#     MODEL:   large
+#     MODEL:   flat
 
 matrix:
   #
