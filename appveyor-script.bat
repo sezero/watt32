@@ -68,6 +68,8 @@ set DOS_INCLUDE=%WATCOM%\h
 :: on a AppVeyor build several "C:\Program Files (x86)\Microsoft xxx" strings
 :: are in the 'PATH' !
 ::
+:: This is the PATH to the 64-bit 'clang-cl' already on AppVeyor.
+::
 set PATH=%PATH%;c:\Program Files\LLVM\bin
 
 ::
@@ -76,24 +78,6 @@ set PATH=%PATH%;c:\Program Files\LLVM\bin
 ::
 set PATH=%PATH%;%WATCOM%\binnt
 
-::
-:: Append the PATH to the 64-bit 'clang-cl' already on AppVeyor.
-:: But the 32-bit 'clang-cl' seems to need a download and install and it's PATH must be
-:: prepended to the normal PATH.
-::
-if not %APPVEYOR_PROJECT_NAME%. == . (
-  if %BUILDER%. == clang. (
-    if %CPU%. == x86. (
-      %_ECHO% "\e[1;33mDownloading and installing a 32-bit LLVM...'.\e[0m"
-      appveyor DownloadFile https://prereleases.llvm.org/win-snapshots/LLVM-10.0.0-e20a1e486e1-win32.exe -FileName llvm-installer.exe
-      start /wait llvm-installer.exe /S /D%APPVEYOR_BUILD_FOLDER%\LLVM-install
-      echo on
-      set PATH=%APPVEYOR_BUILD_FOLDER%\LLVM-install\bin;%PATH%
-      clang-cl -v
-      %_ECHO% "\e[1;33mDone\n--------------------------------------------------------'.\e[0m"
-    )
-  )
-)
 
 ::
 :: In case my curl was built with Wsock-Trace
@@ -144,6 +128,32 @@ if %USES_CL%. == 1. (
   if ERRORLEVEL 0 set CL=-DHAVE_OUI_GENERATATED_C
   %_ECHO% "\e[1;33m--------------------------------------------------------------------------------------------------\e[0m"
 )
+
+::
+:: Local cmd test
+::
+:: if %APPVEYOR_PROJECT_NAME%. == . (
+::   echo on
+::   set PATH="c:\Program Files (x86)\Common Files\Microsoft Shared\MSEnv";%PATH%
+:: )
+
+::
+:: A 32-bit 'clang-cl' seems to need a download and install and it's PATH must be
+:: prepended to the normal PATH.
+::
+:: if not %APPVEYOR_PROJECT_NAME%. == . (
+::  if %BUILDER%. == clang. (
+::    if %CPU%. == x86. (
+::      %_ECHO% "\e[1;33mDownloading and installing a 32-bit LLVM...'.\e[0m"
+::      curl -o llvm-installer.exe https://prereleases.llvm.org/win-snapshots/LLVM-10.0.0-e20a1e486e1-win32.exe
+::      start /wait llvm-installer.exe /S /D%APPVEYOR_BUILD_FOLDER%\LLVM-install
+::      echo on
+::      set PATH=%APPVEYOR_BUILD_FOLDER%\LLVM-install\bin;%PATH%
+::      clang-cl -v
+::      %_ECHO% "\e[1;33mDone\n--------------------------------------------------------'.\e[0m"
+::    )
+::  )
+:: )
 
 %_ECHO% "\e[1;33m[%CPU%]: call configur.bat %BUILDER%:\e[0m"
 
