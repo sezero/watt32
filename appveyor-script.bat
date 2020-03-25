@@ -27,7 +27,7 @@ if %APPVEYOR_PROJECT_NAME%. == . (
   set _ECHO=c:\msys64\usr\bin\echo.exe -e
 )
 
-%_ECHO% "\e[1;33mDoing '%1' for BUILDER=%BUILDER%.\e[0m"
+%_ECHO% "\e[1;33mDoing '%1' for 'BUILDER=%BUILDER%'.\e[0m"
 
 ::
 :: Stuff common to '[build_src | build_bin | build_tests]'
@@ -84,7 +84,7 @@ if %WATT_ROOT%. == . set WATT_ROOT=%CD%
 :: Sanity check:
 ::
 if %BUILDER%. == . (
-  echo BUILDER target not specified!
+  %_ECHO% "\e[1;31mBUILDER target not specified!\e[0m"
   exit /b 1
 )
 
@@ -117,14 +117,13 @@ if %USES_CL%. == 1. (
   %_ECHO% "\e[1;33mGenerating src\oui-generated.c.\e[0m"
   python.exe make-oui.py > oui-generated.c
   if ERRORLEVEL 0 set CL=-DHAVE_OUI_GENERATATED_C
-  echo --------------------------------------------------------------------------------------------------
+  %_ECHO% "\e[1;33m--------------------------------------------------------------------------------------------------\e[0m"
 )
 
-%_ECHO% "\e[1;33mcall configur.bat %BUILDER%:\e[0m"
+%_ECHO% "\e[1;33m[%CPU%]: call configur.bat %BUILDER%:\e[0m"
 
 if %BUILDER%. == visualc. (
   call configur.bat visualc
-  echo Building release for %CPU%.
   %_ECHO% "\e[1;33mBuilding release for %CPU%:\e[0m"
   nmake -nologo -f visualc-release_%BITS%.mak
   exit /b
@@ -132,21 +131,21 @@ if %BUILDER%. == visualc. (
 
 if %BUILDER%. == clang. (
   call configur.bat clang
-  %_ECHO% "\e[1;33mBuilding release for %CPU%:\e[0m"
+  %_ECHO% "\e[1;33mBuilding release for '%CPU%':\e[0m"
   make -f clang-release_%BITS%.mak
   exit /b
 )
 
 if %BUILDER%. == mingw32. (
   call configur.bat mingw32
-  %_ECHO% "\e[1;33mBuilding for x86 only:\e[0m"
+  %_ECHO% "\e[1;33mBuilding for 'x86' only:\e[0m"
   make -f MinGW32.mak
   exit /b
 )
 
 if %BUILDER%. == mingw64. (
   call configur.bat mingw64
-  %_ECHO% "\e[1;33mBuilding for %CPU%:\e[0m"
+  %_ECHO% "\e[1;33mBuilding for '%CPU%':\e[0m"
   make -f MinGW64_%BITS%.mak
   exit /b
 )
@@ -194,7 +193,7 @@ exit /b 1
 :build_bin
 
 if %CPU%. == x64. (
-  %_ECHO% "\e[1;31mNo build_bin for x64 yet.\e[0m"
+  %_ECHO% "\e[1;31mNo 'build_bin' for 'x64' yet.\e[0m"
   exit /b 0
 )
 
@@ -239,6 +238,6 @@ exit /b 0
 ::
 :build_tests
 cd src\tests
-%_ECHO% "\e[1;33mWill do 'src/tests' for '%BUILDER%' later. Simply doing 'call configur.bat %BUILDER%' now.\e[0m"
+%_ECHO% "\e[1;33m[%CPU%]: Simply doing 'call tests/configur.bat %BUILDER%' now.\e[0m"
 call configur.bat %BUILDER%
 exit /b 0
