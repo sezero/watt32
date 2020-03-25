@@ -33,7 +33,6 @@ all:  $(PROGS)
       $(CC) $(CFLAGS) $*.c
       $(LINK) $(LFLAGS) name $*.exe file $*.obj
 
-clean:
-      @del *.obj
-      @del *.map
+clean: .SYMBOLIC
+      - rm -f *.obj *.map
 
