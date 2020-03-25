@@ -132,9 +132,8 @@ void init_timers (void)
 #else
   #if (DOSX)                  /* problems using 64-bit types in small/large models */
     hires_timer (TRUE);      /**< \todo check if 8254 PIT is really working */
-  #endif
 
-  #if defined(HAVE_UINT64)
+    #if defined(HAVE_UINT64)
     if (use_rdtsc && has_rdtsc)
     {
       clocks_per_usec = (DWORD) (get_cpu_speed() / S64_SUFFIX(1000000));
@@ -146,7 +145,8 @@ void init_timers (void)
       }
     }
     set_utc_offset();  /* don't pull in gettod.c unneccesary */
-  #endif
+    #endif
+  #endif               /* DOSX */
 #endif
 
   chk_timeout (0UL);         /* init 'date' variables */
