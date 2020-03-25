@@ -23,7 +23,7 @@ LFLAGS = option quiet, map, stack=15k, eliminate, caseexact &
 # Turn off these:
 #   Warning! W1027: file clibl.lib(strerror.c): redefinition of strerror_ ignored
 #
-LFLAGS += disable wl1027
+LFLAGS += disable 1027
 
 PROGS = ping.exe    popdump.exe rexec.exe   tcpinfo.exe &
         cookie.exe  daytime.exe dayserv.exe finger.exe  &
