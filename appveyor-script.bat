@@ -178,9 +178,15 @@ if %BUILDER%. == watcom. (
     )
     7z x -y -o%WATCOM% %WATCOM_ZIP% > NUL
   )
-  call configur.bat watcom
+  call configur.bat %BUILDER%
   %_ECHO% "\e[1;33mBuilding for Watcom/Win32:\e[0m"
   wmake -f watcom_w.mak
+
+  %_ECHO% "\e[1;33mBuilding for Watcom/large:\e[0m"
+  wmake -f watcom_l.mak
+
+  %_ECHO% "\e[1;33mBuilding for Watcom/flat:\e[0m"
+  wmake -f watcom_f.mak
   exit /b
 )
 
@@ -198,7 +204,7 @@ if %CPU%. == x64. (
 )
 
 ::
-:: './bin/' programs to build for djgpp, Visual-C and Watcom (Win32):
+:: './bin/' programs to build for djgpp, Visual-C and Watcom (Win32 + large):
 ::
 set PROGS_DJ=bping.exe ping.exe finger.exe ident.exe htget.exe ^
              tcpinfo.exe tracert.exe country.exe
@@ -208,8 +214,8 @@ set PROGS_VC=ping.exe finger.exe tcpinfo.exe host.exe htget.exe ^
              rexec.exe cookie.exe daytime.exe dayserv.exe lpq.exe lpr.exe ^
              ntime.exe ph.exe stat.exe vlsm.exe whois.exe ident.exe country.exe
 
-set PROGS_WC=ping.exe htget.exe finger.exe tcpinfo.exe con-test.exe ^
-             gui-test.exe htget.exe tracert.exe
+set PROGS_WC_WIN=ping.exe htget.exe finger.exe tcpinfo.exe con-test.exe gui-test.exe htget.exe tracert.exe whois.exe
+set PROGS_WC_LARGE=ping.exe htget.exe finger.exe tcpinfo.exe htget.exe whois.exe
 
 cd bin
 if %BUILDER%. == djgpp. (
@@ -225,8 +231,12 @@ if %BUILDER%. == visualc. (
 )
 
 if %BUILDER%. == watcom. (
-  %_ECHO% "\e[1;33mBuilding PROGS_WC=%PROGS_WC%:\e[0m"
-  wmake -f wc_win.mak %PROGS_WC%
+  %_ECHO% "\e[1;33mwatcom/Win32: Building PROGS_WC_WIN=%PROGS_WC_WIN%:\e[0m"
+  wmake -f wc_win.mak %PROGS_WC_WIN%
+
+  %_ECHO% "\e[1;33mwatcom/large: Building PROGS_WC_LARGE=%PROGS_WC_LARGE%:\e[0m"
+  rm -f %PROGS_WC_LARGE%
+  wmake -f watcom.mak %PROGS_WC_LARGE%
   exit /b
 )
 
