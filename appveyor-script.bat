@@ -53,6 +53,7 @@ set DJ_PREFIX=%DJGPP%/bin/i586-pc-msdosdjgpp-
 set WATCOM=%APPVEYOR_BUILD_FOLDER%\CI\Watcom
 set WATCOM_ZIP=%WATCOM%\watcom20.zip
 set NT_INCLUDE=%WATCOM%\h;%WATCOM%\h\nt
+set DOS_INCLUDE=%WATCOM%\h
 
 ::
 :: Shit for brains 'cmd' cannot have this inside a 'if x (' block since
