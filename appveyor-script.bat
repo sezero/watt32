@@ -74,10 +74,24 @@ set DOS_INCLUDE=%WATCOM%\h
 set PATH=%PATH%;%WATCOM%\binnt
 
 ::
-:: Append the PATH to the 64-bit 'clang-cl'.
-:: Where is the 32-bit 'clang-cl'?
+:: Append the PATH to the 64-bit 'clang-cl' already on AppVeyor.
+:: But the 32-bit 'clang-cl' seems to need a download and install and it's PATH must be
+:: prepended to the normal PATH.
 ::
-set PATH=%PATH%;c:\Program Files\LLVM\bin
+if not %APPVEYOR_PROJECT_NAME%. == . (
+  if %BUILDER%. == clang. (
+    if %CPU%. == x64. (
+      set PATH=%PATH%;c:\Program Files\LLVM\bin
+    ) else (
+      %_ECHO% "\e[1;33mDownloading and installing a 32-bit LLVM...'.\e[0m"
+      appveyor DownloadFile https://prereleases.llvm.org/win-snapshots/LLVM-10.0.0-e20a1e486e1-win32.exe -FileName llvm-installer.exe
+      start /wait llvm-installer.exe /S /D%APPVEYOR_BUILD_FOLDER%\LLVM-install
+      set PATH=%APPVEYOR_BUILD_FOLDER%\LLVM-install\bin;%PATH%
+      clang-cl -v
+      %_ECHO% "\e[1;33mDone\n--------------------------------------------------------'.\e[0m"
+    )
+  )
+)
 
 ::
 :: In case my curl was built with Wsock-Trace
@@ -251,8 +265,6 @@ if %BUILDER%. == visualc. (
 )
 
 if %BUILDER%. == watcom. (
-  echo on
-
   if %MODEL%. == win32. (
     %_ECHO% "\e[1;33mwatcom/Win32: Building PROGS_WC_WIN=%PROGS_WC_WIN%:\e[0m"
     rm -f %PROGS_WC_WIN%
@@ -287,3 +299,4 @@ cd src\tests
 %_ECHO% "\e[1;33m[%CPU%]: Simply doing 'call tests/configur.bat %BUILDER%' now.\e[0m"
 call configur.bat %BUILDER%
 exit /b 0
+
