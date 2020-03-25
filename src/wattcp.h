@@ -72,7 +72,7 @@
   typedef long long           int64;
   #define HAVE_UINT64
 
-#elif defined(__WATCOMC__) && defined(__WATCOM_INT64__) && !(defined(__SMALL__) || defined(__LARGE__))
+#elif defined(__WATCOMC__) && defined(__WATCOM_INT64__)
   typedef unsigned __int64 uint64;
   typedef __int64          int64;
   #define HAVE_UINT64
