@@ -5,7 +5,7 @@
 #include <sys/wtime.h>
 #include <tcp.h>
 
-#ifdef WIN32
+#ifdef _WIN32
 #include <windows.h>
 #define usleep(us)  Sleep((us)/1000UL)
 #endif
