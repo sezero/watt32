@@ -1832,6 +1832,19 @@ void W32_CALL _arp_routes_dump (void)
   }
 }
 
+#if defined(USE_BSD_API)
+  /*
+   * In ioctl.c
+   */
+  extern void __get_ifname (char *if_name);
+#else
+  /*
+   * Just fake.
+   */
+  #define __get_ifname(var) strcpy (var, "eth0")
+#endif
+
+
 void W32_CALL _arp_gateways_dump (void)
 {
   const struct gate_entry *gw = gate_list;
@@ -1882,7 +1895,6 @@ void W32_CALL _arp_gateways_dump (void)
 
   for (i = 0 ; i < gate_top; i++, gw++)
   {
-    extern void __get_ifname (char *if_name);
     DWORD mask = gw->mask; // ? gw->mask : sin_mask;
     char *subnet = INET_NTOA(gw->subnet);
     char  ifname[10];
