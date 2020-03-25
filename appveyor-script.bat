@@ -27,7 +27,15 @@ if %APPVEYOR_PROJECT_NAME%. == . (
   set _ECHO=c:\msys64\usr\bin\echo.exe -e
 )
 
-%_ECHO% "\e[1;33mDoing '%1' for 'BUILDER=%BUILDER%'.\e[0m"
+::
+:: Since only 'watcom' has a '%MODEL%' set in 'appveoyr.yml'
+::
+if %BUILDER%. == watcom. (
+  %_ECHO% "\e[1;33mDoing '%1' for 'BUILDER=%BUILDER%', 'MODEL=%MODEL%'.\e[0m"
+
+) else (
+  %_ECHO% "\e[1;33mDoing '%1' for 'BUILDER=%BUILDER%'.\e[0m"
+)
 
 ::
 :: Stuff common to '[build_src | build_bin | build_tests]'
@@ -157,7 +165,7 @@ if %BUILDER%. == djgpp. (
     curl -O -# http://www.watt-32.net/CI/dj-win.zip
     if not errorlevel == 0 (
       %_ECHO% "\e[1;31mThe curl download of http://www.watt-32.net/CI/dj-win.zip failed!\e[0m"
-      exit /b
+      exit /b 1
     )
     7z x -y -o%DJGPP% dj-win.zip > NUL
     rm -f dj-win.zip
@@ -179,15 +187,25 @@ if %BUILDER%. == watcom. (
     )
     7z x -y -o%WATCOM% %WATCOM_ZIP% > NUL
   )
-  call configur.bat %BUILDER%
-  %_ECHO% "\e[1;33mBuilding for Watcom/Win32:\e[0m"
-  wmake -f watcom_w.mak
 
-  %_ECHO% "\e[1;33mBuilding for Watcom/large:\e[0m"
-  wmake -f watcom_l.mak
+  call configur.bat watcom
 
-  %_ECHO% "\e[1;33mBuilding for Watcom/flat:\e[0m"
-  wmake -f watcom_f.mak
+  if %MODEL%. == win32. (
+    %_ECHO% "\e[1;33mBuilding for Watcom/Win32:\e[0m"
+    wmake -f watcom_w.mak
+
+  ) else if %MODEL%. == flat. (
+    %_ECHO% "\e[1;33mBuilding for Watcom/flat:\e[0m"
+    wmake -f watcom_f.mak
+
+  ) else if %MODEL%. == large. (
+    %_ECHO% "\e[1;33mBuilding for Watcom/large:\e[0m"
+    wmake -f watcom_l.mak
+
+  ) else (
+    %_ECHO% "\e[1;31mThe 'watcom' needs a 'MODEL'!\e[0m"
+     exit /b 1
+  )
   exit /b
 )
 
@@ -232,12 +250,28 @@ if %BUILDER%. == visualc. (
 )
 
 if %BUILDER%. == watcom. (
-  %_ECHO% "\e[1;33mwatcom/Win32: Building PROGS_WC_WIN=%PROGS_WC_WIN%:\e[0m"
-  wmake -f wc_win.mak %PROGS_WC_WIN%
+  echo on
 
-  %_ECHO% "\e[1;33mwatcom/large: Building PROGS_WC_LARGE=%PROGS_WC_LARGE%:\e[0m"
-  rm -f %PROGS_WC_LARGE%
-  wmake -f watcom.mak %PROGS_WC_LARGE%
+  if %MODEL%. == win32. (
+    %_ECHO% "\e[1;33mwatcom/Win32: Building PROGS_WC_WIN=%PROGS_WC_WIN%:\e[0m"
+    rm -f %PROGS_WC_WIN%
+    wmake -f wc_win.mak %PROGS_WC_WIN%
+
+  ) else if %MODEL%. == flat. (
+    %_ECHO% "\e[1;33mwatcom/large: Building PROGS_WC_LARGE=%PROGS_WC_LARGE%:\e[0m"
+    rm -f %PROGS_WC_LARGE%
+    wmake -f watcom.mak %PROGS_WC_LARGE%
+
+  ) else if %MODEL%. == large. (
+    %_ECHO% "\e[1;33mwatcom/large: Building PROGS_WC_LARGE=%PROGS_WC_LARGE%:\e[0m"
+    rm -f %PROGS_WC_LARGE%
+    wmake -f watcom.mak %PROGS_WC_LARGE%
+
+  ) else (
+    %_ECHO% "\e[1;31mThe 'watcom' needs a 'MODEL'!\e[0m"
+     exit /b 1
+  )
+
   exit /b
 )
 

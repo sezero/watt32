@@ -21,11 +21,20 @@ environment:
 #     CPU:     x64
     - BUILDER: djgpp
       CPU:     x86
+
+#
+# Split up the 'watcom matrix' into small jobs like this:
+# 'CPU=x86' always, but eases the logic in 'appveyor-script.bat'
+#
     - BUILDER: watcom
       CPU:     x86
-#     MODEL:   small  # todo: split up the 'watcom matrix'
-#     MODEL:   large
-#     MODEL:   flat
+      MODEL:   win32
+    - BUILDER: watcom
+      CPU:     x86
+      MODEL:   flat
+    - BUILDER: watcom
+      CPU:     x86
+      MODEL:   large
 
 matrix:
   #
