@@ -235,6 +235,7 @@ set PROGS_VC=ping.exe finger.exe tcpinfo.exe host.exe htget.exe ^
 
 set PROGS_WC_WIN=ping.exe htget.exe finger.exe tcpinfo.exe con-test.exe gui-test.exe htget.exe tracert.exe whois.exe
 set PROGS_WC_LARGE=ping.exe htget.exe finger.exe tcpinfo.exe htget.exe whois.exe
+set PROGS_WC_FLAT=%PROGS_WC_LARGE%
 
 cd bin
 if %BUILDER%. == djgpp. (
@@ -258,9 +259,9 @@ if %BUILDER%. == watcom. (
     wmake -f wc_win.mak %PROGS_WC_WIN%
 
   ) else if %MODEL%. == flat. (
-    %_ECHO% "\e[1;33mwatcom/large: Building PROGS_WC_LARGE=%PROGS_WC_LARGE%:\e[0m"
+    %_ECHO% "\e[1;33mwatcom/flat: Building PROGS_WC_FLAT=%PROGS_WC_FLAT%:\e[0m"
     rm -f %PROGS_WC_LARGE%
-    wmake -f watcom.mak %PROGS_WC_LARGE%
+    wmake -f causeway.mak %PROGS_WC_FLAT%
 
   ) else if %MODEL%. == large. (
     %_ECHO% "\e[1;33mwatcom/large: Building PROGS_WC_LARGE=%PROGS_WC_LARGE%:\e[0m"
