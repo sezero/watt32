@@ -75,7 +75,7 @@ extern const char *elapsed_str(DWORD val);
   extern void delay (unsigned int msec);
 #endif
 
-#if (DOSX) && defined(HAVE_UINT64)
+#if defined(WIN32) || defined(HAVE_UINT64)
   #define get_cpu_speed  W32_NAMESPACE (get_cpu_speed)
 
   extern uint64 get_cpu_speed (void);
