@@ -425,29 +425,24 @@ const char * W32_CALL wattcpVersion (void)
 
 #elif defined(__WATCOMC__)
   #define CC_DEFINE      "__WATCOMC__"
-
-  #if defined(WIN32)
-    #define CFLAGS       "build/watcom/win32/cflags.h"
-    #define CFLAGS_BUF   "build/watcom/win32/cflagsbf.h"
-    #define CC_PROG      "wcc386"
-
-  #elif defined(__SMALL__)
-    #define CFLAGS       "build/watcom/small/cflags.h"
-    #define CFLAGS_BUF   "build/watcom/small/cflagsbf.h"
+  #if defined(__I86__)
     #define CC_PROG      "wcc"
-
-  #elif defined(__LARGE__)
-    #define CFLAGS       "build/watcom/large/cflags.h"
-    #define CFLAGS_BUF   "build/watcom/large/cflagsbf.h"
-    #define CC_PROG      "wcc"
-
-  #elif defined(__FLAT__)
-    #define CFLAGS       "build/watcom/flat/cflags.h"
-    #define CFLAGS_BUF   "build/watcom/flat/cflagsbf.h"
+    #if defined(__SMALL__)
+      #define CFLAGS       "build/watcom/small/cflags.h"
+      #define CFLAGS_BUF   "build/watcom/small/cflagsbf.h"
+    #elif defined(__LARGE__)
+      #define CFLAGS       "build/watcom/large/cflags.h"
+      #define CFLAGS_BUF   "build/watcom/large/cflagsbf.h"
+    #endif
+  #elif defined(__386__)
     #define CC_PROG      "wcc386"
-
-  #else
-    #error What!?
+    #if defined(WIN32)
+      #define CFLAGS       "build/watcom/win32/cflags.h"
+      #define CFLAGS_BUF   "build/watcom/win32/cflagsbf.h"
+    #elif defined(__FLAT__)
+      #define CFLAGS       "build/watcom/flat/cflags.h"
+      #define CFLAGS_BUF   "build/watcom/flat/cflagsbf.h"
+    #endif
   #endif
 
   /* Both these combos can be true for the "MinGW-w64" project [1].
