@@ -29,9 +29,9 @@ environment:
     - BUILDER: watcom
       CPU:     x86
       MODEL:   win32
-#   - BUILDER: watcom
-#     CPU:     x86
-#     MODEL:   flat
+    - BUILDER: watcom
+      CPU:     x86
+      MODEL:   flat
     - BUILDER: watcom
       CPU:     x86
       MODEL:   large
