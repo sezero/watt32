@@ -13,7 +13,7 @@
 
   Supported memory models and targets include:
 
-     SMALL, LARGE, FLAT, WIN32, WIN64, DEBUG, RELEASE
+     SMALL, LARGE, FLAT, WIN32, WIN64, DEBUG, RELEASE, SMALL32
 
   Some 32-bit DOS compilers can define these DOS-extender targets:
 
@@ -205,7 +205,7 @@ OBJS = $(COMMON_OBJS) $(DOS_OBJS)
 # (and when USE_FAST_PKT is defined). This enables a faster real-mode
 # callback for the PKTDRVR receiver. Included as an array in pcpkt2.c.
 #
-@ifdef FLAT
+@ifdef FLAT SMALL32
 PKT_STUB = pkt_stub.h
 @endif
 
@@ -502,6 +502,14 @@ OBJDIR   = build\watcom\win32
 MAKEFIL  = watcom_w.mak
 RESOURCE = $(OBJDIR)\watt-32.res
 
+@elifdef SMALL32
+CC      = wcc386
+CFLAGS  = -ms -oaxt -s -bt=dos
+AFLAGS  = -3 -bt=dos -dDOSX
+TARGET  = ..\lib\wattcpw3.lib
+OBJDIR  = build\watcom\small32
+MAKEFIL = watcom_3.mak
+
 @else
 !error Unknown WATCOM model
 @endif
@@ -569,6 +577,9 @@ $(WATTDLL) ..\lib\wattcpww_imp.lib: $(OBJS) $(RESOURCE) $(LINKARG)
 	$(AR) $^@ @$(LIBARG)
 
 ..\lib\wattcpwf.lib: $(OBJS) $(LIBARG)
+	$(AR) $^@ @$(LIBARG)
+
+..\lib\wattcpw3.lib: $(OBJS) $(LIBARG)
 	$(AR) $^@ @$(LIBARG)
 
 -!include "build\watcom\watt32.dep"
@@ -1537,7 +1548,7 @@ $(PKT_STUB): asmpkt.nas
 	$(W32_NASM) -f bin -l asmpkt.lst -o asmpkt.bin asmpkt.nas
 	$(W32_BIN2C) asmpkt.bin > $@
 
-@elifdef FLAT
+@elifdef FLAT SMALL32
 
 $(OBJDIR)\pcpkt.obj: asmpkt.nas
 
@@ -1701,6 +1712,9 @@ build\watcom\flat\cflagsbf.h: $(C_ARGS)
 
 build\watcom\win32\cflagsbf.h: $(C_ARGS)
 	$(%W32_BIN2C) $(C_ARGS)                    > build\watcom\win32\cflagsbf.h
+
+build\watcom\small32\cflagsbf.h: $(C_ARGS)
+	$(%W32_BIN2C) $(C_ARGS)                    > build\watcom\small32\cflagsbf.h
 @endif
 
 @ifdef CLANG
