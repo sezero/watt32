@@ -10,7 +10,7 @@
 .EXTENSIONS: .exe .obj .c
 
 CC     = *wcc386
-CFLAGS = -bt=nt -3s -w6 -d2 -zq -zc -zm -I..\inc -fr=nul -DWIN32
+CFLAGS = -bt=nt -3r -w6 -d2 -zq -zc -zm -I..\inc -fr=nul -DWIN32
 
 LINK   = *wlink
 LFLAGS = option quiet, map, eliminate, caseexact &
