@@ -139,6 +139,11 @@ W32_DATA int   _w32_errno;
 W32_DATA int   _w32_sys_nerr;
 W32_DATA char *_w32_sys_errlist[];
 
+#if defined(__DJGPP__)
+  #undef  sys_errlist
+  #define sys_errlist   _w32_sys_errlist
+#endif
+
 #if 0
   #undef  sys_nerr
   #define sys_nerr      _w32_sys_nerr

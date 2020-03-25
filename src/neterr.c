@@ -181,13 +181,14 @@ int pull_neterr_module = 0;
   int _w32_sys_nerr = 120; /* pocc bug */
 
 #elif defined(WIN32) && !defined(__LCC__) && !defined(__BORLANDC__)
-  int _w32_sys_nerr    = DIM(_w32_sys_errlist);
-  int *_sys_nerr_dll   = &_w32_sys_nerr;
-  int *_imp___sys_nerr = &_w32_sys_nerr;
-
-  #if !defined(_MSC_VER) && !defined(__WATCOMC__)
+  #if defined(_MSC_VER) || defined(__WATCOMC__)
+    int _w32_sys_nerr     = DIM(_w32_sys_errlist);
+  #else
     int DATA_MOD SYS_NERR = DIM(SYS_ERRLIST2);
   #endif
+
+  int *_sys_nerr_dll   = &_w32_sys_nerr;
+  int *_imp___sys_nerr = &_w32_sys_nerr;
 #endif
 
 #if !defined(_MSC_VER) && defined(__MSDOS__)
