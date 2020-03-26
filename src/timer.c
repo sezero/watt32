@@ -130,7 +130,7 @@ void init_timers (void)
   clocks_per_usec = (DWORD) (get_cpu_speed() / S64_SUFFIX(1000000));
 
 #else
-  #if (DOSX)                  /* problems using 64-bit types in small/large models */
+  #if (DOSX)                 /* problems using 64-bit types in small/large models */
     hires_timer (TRUE);      /**< \todo check if 8254 PIT is really working */
 
     #if defined(HAVE_UINT64)
