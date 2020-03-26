@@ -57,7 +57,7 @@
  * Building small-model applications doesn't leave
  * much room for the fancy stuff :-(
  */
-#if !defined(OPT_DEFINED) && defined(__SMALL__) && !defined(__SMALL32__)
+#if !defined(OPT_DEFINED) && defined(__SMALL__) && !(defined(__SMALL32__) || defined(WATCOM386))
   #define USE_UDP_ONLY     /* test udp-only (cookie,ping) */
   #define OPT_DEFINED
 #endif
