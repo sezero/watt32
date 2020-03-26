@@ -34,7 +34,7 @@ if %APPVEYOR_PROJECT_NAME%. == . (
 :: Download stuff to here:
 ::
 set CI_ROOT=%APPVEYOR_BUILD_FOLDER%\CI-temp
-md %CI_ROOT%
+md %CI_ROOT% 2> NUL
 
 ::
 :: Since only 'watcom' has a '%MODEL%' set in 'appveoyr.yml'
@@ -116,7 +116,7 @@ exit /b 1
 cd src
 
 ::
-:: Generate a 'src\oui-generated.c' file from 'src\oui.txt (do not download it every time).
+:: Generate a 'src/oui-generated.c' file from 'src/oui.txt (do not download it every time).
 :: For VisualC / clang-cl only since only those uses '%CL%'.
 ::
 set USES_CL=0
@@ -147,7 +147,7 @@ if %LOCAL_TEST% == 1 (
 %_ECHO% "\e[1;33m[%CPU%]: call configur.bat %BUILDER%:\e[0m"
 
 if %USES_CL%. == 1. (
-  %_ECHO% "\e[1;33mGenerating src\oui-generated.c.\e[0m"
+  %_ECHO% "\e[1;33mGenerating 'src/oui-generated.c'.\e[0m"
   python.exe make-oui.py > oui-generated.c
   if errorlevel 0 set CL=-DHAVE_OUI_GENERATATED_C
   %_ECHO% "\e[1;33m--------------------------------------------------------------------------------------------------\e[0m"
@@ -299,8 +299,6 @@ exit /b 0
 ::
 :install_LLVM
   if %CPU%. == x64. exit /b
-  echo on
-  echo %CD%
   set PATH=c:\Program Files (x86)\LLVM\bin;%PATH%
   if exist "c:\Program Files (x86)\LLVM\bin\clang-cl.exe" exit /b
   if not exist %CI_ROOT%\llvm-installer.exe call :download_LLVM
