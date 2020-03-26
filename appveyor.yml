@@ -7,13 +7,13 @@ skip_commits:
 
 environment:
   matrix:
-    - BUILDER: clang
+    - BUILDER: visualc
       CPU:     x86
-    - BUILDER: clang
+    - BUILDER: visualc
       CPU:     x64
-    - BUILDER: visualc
+    - BUILDER: clang
       CPU:     x86
-    - BUILDER: visualc
+    - BUILDER: clang
       CPU:     x64
 #   - BUILDER: mingw64
 #     CPU:     x86
@@ -21,11 +21,6 @@ environment:
 #     CPU:     x64
     - BUILDER: djgpp
       CPU:     x86
-
-#
-# Split up the 'watcom matrix' into small jobs like this:
-# 'CPU=x86' always, but eases the logic in 'appveyor-script.bat'
-#
     - BUILDER: watcom
       CPU:     x86
       MODEL:   win32
@@ -44,7 +39,7 @@ matrix:
   allow_failures:
      - BUILDER: mingw64
      - BUILDER: watcom
-     - BUILDER: clang
+#    - BUILDER: clang
 
 install:
   #
