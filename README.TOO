@@ -34,7 +34,8 @@ These are the WIN32-target combinations currently working:
 
   Visual C/C++ 6+           DLL, import and static libs. Release/debug-mode.
   Open Watcom C/C++ 1.x+    DLL and import lib only.
-  GNU C 3.x with MingW 3.x  DLL and import lib only.
+  LLVM/clang-cl C/C++ 8+    DLL and import lib only.
+  GNU C 3.x with MinGW 3.x  DLL and import lib only.
 
 These are combinations prepared but not working properly or unfinished:
 
@@ -44,10 +45,6 @@ These are combinations prepared but not working properly or unfinished:
   Borland C/C++ 4.x    with PharLap 386|DosX.
   Borland C/C++ 4.x    with PowerPak DOS-extender.
   Borland C/C++ 4.x    with WDOSX DOS-extender.
-  MS C/C++ 7.0+        small/large real-mode. This compiles and links okay,
-                       but crashes at run-time. Didn't investigate further.
-  MS Visual C 1.52     with PharLap 386|DosX.
-  MS Visual C 4+       with WDOSX extender (must build in Windows :-( ).
   Digital Mars C 8.28+ with DOS4GW, WDOSX or X32VM extenders.
   Digital Mars C 8.28+ small/large real-mode
 

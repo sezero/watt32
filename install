@@ -424,6 +424,7 @@ Follow these steps closely:
      .\lib\wattcpTL.lib  - Turbo-C      Large (16-bit) version
      .\lib\wattcpHF.lib  - HighC        Flat  (32-bit) version
      .\lib\wattcpWS.lib  - Watcom       Small (16-bit) version
+     .\lib\wattcpW3.lib  - Watcom       Small (32-bit) version
      .\lib\wattcpWL.lib  - Watcom       Large (16-bit) version
      .\lib\wattcpWF.lib  - Watcom       Flat  (32-bit) version
      .\lib\wattcpDS.lib  - Digital Mars Small (16-bit) version
