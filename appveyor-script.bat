@@ -1,5 +1,5 @@
 @echo off
-setlocal
+setlocal EnableDelayedExpansion
 prompt $P$G
 
 ::
@@ -21,11 +21,18 @@ if %APPVEYOR_PROJECT_NAME%. == . (
   )
   set APPVEYOR_BUILD_FOLDER=%WATT_ROOT%
   set APPVEYOR_BUILD_FOLDER_UNIX=e:/net/watt
+  set LOCAL_TEST=1
 
 ) else (
+  set LOCAL_TEST=0
   set APPVEYOR_BUILD_FOLDER_UNIX=c:/projects/Watt-32
   set _ECHO=c:\msys64\usr\bin\echo.exe -e
 )
+
+::
+:: Download stuff to here:
+::
+set CI_ROOT=%TEMP%\Watt-32-CI
 
 ::
 :: Since only 'watcom' has a '%MODEL%' set in 'appveoyr.yml'
@@ -51,22 +58,22 @@ if %BUILDER%. == mingw64. (
 ::
 :: Set the dir for djgpp cross-environment.
 :: Use forward slashes for this. Otherwise 'sh' + 'make' will get confused.
+:: 7z can create only 1 level of missing directories. So a '%TEMP%/Watt-32-CI/djgpp' will not work
 ::
-set DJGPP=%APPVEYOR_BUILD_FOLDER_UNIX%/CI/djgpp
+set DJGPP=c:/temp/Watt-32-CI
 set DJ_PREFIX=%DJGPP%/bin/i586-pc-msdosdjgpp-
 
 ::
 :: Set env-var for building with Watcom 2.0
 ::
-set WATCOM=%APPVEYOR_BUILD_FOLDER%\CI\Watcom
-set WATCOM_ZIP=%WATCOM%\watcom20.zip
+set WATCOM=%CI_ROOT%
 set NT_INCLUDE=%WATCOM%\h;%WATCOM%\h\nt
 set DOS_INCLUDE=%WATCOM%\h
 
 ::
 :: Shit for brains 'cmd' cannot have this inside a 'if x (' block since
-:: on a AppVeyor build several "C:\Program Files (x86)\Microsoft xxx" strings
-:: are in the 'PATH' !
+:: on a AppVeyor build several "c:\Program Files (x86)\Microsoft xxx" strings
+:: are in the 'PATH'!
 ::
 :: This is the PATH to the 64-bit 'clang-cl' already on AppVeyor.
 ::
@@ -77,7 +84,6 @@ set PATH=%PATH%;c:\Program Files\LLVM\bin
 :: which we do not want to use for 'BUILDER=visualc'.
 ::
 set PATH=%PATH%;%WATCOM%\binnt
-
 
 ::
 :: In case my curl was built with Wsock-Trace
@@ -122,40 +128,25 @@ if %BUILDER%. == clang.   set USES_CL=1
 set BITS=32
 if %CPU%. == x64. set BITS=64
 
+::
+:: Local 'cmd' test for '(' in env-vars:
+:: This is what AppVeyor have first in their PATH:
+::   c:\Program Files (x86)\Microsoft SDKs\Azure\CLI2\wbin
+::
+:: Hence cannot use a 'if x (what-ever) else (something else)' syntax with that
+::
+if %LOCAL_TEST% == 1 echo on
+if %LOCAL_TEST% == 1 (if not exist c:\temp (echo No c:\temp. Edit this .bat-file & exit /b 1))
+:: if %LOCAL_TEST% == 1 set PATH=%PATH%;c:\Program Files (x86)\Microsoft SDKs\Azure\CLI2\wbin
+
+%_ECHO% "\e[1;33m[%CPU%]: call configur.bat %BUILDER%:\e[0m"
+
 if %USES_CL%. == 1. (
   %_ECHO% "\e[1;33mGenerating src\oui-generated.c.\e[0m"
   python.exe make-oui.py > oui-generated.c
-  if ERRORLEVEL 0 set CL=-DHAVE_OUI_GENERATATED_C
+  if errorlevel 0 set CL=-DHAVE_OUI_GENERATATED_C
   %_ECHO% "\e[1;33m--------------------------------------------------------------------------------------------------\e[0m"
 )
-
-::
-:: Local cmd test
-::
-:: if %APPVEYOR_PROJECT_NAME%. == . (
-::   echo on
-::   set PATH="c:\Program Files (x86)\Common Files\Microsoft Shared\MSEnv";%PATH%
-:: )
-
-::
-:: A 32-bit 'clang-cl' seems to need a download and install and it's PATH must be
-:: prepended to the normal PATH.
-::
-:: if not %APPVEYOR_PROJECT_NAME%. == . (
-::  if %BUILDER%. == clang. (
-::    if %CPU%. == x86. (
-::      %_ECHO% "\e[1;33mDownloading and installing a 32-bit LLVM...'.\e[0m"
-::      curl -o llvm-installer.exe https://prereleases.llvm.org/win-snapshots/LLVM-10.0.0-e20a1e486e1-win32.exe
-::      start /wait llvm-installer.exe /S /D%APPVEYOR_BUILD_FOLDER%\LLVM-install
-::      echo on
-::      set PATH=%APPVEYOR_BUILD_FOLDER%\LLVM-install\bin;%PATH%
-::      clang-cl -v
-::      %_ECHO% "\e[1;33mDone\n--------------------------------------------------------'.\e[0m"
-::    )
-::  )
-:: )
-
-%_ECHO% "\e[1;33m[%CPU%]: call configur.bat %BUILDER%:\e[0m"
 
 if %BUILDER%. == visualc. (
   call configur.bat visualc
@@ -165,6 +156,7 @@ if %BUILDER%. == visualc. (
 )
 
 if %BUILDER%. == clang. (
+  call :install_LLVM
   call configur.bat clang
   %_ECHO% "\e[1;33mBuilding release for '%CPU%':\e[0m"
   make -f clang-release_%BITS%.mak
@@ -186,16 +178,7 @@ if %BUILDER%. == mingw64. (
 )
 
 if %BUILDER%. == djgpp. (
-  if not exist %DJGPP%\bin\i586-pc-msdosdjgpp-gcc.exe (
-    %_ECHO% "\e[1;33mDownloading Andrew Wu's DJGPP cross compiler:\e[0m"
-    curl -O -# http://www.watt-32.net/CI/dj-win.zip
-    if not errorlevel == 0 (
-      %_ECHO% "\e[1;31mThe curl download of http://www.watt-32.net/CI/dj-win.zip failed!\e[0m"
-      exit /b 1
-    )
-    7z x -y -o%DJGPP% dj-win.zip > NUL
-    rm -f dj-win.zip
-  )
+  call :install_djgpp
   call configur.bat djgpp
   %_ECHO% "\e[1;33mBuilding for djgpp:\e[0m"
   make -f djgpp.mak
@@ -203,17 +186,7 @@ if %BUILDER%. == djgpp. (
 )
 
 if %BUILDER%. == watcom. (
-  if not exist %WATCOM%\binnt\wmake.exe (
-    mkdir %WATCOM%
-    %_ECHO% "\e[1;33mDownloading OpenWatcom 2.0:\e[0m"
-    curl -o %WATCOM_ZIP% -# http://www.watt-32.net/CI/watcom20.zip
-    if not errorlevel == 0 (
-      %_ECHO% "\e[1;31mThe curl download of http://www.watt-32.net/CI/watcom20.zip failed!\e[0m"
-      exit /b
-    )
-    7z x -y -o%WATCOM% %WATCOM_ZIP% > NUL
-  )
-
+  call :install_watcom
   call configur.bat watcom
 
   if %MODEL%. == win32. (
@@ -228,8 +201,12 @@ if %BUILDER%. == watcom. (
     %_ECHO% "\e[1;33mBuilding for Watcom/large:\e[0m"
     wmake -f watcom_l.mak
 
+  ) else if %MODEL%. == small32. (
+    %_ECHO% "\e[1;33mBuilding for Watcom/small32:\e[0m"
+    wmake -f watcom_3.mak
+
   ) else (
-    %_ECHO% "\e[1;31mThe 'watcom' needs a 'MODEL'!\e[0m"
+    %_ECHO% "\e[1;31mBUILDER 'watcom' needs a 'MODEL'!\e[0m"
      exit /b 1
   )
   exit /b
@@ -249,7 +226,7 @@ if %CPU%. == x64. (
 )
 
 ::
-:: './bin/' programs to build for djgpp, Visual-C and Watcom (Win32 + large):
+:: './bin/' programs to build for djgpp, Visual-C and Watcom (Win32 + large + flat):
 ::
 set PROGS_DJ=bping.exe ping.exe finger.exe ident.exe htget.exe ^
              tcpinfo.exe tracert.exe country.exe
@@ -262,6 +239,7 @@ set PROGS_VC=ping.exe finger.exe tcpinfo.exe host.exe htget.exe ^
 set PROGS_WC_WIN=ping.exe htget.exe finger.exe tcpinfo.exe con-test.exe gui-test.exe htget.exe tracert.exe whois.exe
 set PROGS_WC_LARGE=ping.exe htget.exe finger.exe tcpinfo.exe htget.exe whois.exe
 set PROGS_WC_FLAT=%PROGS_WC_LARGE%
+set PROGS_WC_SMALL32=%PROGS_WC_LARGE%
 
 cd bin
 if %BUILDER%. == djgpp. (
@@ -292,11 +270,13 @@ if %BUILDER%. == watcom. (
     rm -f %PROGS_WC_LARGE%
     wmake -f watcom.mak %PROGS_WC_LARGE%
 
+  ) else if %MODEL%. == small32. (
+    %_ECHO% "\e[1;33mwatcom/small32: Not yet.\e[0m"
+
   ) else (
     %_ECHO% "\e[1;31mThe 'watcom' needs a 'MODEL'!\e[0m"
      exit /b 1
   )
-
   exit /b
 )
 
@@ -307,8 +287,67 @@ exit /b 0
 :: Build (and run?) some test programs in './src/tests'
 ::
 :build_tests
-cd src\tests
-%_ECHO% "\e[1;33m[%CPU%]: Simply doing 'call tests/configur.bat %BUILDER%' now.\e[0m"
-call configur.bat %BUILDER%
-exit /b 0
+  cd src\tests
+  %_ECHO% "\e[1;33m[%CPU%]: Simply doing 'call tests/configur.bat %BUILDER%' now.\e[0m"
+  call configur.bat %BUILDER%
+  exit /b 0
 
+::
+:: Download the '%TEMP%\llvm-installer.exe' for 32-bit 'clang-cl'.
+:: A 200 MByte download which installs to "c:\Program Files (x86)\LLVM"
+::
+:: And it's PATH must be prepended to the normal PATH.
+::
+:install_LLVM
+  if %CPU%. == x64. exit /b
+  set PATH=c:\Program Files (x86)\LLVM\bin;%PATH%
+  if exist "c:\Program Files (x86)\LLVM\bin\clang-cl.exe" exit /b
+  if not exist %CI_ROOT%\llvm-installer.exe call :download_LLVM
+
+  %_ECHO% "\e[1;33mInstalling 32-bit LLVM...'.\e[0m"
+  start /wait %CI_ROOT%\llvm-installer.exe /S
+  clang-cl -v
+  %_ECHO% "\e[1;33mDone\n--------------------------------------------------------'.\e[0m"
+  exit /b
+
+:download_LLVM
+  %_ECHO% "\e[1;33mDownloading 32-bit LLVM...'.\e[0m"
+  curl -# -o %CI_ROOT%\llvm-installer.exe https://prereleases.llvm.org/win-snapshots/LLVM-10.0.0-e20a1e486e1-win32.exe
+  if not errorlevel == 0 (
+    %_ECHO% "\e[1;31mThe curl download failed!\e[0m"
+    exit /b 1
+  )
+  exit /b
+
+::
+:: Download and install cross compiler for djgpp
+::
+:install_djgpp
+  if exist %DJGPP%\bin\i586-pc-msdosdjgpp-gcc.exe exit /b
+  call :download_djgpp
+  7z x -y -o%DJGPP% %CI_ROOT%\dj-win.zip > NUL
+  %_ECHO% "\e[1;33mDone\n--------------------------------------------------------'.\e[0m"
+  exit /b
+
+:download_djgpp
+  %_ECHO% "\e[1;33mDownloading Andrew Wu's DJGPP cross compiler:\e[0m"
+  curl -# -o %CI_ROOT%\dj-win.zip http://www.watt-32.net/CI/dj-win.zip
+  if not errorlevel == 0 (
+    %_ECHO% "\e[1;31mThe curl download failed!\e[0m"
+    exit /b 1
+  )
+  exit /b
+
+::
+:: Download and install OpenWatcom
+::
+:install_watcom
+  if exist %WATCOM%\binnt\wmake.exe exit /b
+  %_ECHO% "\e[1;33mDownloading OpenWatcom 2.0:\e[0m"
+  curl -o %CI_ROOT%\watcom20.zip -# http://www.watt-32.net/CI/watcom20.zip
+  if not errorlevel == 0 (
+    %_ECHO% "\e[1;31mThe curl download of http://www.watt-32.net/CI/watcom20.zip failed!\e[0m"
+    exit /b
+  )
+  7z x -y -o%WATCOM% %CI_ROOT%\watcom20.zip > NUL
+  exit /b
