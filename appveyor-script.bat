@@ -22,9 +22,11 @@ if %APPVEYOR_PROJECT_NAME%. == . (
   set APPVEYOR_BUILD_FOLDER=%WATT_ROOT%
   set APPVEYOR_BUILD_FOLDER_UNIX=e:/net/watt
   set LOCAL_TEST=1
+  set CI_ROOT=%TEMP%\CI-temp
 
 ) else (
   set LOCAL_TEST=0
+  set APPVEYOR_BUILD_FOLDER=c:\projects\Watt-32
   set APPVEYOR_BUILD_FOLDER_UNIX=c:/projects/Watt-32
   set _ECHO=c:\msys64\usr\bin\echo.exe -e
 )
@@ -32,7 +34,7 @@ if %APPVEYOR_PROJECT_NAME%. == . (
 ::
 :: Download stuff to here:
 ::
-set CI_ROOT=%TEMP%\Watt-32-CI
+set CI_ROOT=%APPVEYOR_BUILD_FOLDER%\CI-temp
 
 ::
 :: Since only 'watcom' has a '%MODEL%' set in 'appveoyr.yml'
@@ -58,9 +60,14 @@ if %BUILDER%. == mingw64. (
 ::
 :: Set the dir for djgpp cross-environment.
 :: Use forward slashes for this. Otherwise 'sh' + 'make' will get confused.
-:: 7z can create only 1 level of missing directories. So a '%TEMP%/Watt-32-CI/djgpp' will not work
+:: 7z can create only 1 level of missing directories. So a '%CI_ROOT%\djgpp' will not work
 ::
-set DJGPP=c:/temp/Watt-32-CI
+if %LOCAL_TEST% == 1 (
+  set DJGPP=c:/temp/CI-temp
+) else (
+  set DJGPP=%APPVEYOR_BUILD_FOLDER_UNIX%/CI-temp
+)
+
 set DJ_PREFIX=%DJGPP%/bin/i586-pc-msdosdjgpp-
 
 ::
@@ -228,14 +235,8 @@ if %CPU%. == x64. (
 ::
 :: './bin/' programs to build for djgpp, Visual-C and Watcom (Win32 + large + flat):
 ::
-set PROGS_DJ=bping.exe ping.exe finger.exe ident.exe htget.exe ^
-             tcpinfo.exe tracert.exe country.exe
-
-set PROGS_VC=ping.exe finger.exe tcpinfo.exe host.exe htget.exe ^
-             popdump.exe tracert.exe revip.exe con-test.exe gui-test.exe ^
-             rexec.exe cookie.exe daytime.exe dayserv.exe lpq.exe lpr.exe ^
-             ntime.exe ph.exe stat.exe vlsm.exe whois.exe ident.exe country.exe
-
+set PROGS_DJ=bping.exe ping.exe finger.exe ident.exe htget.exe tcpinfo.exe tracert.exe country.exe
+set PROGS_VC=ping.exe finger.exe tcpinfo.exe host.exe htget.exe tracert.exe con-test.exe gui-test.exe lpq.exe lpr.exe ntime.exe whois.exe ident.exe country.exe
 set PROGS_WC_WIN=ping.exe htget.exe finger.exe tcpinfo.exe con-test.exe gui-test.exe htget.exe tracert.exe whois.exe
 set PROGS_WC_LARGE=ping.exe htget.exe finger.exe tcpinfo.exe htget.exe whois.exe
 set PROGS_WC_FLAT=%PROGS_WC_LARGE%
@@ -312,7 +313,7 @@ exit /b 0
 
 :download_LLVM
   %_ECHO% "\e[1;33mDownloading 32-bit LLVM...'.\e[0m"
-  curl -# -o %CI_ROOT%\llvm-installer.exe https://prereleases.llvm.org/win-snapshots/LLVM-10.0.0-e20a1e486e1-win32.exe
+  curl -# --create-dirs -o %CI_ROOT%\llvm-installer.exe https://prereleases.llvm.org/win-snapshots/LLVM-10.0.0-e20a1e486e1-win32.exe
   if not errorlevel == 0 (
     %_ECHO% "\e[1;31mThe curl download failed!\e[0m"
     exit /b 1
@@ -331,7 +332,7 @@ exit /b 0
 
 :download_djgpp
   %_ECHO% "\e[1;33mDownloading Andrew Wu's DJGPP cross compiler:\e[0m"
-  curl -# -o %CI_ROOT%\dj-win.zip http://www.watt-32.net/CI/dj-win.zip
+  curl -# --create-dirs -o %CI_ROOT%\dj-win.zip http://www.watt-32.net/CI/dj-win.zip
   if not errorlevel == 0 (
     %_ECHO% "\e[1;31mThe curl download failed!\e[0m"
     exit /b 1
@@ -344,7 +345,7 @@ exit /b 0
 :install_watcom
   if exist %WATCOM%\binnt\wmake.exe exit /b
   %_ECHO% "\e[1;33mDownloading OpenWatcom 2.0:\e[0m"
-  curl -o %CI_ROOT%\watcom20.zip -# http://www.watt-32.net/CI/watcom20.zip
+  curl --create-dirs -o %CI_ROOT%\watcom20.zip -# http://www.watt-32.net/CI/watcom20.zip
   if not errorlevel == 0 (
     %_ECHO% "\e[1;31mThe curl download of http://www.watt-32.net/CI/watcom20.zip failed!\e[0m"
     exit /b
