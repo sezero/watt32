@@ -218,7 +218,7 @@ gen_all ()
 
 do_clean ()
 {
-  rm -f djgpp.mak watcom_{f,l,s,w,x}.mak MinGW32.mak MinGW64.mak CygWin.mak CygWin_64.mak clang-release_{32,64}.mak clang-debug_{32,64}.mak
+  rm -f djgpp.mak watcom_{f,l,s,w,x,3}.mak MinGW32.mak MinGW64.mak CygWin.mak CygWin_64.mak clang-release_{32,64}.mak clang-debug_{32,64}.mak
   rm -f build/djgpp/watt32.dep build/MinGW32/watt32.dep build/MinGW64/32bit/watt32.dep build/MinGW64/64bit/watt32.dep
   rm -f build/CygWin/watt32.dep build/watcom/watt32.dep build/clang/watt32.dep
   rm -f build/djgpp/syserr.c build/watcom/syserr.c build/MinGW32/syserr.c build/MinGW64/syserr.c build/clang/syserr.c
