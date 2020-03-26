@@ -11,8 +11,8 @@ environment:
       CPU:     x86
     - BUILDER: visualc
       CPU:     x64
-#   - BUILDER: clang
-#     CPU:     x86
+    - BUILDER: clang
+      CPU:     x86
     - BUILDER: clang
       CPU:     x64
 #   - BUILDER: mingw64
@@ -44,6 +44,7 @@ matrix:
   allow_failures:
      - BUILDER: mingw64
      - BUILDER: watcom
+     - BUILDER: clang
 
 install:
   #
