@@ -469,7 +469,7 @@ $(OBJDIR)\cpumodel.obj: cpumodel.asm
 #
 @ifdef SMALL
 CC      = wcc
-CFLAGS  = -ms -0 -os -zc -s -bt=dos
+CFLAGS  = -ms -0 -os -zc -s -zlf -bt=dos
 AFLAGS  = -bt=dos
 TARGET  = ..\lib\wattcpws.lib
 OBJDIR  = build\watcom\small
@@ -477,7 +477,7 @@ MAKEFIL = watcom_s.mak
 
 @elifdef LARGE
 CC      = wcc
-CFLAGS  = -ml -0 -os -zc -s -bt=dos
+CFLAGS  = -ml -0 -os -zc -s -zlf -bt=dos
 AFLAGS  = -bt=dos
 TARGET  = ..\lib\wattcpwl.lib
 OBJDIR  = build\watcom\large
@@ -485,7 +485,7 @@ MAKEFIL = watcom_l.mak
 
 @elifdef FLAT
 CC      = wcc386
-CFLAGS  = -mf -3r -zff -zgf -zm -s -bt=dos -oilrtfm # -I$(%PHARLAP)\include
+CFLAGS  = -mf -3r -zff -zgf -zm -s -zlf -bt=dos -oilrtfm # -I$(%PHARLAP)\include
 AFLAGS  = -bt=dos -3r -dDOSX -dDOS4GW
 TARGET  = ..\lib\wattcpwf.lib
 OBJDIR  = build\watcom\flat
@@ -493,7 +493,7 @@ MAKEFIL = watcom_f.mak
 
 @elifdef WIN32
 CC       = wcc386
-CFLAGS   = -mf -3r -zm -zw -bd -bm -d3 -bt=nt -fp6 -oilrtfm -zri
+CFLAGS   = -mf -3r -zm -zw -bd -bm -d3 -zlf -bt=nt -fp6 -oilrtfm -zri
 AFLAGS   = -bt=nt -3s -dDOSX
 LDFLAGS  = system nt dll
 TARGET   = ..\lib\wattcpww.lib ..\lib\wattcpww_imp.lib
@@ -504,7 +504,7 @@ RESOURCE = $(OBJDIR)\watt-32.res
 
 @elifdef SMALL32
 CC      = wcc386
-CFLAGS  = -ms -oaxt -s -bt=dos
+CFLAGS  = -ms -oaxt -s -zlf -bt=dos
 AFLAGS  = -3 -bt=dos -dDOSX
 TARGET  = ..\lib\wattcpw3.lib
 OBJDIR  = build\watcom\small32
@@ -539,6 +539,7 @@ EXTRA_CFLAGS = -DWATT32_BUILD -I. -I..\inc -I$(%WATCOM)\h
 #   -fr       write errors to file (and stdout)
 #   -bt=dos   target system - DOS
 #   -bt=nt    target system - Win-NT
+#   -zlf      always generate default library information
 #   -zm       place each function in separate segment
 #   -oilrtfm  optimization flags
 #     i:      expand intrinsics
