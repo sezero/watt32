@@ -442,6 +442,9 @@ const char * W32_CALL wattcpVersion (void)
     #elif defined(__FLAT__)
       #define CFLAGS       "build/watcom/flat/cflags.h"
       #define CFLAGS_BUF   "build/watcom/flat/cflagsbf.h"
+    #elif defined(__SMALL__)
+      #define CFLAGS       "build/watcom/small32/cflags.h"
+      #define CFLAGS_BUF   "build/watcom/small32/cflagsbf.h"
     #endif
   #endif
 
