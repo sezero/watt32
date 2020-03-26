@@ -3,14 +3,17 @@ setlocal EnableDelayedExpansion
 prompt $P$G
 
 ::
-:: 'APPVEYOR_PROJECT_NAME==Watt-32' unless testing this "appveyor-script.bat [build_src | build_bin | build_tests]"
-:: locally using 'cmd'.
+:: 'APPVEYOR_PROJECT_NAME==Watt-32' unless testing this as:
+::   c:\net\watt-32\> cmd /c appveyor-script.bat [build_src | build_bin | build_tests]
 ::
+:: locally.
 :: Change this for an 'echo.exe' with colour support. Like Cygwin.
 ::
 set _ECHO=%MSYS2_ROOT%\usr\bin\echo.exe -e
 
 if %APPVEYOR_PROJECT_NAME%. == . (
+  set LOCAL_TEST=1
+
   if %BUILDER%. == . (
     echo BUILDER not set!
     exit /b 1
@@ -21,13 +24,13 @@ if %APPVEYOR_PROJECT_NAME%. == . (
   )
   set APPVEYOR_BUILD_FOLDER=%WATT_ROOT%
   set APPVEYOR_BUILD_FOLDER_UNIX=e:/net/watt
-  set LOCAL_TEST=1
 
 ) else (
+  set LOCAL_TEST=0
+  set WATT_ROOT=c:\projects\watt-32
   set APPVEYOR_BUILD_FOLDER=c:\projects\watt-32
   set APPVEYOR_BUILD_FOLDER_UNIX=c:/projects/watt-32
   set _ECHO=c:\msys64\usr\bin\echo.exe -e
-  set LOCAL_TEST=0
 )
 
 ::
@@ -75,7 +78,7 @@ set DOS_INCLUDE=%WATCOM%\h
 ::
 :: Shit for brains 'cmd' cannot have this inside a 'if x (' block since
 :: on a AppVeyor build several "c:\Program Files (x86)\Microsoft xxx" strings
-:: are in the 'PATH'!
+:: are in the 'PATH'.
 ::
 :: This is the PATH to the 64-bit 'clang-cl' already on AppVeyor.
 ::
@@ -91,11 +94,6 @@ set PATH=%PATH%;%WATCOM%\binnt
 :: In case my curl was built with Wsock-Trace
 ::
 set WSOCK_TRACE_LEVEL=0
-
-::
-:: For a true AppVeyor build:
-::
-if %WATT_ROOT%. == . set WATT_ROOT=%CD%
 
 ::
 :: Sanity check:
@@ -135,14 +133,12 @@ if %CPU%. == x64. set BITS=64
 :: This is what AppVeyor have first in their PATH:
 ::   c:\Program Files (x86)\Microsoft SDKs\Azure\CLI2\wbin
 ::
-:: Hence cannot use a 'if x (what-ever) else (something else)' syntax with that
+:: Hence cannot use a 'if x (what-ever) else (something else)' syntax with that.
 ::
-if %LOCAL_TEST% == 1 echo on
 if %LOCAL_TEST% == 1 (
-  if not exist "%APPVEYOR_BUILD_FOLDER_UNIX%" (echo No %APPVEYOR_BUILD_FOLDER_UNIX%. Edit this .bat-file & exit /b 1)
+  echo on
+  if not exist "%APPVEYOR_BUILD_FOLDER_UNIX%" (echo No '%APPVEYOR_BUILD_FOLDER_UNIX%'. Edit this .bat-file & exit /b 1)
 )
-
-:: if %LOCAL_TEST% == 1 set PATH=%PATH%;c:\Program Files (x86)\Microsoft SDKs\Azure\CLI2\wbin
 
 %_ECHO% "\e[1;33m[%CPU%]: call configur.bat %BUILDER%:\e[0m"
 
