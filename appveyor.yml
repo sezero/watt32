@@ -7,13 +7,13 @@ skip_commits:
 
 environment:
   matrix:
-    - BUILDER: visualc
+    - BUILDER: clang
       CPU:     x86
-    - BUILDER: visualc
+    - BUILDER: clang
       CPU:     x64
-    - BUILDER: clang
+    - BUILDER: visualc
       CPU:     x86
-    - BUILDER: clang
+    - BUILDER: visualc
       CPU:     x64
 #   - BUILDER: mingw64
 #     CPU:     x86
