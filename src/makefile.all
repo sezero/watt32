@@ -618,7 +618,7 @@ clean: .SYMBOLIC
 
 $(LIBARG): $(MAKEFIL)
 	%create $^@
-	for %f in ($(OBJS)) do %append $^@ +- %f
+	@for %f in ($(OBJS)) do @%append $^@ +- %f
 
 @ifdef WIN32
 $(LINKARG): $(__MAKEFILES__)
