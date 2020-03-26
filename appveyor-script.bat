@@ -22,13 +22,12 @@ if %APPVEYOR_PROJECT_NAME%. == . (
   set APPVEYOR_BUILD_FOLDER=%WATT_ROOT%
   set APPVEYOR_BUILD_FOLDER_UNIX=e:/net/watt
   set LOCAL_TEST=1
-  set CI_ROOT=%TEMP%\CI-temp
 
 ) else (
-  set LOCAL_TEST=0
   set APPVEYOR_BUILD_FOLDER=c:\projects\Watt-32
   set APPVEYOR_BUILD_FOLDER_UNIX=c:/projects/Watt-32
   set _ECHO=c:\msys64\usr\bin\echo.exe -e
+  set LOCAL_TEST=0
 )
 
 ::
@@ -62,12 +61,7 @@ if %BUILDER%. == mingw64. (
 :: Use forward slashes for this. Otherwise 'sh' + 'make' will get confused.
 :: 7z can create only 1 level of missing directories. So a '%CI_ROOT%\djgpp' will not work
 ::
-if %LOCAL_TEST% == 1 (
-  set DJGPP=c:/temp/CI-temp
-) else (
-  set DJGPP=%APPVEYOR_BUILD_FOLDER_UNIX%/CI-temp
-)
-
+set DJGPP=%APPVEYOR_BUILD_FOLDER_UNIX%/CI-temp
 set DJ_PREFIX=%DJGPP%/bin/i586-pc-msdosdjgpp-
 
 ::
@@ -143,7 +137,10 @@ if %CPU%. == x64. set BITS=64
 :: Hence cannot use a 'if x (what-ever) else (something else)' syntax with that
 ::
 if %LOCAL_TEST% == 1 echo on
-if %LOCAL_TEST% == 1 (if not exist c:\temp (echo No c:\temp. Edit this .bat-file & exit /b 1))
+if %LOCAL_TEST% == 1 (
+  if not exist "%APPVEYOR_BUILD_FOLDER_UNIX%" (echo No %APPVEYOR_BUILD_FOLDER_UNIX%. Edit this .bat-file & exit /b 1)
+)
+
 :: if %LOCAL_TEST% == 1 set PATH=%PATH%;c:\Program Files (x86)\Microsoft SDKs\Azure\CLI2\wbin
 
 %_ECHO% "\e[1;33m[%CPU%]: call configur.bat %BUILDER%:\e[0m"
@@ -294,7 +291,7 @@ exit /b 0
   exit /b 0
 
 ::
-:: Download the '%TEMP%\llvm-installer.exe' for 32-bit 'clang-cl'.
+:: Download the '%CI_ROOT%\llvm-installer.exe' for 32-bit 'clang-cl'.
 :: A 200 MByte download which installs to "c:\Program Files (x86)\LLVM"
 ::
 :: And it's PATH must be prepended to the normal PATH.
