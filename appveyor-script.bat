@@ -34,6 +34,7 @@ if %APPVEYOR_PROJECT_NAME%. == . (
 :: Download stuff to here:
 ::
 set CI_ROOT=%APPVEYOR_BUILD_FOLDER%\CI-temp
+md %CI_ROOT%
 
 ::
 :: Since only 'watcom' has a '%MODEL%' set in 'appveoyr.yml'
@@ -299,6 +300,7 @@ exit /b 0
 :install_LLVM
   if %CPU%. == x64. exit /b
   echo on
+  echo %CD%
   set PATH=c:\Program Files (x86)\LLVM\bin;%PATH%
   if exist "c:\Program Files (x86)\LLVM\bin\clang-cl.exe" exit /b
   if not exist %CI_ROOT%\llvm-installer.exe call :download_LLVM
@@ -311,7 +313,7 @@ exit /b 0
 
 :download_LLVM
   %_ECHO% "\e[1;33mDownloading 32-bit LLVM...'.\e[0m"
-  curl -# --create-dirs -o %CI_ROOT%\llvm-installer.exe https://prereleases.llvm.org/win-snapshots/LLVM-10.0.0-e20a1e486e1-win32.exe
+  curl -# -o %CI_ROOT%\llvm-installer.exe https://prereleases.llvm.org/win-snapshots/LLVM-10.0.0-e20a1e486e1-win32.exe
   if not errorlevel == 0 (
     %_ECHO% "\e[1;31mThe curl download failed!\e[0m"
     exit /b 1
@@ -330,7 +332,7 @@ exit /b 0
 
 :download_djgpp
   %_ECHO% "\e[1;33mDownloading Andrew Wu's DJGPP cross compiler:\e[0m"
-  curl -# --create-dirs -o %CI_ROOT%\dj-win.zip http://www.watt-32.net/CI/dj-win.zip
+  curl -# -o %CI_ROOT%\dj-win.zip http://www.watt-32.net/CI/dj-win.zip
   if not errorlevel == 0 (
     %_ECHO% "\e[1;31mThe curl download failed!\e[0m"
     exit /b 1
@@ -343,7 +345,7 @@ exit /b 0
 :install_watcom
   if exist %WATCOM%\binnt\wmake.exe exit /b
   %_ECHO% "\e[1;33mDownloading OpenWatcom 2.0:\e[0m"
-  curl --create-dirs -o %CI_ROOT%\watcom20.zip -# http://www.watt-32.net/CI/watcom20.zip
+  curl -# -o %CI_ROOT%\watcom20.zip http://www.watt-32.net/CI/watcom20.zip
   if not errorlevel == 0 (
     %_ECHO% "\e[1;31mThe curl download of http://www.watt-32.net/CI/watcom20.zip failed!\e[0m"
     exit /b
