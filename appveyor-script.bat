@@ -24,8 +24,8 @@ if %APPVEYOR_PROJECT_NAME%. == . (
   set LOCAL_TEST=1
 
 ) else (
-  set APPVEYOR_BUILD_FOLDER=c:\projects\Watt-32
-  set APPVEYOR_BUILD_FOLDER_UNIX=c:/projects/Watt-32
+  set APPVEYOR_BUILD_FOLDER=c:\projects\watt-32
+  set APPVEYOR_BUILD_FOLDER_UNIX=c:/projects/watt-32
   set _ECHO=c:\msys64\usr\bin\echo.exe -e
   set LOCAL_TEST=0
 )
@@ -298,6 +298,7 @@ exit /b 0
 ::
 :install_LLVM
   if %CPU%. == x64. exit /b
+  echo on
   set PATH=c:\Program Files (x86)\LLVM\bin;%PATH%
   if exist "c:\Program Files (x86)\LLVM\bin\clang-cl.exe" exit /b
   if not exist %CI_ROOT%\llvm-installer.exe call :download_LLVM
