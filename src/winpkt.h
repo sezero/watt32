@@ -67,21 +67,21 @@ typedef UINT (MS_CDECL *func_recv) (const void *a, void *buf, UINT buf_len);    
  * Placeholder for vital data accessed by capture thread.
  */
 struct pkt_info {
-       const void   *adapter_info;       /* opaque ADAPTER_INFO object (WinPcap only) */
-       const void   *adapter;            /* opaque ADAPTER or SwsVpktUsr object */
-       void         *npf_buf;            /* WinPcap: buffer for ReadFile() */
-       int           npf_buf_size;       /* WinPcap: size of above buffer */
-       HANDLE        recv_thread;        /* WinPcap: thread for capturing */
-       WORD          pkt_ip_ofs;         /* store length of MAC-header */
-       WORD          pkt_type_ofs;       /* offset to MAC-type */
-       volatile BOOL stop_thread;        /* signal thread to stop */
-       volatile BOOL thread_stopped;     /* did it stop gracefully? */
+       const void   *adapter_info;     /* opaque ADAPTER_INFO object (WinPcap only) */
+       const void   *adapter;          /* opaque ADAPTER or SwsVpktUsr object */
+       void         *npf_buf;          /* WinPcap: buffer for ReadFile() */
+       int           npf_buf_size;     /* WinPcap: size of above buffer */
+       HANDLE        recv_thread;      /* WinPcap: thread for capturing */
+       WORD          pkt_ip_ofs;       /* store length of MAC-header */
+       WORD          pkt_type_ofs;     /* offset to MAC-type */
+       volatile BOOL stop_thread;      /* signal thread to stop */
+       volatile BOOL thread_stopped;   /* did it stop gracefully? */
 
-       const char *api_name;         /* "WinPcap", "AirPcap", "SwsVpkt" etc. */
-       const char *sys_drvr_name;    /* "NPF.sys", "airpcap.sys", "SwsVpkt.sys" etc. */
+       const char *api_name;           /* "WinPcap", "SwsVpkt" etc. */
+       const char *sys_drvr_name;      /* "NPF.sys", "SwsVpkt.sys" etc. */
 
        /* Function pointers to transmit(), recv() etc. Depending
-        * on the type of low-level driver we use (NPF/SwsVpkt/AirPcap/WanPacket).
+        * on the type of low-level driver we use (NPF/SwsVpkt/WanPacket).
         */
        func_init         init_op;
        func_open         open_op;

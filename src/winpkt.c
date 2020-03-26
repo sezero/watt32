@@ -167,7 +167,6 @@ static const struct search_list phys_media[] = {
 static enum eth_init_result open_winpcap_adapter (const char *name);
 static enum eth_init_result open_npcap_adapter (const char *name);
 static enum eth_init_result open_win10pcap_adapter (const char *name);
-static enum eth_init_result open_airpcap_adapter (const char *name);
 static enum eth_init_result open_wanpacket_adapter (const char *name);
 static enum eth_init_result open_swsvpkt_adapter (const char *name);
 
@@ -356,14 +355,6 @@ static BOOL find_adapter (char *aname, size_t size)
     _eth_SwsVpkt = TRUE;
     return (TRUE);
   }
-#if 0
-  rc = find_airpcap_adapter (aname, size);
-  if (rc)
-  {
-    _eth_airpcap = TRUE;
-    return (TRUE);
-  }
-#endif
   return (rc);
 }
 
@@ -400,7 +391,7 @@ static BOOL legal_recv_mode (WORD bits)
 
 
 /**
- * Initialise one of WinPcap, SwsVpkt, AirPcap, Win10Pcap, NPcap or WanPacket
+ * Initialise one of WinPcap, SwsVpkt, Win10Pcap, NPcap or WanPacket
  * and return our MAC address.
  */
 int W32_CALL pkt_eth_init (mac_address *mac_addr)
@@ -441,7 +432,6 @@ int W32_CALL pkt_eth_init (mac_address *mac_addr)
 #endif
 
   _eth_SwsVpkt   = (strnicmp(_pktdrvrname,"\\\\.\\SwsVpkt",11) == 0);
-  _eth_airpcap   = (strnicmp(_pktdrvrname,"\\\\.\\airpcap",11) == 0);
   _eth_winpcap   = (strnicmp(_pktdrvrname,"\\Device\\NPF_{",13) == 0);
   _eth_npcap     = (strnicmp(_pktdrvrname,"\\Device\\NPCAP_{",13) == 0);
   _eth_win10pcap = (strnicmp(_pktdrvrname,"\\Device\\WTCAP_A_{",15) == 0);
@@ -471,7 +461,6 @@ int W32_CALL pkt_eth_init (mac_address *mac_addr)
   CONSOLE_MSG (2, ("device %s\n", _pktdrvrname));
 
   rc = _eth_SwsVpkt   ? open_swsvpkt_adapter   (_pktdrvrname) :
-       _eth_airpcap   ? open_airpcap_adapter   (_pktdrvrname) :
        _eth_wanpacket ? open_wanpacket_adapter (_pktdrvrname) :
        _eth_win10pcap ? open_win10pcap_adapter (_pktdrvrname) :
        _eth_npcap     ? open_npcap_adapter     (_pktdrvrname) :
@@ -577,7 +566,7 @@ int W32_CALL pkt_eth_init (mac_address *mac_addr)
        pkt_set_rcv_mode (_pkt_forced_rxmode);
   else pkt_set_rcv_mode (RXMODE_DEFAULT);
 
-  if (_eth_winpcap || _eth_win10pcap || _eth_airpcap)  /* to-do: do this in 'open_XX_adapter' */
+  if (_eth_winpcap || _eth_win10pcap)  /* to-do: do this in 'open_XX_adapter' */
   {
     _pkt_inf->recv_thread = CreateThread (NULL, 2048, winpcap_recv_thread,
                                           NULL, 0, &thread_id);
@@ -630,7 +619,7 @@ int W32_CALL pkt_release (void)
   if (adapter && adapter != INVALID_HANDLE_VALUE)
   {
     /* Don't close the adapter before telling the thread about it.
-     * Only WinPcap/AirPcap devices have a receiver thread here.
+     * Only WinPcap devices have a receiver thread here.
      */
     if (_pkt_inf->recv_thread)
     {
@@ -998,7 +987,6 @@ int W32_CALL pkt_send (const void *tx, int length)
     const  ADAPTER    *adapter = (const ADAPTER*)_pkt_inf->adapter;
 
     if (_eth_SwsVpkt ? SwsVpktSend(sws_usr, tx, length) :
-    //  _eth_airpcap ? AirpcapWrite(air_adapter, tx, length) :
                        PacketSendPacket(adapter, tx, length))
     {
       rc = length;
@@ -1034,7 +1022,7 @@ int W32_CALL pkt_set_rcv_mode (int mode)
   BOOL  rc;
   const ADAPTER *adapter;
 
-  if (!_pkt_inf || _eth_SwsVpkt || _eth_airpcap)
+  if (!_pkt_inf || _eth_SwsVpkt)
      return (0);
 
   adapter = (const ADAPTER*) _pkt_inf->adapter;
@@ -1068,7 +1056,7 @@ int W32_CALL pkt_get_rcv_mode (void)
   BOOL  rc;
   const ADAPTER *adapter;
 
-  if (!_pkt_inf || _eth_SwsVpkt || _eth_airpcap)
+  if (!_pkt_inf || _eth_SwsVpkt)
      return (0);
 
   adapter = (const ADAPTER*) _pkt_inf->adapter;
@@ -1291,13 +1279,6 @@ static BOOL get_if_type_swsvpkt (const struct SwsVpktUsr *usr, WORD *type)
   return (TRUE);
 }
 
-static BOOL get_if_type_airpcap (const AIR_ADAPTER *adapter, WORD *type)
-{
-  *type = PDCLASS_ETHER;   /** \todo Fix me */
-  ARGSUSED (adapter);
-  return (TRUE);
-}
-
 /* Query the NIC driver for the adapter description
  */
 static BOOL get_descr_pcap (const ADAPTER *adapter, char *buf, size_t max)
@@ -1340,13 +1321,6 @@ static BOOL get_if_speed_pcap (const ADAPTER *adapter, DWORD *Mbit_s)
   return (TRUE);
 }
 
-static BOOL get_if_speed_airpcap (const AIR_ADAPTER *adapter, DWORD *Mbit_s)
-{
-  *Mbit_s = 54;        /* fixed at 54MB/s? */
-  ARGSUSED (adapter);
-  return (TRUE);
-}
-
 #if defined(USE_DEBUG)
 static BOOL get_interface_speed (DWORD *speed)
 {
@@ -1363,7 +1337,7 @@ static BOOL get_phys_media (int *media)
   } oid;
   const ADAPTER *adapter;
 
-  if (!_pkt_inf || _eth_SwsVpkt || _eth_airpcap)
+  if (!_pkt_inf || _eth_SwsVpkt)
      return (FALSE);
 
   adapter = (const ADAPTER*) _pkt_inf->adapter;
@@ -1427,7 +1401,7 @@ static BOOL ndis_set_loopback (BOOL enable)
   DWORD gen_oid = OID_GEN_MAC_OPTIONS;
   DWORD opt_bit = NDIS_MAC_OPTION_NO_LOOPBACK;
 
-  if (!_pkt_inf || _eth_SwsVpkt || _eth_airpcap)
+  if (!_pkt_inf || _eth_SwsVpkt)
      return (FALSE);
 
   adapter = (const ADAPTER*) _pkt_inf->adapter;
@@ -1480,9 +1454,6 @@ int W32_CALL pkt_get_api_ver (WORD *ver_p)
     if (rc)
        *ver_p = (WORD)ver;
   }
-  else if (_eth_airpcap)
-  {
-  }
   else if (_eth_winpcap || _eth_win10pcap)
   {
     struct {
@@ -1506,7 +1477,7 @@ int W32_CALL pkt_get_api_ver (WORD *ver_p)
 }
 
 /*
- * Returns NPF.SYS/SwsVpkt.sys/airpcap.sys version as "major,minor,0,build" or
+ * Returns NPF.SYS/SwsVpkt.sys version as "major,minor,0,build" or
  * "major.minor.0.build" (8 bits each).
  */
 int W32_CALL pkt_get_drvr_ver (WORD *major, WORD *minor, WORD *unused, WORD *build)
@@ -1523,7 +1494,7 @@ int W32_CALL pkt_get_drvr_ver (WORD *major, WORD *minor, WORD *unused, WORD *bui
 }
 
 /*
- * Returns name of driver; NPF.SYS/SwsVpkt.sys/airpcap.sys etc.
+ * Returns name of driver; NPF.SYS, SwsVpkt.sys etc.
  */
 const char * W32_CALL pkt_get_drvr_name (void)
 {
@@ -1658,36 +1629,6 @@ static enum eth_init_result open_win10pcap_adapter (const char *name)
   _pkt_inf->api_name        = "Win10Pcap";
   _pkt_inf->sys_drvr_name   = "Win10Pcap.sys";
 
-  return (WERR_NO_ERROR);
-}
-
-/**
- * Open the named AirPcap device.
- */
-static enum eth_init_result open_airpcap_adapter (const char *name)
-{
-  const AIR_ADAPTER *adapter;
-
-  /**< \todo */
-  (*_printf) ("adapter-name: %s\n", name);
-  _pkt_errno = PDERR_NO_DRIVER;
-  UNFINISHED();
-
-#if 0
-  adapter = AirPcapOpen (name);
-  _pkt_inf->adapter    = adapter;
-  _pkt_inf->send_op    = AirpcapWrite;
-  _pkt_inf->get_mac_op = AirpcapGetMacAddress;
-  _pkt_inf->close_op   = AirpcapClose;
-#endif
-  _pkt_inf->get_if_mtu_op   = (func_get_if_mtu)   get_if_mtu_generic;
-  _pkt_inf->get_if_speed_op = (func_get_if_speed) get_if_speed_airpcap;
-  _pkt_inf->get_if_type_op  = (func_get_if_type)  get_if_type_airpcap;
-//_pkt_inf->get_drv_ver_op  = AirpcapGetDriverVersion;
-  _pkt_inf->api_name        = "airpcap";
-  _pkt_inf->sys_drvr_name   = "airpcap.sys";
-
-  ARGSUSED (adapter);
   return (WERR_NO_ERROR);
 }
 
