@@ -1133,21 +1133,10 @@ void W32_CALL sock_sig_exit (const char *msg, int sig)
     exit (-1);
 }
 
-
 /*
  * Make sure user links the correct C-libs.
  */
-#if defined(WATCOM386)
-  #if defined(__SW_3R)   /* '-3r' in CFLAGS */
-    #pragma library ("clib3r.lib");
-    #pragma library ("math387r.lib");
-
-  #else /* __SW_3S, '-3s' in CFLAGS */
-    #pragma library ("clib3s.lib");
-    #pragma library ("math387s.lib");
-  #endif
-
-#elif defined(_MSC_VER) && (_MSC_VER >= 1200) && 0
+#if defined(_MSC_VER) && (_MSC_VER >= 1200) && 0
   #if defined(_DEBUG)
     #pragma comment (library, "wattcpvc_imp_d.lib")
   #else
@@ -1163,4 +1152,3 @@ void W32_CALL sock_sig_exit (const char *msg, int sig)
     #pragma comment (library, "wattcpMF.lib")
   #endif
 #endif
-
