@@ -461,6 +461,8 @@ $(OBJDIR)\cpumodel.obj: cpumodel.asm
 
 @elifdef WATCOM
 
+.ERASE
+
 .EXTENSIONS: .l
 
 @ifdef SMALL
@@ -469,7 +471,6 @@ CFLAGS  = -ms -0 -os -zc -s -zlf -bt=dos
 AFLAGS  = -bt=dos
 TARGET  = ..\lib\wattcpws.lib
 OBJDIR  = build\watcom\small
-MAKEFIL = watcom_s.mak
 
 @elifdef LARGE
 CC      = *wcc
@@ -477,7 +478,6 @@ CFLAGS  = -ml -0 -os -zc -s -zlf -bt=dos
 AFLAGS  = -bt=dos
 TARGET  = ..\lib\wattcpwl.lib
 OBJDIR  = build\watcom\large
-MAKEFIL = watcom_l.mak
 
 @elifdef FLAT
 CC      = *wcc386
@@ -485,7 +485,6 @@ CFLAGS  = -mf -3r -zff -zgf -zm -s -zlf -bt=dos -oilrtfm # -I$(%PHARLAP)\include
 AFLAGS  = -bt=dos -3r -dDOSX -dDOS4GW
 TARGET  = ..\lib\wattcpwf.lib
 OBJDIR  = build\watcom\flat
-MAKEFIL = watcom_f.mak
 
 @elifdef WIN32
 CC       = *wcc386
@@ -495,7 +494,6 @@ LDFLAGS  = system nt dll
 TARGET   = ..\lib\wattcpww.lib ..\lib\wattcpww_imp.lib
 WATTDLL  = ..\bin\watt-32.dll
 OBJDIR   = build\watcom\win32
-MAKEFIL  = watcom_w.mak
 RESOURCE = $(OBJDIR)\watt-32.res
 
 @elifdef SMALL32
@@ -504,7 +502,6 @@ CFLAGS  = -ms -oaxt -s -zlf -bt=dos
 AFLAGS  = -3 -bt=dos -dDOSX
 TARGET  = ..\lib\wattcpw3.lib
 OBJDIR  = build\watcom\small32
-MAKEFIL = watcom_3.mak
 
 @else
 !error Unknown WATCOM model
@@ -585,15 +582,13 @@ $(OBJDIR)\asmpkt.obj:   asmpkt.asm
 $(OBJDIR)\chksum0.obj:  chksum0.asm
 $(OBJDIR)\cpumodel.obj: cpumodel.asm
 
-.ERASE
 .c{$(OBJDIR)}.obj:
 	$(CC) $[@ @$(C_ARGS) -fo=$@
 
-.ERASE
 .asm{$(OBJDIR)}.obj:
 	$(AS) $[@ $(AFLAGS) -fo=$@
 
-$(C_ARGS): $(MAKEFIL)
+$(C_ARGS): $(__MAKEFILES__)
 	%create $^@
 	%append $^@ $(CFLAGS) $(EXTRA_CFLAGS)
 
@@ -614,7 +609,7 @@ clean: .SYMBOLIC
 @endif
 	@echo Cleaning done
 
-$(LIBARG): $(MAKEFIL)
+$(LIBARG): $(__MAKEFILES__)
 	%create $^@
 	@for %f in ($(OBJS)) do @%append $^@ +- %f
 
@@ -1513,6 +1508,16 @@ $(OBJDIR)/cflags.h: $(MAKEFILE_LIST)
 	echo 'const char *w32_cflags = "$(CFLAGS)";' > $(OBJDIR)/cflags.h
 	echo 'const char *w32_cc     = "$(CC)";'    >> $(OBJDIR)/cflags.h
 
+@elifdef WATCOM
+$(OBJDIR)/cflags.h: $(__MAKEFILES__)
+!ifdef __UNIX__
+	echo 'const char *w32_cflags = "$(CFLAGS)";' > $(OBJDIR)/cflags.h
+	echo 'const char *w32_cc     = "$(CC)";'    >> $(OBJDIR)/cflags.h
+!else
+	echo const char *w32_cflags = '"$(CFLAGS)";' > $(OBJDIR)\cflags.h
+	echo const char *w32_cc     = '"$(CC)";'    >> $(OBJDIR)\cflags.h
+!endif
+
 @elifdef BORLAND
 $(OBJDIR)\cflags.h: $(MAKEFIL)
 	echo const char *w32_cflags = '"$(CFLAGS)";' > $(OBJDIR)\cflags.h
@@ -1520,7 +1525,7 @@ $(OBJDIR)\cflags.h: $(MAKEFIL)
 
 @else
 #
-# This is for Watcom etc. which could possibly not handle all the arguments in
+# This is for tools which could possibly not handle all the arguments in
 # the 'CFLAGS'. We to do this in several steps creating a multiline string
 # for 'w32_cflags'!
 #
