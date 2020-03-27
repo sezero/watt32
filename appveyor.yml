@@ -63,3 +63,8 @@ build_script:
 test_script:
     - cmd: appveyor-script.bat build_tests
 
+#
+# Try to preserve previously downloaded CI packgages.
+#
+cache:
+  - '%APPVEYOR_BUILD_FOLDER%\CI-temp'
