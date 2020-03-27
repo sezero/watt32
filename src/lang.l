@@ -88,9 +88,7 @@ static struct Language {
    * Warning! W202:  Symbol 'yy_fatal_error' has been defined, but not referenced.
    */
   #pragma warning 202 5
-
 #endif
-
 
 %}
 
