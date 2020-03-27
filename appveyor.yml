@@ -66,3 +66,5 @@ test_script:
 #
 cache:
   - '%APPVEYOR_BUILD_FOLDER%\CI-temp'
+  - 'c:\Program Files (x86)\LLVM'
+
