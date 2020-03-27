@@ -1283,7 +1283,6 @@ DWORD get_ss_limit (void)
   #if defined(__WATCOMC__)
     /*
      * Warning! W202: Symbol 'stack_limit' has been defined, but not referenced
-     * But it does not work.
      */
     #pragma warning 202 5
   #endif
