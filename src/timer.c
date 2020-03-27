@@ -217,9 +217,9 @@ void W32_CALL userTimerTick (DWORD elapsed_time_msec)
     tick_timer_8254 -= 0x10000;
 
 #if (DOSX & (PHARLAP|X32VM))
-    _chain_intr (old_int_8);    /* chain now */
-#elif defined(__WATCOMC__)
     _dx_call_real (old_int_8, &rmBlock_int8, 1);
+#elif defined(__WATCOMC__)
+    _chain_intr (old_int_8);    /* chain now */
 #else
     (*old_int_8)();
 #endif
