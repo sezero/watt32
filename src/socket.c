@@ -2015,6 +2015,14 @@ int _UDP_open (Socket *socket, struct in_addr host, WORD loc_port, WORD rem_port
   return (1);
 }
 
+#if defined(__WATCOMC__)
+  /*
+   * Warning! W201: Unreachable code. Due to SOCK_FATAL().
+   */
+  #pragma warning 201 5
+#endif
+
+
 int _UDP_listen (Socket *socket, struct in_addr host, WORD port)
 {
   _udp_Socket *udp = socket->udp_sock;

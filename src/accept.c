@@ -54,10 +54,10 @@
 
 #if defined(__WATCOMC__)
   /*
-   * Warning! W201: Unreachable code. Due to SOCK_FATAIL().
-   * But it does not work.
+   * Warning! W201: Unreachable code.
+   * Due to 'SOCK_ERRNO (EINVAL)' after 'SOCK_FATAL()'.
    */
-  #pragma warning 201 10
+  #pragma warning 201 5
 #endif
 
 static int  dup_bind   (Socket *socket, Socket **clone, int idx);
