@@ -44,6 +44,7 @@
 *.out
 *.pbi
 *.pbo
+*.pbt
 *.pcap
 *.pdb
 *.pdf
@@ -90,6 +91,7 @@ t
 tt
 zip
 
+CI-temp
 bin/archie
 bin/BING
 bin/BLAT
@@ -142,7 +144,6 @@ bin/PHATCAT
 bin/ping-dbg.bat
 bin/ping.bat
 bin/PMAIL
-bin/popdump.pbt
 bin/POPMAIL
 bin/RDATE
 bin/RDEBUG
@@ -182,8 +183,12 @@ bin/WGET.182
 bin/WPUT.030
 bin/wput.031
 bin/WWW.BOA
+bin/watt-32.chm
 
 src/*.mak
+src/chk_gcc.bat
+src/chk_hdr.bat
+src/cpp_filter.py
 src/ALL_DOS.BAT
 src/BOB
 src/build/borland
