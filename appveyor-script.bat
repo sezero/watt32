@@ -188,6 +188,8 @@ if %BUILDER%. == mingw32. (
 )
 
 if %BUILDER%. == mingw64. (
+  gcc -v
+  %_ECHO% "\e[1;33m--------------------------------------------------------\e[0m"
   call configur.bat mingw64
   %_ECHO% "\e[1;33mBuilding for '%CPU%':\e[0m"
   make -f MinGW64_%BITS%.mak
