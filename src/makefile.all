@@ -961,7 +961,9 @@ RESOURCE = $(OBJDIR)/watt-32.res
   @endif
 @endif
 
-C_ARGS = $(OBJDIR)/clang.arg
+C_ARGS    = $(OBJDIR)/clang.arg
+LIB_ARGS  = $(OBJDIR)/lib.arg
+LINK_ARGS = $(OBJDIR)/link.arg
 
 OBJS := $(subst \,/,$(OBJS))
 
@@ -976,20 +978,26 @@ all: $(C_ARGS) $(OBJDIR)/cflags.h $(OBJDIR)/cflagsbf.h $(TARGETS)
 #
 # Static library rules:
 #
-../lib/x86/wattcp_clang.lib: $(OBJS)
-	$(AR) -machine:x86 -out:$@ $(OBJS)
+../lib/x86/wattcp_clang.lib: $(OBJS) $(LIB_ARGS)
+	$(AR) -machine:x86 -out:$@ @$(LIB_ARGS)
 
-../lib/x86/wattcp_clang_d.lib: $(OBJS)
-	$(AR) -machine:x86 -out:$@ $(OBJS)
+../lib/x86/wattcp_clang_d.lib: $(OBJS) $(LIB_ARGS)
+	$(AR) -machine:x86 -out:$@ @$(LIB_ARGS)
 
-../lib/x64/wattcp_clang.lib: $(OBJS)
-	$(AR) -machine:x64 -out:$@ $(OBJS)
+../lib/x64/wattcp_clang.lib: $(OBJS) $(LIB_ARGS)
+	$(AR) -machine:x64 -out:$@  @$(LIB_ARGS)
 
-../lib/x64/wattcp_clang_d.lib: $(OBJS)
-	$(AR) -machine:x64 -out:$@ $(OBJS)
+../lib/x64/wattcp_clang_d.lib: $(OBJS) $(LIB_ARGS)
+	$(AR) -machine:x64 -out:$@  @$(LIB_ARGS)
 
 $(C_ARGS): $(MAKEFILE_LIST)
 	@echo $(CFLAGS) > $@
+
+$(LIB_ARGS): $(OBJS)
+	$(call create_response_file, $@, $^)
+
+$(LINK_ARGS): $(OBJS) $(RESOURCE)
+	$(call create_response_file, $@, $^ $(EX_LIBS))
 
 #
 # Import lib + DLL (release)
@@ -997,13 +1005,13 @@ $(C_ARGS): $(MAKEFILE_LIST)
 ../lib/x86/wattcp_clang_imp.lib: ../bin/watt-32.dll
 ../lib/x64/wattcp_clang_imp.lib: ../bin/watt-32_64.dll
 
-../bin/watt-32.dll: $(OBJS) $(RESOURCE)
-	link $(LDFLAGS) -machine:x86 -out:$@ -implib:../lib/x86/wattcp_clang_imp.lib $^ $(EX_LIBS) > link.tmp
+../bin/watt-32.dll: $(OBJS) $(RESOURCE) $(LINK_ARGS)
+	link $(LDFLAGS) -machine:x86 -out:$@ -implib:../lib/x86/wattcp_clang_imp.lib @$(LINK_ARGS) > link.tmp
 	cat link.tmp >> ../bin/watt-32.map
 	rm -f ../lib/x86/wattcp_clang_imp.exp
 
-../bin/watt-32_64.dll: $(OBJS) $(RESOURCE)
-	link $(LDFLAGS) -machine:x64 -out:$@ -implib:../lib/x64/wattcp_clang_imp.lib $^ $(EX_LIBS) > link.tmp
+../bin/watt-32_64.dll: $(OBJS) $(RESOURCE) $(LINK_ARGS)
+	link $(LDFLAGS) -machine:x64 -out:$@ -implib:../lib/x64/wattcp_clang_imp.lib @$(LINK_ARGS) > link.tmp
 	cat link.tmp >> ../bin/watt-32_64.map
 	rm -f ../lib/x64/wattcp_clang_imp.exp
 
@@ -1013,18 +1021,18 @@ $(C_ARGS): $(MAKEFILE_LIST)
 ../lib/x86/wattcp_clang_imp_d.lib: ../bin/watt-32d.dll
 ../lib/x64/wattcp_clang_imp_d.lib: ../bin/watt-32_64d.dll
 
-../bin/watt-32d.dll: $(OBJS) $(RESOURCE)
-	link $(LDFLAGS) -machine:x86 -out:$@ -implib:../lib/x86/wattcp_clang_imp_d.lib $^ $(EX_LIBS) > link.tmp
+../bin/watt-32d.dll: $(OBJS) $(RESOURCE) $(LINK_ARGS)
+	link $(LDFLAGS) -machine:x86 -out:$@ -implib:../lib/x86/wattcp_clang_imp_d.lib @$(LINK_ARGS) > link.tmp
 	cat link.tmp >> ../bin/watt-32d.map
 	rm -f ../lib/x86/wattcp_clang_imp_d.exp
 
 ../bin/watt-32_64d.dll: $(OBJS) $(RESOURCE)
-	link $(LDFLAGS) -machine:x64 -out:$@ -implib:../lib/x64/wattcp_clang_imp_d.lib $^ $(EX_LIBS) > link.tmp
+	link $(LDFLAGS) -machine:x64 -out:$@ -implib:../lib/x64/wattcp_clang_imp_d.lib @$(LINK_ARGS) > link.tmp
 	cat link.tmp >> ../bin/watt-32_64d.map
 	rm -f ../lib/x64/wattcp_clang_imp_d.exp
 
 clean:
-	- rm -f $(TARGETS) $(C_ARGS) $(OBJDIR)/*.obj $(OBJDIR)/cflags.h $(OBJDIR)/cflagsbf.h $(RESOURCE) chksum0.lst cpumodel.lst
+	- rm -f $(TARGETS) $(OBJDIR)/*.obj $(OBJDIR)/*.arg $(OBJDIR)/cflags.h $(OBJDIR)/cflagsbf.h $(RESOURCE) chksum0.lst cpumodel.lst
 	@echo Cleaning done
 
 $(OBJDIR)/%.obj: %.c
@@ -1501,6 +1509,15 @@ lang.c: lang.l
 	flex -8 -t lang.l > lang.c
 
 @ifdef DJGPP MINGW32 MINGW64 CLANG CYGWIN32 CYGWIN64 CLANG HIGHC
+#
+# Create a response file $(1).
+# One word from $(2) per line into $(1).
+#
+define create_response_file
+  $(file > $(1))
+  $(foreach f, $(2), $(file >> $(1),$(strip $(f))) )
+endef
+
 #
 # GNU-Make rules uses shell 'sh' commands:
 #
