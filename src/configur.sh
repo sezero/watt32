@@ -51,22 +51,22 @@ WATCOM_PREFIX=
 #
 missing_stuff ()
 {
-  echo You must export WATT_ROOT, like:   "export WATT_ROOT=$HOME/watt"
-  echo and must run this script from within your \$WATT_ROOT/src directory.
+  echo "You must export WATT_ROOT, like:   'export WATT_ROOT=\$HOME/watt'"
+  echo "and must run this script from within your \$WATT_ROOT/src directory."
   exit 4;
 }
 
 bad_usage ()
 {
-  echo Unknown option \'$1\'.
-  echo Usage: $0 [djgpp mingw32 mingw64 cygwin clang watcom all clean]
+  echo "Unknown option '$1'."
+  echo "Usage: $0 [djgpp mingw32 mingw64 cygwin clang watcom all clean]"
   exit 2;
 }
 
 usage ()
 {
-  echo Configuring Watt-32 tcp/ip targets.
-  echo Usage: $0 [djgpp mingw32 mingw64 cygwin clang watcom all clean]
+  echo "Configuring Watt-32 tcp/ip targets."
+  echo "Usage: $0 [djgpp mingw32 mingw64 cygwin clang watcom all clean]"
   exit 1;
 }
 
@@ -75,11 +75,11 @@ usage ()
 #
 gen_djgpp ()
 {
-  echo Generating DJGPP makefile, directory, errnos and dependencies
+  echo "Generating DJGPP makefile, directory, errnos and dependencies"
   ../util/linux/mkmake -o djgpp.mak -d build/djgpp makefile.all  DJGPP
   ../util/linux/mkdep -s.o -p\$\(OBJDIR\)/ *.[ch] > build/djgpp/watt32.dep
 
-  echo neterr.c: build/djgpp/syserr.c >> build/djgpp/watt32.dep
+  echo "neterr.c: build/djgpp/syserr.c" >> build/djgpp/watt32.dep
 # these hacks won't work because errnos.c relies on being compiled as a target-exe.
 # echo "#include <errno.h>" | $DJGPP_PREFIX-gcc -E -dD - | grep "#define E" > ../util/generrno.h
 # echo "#include <sys/version.h>" | $DJGPP_PREFIX-gcc -E -dD - | grep "#define __DJGPP" >> ../util/generrno.h
@@ -87,17 +87,17 @@ gen_djgpp ()
 # ../util/dj_err -s > build/djgpp/syserr.c
 # ../util/dj_err -e > ../inc/sys/djgpp.err
 
-  echo Run GNU make to make target:
-  echo   make -f djgpp.mak
+  echo "Run GNU make to make target:"
+  echo "  'make -f djgpp.mak'"
 }
 
 gen_mingw32 ()
 {
-  echo Generating MinGW32 makefile, directory, errnos and dependencies
+  echo "Generating MinGW32 makefile, directory, errnos and dependencies"
   ../util/linux/mkmake -o MinGW32.mak -d build/MinGW32 makefile.all MINGW32 WIN32
   ../util/linux/mkdep -s.o -p\$\(OBJDIR\)/ *.c *.h > build/MinGW32/watt32.dep
 
-  echo neterr.c: build/MinGW32/syserr.c >> build/MinGW32/watt32.dep
+  echo "neterr.c: build/MinGW32/syserr.c" >> build/MinGW32/watt32.dep
 # these hacks won't work because errnos.c relies on being compiled as a target-exe.
 # echo "#include <errno.h>" | $MINGW_PREFIX-gcc -E -dD - | grep "#define E" > ../util/generrno.h
 # echo "#define __MINGW32__" >> ../util/generrno.h
@@ -106,21 +106,21 @@ gen_mingw32 ()
 # ../util/mw_err -s > build/MinGW32/syserr.c
 # ../util/mw_err -e > ../inc/sys/mingw32.err
 
-  echo Run GNU make to make target:
-  echo   make -f MinGW32.mak
+  echo "Run GNU make to make target:"
+  echo "  'make -f MinGW32.mak'"
   make -s -f ../util/pkg-conf.mak mingw32_pkg MINGW32_DIR=../lib
 }
 
 gen_mingw64 ()
 {
-  echo Generating MinGW64-w64 makefile, directory, errnos and dependencies
+  echo "Generating MinGW64-w64 makefile, directory, errnos and dependencies"
   ../util/linux/mkmake -o MinGW64_32.mak -d build/MinGW64/32bit makefile.all MINGW64 WIN32
   ../util/linux/mkmake -o MinGW64_64.mak -d build/MinGW64/64bit makefile.all MINGW64 WIN64
   ../util/linux/mkdep -s.o -p\$\(OBJDIR\)32bit/ *.c *.h > build/MinGW64/32bit/watt32.dep
   ../util/linux/mkdep -s.o -p\$\(OBJDIR\)64bit/ *.c *.h > build/MinGW64/64bit/watt32.dep
 
-  echo neterr.c: build/MinGW64/syserr.c >> build/MinGW64/32bit/watt32.dep
-  echo neterr.c: build/MinGW64/syserr.c >> build/MinGW64/64bit/watt32.dep
+  echo "neterr.c: build/MinGW64/syserr.c" >> build/MinGW64/32bit/watt32.dep
+  echo "neterr.c: build/MinGW64/syserr.c" >> build/MinGW64/64bit/watt32.dep
 
 # these hacks won't work because errnos.c relies on being compiled as a target-exe.
 # echo "#include <errno.h>" | $MINGW64_PREFIX-gcc -E -dD - | grep "#define E" > ../util/generrno.h
@@ -131,32 +131,32 @@ gen_mingw64 ()
 # ../util/mw64_err -s > build/MinGW64/syserr.c
 # ../util/mw64_err -e > ../inc/sys/mingw64.err
 
-  echo Run GNU make to make target:
-  echo   make -f MinGW64_32.mak
-  echo or
-  echo   make -f MinGW64_64.mak
+  echo "Run GNU make to make target:"
+  echo "  'make -f MinGW64_32.mak'"
+  echo "or"
+  echo "  'make -f MinGW64_64.mak'"
   make -s -f ../util/pkg-conf.mak mingw64_pkg MINGW64_DIR=../lib
 }
 
 gen_cygwin ()
 {
-  echo Generating CygWin makefile, directory and dependencies
+  echo "Generating CygWin makefile, directory and dependencies"
   ../util/linux/mkmake -o CygWin.mak -d build/CygWin/32bit makefile.all CYGWIN WIN32
   ../util/linux/mkdep -s.o -p\$\(OBJDIR\)/ *.c *.h > build/CygWin/watt32.dep
 
-  echo Run GNU make to make target:
-  echo   make -f CygWin.mak
+  echo "Run GNU make to make target:"
+  echo "  'make -f CygWin.mak'"
   make -s -f ../util/pkg-conf.mak cygwin_pkg CYGWIN_DIR=../lib
 }
 
 gen_cygwin64 ()
 {
-  echo Generating CygWin64 makefile, directory and dependencies
+  echo "Generating CygWin64 makefile, directory and dependencies"
   ../util/linux/mkmake -o CygWin_64.mak -d build/CygWin/64bit makefile.all CYGWIN WIN64
   ../util/linux/mkdep -s.o -p\$\(OBJDIR\)/ *.c *.h > build/CygWin/watt32.dep
 
-  echo Run GNU make to make target:
-  echo   make -f CygWin_64.mak
+  echo "Run GNU make to make target:"
+  echo "  'make -f CygWin_64.mak'"
   make -s -f ../util/pkg-conf.mak cygwin64_pkg CYGWIN_DIR=../lib
 }
 
@@ -166,29 +166,29 @@ gen_cygwin64 ()
 #
 gen_clang ()
 {
-  echo Generating clang-cl (Win32/Win64, release/debug) makefiles, directories, errnos and dependencies
+  echo "Generating clang-cl (Win32/Win64, release/debug) makefiles, directories, errnos and dependencies"
   ../util/linux/mkmake -o clang-release_32.mak -d build/clang/32bit/release makefile.all CLANG WIN32 RELEASE
   ../util/linux/mkmake -o clang-release_64.mak -d build/clang/64bit/release makefile.all CLANG WIN64 RELEASE
   ../util/linux/mkmake -o clang-debug_32.mak   -d build/clang/32bit/debug   makefile.all CLANG WIN32 DEBUG
   ../util/linux/mkmake -o clang-debug_64.mak   -d build/clang/64bit/debug   makefile.all CLANG WIN64 DEBUG
 
   ../util/linux/mkdep -s.obj -p\$\(OBJDIR\)/ *.[ch] > build/clang/watt32.dep
-  echo neterr.c: build/clang/syserr.c              >> build/clang/watt32.dep
+  echo "neterr.c: build/clang/syserr.c"             >> build/clang/watt32.dep
 
  # Not sure these will work (under Linux/Wine)?
   wine ../util/win32/clang_err -s > build/clang/syserr.c
   wine ../util/win32/clang_err -e > ../inc/sys/clang.err
 
-  echo Run GNU make to make target(s):
-  echo   E.g. "make -f clang-release_32.mak"
-  echo     or "make -f clang-release_64.mak"
-  echo Depending on which clang-cl (32 or 64-bit) is first on your PATH, use the correct 'clang-release_32.mak' or 'clang-release_64.mak'.
+  echo "Run GNU make to make target(s):"
+  echo "  E.g. 'make -f clang-release_32.mak'"
+  echo "    or 'make -f clang-release_64.mak'"
+  echo "Depending on which clang-cl (32 or 64-bit) is first on your PATH, use the correct 'clang-release_32.mak' or 'clang-release_64.mak'."
 }
 
 
 gen_watcom ()
 {
-  echo Generating Watcom makefiles, directories, errnos and dependencies
+  echo "Generating Watcom makefiles, directories, errnos and dependencies"
   ../util/linux/mkmake -o watcom_s.mak -d build/watcom/small   makefile.all WATCOM SMALL
   ../util/linux/mkmake -o watcom_l.mak -d build/watcom/large   makefile.all WATCOM LARGE
   ../util/linux/mkmake -o watcom_f.mak -d build/watcom/flat    makefile.all WATCOM FLAT
@@ -197,13 +197,13 @@ gen_watcom ()
 
   ../util/linux/mkdep -s.obj -p\$\(OBJDIR\)/ *.[ch] > build/watcom/watt32.dep
 
-  echo neterr.c: build/watcom/syserr.c >> build/watcom/watt32.dep
+  echo "neterr.c: build/watcom/syserr.c" >> build/watcom/watt32.dep
 # these hacks won't work because errnos.c relies on being compiled as a target-exe.
 # ../util/wc_err -s > build/watcom/syserr.c
 # ../util/wc_err -e > ../inc/sys/watcom.err
 
-  echo Run wmake to make target\(s\):
-  echo   E.g. "wmake -f watcom_l.mak" for large model (16-bit)
+  echo "Run wmake to make target(s):"
+  echo "  E.g. 'wmake -f watcom_l.mak' for large model (16-bit)"
 }
 
 gen_all ()
@@ -277,4 +277,3 @@ do
   *)         bad_usage $i;;
  esac
 done
-
