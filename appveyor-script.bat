@@ -191,19 +191,19 @@ if %BUILDER%. == mingw32. (
 :: Figure out which gcc this really is and where it is.
 ::
 if %BUILDER%. == mingw64. (
-  gcc -dumpmachine
-  %_ECHO% "\e[1;33m--------------------------------------------------------\e[0m"
+  rem gcc -dumpmachine
+  rem %_ECHO% "\e[1;33m--------------------------------------------------------\e[0m"
 
-  where gcc.exe
-  %_ECHO% "\e[1;33m--------------------------------------------------------\e[0m"
+  rem where gcc.exe
+  rem %_ECHO% "\e[1;33m--------------------------------------------------------\e[0m"
 
-  del c:\msys64\usr\bin\gcc.exe
-  where gcc.exe
-  %_ECHO% "\e[1;33m--------------------------------------------------------\e[0m"
+  rem del c:\msys64\usr\bin\gcc.exe
+  rem where gcc.exe
+  rem %_ECHO% "\e[1;33m--------------------------------------------------------\e[0m"
 
-  rem call configur.bat mingw64
-  rem %_ECHO% "\e[1;33mBuilding for '%CPU%':\e[0m"
-  rem make -f MinGW64_%BITS%.mak
+  call configur.bat mingw64
+  %_ECHO% "\e[1;33mBuilding for '%CPU%':\e[0m"
+  make -f MinGW64_%BITS%.mak
   exit /b
 )
 
