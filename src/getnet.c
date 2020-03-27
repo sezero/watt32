@@ -40,10 +40,10 @@
 
 #include "wattcp.h"
 #include "misc.h"
+#include "misc_str.h"
 #include "run.h"
 #include "pcconfig.h"
 #include "language.h"
-#include "strings.h"
 #include "get_xby.h"
 
 #if defined(USE_BSD_API)

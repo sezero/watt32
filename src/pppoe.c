@@ -42,8 +42,8 @@
 
 #include "wattcp.h"
 #include "misc.h"
+#include "misc_str.h"
 #include "timer.h"
-#include "strings.h"
 #include "language.h"
 #include "run.h"
 #include "pcconfig.h"

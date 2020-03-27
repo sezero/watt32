@@ -42,9 +42,9 @@
 
 #include "wattcp.h"
 #include "misc.h"
+#include "misc_str.h"
 #include "timer.h"
 #include "chksum.h"
-#include "strings.h"
 #include "netaddr.h"
 #include "language.h"
 #include "ip6_in.h"

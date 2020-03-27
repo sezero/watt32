@@ -26,7 +26,6 @@
 
 #include "wattcp.h"
 #include "ioport.h"
-#include "strings.h"
 #include "gettod.h"
 #include "pcdbug.h"
 #include "pcqueue.h"
@@ -37,6 +36,7 @@
 #include "x32vm.h"
 #include "rs232.h"
 #include "misc.h"
+#include "misc_str.h"
 #include "run.h"
 #include "timer.h"
 

@@ -21,13 +21,13 @@
 #include <string.h>
 
 #include "wattcp.h"
-#include "strings.h"
 #include "language.h"
 #include "pcsed.h"
 #include "printk.h"
 #include "sock_ini.h"
 #include "cpumodel.h"
 #include "misc.h"
+#include "misc_str.h"
 #include "wdpmi.h"
 
 #if defined(__MSDOS__)  /* rest of file */

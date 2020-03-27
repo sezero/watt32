@@ -14,8 +14,8 @@
 
 #include "copyrigh.h"
 #include "wattcp.h"
-#include "strings.h"
 #include "misc.h"
+#include "misc_str.h"
 #include "timer.h"
 #include "language.h"
 #include "pcdns.h"

@@ -42,8 +42,8 @@
 
 #include "wattcp.h"
 #include "chksum.h"
-#include "strings.h"
 #include "misc.h"
+#include "misc_str.h"
 #include "pctcp.h"
 
 #if defined(USE_TCP_MD5)

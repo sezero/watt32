@@ -11,8 +11,8 @@
 
 #include "wattcp.h"
 #include "wdpmi.h"
-#include "strings.h"
 #include "misc.h"
+#include "misc_str.h"
 
 #if defined(_WIN64)
   #if defined(_DEBUG)

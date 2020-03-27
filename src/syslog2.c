@@ -44,7 +44,7 @@
 #include "wattcp.h"
 #include "printk.h"
 #include "pcconfig.h"
-#include "strings.h"
+#include "misc_str.h"
 #include "syslog2.h"
 
 #if defined(USE_BSD_API)

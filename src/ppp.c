@@ -33,7 +33,7 @@
 
 #include "wattcp.h"
 #include "misc.h"
-#include "strings.h"
+#include "misc_str.h"
 #include "pcdbug.h"
 #include "pcqueue.h"
 #include "pcconfig.h"

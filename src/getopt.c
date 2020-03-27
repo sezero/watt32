@@ -12,7 +12,7 @@
 
 #include "wattcp.h"
 #include "language.h"
-#include "strings.h"
+#include "misc_str.h"
 
 char *watt_optarg    = NULL;
 int   watt_optopt    = 0;

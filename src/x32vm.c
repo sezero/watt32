@@ -14,8 +14,8 @@
 
 #include "wattcp.h"
 #include "printk.h"
-#include "strings.h"
 #include "misc.h"
+#include "misc_str.h"
 #include "cpumodel.h"
 #include "x32vm.h"
 
@@ -326,7 +326,7 @@ void stack_rewind (DWORD start, DWORD base)
 
       argc = (argc > 5) ? 5 : argc;
       _printk ("(");
-    
+
       argv = context + 2; /* Args start after saved EBP and return address */
       while (argc--)
       {
@@ -362,7 +362,7 @@ static REALPTR _dx_alloc_rmode_wrapper (pmodeHook pmHook,
 {
   #define DOFS  0x22  /* offset of data section (tiny model)   */
   #define DSIZE 12    /* sizeof data section at wrapper end    */
-                             
+
   static BYTE rm_wrapper[] =
   {
     0x06,                     /* 00    push es                         */

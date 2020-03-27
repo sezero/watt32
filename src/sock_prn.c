@@ -7,7 +7,7 @@
 
 #include "copyrigh.h"
 #include "wattcp.h"
-#include "strings.h"
+#include "misc_str.h"
 #include "language.h"
 #include "pcconfig.h"
 #include "pctcp.h"

@@ -8,11 +8,12 @@
 #endif
 
 #include "wattcp.h"
-#include "strings.h"
+#include "misc.h"
+#include "misc_str.h"
 
 #pragma Calling_convention(PASCAL)
-#define DLL_PROCESS_DETACH 0    
-#define DLL_PROCESS_ATTACH 1    
+#define DLL_PROCESS_DETACH 0
+#define DLL_PROCESS_ATTACH 1
 
 /*
  * For imported data, we redefine the imported name with the

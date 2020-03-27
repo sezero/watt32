@@ -41,9 +41,9 @@
 
 #include "wattcp.h"
 #include "misc.h"
+#include "misc_str.h"
 #include "chksum.h"
 #include "rs232.h"
-#include "strings.h"
 #include "language.h"
 #include "sock_ini.h"
 #include "split.h"

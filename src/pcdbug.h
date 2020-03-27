@@ -3,7 +3,7 @@
 #ifndef _w32_PCDBUG_H
 #define _w32_PCDBUG_H
 
-#include "strings.h"  /* _printf */
+#include "misc_str.h"  /* _printf */
 
 typedef void (*DebugProc) (const void *sock, const in_Header *ip,
                            const char *file, unsigned line);

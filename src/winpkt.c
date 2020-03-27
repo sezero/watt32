@@ -36,8 +36,8 @@
 #include <windowsx.h>
 
 #include "wattcp.h"
-#include "strings.h"
 #include "misc.h"
+#include "misc_str.h"
 #include "timer.h"
 #include "profile.h"
 #include "sock_ini.h"

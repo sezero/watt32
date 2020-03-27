@@ -37,8 +37,8 @@
 #include <stddef.h>
 
 #include "wattcp.h"
-#include "strings.h"
 #include "misc.h"
+#include "misc_str.h"
 #include "x32vm.h"
 #include "powerpak.h"
 #include "pcpkt.h"

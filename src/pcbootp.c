@@ -15,11 +15,11 @@
 
 #include "copyrigh.h"
 #include "wattcp.h"
-#include "strings.h"
 #include "language.h"
 #include "pcdns.h"
 #include "syslog2.h"
 #include "misc.h"
+#include "misc_str.h"
 #include "timer.h"
 #include "netaddr.h"
 #include "pctcp.h"

@@ -8,10 +8,10 @@
 #include <limits.h>
 
 #include "wattcp.h"
-#include "strings.h"
 #include "language.h"
 #include "bsddbug.h"
 #include "misc.h"
+#include "misc_str.h"
 #include "pcsed.h"
 #include "pcbuf.h"
 #include "pctcp.h"

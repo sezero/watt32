@@ -1,7 +1,7 @@
-/*!\file strings.h
+/*!\file misc_str.h
  */
-#ifndef _w32_STRINGS_H
-#define _w32_STRINGS_H
+#ifndef _w32_MISC_STR_H
+#define _w32_MISC_STR_H
 
 extern  char   *_strlcpy    (char *dst, const char *src, size_t len);
 extern  char   *strreplace  (int ch1, int ch2, char *str);

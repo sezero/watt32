@@ -11,9 +11,9 @@
 #include "wattcp.h"
 #include "pctcp.h"
 #include "netaddr.h"
-#include "strings.h"
 #include "chksum.h"
 #include "misc.h"
+#include "misc_str.h"
 #include "timer.h"
 #include "pcdns.h"
 

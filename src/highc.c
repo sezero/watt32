@@ -40,7 +40,7 @@
 #include <io.h>
 
 #include "wattcp.h"
-#include "strings.h"
+#include "misc_str.h"
 #include "pcconfig.h"
 
 #if defined(__HIGHC__) && (DOSX & PHARLAP)

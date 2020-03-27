@@ -8,9 +8,9 @@
 
 #include "copyrigh.h"
 #include "wattcp.h"
-#include "strings.h"
 #include "language.h"
 #include "misc.h"
+#include "misc_str.h"
 #include "timer.h"
 #include "chksum.h"
 #include "ip4_in.h"

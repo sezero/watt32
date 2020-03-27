@@ -17,9 +17,9 @@
 #include <string.h>
 
 #include "wattcp.h"
-#include "strings.h"
 #include "netaddr.h"
 #include "misc.h"
+#include "misc_str.h"
 #include "pcdbug.h"
 #include "pcconfig.h"
 #include "pctcp.h"

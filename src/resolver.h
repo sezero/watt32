@@ -99,9 +99,9 @@
 
 #include "wattcp.h"
 #include "misc.h"
+#include "misc_str.h"
 #include "run.h"
 #include "timer.h"
-#include "strings.h"
 #include "bsdname.h"
 #include "sock_ini.h"
 #include "netaddr.h"

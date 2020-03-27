@@ -50,13 +50,13 @@
 
 #include "wattcp.h"
 #include "misc.h"
+#include "misc_str.h"
 #include "chksum.h"
 #include "ip4_in.h"
 #include "ip6_in.h"
 #include "pcsed.h"
 #include "pcstat.h"
 #include "pcicmp.h"
-#include "strings.h"
 #include "loopback.h"
 
 WORD loopback_mode = LBACK_MODE_ENABLE;

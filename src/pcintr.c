@@ -17,9 +17,9 @@
 #include <signal.h>
 
 #include "wattcp.h"
-#include "strings.h"
 #include "language.h"
 #include "misc.h"
+#include "misc_str.h"
 #include "run.h"
 #include "pctcp.h"
 #include "wdpmi.h"

@@ -19,11 +19,11 @@
 #include "pcconfig.h"
 #include "ip6_out.h"
 #include "misc.h"
+#include "misc_str.h"
 #include "wdpmi.h"
 #include "x32vm.h"
 #include "win_dll.h"
 #include "powerpak.h"
-#include "strings.h"
 #include "bsdname.h"
 
 #ifdef __CYGWIN__

@@ -12,8 +12,8 @@
 #include "pcdbug.h"
 #include "pcstat.h"
 #include "language.h"
-#include "strings.h"
 #include "misc.h"
+#include "misc_str.h"
 #include "ip6_in.h"
 #include "chksum.h"
 

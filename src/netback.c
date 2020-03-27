@@ -6,10 +6,10 @@
 
 #include "wattcp.h"
 #include "language.h"
-#include "strings.h"
 #include "pctcp.h"
 #include "wdpmi.h"
 #include "misc.h"
+#include "misc_str.h"
 
 #define TIMER_INTR 8
 #define STK_SIZE   1024

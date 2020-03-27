@@ -15,9 +15,9 @@
 
 #include "copyrigh.h"
 #include "wattcp.h"
-#include "strings.h"
 #include "language.h"
 #include "misc.h"
+#include "misc_str.h"
 #include "timer.h"
 #include "rs232.h"
 #include "pcsed.h"

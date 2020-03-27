@@ -38,11 +38,11 @@
 #define YY_FATAL_ERROR(msg)   Fatal (msg, NULL)
 
 #include "wattcp.h"
-#include "strings.h"
 #include "sock_ini.h"
 #include "pcconfig.h"
 #include "run.h"
 #include "misc.h"
+#include "misc_str.h"
 
 #if defined(USE_LANGUAGE)
   #define WATT32_COMPILE_LANG_C

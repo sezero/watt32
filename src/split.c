@@ -41,7 +41,7 @@
 #include "pppoe.h"
 #include "ppp.h"
 #include "misc.h"
-#include "strings.h"
+#include "misc_str.h"
 #include "bsddbug.h"
 #include "ip6_in.h"
 #include "split.h"

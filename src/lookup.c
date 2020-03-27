@@ -33,10 +33,10 @@
 #include <string.h>
 
 #include "wattcp.h"
-#include "strings.h"
 #include "language.h"
 #include "netaddr.h"
 #include "misc.h"
+#include "misc_str.h"
 #include "pcdns.h"
 #include "ip4_in.h"
 #include "pcdbug.h"

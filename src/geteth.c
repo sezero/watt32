@@ -39,12 +39,12 @@
 
 #include "wattcp.h"
 #include "misc.h"
+#include "misc_str.h"
 #include "run.h"
 #include "pcarp.h"
 #include "pcconfig.h"
 #include "pcdns.h"
 #include "pcdbug.h"
-#include "strings.h"
 #include "netaddr.h"
 #include "bsddbug.h"
 #include "get_xby.h"

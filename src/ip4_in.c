@@ -13,9 +13,9 @@
 
 #include "wattcp.h"
 #include "misc.h"
+#include "misc_str.h"
 #include "chksum.h"
 #include "rs232.h"
-#include "strings.h"
 #include "pcconfig.h"
 #include "pcigmp.h"
 #include "pcdbug.h"

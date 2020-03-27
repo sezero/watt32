@@ -1,4 +1,4 @@
-/*!\file strings.c
+/*!\file misc_str.c
  *
  * Printing to console and general string handling.
  */
@@ -10,7 +10,7 @@
 #include "wattcp.h"
 #include "misc.h"
 #include "pcdbug.h"
-#include "strings.h"
+#include "misc_str.h"
 
 /*
  * This file contains some gross hacks. Take great care !

@@ -18,7 +18,7 @@
 
 #include "wattcp.h"
 #include "misc.h"
-#include "strings.h"
+#include "misc_str.h"
 #include "pcdbug.h"
 #include "punycode.h"
 #include "idna.h"

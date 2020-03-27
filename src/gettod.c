@@ -43,10 +43,10 @@
 
 #include "wattcp.h"
 #include "misc.h"
+#include "misc_str.h"
 #include "timer.h"
 #include "x32vm.h"
 #include "cpumodel.h"
-#include "strings.h"
 #include "win_dll.h"
 #include "gettod.h"
 

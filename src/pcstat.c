@@ -41,7 +41,6 @@
 #include <arpa/inet.h>
 
 #include "wattcp.h"
-#include "strings.h"
 #include "sock_ini.h"
 #include "pcconfig.h"
 #include "pcicmp.h"
@@ -49,6 +48,7 @@
 #include "pcsed.h"
 #include "split.h"
 #include "misc.h"
+#include "misc_str.h"
 #include "timer.h"
 #include "pcpkt.h"
 #include "pcdbug.h"

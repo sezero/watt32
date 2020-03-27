@@ -36,9 +36,9 @@
 #include <process.h>
 
 #include "misc.h"
+#include "misc_str.h"
 #include "timer.h"
 #include "profile.h"
-#include "strings.h"
 #include "pcconfig.h"
 #include "pcdbug.h"
 #include "pcpkt.h"

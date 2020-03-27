@@ -30,8 +30,8 @@
  */
 
 #include "wattcp.h"
-#include "strings.h"
 #include "misc.h"
+#include "misc_str.h"
 #include "pcdbug.h"
 
 #if defined(WIN32)  /* Rest of file */

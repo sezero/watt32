@@ -37,11 +37,11 @@
 #include <stdlib.h>
 
 #include "wattcp.h"
-#include "strings.h"
 #include "pcconfig.h"
 #include "pctcp.h"
 #include "pcdbug.h"
 #include "misc.h"
+#include "misc_str.h"
 #include "run.h"
 #include "netaddr.h"
 #include "echo.h"

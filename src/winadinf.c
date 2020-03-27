@@ -51,10 +51,10 @@
 
 #include "winadinf.h"
 #include "wattcp.h"
-#include "strings.h"
 #include "pcdbug.h"
 #include "packet32.h"
 #include "misc.h"
+#include "misc_str.h"
 #include "run.h"
 #include "gettod.h"
 #include "timer.h"

@@ -28,6 +28,7 @@
 
 #include "wattcp.h"
 #include "misc.h"
+#include "misc_str.h"
 #include "run.h"
 #include "printk.h"
 #include "pctcp.h"
@@ -38,7 +39,6 @@
 #include "pcconfig.h"
 #include "netaddr.h"
 #include "sock_ini.h"
-#include "strings.h"
 #include "syslog2.h"
 
 #if defined(USE_BSD_API)

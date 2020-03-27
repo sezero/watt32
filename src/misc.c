@@ -34,7 +34,6 @@
 #include "wdpmi.h"
 #include "x32vm.h"
 #include "powerpak.h"
-#include "strings.h"
 #include "cpumodel.h"
 #include "sock_ini.h"
 #include "pcsed.h"
@@ -45,6 +44,7 @@
 #include "ioport.h"
 #include "timer.h"
 #include "run.h"
+#include "misc_str.h"
 #include "misc.h"
 
 #ifndef LLONG_MAX

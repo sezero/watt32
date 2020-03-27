@@ -39,8 +39,8 @@
 #include <ctype.h>
 
 #include "wattcp.h"
-#include "strings.h"
 #include "misc.h"
+#include "misc_str.h"
 #include "run.h"
 #include "language.h"
 #include "netaddr.h"

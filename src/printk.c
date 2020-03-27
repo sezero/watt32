@@ -43,8 +43,8 @@
 #include <time.h>
 
 #include "wattcp.h"
-#include "strings.h"
 #include "misc.h"
+#include "misc_str.h"
 #include "run.h"
 #include "netaddr.h"
 #include "pcconfig.h"

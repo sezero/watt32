@@ -33,9 +33,9 @@
 #endif
 
 #include "wattcp.h"
-#include "strings.h"
 #include "pcdns.h"
 #include "misc.h"
+#include "misc_str.h"
 #include "run.h"
 #include "timer.h"
 #include "sock_ini.h"

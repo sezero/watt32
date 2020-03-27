@@ -10,8 +10,8 @@
 
 #include "copyrigh.h"
 #include "wattcp.h"
-#include "strings.h"
 #include "misc.h"
+#include "misc_str.h"
 #include "pcconfig.h"
 #include "pctcp.h"
 

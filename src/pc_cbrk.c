@@ -13,10 +13,10 @@
 #include "wdpmi.h"
 #include "x32vm.h"
 #include "misc.h"
+#include "misc_str.h"
 #include "printk.h"
 #include "bsddbug.h"
 #include "language.h"
-#include "strings.h"
 
 #if defined(__DJGPP__)
 #include <sys/exceptn.h>
