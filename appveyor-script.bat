@@ -70,13 +70,11 @@ if %BUILDER%. == watcom. (
 ::
 :: Stuff common to '[build_src | build_bin | build_tests]'
 ::
-:: mingw/mingw64: Add PATH to 'gcc' and stuff for 'util/pkg-conf.mak'.
+:: mingw32/mingw64: Stuff for 'util/pkg-conf.mak'.
 ::
-if %BUILDER%. == mingw64. (
-  md lib\pkgconfig 2> NUL
-  set MINGW32=%APPVEYOR_BUILD_FOLDER_UNIX%
-  set MINGW64=%APPVEYOR_BUILD_FOLDER_UNIX%
-)
+md lib\pkgconfig 2> NUL
+set MINGW32=%APPVEYOR_BUILD_FOLDER_UNIX%
+set MINGW64=%APPVEYOR_BUILD_FOLDER_UNIX%
 
 ::
 :: Set the dir for djgpp cross-environment.
