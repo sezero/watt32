@@ -41,6 +41,11 @@ matrix:
 
 install:
   #
+  # Prepend the PATH for 'make' + 'sh' used by 'MinGW', 'djgpp', 'CygWin' etc.
+  #
+  - cmd: set PATH=%PATH%;c:\msys64\usr\bin
+
+  #
   # Set compiler environment for MSVC/clang-cl first.
   # (the env-vars for 'BUILDER=watcom' is done in 'appveyor-script.bat').
   #
@@ -48,11 +53,6 @@ install:
   - cmd: if %BUILDER%. == clang.           call "c:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\vcvarsall.bat" %CPU%
   - cmd: if %BUILDER%-%CPU%. == mingw-x86. set PATH=c:\msys64\MinGW32\bin;%PATH%
   - cmd: if %BUILDER%-%CPU%. == mingw-x64. set PATH=c:\msys64\MinGW64\bin;%PATH%
-
-  #
-  # Append the PATH for 'make' + 'sh' used by 'MinGW', 'djgpp', 'CygWin' etc.
-  #
-  - cmd: set PATH=%PATH%;c:\msys64\usr\bin
 
 build_script:
     - cmd: appveyor-script.bat build_src
