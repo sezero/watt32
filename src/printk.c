@@ -483,6 +483,10 @@ next:
 #undef SIGABRT   /* = SIGIOT */
 #endif
 
+#if defined(SIGIOT) && (SIGIOT == SIGABRT)
+#undef SIGIOT    /* Could be a problem on MinGW-w64 if 'SIGIOT == SIGABRT' */
+#endif
+
 static const char *str_signal (int sig)
 {
   static char buf[20];
