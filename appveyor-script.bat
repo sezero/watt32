@@ -201,10 +201,10 @@ if %BUILDER%. == mingw64. (
   where gcc.exe
   %_ECHO% "\e[1;33m--------------------------------------------------------\e[0m"
 
-  :: call configur.bat mingw64
-  :: %_ECHO% "\e[1;33mBuilding for '%CPU%':\e[0m"
-  :: make -f MinGW64_%BITS%.mak
-  :: exit /b
+  rem call configur.bat mingw64
+  rem %_ECHO% "\e[1;33mBuilding for '%CPU%':\e[0m"
+  rem make -f MinGW64_%BITS%.mak
+  exit /b
 )
 
 if %BUILDER%. == djgpp. (
