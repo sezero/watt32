@@ -1428,6 +1428,8 @@ static const char *get_phys_address (const void *a, ULONG len, BOOL show_manuf)
   char        *p, *p_max = work_buf + sizeof(work_buf) - 4;
   ULONG        i;
 
+  ARGSUSED (show_munuf)
+
   len = min (IF_MAX_PHYS_ADDRESS_LENGTH, len);
   if (len == 0)
      return (NONE_STR);
@@ -1838,6 +1840,8 @@ static int _pkt_win_print_GetIfTable2 (void)
 static void print_mib_if_row (DWORD index, const MIB_IFROW *row)
 {
   char speed[30];
+
+  ARGSUSED (index)
 
   /* Note: The 'row->wszName' may *not* have the same GUID
    * as returned in 'GetAdapteraddresses()' despite it's the same
@@ -2918,10 +2922,12 @@ static BOOL wlan_query (HANDLE           client,
   return (TRUE);
 }
 
+#if 0
 static void print_wlan_svc_guid_list (const WLAN_DEVICE_SERVICE_GUID_LIST2 *list)
 {
   (*_printf) ("list->dwNumberOfItems: %lu\n", list->dwNumberOfItems);
 }
+#endif
 
 static int _pkt_win_print_WlanEnumInterfaces (void)
 {
@@ -2964,7 +2970,7 @@ static int _pkt_win_print_WlanEnumInterfaces (void)
     const GUID                     *guid          = &if_info->InterfaceGuid;
     WLAN_AVAILABLE_NETWORK_LIST    *network_list  = NULL;
     WLAN_BSS_LIST                  *bss_list      = NULL;
-    WLAN_DEVICE_SERVICE_GUID_LIST2 *svc_guid_list = NULL;
+//    WLAN_DEVICE_SERVICE_GUID_LIST2 *svc_guid_list = NULL;
     BOOL                            auto_conf;
     BOOL                            bkg_scan;
     BOOL                            str_mode;
@@ -3161,23 +3167,23 @@ static const char *get_ssid (const DOT11_SSID *ssid)
   return (work_buf);
 }
 
-static const char *get_dot11_auth (DWORD auth)
+static const char *get_dot11_auth (enum _DOT11_AUTH_ALGORITHM auth)
 {
   if (auth >= DOT11_AUTH_ALGO_IHV_START && auth <= DOT11_AUTH_ALGO_IHV_END)
   {
     auth -= DOT11_AUTH_ALGO_IHV_START;
-    SNPRINTF (work_buf, sizeof(work_buf), "proprietary %lu", auth);
+    SNPRINTF (work_buf, sizeof(work_buf), "proprietary %lu", (unsigned long)auth);
     return (work_buf);
   }
   return _list_lookup (auth,dot11_auth_algo,DIM(dot11_auth_algo));
 }
 
-static const char *get_dot11_cipher (DWORD cipher)
+static const char *get_dot11_cipher (enum _DOT11_CIPHER_ALGORITHM cipher)
 {
   if (cipher >= DOT11_CIPHER_ALGO_IHV_START && cipher <= DOT11_CIPHER_ALGO_IHV_END)
   {
     cipher -= DOT11_CIPHER_ALGO_IHV_START;
-    SNPRINTF (work_buf, sizeof(work_buf), "proprietary %lu", cipher);
+    SNPRINTF (work_buf, sizeof(work_buf), "proprietary %lu", (unsigned long)cipher);
     return (work_buf);
   }
   return _list_lookup (cipher,dot11_cipher_algo,DIM(dot11_cipher_algo));
