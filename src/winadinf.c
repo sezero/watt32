@@ -2922,7 +2922,7 @@ static BOOL wlan_query (HANDLE           client,
   return (TRUE);
 }
 
-#if 0
+#ifdef NOT_YET
 static void print_wlan_svc_guid_list (const WLAN_DEVICE_SERVICE_GUID_LIST2 *list)
 {
   (*_printf) ("list->dwNumberOfItems: %lu\n", list->dwNumberOfItems);
@@ -2970,7 +2970,9 @@ static int _pkt_win_print_WlanEnumInterfaces (void)
     const GUID                     *guid          = &if_info->InterfaceGuid;
     WLAN_AVAILABLE_NETWORK_LIST    *network_list  = NULL;
     WLAN_BSS_LIST                  *bss_list      = NULL;
-//    WLAN_DEVICE_SERVICE_GUID_LIST2 *svc_guid_list = NULL;
+#ifdef NOT_YET
+    WLAN_DEVICE_SERVICE_GUID_LIST2 *svc_guid_list = NULL;
+#endif
     BOOL                            auto_conf;
     BOOL                            bkg_scan;
     BOOL                            str_mode;
@@ -3077,7 +3079,7 @@ static int _pkt_win_print_WlanEnumInterfaces (void)
     if (bss_list)
       (*p_WlanFreeMemory) (bss_list);
 
-#if 0   /* Does not work */
+#ifdef NOT_YET   /* Does not work */
     (*_printf) ("  \n  From WlanGetSupportedDeviceServices():\n");
 
     res = (*p_WlanGetSupportedDeviceServices) (client, guid, &svc_guid_list);
