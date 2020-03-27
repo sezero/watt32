@@ -187,13 +187,24 @@ if %BUILDER%. == mingw32. (
   exit /b
 )
 
+::
+:: Figure out which gcc this really is and where it is.
+::
 if %BUILDER%. == mingw64. (
-  gcc -v
+  gcc -dumpmachine
   %_ECHO% "\e[1;33m--------------------------------------------------------\e[0m"
-  call configur.bat mingw64
-  %_ECHO% "\e[1;33mBuilding for '%CPU%':\e[0m"
-  make -f MinGW64_%BITS%.mak
-  exit /b
+
+  where gcc.exe
+  %_ECHO% "\e[1;33m--------------------------------------------------------\e[0m"
+
+  del c:\msys64\usr\bin\gcc.exe
+  where gcc.exe
+  %_ECHO% "\e[1;33m--------------------------------------------------------\e[0m"
+
+  :: call configur.bat mingw64
+  :: %_ECHO% "\e[1;33mBuilding for '%CPU%':\e[0m"
+  :: make -f MinGW64_%BITS%.mak
+  :: exit /b
 )
 
 if %BUILDER%. == djgpp. (
