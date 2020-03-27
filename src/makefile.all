@@ -63,7 +63,7 @@ CORE_SOURCE = bsdname.c  btree.c    chksum.c   country.c  crc.c      dynip.c    
               pcsed.c    pcstat.c   pctcp.c    ports.c    powerpak.c ppp.c      \
               pppoe.c    profile.c  punycode.c qmsg.c     rs232.c    run.c      \
               settod.c   sock_dbu.c sock_in.c  sock_ini.c sock_io.c  sock_prn.c \
-              sock_scn.c sock_sel.c split.c    strings.c  swsvpkt.c  tcp_fsm.c  \
+              sock_scn.c sock_sel.c split.c    misc_str.c swsvpkt.c  tcp_fsm.c  \
               tcp_md5.c  tftp.c     timer.c    udp_rev.c  version.c  wdpmi.c    \
               win_dll.c  winadinf.c winmisc.c  winpkt.c   x32vm.c
 
@@ -137,7 +137,7 @@ COMMON_OBJS = \
        $(OBJDIR)\sock_scn.obj $(OBJDIR)\sock_sel.obj  \
        $(OBJDIR)\socket.obj   $(OBJDIR)\sockopt.obj   \
        $(OBJDIR)\split.obj    $(OBJDIR)\stream.obj    \
-       $(OBJDIR)\strings.obj  $(OBJDIR)\swsvpkt.obj   \
+       $(OBJDIR)\misc_str.obj $(OBJDIR)\swsvpkt.obj   \
        $(OBJDIR)\syslog.obj   $(OBJDIR)\syslog2.obj   \
        $(OBJDIR)\tcp_fsm.obj  $(OBJDIR)\tcp_md5.obj   \
        $(OBJDIR)\tftp.obj     $(OBJDIR)\timer.obj     \
