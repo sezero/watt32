@@ -3,6 +3,24 @@ setlocal EnableDelayedExpansion
 prompt $P$G
 
 ::
+:: Download-links for djgpp + OpenWatcom files used by 'build_x' on AppVeyor or
+:: for local testing if this .bat-file.
+::
+:: These can be rather slow:
+::
+set URL_DJ_WIN_ZIP=http://www.watt-32.net/CI/dj-win.zip
+set URL_WATCOM_ZIP=http://www.watt-32.net/CI/watcom20.zip
+
+::
+:: D/L from MS's OneDrive instead with the below cryptic 'URL_x' strings.
+::
+:: I got these with the help of "CurlWget". An great Chrome extension:
+::   https://chrome.google.com/webstore/detail/curlwget/jmocjfidanebdlinpbcdkcmgdifblncg
+::
+set URL_DJ_WIN_ZIP="https://public.am.files.1drv.com/y4mj1hIt_E5LjPPG9V7PywEz9lsuoYtMOEP1-jEcUkZ06M9ZK3kN7SXPw2AOgn9sf2_RbqhRQgvhMOgaJxyIL_O2GTjzp-u9LUB1RtLylxtr-URpATMJDPcPeUmd3gRhCrsXLWMxO8Hh5q7oR1_9V6gMZKB_VWTU6bPZkZ0rc8Tg9YjpzuzX180lWpc2E8w52hpkV0ApaxuVstkq_M6DwOEbssrymQaX30jYgpUw4YCmlA?access_token=EwAIA61DBAAUzl/nWKUlBg14ZGcybuC4/OHFdfEAAcjk8R21S0WRbnPh7yDX/bpeIL1WFpo1loXmt9HWcrm6dtt2uc8AFFghySuz840rgZYMCXSzwFO1lDjQCyFe1ub5GUO%2bvJnqYAbjOOExBSENan77aZ/Y%2bDqxbAU%2bIiSPebGpjrN5KMlszGXV1pJyOLQVRMk3JpQ8MeM5Cfm6bNLCzNCi2IKOrUN0S5MnLypsP0Y55Q728New95Tp6pId3201zbOoh%2byopzvoFWJeGZ1xRV0uqwzHHKw5PnuZrByFPzLI8/XiQ3IUOC/q/oU/L8BAZk2Y8GCg1S41O5Y7%2bQuQXabLxMN8d3QiJV2Ky/SodxpdipT0OfPBMTHDOadiagkDZgAACOiGp0v9%2bTQS2AFKY3E7XSCFUpNnkjnzUXof10is4AuzeF4Dbk0ruj3eM5fQA0JRzTXpbAp6Aojo/1N1SkNpsNNQzK/VClKSRwr7kT98SLgLFtCDxlEioac66eceN3KU6/CHVEWUPHOuiHSjg6OHHwN4/WWsTEDb3%2bRvg6cch2519pkwMveTzPzW5H3gZ5odyKtMhRRJH27B1gzt3jid4yHENEr66uFsx1m6SCsCDEXuZY6KI/M%2bi7xKni/alNjHYJqpi7rmM2fjQsuW5iSaHv39sEeoxPaWINHfAS189iXL67K7V%2br2avekXVz1C0dNoYWu46g27GWjLAMWHJr/K2r2DvTfWebw6F9Ul6JXGrT0atqKlPY4keV6tbltm2g5rlyNvErTaeCM/ZVmaOEZ7sOm8Q1RxnkwE8dkmFP5DVyTgJKMplNyo7U2W1ElwabCaG2NuMxp59avjuHDvewol8WqjLfL4R/cnJR5d3TomX1Llo2YES81cMJPwmj38RnS8jUE6uZ%2bXkziGxiKij%2b6cFBkNUtW9Nt13uSoiHntF5iF0tZ7xFAvJWwlHXSFVxwCNVyrIPDXExasidYdjdNO4Vdmxe4FUuElI7mEZ4BAWZidu2xY6AaAr0fgBS18gukvgzEyAwI%3d"
+set URL_WATCOM_ZIP="https://public.am.files.1drv.com/y4mBFFcbx7AwhTYCTXPW5j2kRm1_SHzk3g1SJB6uvHub9Y7xIcRVWgPWB1jN5Pbjw71_XgJX_5OVcWY6BTfq6II4PvbQl-5OPe_2sBoTWBK-wlhrucAIjHkBqToE57tuIVDeykEu8xaRBiD9il-XoxbppPrRb6HNXrh2VQU7fdWUx7LqliQU0zLTqIRHWbFHoPNtpfZTba6Yey0ck1RWJaC5oz5kdx1LeVPAOt_NXH11RE?access_token=EwAIA61DBAAUzl/nWKUlBg14ZGcybuC4/OHFdfEAAcjk8R21S0WRbnPh7yDX/bpeIL1WFpo1loXmt9HWcrm6dtt2uc8AFFghySuz840rgZYMCXSzwFO1lDjQCyFe1ub5GUO%2bvJnqYAbjOOExBSENan77aZ/Y%2bDqxbAU%2bIiSPebGpjrN5KMlszGXV1pJyOLQVRMk3JpQ8MeM5Cfm6bNLCzNCi2IKOrUN0S5MnLypsP0Y55Q728New95Tp6pId3201zbOoh%2byopzvoFWJeGZ1xRV0uqwzHHKw5PnuZrByFPzLI8/XiQ3IUOC/q/oU/L8BAZk2Y8GCg1S41O5Y7%2bQuQXabLxMN8d3QiJV2Ky/SodxpdipT0OfPBMTHDOadiagkDZgAACOiGp0v9%2bTQS2AFKY3E7XSCFUpNnkjnzUXof10is4AuzeF4Dbk0ruj3eM5fQA0JRzTXpbAp6Aojo/1N1SkNpsNNQzK/VClKSRwr7kT98SLgLFtCDxlEioac66eceN3KU6/CHVEWUPHOuiHSjg6OHHwN4/WWsTEDb3%2bRvg6cch2519pkwMveTzPzW5H3gZ5odyKtMhRRJH27B1gzt3jid4yHENEr66uFsx1m6SCsCDEXuZY6KI/M%2bi7xKni/alNjHYJqpi7rmM2fjQsuW5iSaHv39sEeoxPaWINHfAS189iXL67K7V%2br2avekXVz1C0dNoYWu46g27GWjLAMWHJr/K2r2DvTfWebw6F9Ul6JXGrT0atqKlPY4keV6tbltm2g5rlyNvErTaeCM/ZVmaOEZ7sOm8Q1RxnkwE8dkmFP5DVyTgJKMplNyo7U2W1ElwabCaG2NuMxp59avjuHDvewol8WqjLfL4R/cnJR5d3TomX1Llo2YES81cMJPwmj38RnS8jUE6uZ%2bXkziGxiKij%2b6cFBkNUtW9Nt13uSoiHntF5iF0tZ7xFAvJWwlHXSFVxwCNVyrIPDXExasidYdjdNO4Vdmxe4FUuElI7mEZ4BAWZidu2xY6AaAr0fgBS18gukvgzEyAwI%3d"
+
+::
 :: 'APPVEYOR_PROJECT_NAME==Watt-32' unless testing this as:
 ::   c:\net\watt-32\> cmd /c appveyor-script.bat [build_src | build_bin | build_tests]
 ::
@@ -302,7 +320,7 @@ exit /b 0
   %_ECHO% "\e[1;33mInstalling 32-bit LLVM...'.\e[0m"
   start /wait %CI_ROOT%\llvm-installer.exe /S
   clang-cl -v
-  %_ECHO% "\e[1;33mDone\n--------------------------------------------------------'.\e[0m"
+  %_ECHO% "\e[1;33mDone\n--------------------------------------------------------\e[0m"
   exit /b
 
 :download_LLVM
@@ -321,12 +339,12 @@ exit /b 0
   if exist %DJGPP%\bin\i586-pc-msdosdjgpp-gcc.exe exit /b
   call :download_djgpp
   7z x -y -o%DJGPP% %CI_ROOT%\dj-win.zip > NUL
-  %_ECHO% "\e[1;33mDone\n--------------------------------------------------------'.\e[0m"
+  %_ECHO% "\e[1;33mDone\n--------------------------------------------------------\e[0m"
   exit /b
 
 :download_djgpp
   %_ECHO% "\e[1;33mDownloading Andrew Wu's DJGPP cross compiler:\e[0m"
-  curl -# -o %CI_ROOT%\dj-win.zip http://www.watt-32.net/CI/dj-win.zip
+  curl -# -o %CI_ROOT%\dj-win.zip %URL_DJ_WIN_ZIP%
   if not errorlevel == 0 (
     %_ECHO% "\e[1;31mThe curl download failed!\e[0m"
     exit /b 1
@@ -339,9 +357,9 @@ exit /b 0
 :install_watcom
   if exist %WATCOM%\binnt\wmake.exe exit /b
   %_ECHO% "\e[1;33mDownloading OpenWatcom 2.0:\e[0m"
-  curl -# -o %CI_ROOT%\watcom20.zip http://www.watt-32.net/CI/watcom20.zip
+  curl -# -o %CI_ROOT%\watcom20.zip %URL_WATCOM_ZIP%
   if not errorlevel == 0 (
-    %_ECHO% "\e[1;31mThe curl download of http://www.watt-32.net/CI/watcom20.zip failed!\e[0m"
+    %_ECHO% "\e[1;31mThe curl download failed!\e[0m"
     exit /b
   )
   7z x -y -o%WATCOM% %CI_ROOT%\watcom20.zip > NUL
