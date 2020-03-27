@@ -1428,7 +1428,7 @@ static const char *get_phys_address (const void *a, ULONG len, BOOL show_manuf)
   char        *p, *p_max = work_buf + sizeof(work_buf) - 4;
   ULONG        i;
 
-  ARGSUSED (show_munuf)
+  ARGSUSED (show_manuf);
 
   len = min (IF_MAX_PHYS_ADDRESS_LENGTH, len);
   if (len == 0)
@@ -1841,7 +1841,7 @@ static void print_mib_if_row (DWORD index, const MIB_IFROW *row)
 {
   char speed[30];
 
-  ARGSUSED (index)
+  ARGSUSED (index);
 
   /* Note: The 'row->wszName' may *not* have the same GUID
    * as returned in 'GetAdapteraddresses()' despite it's the same
