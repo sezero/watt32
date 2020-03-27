@@ -493,7 +493,7 @@ MAKEFIL = watcom_f.mak
 
 @elifdef WIN32
 CC       = wcc386
-CFLAGS   = -mf -3r -zm -zw -bd -bm -d3 -zlf -bt=nt -fp6 -oilrtfm -zri
+CFLAGS   = -mf -3r -zm -bd -bm -d3 -zlf -bt=nt -fp6 -oilrtfm -zri
 AFLAGS   = -bt=nt -3s -dDOSX
 LDFLAGS  = system nt dll
 TARGET   = ..\lib\wattcpww.lib ..\lib\wattcpww_imp.lib
