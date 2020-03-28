@@ -392,7 +392,7 @@ static DWORD Sdomain (const char *name, int add_dom, DWORD nameserver, int *time
   question->h.nscount = 0;
   question->h.arcount = 0;
 
-  strncpy (namebuff, name, sizeof(namebuff));
+  strncpy (namebuff, name, sizeof(namebuff)-1);
 
   if (is_a_name)
   {

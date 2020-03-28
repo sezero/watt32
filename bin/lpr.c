@@ -149,7 +149,7 @@ static int lpr (char *localhostname, char *printer,  char *rhostname,
 
   static char buffer [1024];
   char   *b2;
-  char   remotename [80];
+  char   remotename [200];
   static char cmdfile [1024];
   DWORD  remaining;
   size_t found;
@@ -397,7 +397,7 @@ int MS_CDECL main (int argc, char **argv)
             break;
     case 6: /* whole thing */
             userid = argv[4];
-            server = argv[5];     /* and continue on below */
+            server = argv[5];     /* fallthrough */
     case 4: /* Hostname and printer */
             printer   = argv[1];
             rhostname = argv[2];

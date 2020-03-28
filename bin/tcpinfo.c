@@ -160,7 +160,7 @@ const char *pkt_class_name (WORD class)
 
 const char *pkt_driver_ver (void)
 {
-  static char buf[20];
+  static char buf[30];
   WORD   major, minor, unused, build;
 
   if (!pkt_get_drvr_ver(&major,&minor,&unused,&build))
