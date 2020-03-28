@@ -257,11 +257,13 @@ OBJDIR = build/djgpp
 OBJS := $(subst \,/,$(OBJS))
 OBJS := $(subst .obj,.o,$(OBJS))
 
+LIB_ARGS = $(OBJDIR)/ar.arg
+
 all: $(PKT_STUB) $(OBJDIR)/cflags.h $(TARGET)
 	@echo All done
 
-$(TARGET): $(OBJS)
-	$(AR) $@ $?
+$(TARGET): $(OBJS) $(LIB_ARGS)
+	$(AR) $@ @$(LIB_ARGS)
 
 $(OBJDIR)/%.o: %.c
 	$(CC) $(CFLAGS) -o $@ -c $<
@@ -274,7 +276,7 @@ $(OBJDIR)/chksum0.o:  chksum0.S
 $(OBJDIR)/cpumodel.o: cpumodel.S
 
 clean:
-	rm -f $(TARGET) $(OBJDIR)/*.o $(OBJDIR)/*.iS $(PKT_STUB) $(OBJDIR)/cflags.h
+	rm -f $(TARGET) $(OBJDIR)/*.o $(OBJDIR)/*.iS $(PKT_STUB) $(OBJDIR)/cflags.h $(LIB_ARGS)
 	@echo Cleaning done
 
 -include $(OBJDIR)/watt32.dep
