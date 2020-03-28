@@ -757,12 +757,12 @@ W32_FUNC int W32_CALL watt_getopt (int argc, char *const *argv, const char *opt_
 #endif
 
 #if defined(WATT32_ON_WINDOWS)
- /* to-do */
- W32_DATA wchar_t *    _w_watt_optarg;
- W32_DATA wchar_t *    _w_watt_optswchar;
- W32_FUNC int W32_CALL _w_watt_getopt (int argc, wchar_t *const *argv, const wchar_t *opt_str);
+  /* to-do */
+  W32_DATA wchar_t *    _w_watt_optarg;
+  W32_DATA wchar_t *    _w_watt_optswchar;
+  W32_FUNC int W32_CALL _w_watt_getopt (int argc, wchar_t *const *argv, const wchar_t *opt_str);
 
- #if (defined(UNICODE) || defined(_UNICODE)) && !defined(_tgetopt)
+  #if (defined(UNICODE) || defined(_UNICODE)) && !defined(_tgetopt)
     #define _toptarg          _w_watt_optarg
     #define _toptswchar       _w_watt_optswchar
     #define _tgetopt(c,a,o)   _w_watt_getopt (c,a,o)
@@ -771,7 +771,7 @@ W32_FUNC int W32_CALL watt_getopt (int argc, char *const *argv, const char *opt_
     #define _toptswchar       watt_optswchar
     #define _tgetopt(c,a,o)   watt_getopt(c,a,o)
   #endif
-#endif   /* WATT32_ON_WINDOWS */
+#endif
 
 /*
  * Statistics printing
@@ -894,14 +894,15 @@ W32_FUNC const char * W32_CALL pkt_get_drvr_name (void);    /* NPF.SYS/SwsVpkt.s
 W32_FUNC const char * W32_CALL pkt_get_drvr_descr (void);   /* Driver description */
 W32_FUNC WORD         W32_CALL pkt_get_drvr_class (void);   /* Driver class */
 
-
-/*
- * Controlling timer interrupt handler for background processing.
- * Not recommended, little tested
- */
-W32_FUNC void W32_CALL backgroundon (void);
-W32_FUNC void W32_CALL backgroundoff (void);
-W32_FUNC void W32_CALL backgroundfn  (VoidProc func);
+#if !defined(WATT32_ON_WINDOWS)
+  /*
+   * Controlling timer interrupt handler for background processing.
+   * Not recommended, little tested
+   */
+  W32_FUNC void W32_CALL backgroundon (void);
+  W32_FUNC void W32_CALL backgroundoff (void);
+  W32_FUNC void W32_CALL backgroundfn  (VoidProc func);
+#endif
 
 /*
  * Misc internal or deprecated functions:

@@ -18,7 +18,7 @@
 #endif
 
 /* When doing "gcc -MM" with gcc 3.0 we must include <sys/version.h>
- * (via stdio.h) in order for __DJGPP__ to be defined
+ * (via stdio.h) in order for '__DJGPP__' to be defined
  */
 #include <stdio.h>
 #include <errno.h>
@@ -95,9 +95,9 @@
 #elif defined(__CYGWIN__)
   /*
    * Since CygWin's <sys/errno.h> provides all the errno-values
-   * we need, there is no need to use util/errnos.c to create new
-   * ones for CygWin. Simply pull in <sys/errno.h>. Done by
-   * #include_next <sys/errno.h> in our '<sys/errno.h>'.
+   * we need, there is no need to use 'util/errnos.c' to create new
+   * ones for CygWin. Simply pull in '<sys/errno.h>'. Done by
+   * '#include_next <sys/errno.h>' in our '<sys/errno.h>'.
    */
 #elif defined(__clang__)
   /*
@@ -126,13 +126,14 @@
 
 /*
  * Ugly hack ahead. Someone tell me a better way, but
- * errno and friends are macros on Windows. Redefine them
+ * 'errno' and friends are macros on Windows. Redefine them
  * to point to our variables.
  *
  * On Windows, the usual 'errno' is a macro "(*_errno)()" that
  * is problematic to use as a lvalue.
  * On other platforms we modify the global 'errno' variable directly.
- * (see SOCK_ERRNO() in src/misc.h). So no need to redefine it in any way.
+ * (see 'SOCK_ERRNO()' in 'src/misc.h').
+ * Hence no need to redefine it in any way.
  */
 
 W32_DATA int   _w32_errno;

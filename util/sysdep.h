@@ -32,10 +32,10 @@
   #include <io.h>
   #include <unistd.h>  /* Assumes only djgpp is used for __MSDOS__ */
 
-#elif defined(__MINGW32__) || defined(__CYGWIN__) || defined(__WATCOMC__)
+#elif defined(__MINGW32__) || defined(__WATCOMC__)
   #include <unistd.h>
 
-#elif defined(__unix__) || defined(__linux__)
+#elif defined(__CYGWIN__) || defined(__unix__) || defined(__linux__)
   #include <unistd.h>
 
   /* Cross compiling from Linux->DOS (assume gcc used)
@@ -54,10 +54,10 @@
        *c = toupper (*c);
     return (str);
   }
-  #define stricmp   strcasecmp
-  #define strnicmp  strncasecmp
-  #define strlwr    my_strlwr
-  #define strupr    my_strupr
+  #define stricmp(s1, s2)      strcasecmp(s1, s2)
+  #define strnicmp(s1, s2, n)  strncasecmp(s1, s2, n)
+  #define strlwr(s)            my_strlwr(s)
+  #define strupr(s)            my_strupr(s)
 
 #else
   #error "Unsupported platform or cross-combo"

@@ -945,7 +945,8 @@ GeoIP* GeoIP_open (const char * filename, int flags) {
     gi = (GeoIP *)malloc(sizeof(GeoIP));
     if (gi == NULL)
         return NULL;
-        len = sizeof(char) * (strlen(filename)+1);
+
+    len = sizeof(char) * (strlen(filename)+1);
     gi->file_path = malloc(len);
     if (gi->file_path == NULL) {
         free(gi);
