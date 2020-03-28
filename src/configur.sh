@@ -138,9 +138,9 @@ gen_mingw64 ()
   make -s -f ../util/pkg-conf.mak mingw64_pkg MINGW64_DIR=../lib
 }
 
-gen_cygwin ()
+gen_cygwin32 ()
 {
-  echo "Generating CygWin makefile, directory and dependencies"
+  echo "Generating CygWin32 makefile, directory and dependencies"
   ../util/linux/mkmake -o CygWin.mak -d build/CygWin/32bit makefile.all CYGWIN WIN32
   ../util/linux/mkdep -s.o -p\$\(OBJDIR\)/ *.c *.h > build/CygWin/watt32.dep
 
@@ -211,7 +211,7 @@ gen_all ()
   gen_djgpp
   gen_mingw32
   gen_mingw64
-  gen_cygwin
+  gen_cygwin32
   gen_cygwin64
   gen_watcom
 }
@@ -270,7 +270,7 @@ do
   djgpp)     gen_djgpp    ;;
   mingw32)   gen_mingw32  ;;
   mingw64)   gen_mingw64  ;;
-  cygwin)    gen_cygwin   ;;
+  cygwin32)  gen_cygwin32 ;;
   cygwin64)  gen_cygwin64 ;;
   clang)     gen_clang    ;;
   watcom)    gen_watcom   ;;

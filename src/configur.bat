@@ -314,7 +314,7 @@ echo Unknown option '%1'.
 :usage
 ::
 echo Configuring Watt-32 tcp/ip targets.
-echo Usage: %0 {borland, clang, cygwin, djgpp, highc, ladsoft,
+echo Usage: %0 {borland, clang, cygwin32, cygwin64, djgpp, highc, ladsoft,
 echo                      mingw32, mingw64, pellesc, visualc, watcom, all, clean}
 goto quit
 
