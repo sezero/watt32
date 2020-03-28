@@ -83,7 +83,7 @@ time_t ntime (DWORD host, time_t *now)
     if (sock_dataready(&sock) >= sizeof(host_tm))
     {
       time (now);
-      sock_read (&sock, (char*)&host_tm, sizeof(host_tm));
+      sock_read (&sock, (BYTE*)&host_tm, sizeof(host_tm));
 
       host_tm = ntohl ((DWORD)host_tm);  /* convert to host order */
       sock_close (&sock);

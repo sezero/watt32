@@ -26,11 +26,11 @@ int MS_CDECL main (int argc, char **argv)
     char buf[100];
 
     tcp_tick (NULL);
-    if (sock_fastread (&sock,buf,sizeof(buf)))
+    if (sock_fastread (&sock, (BYTE*)buf, sizeof(buf)))
     {
       printf ("%s", buf);
       sock_close (&sock);
-      udp_listen (&sock,port,0L,0,NULL);
+      udp_listen (&sock, port, 0L, 0, NULL);
     }
   }
   sock_close (&sock);

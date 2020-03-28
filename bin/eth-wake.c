@@ -4,7 +4,6 @@
 
 static char version_msg[] = "eth-wake.c: v1.06 1/28/2002 Donald Becker, http://www.scyld.com/";
 static char brief_usage_msg[] =
-
   "usage: ether-wake [-p aa:bb:cc:dd[:ee:ff]] 00:11:22:33:44:55\n"
   "   Use '-u' to see the complete set of options.\n";
 
@@ -74,7 +73,7 @@ static char usage_msg[] =
  * filter.  That configuration consumes more power.
  */
 
-#if !defined(_MSC_VER)
+#ifndef _MSC_VER
 #include <unistd.h>
 #endif
 
@@ -98,7 +97,7 @@ u_char wol_passwd[6];
 
 static int opt_no_src_addr = 0, opt_broadcast = 0;
 
-static int get_fill (unsigned char *pkt, char *arg);
+static int get_fill (unsigned char *pkt, const char *arg);
 static int get_wol_pw (const char *optarg);
 
 int main (int argc, char *argv[])
@@ -123,7 +122,7 @@ int main (int argc, char *argv[])
            break;
       case 'h':
       case '?':
-           printf (usage_msg);
+           puts (usage_msg);
            return (0);
       case 'v':
            verbose++;
@@ -132,7 +131,7 @@ int main (int argc, char *argv[])
            printf ("%s\n%s\n", version_msg, wattcpVersion());
            break;
       default:
-           fprintf (stderr, brief_usage_msg);
+           puts (brief_usage_msg);
            return (3);
     }
 
@@ -205,13 +204,13 @@ int main (int argc, char *argv[])
   return (0);
 }
 
-static int get_fill (unsigned char *pkt, char *arg)
+static int get_fill (unsigned char *pkt, const char *arg)
 {
   int    sa[6];
   u_char station_addr[6];
   int    byte_cnt;
   int    offset, i;
-  char  *cp;
+  const char *cp;
 
   for (cp = arg; *cp; cp++)
     if (*cp != ':' && !isxdigit((int)*cp))

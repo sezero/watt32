@@ -142,9 +142,10 @@ int main (int argc, char **argv)
 #endif
   }
 
-  if ((host = lookup_host(server,NULL)) == 0L)
+  host = lookup_host (server, NULL);
+  if (host == 0L)
   {
-    printf (dom_strerror(dom_errno));
+    printf ("%s", dom_strerror(dom_errno));
     return (3);
   }
   return ident (host, cli_port, srv_port);

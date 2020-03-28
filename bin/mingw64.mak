@@ -1,11 +1,9 @@
 #
 #  GNU Makefile for some Waterloo TCP sample applications
-#  Gisle Vanem 2013
+#  Gisle Vanem 2013 - 2020.
 #
 #  Target:
 #    GNU C 4+ (MinGW-w64 or TDM-gcc)
-#
-
 #
 # If '$(CPU)=x64', build 64-bit programs. Otherwise 32-bit programs.
 #
@@ -111,9 +109,6 @@ depend:
 
 -include .depend.MinGW64
 
-#
-# These are needed for MSYS' make (sigh)
-#
 ping.exe:     ping.c
 popdump.exe:  popdump.c
 rexec.exe:    rexec.c
