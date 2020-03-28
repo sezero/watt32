@@ -403,16 +403,16 @@ W32_FUNC int W32_CALL _ip_delay1 (sock_type *s, int sec, UserHandler fn, int *st
 W32_FUNC int W32_CALL _ip_delay2 (sock_type *s, int sec, UserHandler fn, int *statusptr);
 
 
-#define sock_wait_established(s,seconds,fn,statusptr) \
-        do {                                          \
-           if (_ip_delay0 (s,seconds,fn,statusptr))   \
-              goto sock_err;                          \
+#define sock_wait_established(s, seconds, fn, statusptr) \
+        do {                                             \
+           if (_ip_delay0 (s, seconds, fn, statusptr))   \
+              goto sock_err;                             \
         } while (0)
 
-#define sock_wait_input(s,seconds,fn,statusptr)       \
-        do {                                          \
-           if (_ip_delay1 (s,seconds,fn,statusptr))   \
-              goto sock_err;                          \
+#define sock_wait_input(s, seconds, fn, statusptr)       \
+        do {                                             \
+           if (_ip_delay1 (s, seconds, fn, statusptr))   \
+              goto sock_err;                             \
         } while (0)
 
 #define sock_tick(s, statusptr)                       \
