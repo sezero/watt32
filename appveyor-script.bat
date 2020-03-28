@@ -240,9 +240,14 @@ exit /b 1
 ::
 :build_bin
 
-if %CPU%. == x64. (
-  %_ECHO% "\e[1;31mNo 'build_bin' for 'x64' yet.\e[0m"
-  exit /b 0
+::
+:: Try 'x64' with 'clang'.
+::
+if not %BUILDER%. == clang. (
+  if %CPU%. == x64. (
+    %_ECHO% "\e[1;31mNo 'build_bin' for 'x64' yet.\e[0m"
+    exit /b 0
+  )
 )
 
 ::
