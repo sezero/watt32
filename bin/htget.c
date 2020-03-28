@@ -263,7 +263,7 @@ int htget (const char *host, int port, const char *path)
   hostaddr = lookup_host (name, NULL);
   if (!hostaddr)
   {
-    printf (dom_strerror(dom_errno));
+    printf ("%s", dom_strerror(dom_errno));
     return (1);
   }
 

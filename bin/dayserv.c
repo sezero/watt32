@@ -53,13 +53,12 @@ int dayreply (DWORD host, WORD port)
   if ((nl = strchr(now_s,'\n')) != NULL)
      *nl = 0;
   sprintf (buf, "%s\r\n", now_s);
-  sock_write (s, buf, strlen(buf)); /* Probably not quite in RFC format */
+  sock_write (s, (const BYTE*)buf, strlen(buf)); /* Probably not quite in RFC format */
 
   printf ("dayreply: sock_write(s,%s,%d)\n", buf, (int)strlen(buf));
   sock_close (s);
   return 0;
 }
-
 
 /*-------------------------------------------------------------------------
  Function called whenever we receive a packet on the listening socket.

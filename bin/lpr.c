@@ -170,10 +170,10 @@ static int lpr (char *localhostname, char *printer,  char *rhostname,
 
   sock_init();
 
-  host = lookup_host (rhostname,NULL);
+  host = lookup_host (rhostname, NULL);
   if (!host)
   {
-    printf (dom_strerror(dom_errno));
+    printf ("%s", dom_strerror(dom_errno));
     return (1);
   }
 
@@ -193,22 +193,22 @@ static int lpr (char *localhostname, char *printer,  char *rhostname,
 
   if (sock_dataready(s))
   {
-    sock_fastread (s,buffer, sizeof(buffer));
-    sock_tick (s,&status); /* in case above message closed port */
+    sock_fastread (s, (BYTE*)buffer, sizeof(buffer));
+    sock_tick (s, &status); /* in case above message closed port */
   }
 
   /* use ipnumber/time  */
   seqnum = getsequence();
-  sprintf (remotename,"fA%03u%s",seqnum,localhostname);
+  sprintf (remotename, "fA%03u%s", seqnum, localhostname);
 
   /* we are connected */
-  sprintf (buffer, "\2%s\n",printer);    /* select a printer */
-  sock_puts (s,buffer);
+  sprintf (buffer, "\2%s\n", printer);    /* select a printer */
+  sock_puts (s, (const BYTE*)buffer);
 
   /* state #2 */
 
-  sock_wait_input(s,sock_delay,NULL,&status);
-  sock_fastread  (s,buffer,sizeof(buffer));
+  sock_wait_input(s, sock_delay, NULL, &status);
+  sock_fastread  (s, (BYTE*)buffer, sizeof(buffer));
 
   switch (*buffer)
   {
@@ -224,11 +224,11 @@ static int lpr (char *localhostname, char *printer,  char *rhostname,
   filesize = filelength (fileno(f));
 
   sprintf (buffer, "\3%ld d%s\n", filesize, remotename);
-  sock_puts (s, buffer);
+  sock_puts (s, (const BYTE*)buffer);
   sock_wait_input (s, sock_delay, NULL, &status);
 
   /* state 3, reply from filename */
-  sock_fastread (s, buffer, sizeof(buffer));
+  sock_fastread (s, (BYTE*)buffer, sizeof(buffer));
 
   switch (*buffer)
   {
@@ -250,7 +250,7 @@ static int lpr (char *localhostname, char *printer,  char *rhostname,
     if (found == 0)
        break;
 
-    sock_write(s, buffer, found);
+    sock_write (s, (const BYTE*)buffer, found);
     sock_tick (s, &status);
     if (sock_dataready(s))
     {
@@ -264,8 +264,8 @@ static int lpr (char *localhostname, char *printer,  char *rhostname,
 
   /* check on status of this file */
 
-  sock_wait_input (s,sock_delay,NULL,&status);
-  sock_fastread (s,buffer,sizeof(buffer));
+  sock_wait_input (s, sock_delay, NULL, &status);
+  sock_fastread (s, (BYTE*)buffer, sizeof(buffer));
 
   switch (*buffer)
   {
@@ -284,12 +284,12 @@ static int lpr (char *localhostname, char *printer,  char *rhostname,
   {
     if (mfcf[i])
     {
-      strcat (cmdfile,mfcf[i]);
-      strcat (cmdfile,"\n");
+      strcat (cmdfile, mfcf[i]);
+      strcat (cmdfile, "\n");
     }
   }
-  b2 = strchr (cmdfile,0);
-  sprintf (b2,"T%s\n" "fd%s\n" "N%s\n" "Ud%s\n" "J%s\n",
+  b2 = strchr (cmdfile, 0);
+  sprintf (b2, "T%s\nfd%s\nN%s\nUd%s\nJ%s\n",
            title,          /* title          */
            remotename,     /* file processor */
            title,          /* name           */
@@ -299,11 +299,11 @@ static int lpr (char *localhostname, char *printer,  char *rhostname,
   printf ("Options:\n%s\n", cmdfile);
   sprintf (buffer, "\2%u c%s\n", (unsigned)strlen(cmdfile), remotename);
 
-  sock_puts (s,buffer);
+  sock_puts (s, (const BYTE*)buffer);
   sock_flush (s);
 
-  sock_wait_input (s,sock_delay,NULL,&status);
-  sock_fastread (s,buffer, sizeof(buffer));
+  sock_wait_input (s, sock_delay, NULL, &status);
+  sock_fastread (s, (BYTE*)buffer, sizeof(buffer));
 
   switch (*buffer)
   {
@@ -316,12 +316,12 @@ static int lpr (char *localhostname, char *printer,  char *rhostname,
              goto close_it;
   }
 
-  sock_puts (s,cmdfile);
-  sock_putc (s,0);
+  sock_puts (s, (const BYTE*)cmdfile);
+  sock_putc (s, 0);
   sock_flush (s);
 
-  sock_wait_input (s,sock_delay,NULL,&status);
-  sock_fastread (s,buffer,sizeof(buffer));
+  sock_wait_input (s, sock_delay, NULL, &status);
+  sock_fastread (s, (BYTE*)buffer, sizeof(buffer));
 
   switch (*buffer)
   {
@@ -337,9 +337,9 @@ static int lpr (char *localhostname, char *printer,  char *rhostname,
 
   /* all roads come here */
 close_it:
-  sock_tick (s,&status);     /* in case they sent reset */
+  sock_tick (s, &status);     /* in case they sent reset */
   sock_close (s);
-  sock_wait_closed (s,sock_delay,NULL,&status);
+  sock_wait_closed (s, sock_delay, NULL, &status);
 
 sock_err:
   switch (status)

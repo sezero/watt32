@@ -54,7 +54,7 @@ int daytime (DWORD host, int use_udp)
   if (use_udp)
   {
     udp_open (s, 0, host, DAYTIME_PORT, NULL);
-    sock_write (s, (BYTE*)"\n", 1);
+    sock_putc (s, '\n');
     udp_retrytime = set_timeout (2000);
   }
 #ifdef TCP_DAYTIME
@@ -80,7 +80,7 @@ int daytime (DWORD host, int use_udp)
       if (udp_retries-- == 0)
          break;
       udp_retrytime = set_timeout (2000);
-      sock_write (s, (BYTE*)"\n", 1);
+      sock_putc (s, '\n');
     }
     while (sock_dataready(s))
     {
@@ -151,7 +151,7 @@ int MS_CDECL main (int argc, char **argv)
   host = lookup_host (name, NULL);
   if (!host)
   {
-    printf (dom_strerror(dom_errno));
+    printf ("%s", dom_strerror(dom_errno));
     return (3);
   }
 

@@ -54,7 +54,7 @@ static void Abort (const char *fmt, ...)
 
 int MS_CDECL main (int argc, char **argv)
 {
-  char buffer  [513];
+  char  buffer [513];
   char *printer = NULL;
   char *host    = NULL;
 
@@ -115,7 +115,7 @@ int MS_CDECL main (int argc, char **argv)
 
   if (sock_dataready(s))
   {
-    sock_fastread (s, buffer, sizeof(buffer));
+    sock_fastread (s, (BYTE*)buffer, sizeof(buffer));
     buffer [sizeof(buffer)-1] = 0;
     printf ("Response: %s\n", buffer);
     sock_tick (s,&status);     /* in case above message closed port */
@@ -126,7 +126,7 @@ int MS_CDECL main (int argc, char **argv)
   while (1)
   {
     sock_wait_input (s, sock_delay, NULL, &status);
-    len = sock_read (s, buffer, sizeof(buffer));
+    len = sock_read (s, (BYTE*)buffer, sizeof(buffer));
     printf ("%*.*s",len,len,buffer);
   }
 

@@ -304,7 +304,7 @@
   #include <direct.h>  /* getcwd() */
   #endif
 
-  #include "GeoIP.h"
+  #include "geoip.h"
 
   extern void _GeoIP_setup_dbfilename (void);
   static int init_geoip (const char *argv0);

@@ -38,12 +38,12 @@ char lname [64];               /* local copies if none supplied */
 char lpass [64];
 char lcmd [255];
 
-int makecmdbuf (char *name, char *pass, char *cmd)
+int makecmdbuf (const char *name, const char *pass, const char *cmd)
 {
   return sprintf (cmdbuf, "%c%s%s%s", 0, name, pass, cmd);
 }
 
-int exec (char *hostname, WORD port, char *name, char *pass, char *cmd)
+int exec (const char *hostname, WORD port, const char *name, char *pass, const char *cmd)
 {
   WORD   lport, jqpublic, count;
   DWORD  host;
@@ -56,7 +56,7 @@ int exec (char *hostname, WORD port, char *name, char *pass, char *cmd)
 
   if ((host = lookup_host(hostname,NULL)) == 0)
   {
-    printf (dom_strerror(dom_errno));
+    printf ("%s", dom_strerror(dom_errno));
     return (2);
   }
 
@@ -67,7 +67,8 @@ int exec (char *hostname, WORD port, char *name, char *pass, char *cmd)
     gets (name = lname);
     if (!*name)
     {
-      printf (name = "JQPUBLIC");
+      name = "JQPUBLIC";
+      printf ("%s", name);
       jqpublic = 1;
     }
   }
@@ -100,14 +101,14 @@ int exec (char *hostname, WORD port, char *name, char *pass, char *cmd)
   printf ("remote host connected, waiting verification...\r");
 
   len = makecmdbuf (name, pass, cmd);
-  sock_write (&rsh_sock, cmdbuf, len);
+  sock_write (&rsh_sock, (const BYTE*)cmdbuf, len);
 
   while (1)
   {
     sock_tick (&rsh_sock, &status);
     if (!sock_dataready(&rsh_sock))
        continue;
-    sock_fastread (&rsh_sock,buffer,1);
+    sock_fastread (&rsh_sock, (BYTE*)buffer, 1);
     printf ("                                              \r");
     if (*buffer == 1)
        printf ("RSH failed...\n\r");
@@ -121,8 +122,8 @@ int exec (char *hostname, WORD port, char *name, char *pass, char *cmd)
     sock_tick (&rsh_sock, &status);
     if (sock_dataready(&rsh_sock))
     {
-      count = sock_fastread (&rsh_sock, buffer, sizeof(buffer));
-      fwrite (buffer,count,1,stdout);
+      count = sock_fastread (&rsh_sock, (BYTE*)buffer, sizeof(buffer));
+      fwrite (buffer, count, 1, stdout);
     }
   }
 
@@ -139,7 +140,7 @@ sock_err:
 
 void help (void)
 {
-  puts ("RSH [-d] host [username [password]] cmdstring");
+  puts ("REXEC [-d] host [username [password]] cmdstring");
   puts ("The values for cmdstring should be placed inside quotes");
   exit (3);
 }
@@ -175,7 +176,7 @@ int MS_CDECL main (int argc, char **argv)
   sock_init();
   hostname = argv[1];
 
-  return exec (hostname,EXEC_PORT,name,pass,cmd);
+  return exec (hostname, EXEC_PORT, name, pass, cmd);
 }
 
 

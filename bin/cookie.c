@@ -23,7 +23,7 @@ int get_cookie (DWORD host, int all_jars)
   int        len, i, status = 0;
 
   if (host)
-     status = udp_open (s,0,host,COOKIE_PORT,NULL);
+     status = udp_open (s, 0, host, COOKIE_PORT, NULL);
   else
   {
     if (!last_cookie)
@@ -46,10 +46,10 @@ int get_cookie (DWORD host, int all_jars)
     return 1;
   }
 
-  sock_write (s,"\n",1);
+  sock_putc (s, '\n');
 
-  sock_wait_input (s,sock_delay,NULL,&status);
-  len = sock_fastread (s,buffer,sizeof(buffer)-1);
+  sock_wait_input (s, sock_delay, NULL, &status);
+  len = sock_fastread (s, (BYTE*)buffer, sizeof(buffer)-1);
   buffer[len] = 0;
   puts (buffer);
 

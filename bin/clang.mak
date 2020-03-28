@@ -36,13 +36,9 @@ endif
 CFLAGS += -W3 -O2 -I../inc -D_CRT_SECURE_NO_WARNINGS -D_CRT_NONSTDC_NO_WARNINGS -D_CRT_OBSOLETE_NO_WARNINGS
 
 #
-# clang is rather picky on these things:
+# Because of 'country.c'
 #
-CFLAGS += -Wno-format-security          \
-          -Wno-nonportable-include-path \
-          -Wno-pointer-sign             \
-          -Wno-pointer-sign             \
-          -Wno-invalid-source-encoding
+CFLAGS += -Wno-invalid-source-encoding
 
 LDFLAGS = -nologo -map
 

@@ -88,7 +88,7 @@ int finger (char *userid, DWORD host, char *hoststring)
     sock_wait_input (&sock, sock_delay, NULL, &status);
     len = sock_fastread (&sock, (BYTE*)buffer, sizeof(buffer)-1);
     buffer [len] = 0;
-    printf (buffer);
+    printf ("%s", buffer);
   }
 
 sock_err:
