@@ -256,8 +256,8 @@ goto next
 :pellesc
 ::
 echo Generating PellesC makefile, directory, errnos and dependencies
-%MKMAKE% -o pellesc32.mak -d build\pellesc\32bit makefile.all PELLESC WIN32
-%MKMAKE% -o pellesc64.mak -d build\pellesc\64bit makefile.all PELLESC WIN64
+%MKMAKE% -o pellesc_32.mak -d build\pellesc\32bit makefile.all PELLESC WIN32
+%MKMAKE% -o pellesc_64.mak -d build\pellesc\64bit makefile.all PELLESC WIN64
 %MKDEP%  -s.obj -p$(OBJDIR)\ *.c *.h   > build\pellesc\watt32.dep
 echo neterr.c: build\pellesc\syserr.c >> build\pellesc\watt32.dep
 
@@ -265,8 +265,8 @@ echo neterr.c: build\pellesc\syserr.c >> build\pellesc\watt32.dep
 ..\util\po_err -e > ..\inc\sys\pellesc.err
 
 echo Run pomake to make targets:
-echo   E.g. "pomake -f pellesc32.mak"
-echo   E.g. "pomake -f pellesc64.mak"
+echo   E.g. "pomake -f pellesc_32.mak"
+echo   E.g. "pomake -f pellesc_64.mak"
 goto next
 
 
@@ -336,8 +336,8 @@ del MinGW64_64.mak
 del CygWin32.mak
 del CygWin64.mak
 del watcom_w.mak
-del pellesc32.mak
-del pellesc64.mak
+del pellesc_32.mak
+del pellesc_64.mak
 del highc.mak
 del lcc.mak
 del clang-release_32.mak
