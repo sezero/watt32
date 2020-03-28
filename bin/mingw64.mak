@@ -16,8 +16,8 @@ endif
 #
 # GNU-make is case-sensitive
 #
-ifeq ($(CPU),x64)
-  CPU = X64
+ifeq ($(CPU),X64)
+  CPU = x64
 endif
 
 #
@@ -45,7 +45,7 @@ else
   CFLAGS += -O2
 endif
 
-ifeq ($(CPU),X64)
+ifeq ($(CPU),x64)
   CFLAGS += -m64
   LIBDIR = ../lib/x64
 else
@@ -78,14 +78,16 @@ tracert.exe: EXTRAS += geoip.c -DUSE_GEOIP # -DPROBE_PROTOCOL=IPPROTO_TCP
 
 con-test.exe: w32-test.c $(WATT_LIB)
 	$(CC) $(CFLAGS) $(LDFLAGS) -o con-test.exe $^ $(EXTRAS) $(MAPFILE)
+	@echo
 
 gui-test.exe: w32-test.c $(WATT_LIB)
 	$(CC) -DIS_GUI=1 $(CFLAGS) $(LDFLAGS) -Wl,--subsystem,windows \
 	      -o $*.exe $^ $(EXTRAS) $(MAPFILE)
+	@echo
 
 %.exe: %.c $(WATT_LIB)
 	$(CC) $(CFLAGS) $(LDFLAGS) -o $*.exe $(EXTRAS) $^ $(MAPFILE)
-
+	@echo
 
 clean:
 	rm -f $(PROGS)
