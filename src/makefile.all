@@ -993,12 +993,6 @@ all: $(C_ARGS) $(OBJDIR)/cflags.h $(OBJDIR)/cflagsbf.h $(TARGETS)
 $(C_ARGS): $(MAKEFILE_LIST)
 	@echo $(CFLAGS) > $@
 
-$(LIB_ARGS): $(OBJS)
-	$(call create_response_file, $@, $^)
-
-$(LINK_ARGS): $(OBJS) $(RESOURCE)
-	$(call create_response_file, $@, $^ $(EX_LIBS))
-
 #
 # Import lib + DLL (release)
 #
@@ -1279,27 +1273,26 @@ EX_LIBS  =
 OBJS := $(subst \,/,$(OBJS))
 OBJS := $(subst .obj,.o,$(OBJS))
 
-#
-# Since these were excluded above
-#
-# OBJS := $(OBJDIR)/cpumodel.o $(OBJDIR)/chksum0.o $(OBJS)
+LIB_ARGS  = $(OBJDIR)/ar.arg
+LINK_ARGS = $(OBJDIR)/ld.arg
 
 all: $(OBJDIR)/cflags.h $(OBJDIR)/cflagsbf.h $(TARGETS)
 	@echo All done
 
-../lib/x86/libwatt32.a: $(OBJS)
-	$(AR) $@ $?
+../lib/x86/libwatt32.a: $(OBJS) $(LIB_ARGS)
+	$(AR) $@ @$(LIB_ARGS)
 
-../lib/x64/libwatt32.a: $(OBJS)
-	$(AR) $@ $?
+../lib/x64/libwatt32.a: $(OBJS) $(LIB_ARGS)
+	$(AR) $@ @$(LIB_ARGS)
 
-../lib/x86/libwatt32.dll.a ../bin/watt-32.dll: $(OBJS) $(RESOURCE)
-	$(CC) $(LDFLAGS) -Wl,--out-implib,../lib/x86/libwatt32.dll.a \
-          -o ../bin/watt-32.dll $^ $(EX_LIBS) > ../bin/watt-32.map
+../lib/x86/libwatt32.dll.a: ../bin/watt-32.dll
+../lib/x64/libwatt32.dll.a: ../bin/watt-32_64.dll
 
-../lib/x64/libwatt32.dll.a ../bin/watt-32_64.dll: $(OBJS) $(RESOURCE)
-	$(CC) $(LDFLAGS) -Wl,--out-implib,../lib/x64/libwatt32.dll.a \
-          -o ../bin/watt-32_64.dll $^ $(EX_LIBS) > ../bin/watt-32_64.map
+../bin/watt-32.dll: $(OBJS) $(RESOURCE) $(LINK_ARGS)
+	$(CC) $(LDFLAGS) -Wl,--out-implib,../lib/x86/libwatt32.dll.a -o $@ @$(LINK_ARGS) > ../bin/watt-32.map
+
+../bin/watt-32_64.dll: $(OBJS) $(RESOURCE) $(LINK_ARGS)
+	$(CC) $(LDFLAGS) -Wl,--out-implib,../lib/x64/libwatt32.dll.a -o $@ @$(LINK_ARGS) > ../bin/watt-32_64.map
 
 $(OBJDIR)/chksum0.o:  chksum0.S
 $(OBJDIR)/cpumodel.o: cpumodel.S
@@ -1312,7 +1305,7 @@ $(OBJDIR)/%.o: %.S
 	$(AS) $(AFLAGS) $(OBJDIR)/$*.iS -o $@
 
 clean:
-	rm -f $(TARGETS) $(OBJDIR)/*.o $(OBJDIR)/*.iS $(RESOURCE) $(OBJDIR)/cflags.h $(OBJDIR)/cflagsbf.h
+	rm -f $(TARGETS) $(OBJDIR)/*.arg $(OBJDIR)/*.o $(OBJDIR)/*.iS $(RESOURCE) $(OBJDIR)/cflags.h $(OBJDIR)/cflagsbf.h
 	@echo Cleaning done
 
 -include $(OBJDIR)/watt32.dep
@@ -1593,6 +1586,12 @@ $(PKT_STUB): asmpkt.nas
   # assume the 'date' program is available.
   #
   DATE = $(shell date +%d-%B-%Y)
+
+$(LIB_ARGS): $(OBJS)
+	$(call create_response_file, $@, $^)
+
+$(LINK_ARGS): $(OBJS) $(RESOURCE)
+	$(call create_response_file, $@, $^ $(EX_LIBS))
 @endif
 
 build\Borland\Win32\watt-32.res: watt-32.rc
