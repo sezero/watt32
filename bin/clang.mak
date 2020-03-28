@@ -40,7 +40,7 @@ CFLAGS += -W3 -O2 -I../inc -D_CRT_SECURE_NO_WARNINGS -D_CRT_NONSTDC_NO_WARNINGS 
 #
 CFLAGS += -Wno-invalid-source-encoding
 
-LDFLAGS = -nologo -map
+LDFLAGS = -nologo -map -machine:$(CPU)
 
 ifeq ($(USE_STATIC_LIB),1)
   CFLAGS   += -DWATT32_STATIC
@@ -79,6 +79,9 @@ tracert.exe: tracert.c geoip.c $(WATT_LIB)
 	$(CC) -c $(CFLAGS) $<
 	link $(LDFLAGS) -out:$*.exe $*.obj $(WATT_LIB) $(EX_LIBS)
 	@echo
+
+check_CPU:
+	@echo 'Building for CPU=$(CPU).'
 
 clean:
 	rm -f $(PROGS)

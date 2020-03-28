@@ -172,6 +172,9 @@ if %BUILDER%. == visualc. (
   exit /b
 )
 
+::
+:: Need to do 'call :install_LLVM' here to set the PATH for 'clang-cl.exe'!
+::
 if %BUILDER%. == clang. (
   call :install_LLVM
   call configur.bat clang
@@ -256,26 +259,29 @@ set PROGS_WC_SMALL32=%PROGS_WC_LARGE%
 
 cd bin
 if %BUILDER%. == djgpp. (
-  %_ECHO% "\e[1;33mBuilding PROGS_DJ=%PROGS_DJ%:\e[0m"
+  %_ECHO% "\e[1;33m[%CPU%]: Building PROGS_DJ=%PROGS_DJ%:\e[0m"
   make -f djgpp_win.mak DPMI_STUB=0 %PROGS_DJ%
   exit /b
 )
 
 if %BUILDER%. == visualc. (
-  %_ECHO% "\e[1;33mBuilding PROGS_VC=%PROGS_VC%:\e[0m"
+  %_ECHO% "\e[1;33m[%CPU%]: Building PROGS_VC=%PROGS_VC%:\e[0m"
   nmake -nologo -f visualc.mak %PROGS_VC%
   exit /b
 )
 
 if %BUILDER%. == mingw64. (
-  %_ECHO% "\e[1;33mBuilding PROGS_MW=%PROGS_MW%:\e[0m"
+  %_ECHO% "\e[1;33m[%CPU%]: Building PROGS_MW=%PROGS_MW%:\e[0m"
   make -f mingw64.mak %PROGS_MW%
   exit /b
 )
 
 if %BUILDER%. == clang. (
-  %_ECHO% "\e[1;33mBuilding PROGS_CL=%PROGS_CL%:\e[0m"
-  make -f clang.mak %PROGS_CL%
+  call :install_LLVM
+  %_ECHO% "\e[1;33mwhere clang-cl.exe:\e[0m"
+  where clang-cl.exe
+  %_ECHO% "\e[1;33m[%CPU%]: Building PROGS_CL=%PROGS_CL%:\e[0m"
+  make -f clang.mak check_CPU %PROGS_CL%
   exit /b
 )
 
