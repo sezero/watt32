@@ -5,6 +5,60 @@ may prove helpful. Latest changes are added at the top.
 
 - - -
 
+******************* Changes by Juan Manuel Guerrero *********************
+
+2019-12-18  Juan M. Guerrero  <juan.guerrero@gmx.de>
+
+  * src/misc.c [__DJGPP__]:  Provide an implementation for __readfsdword.
+
+  * src/cpumodel.h [__NO_INLINE__, __DJGPP__]:  If __NO_INLINE__ is defined
+    no functions are provided at all, thus disable this exclusion for DJGPP.
+
+2019-07-06  Juan M. Guerrero  <juan.guerrero@gmx.de>
+
+  * inc/poll.h:  New. POSIX requires (AFAIK) this file in a base-dir.
+
+2018-09-01  Juan M. Guerrero  <juan.guerrero@gmx.de>
+
+  * util/sysdep.h [__CYGWIN__]:  Macros to replace non-standard functions
+    like stricmp and strnicmp.
+
+2018-08-22  Juan M. Guerrero  <juan.guerrero@gmx.de>
+
+  * bin/djgpp.mak:  For gcc 5.N.N and higher versions add `-fgnu89-inline'
+    to the CFLAGS to ensure that always traditional GNU extern inline semantics
+    are used even if ISO C99 semantics have been specified.  ISO C99 semantics
+    is always the default for gcc 5.N.N and higher versions.
+    Install target and prefix variable added.
+
+  * src/makefile.all:  For gcc 5.N.N and higher versions add `-fgnu89-inline'
+    to the CFLAGS to ensure that always traditional GNU extern inline semantics
+    are used even if ISO C99 semantics have been specified.  ISO C99 semantics
+    is always the default for gcc 5.N.N and higher versions.
+    Install target and prefix variable added.
+
+  * src/misc.c: stack_limit not used by DJGPP.
+
+  * src/pcarp.c [TEST_PROG]: Unused variables: num_okay and num_fail.
+
+  * src/pcsed.c (_eth_init): Initialize mac_tx_format and mac_transmit
+    to some sane default in case that no packet driver has been installed.
+
+  * src/sock_ini.c: Use FALSE instead of 0.
+
+  * src/tests/fsext.c (main): Avoid ordered comparison of pointer with
+    integer zero.
+
+  * src/tests/ttime2.c (main): Initialize lastsec before using it.
+
+  * src/tests/makefile.all:  For gcc 5.N.N and higher versions add
+    `-fgnu89-inline' to the CFLAGS to ensure that always traditional GNU
+    extern inline semantics are used even if ISO C99 semantics have been
+    specified.  ISO C99 semantics is always the default for gcc 5.N.N and
+    higher versions.
+    For DJGPP do not build neither swap.$(EXE) nor timeit_test.$(EXE).
+
+
 ******************* Changes version 2.2 dev.rel. 11 *********************
 
 * The .\src build direcory layout is changed:

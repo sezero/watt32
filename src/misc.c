@@ -1288,7 +1288,10 @@ DWORD get_ss_limit (void)
   #endif
 
   THREAD_LOCAL static UINT_PTR stack_bottom = 0;
+
+  #if !defined(__DJGPP__)
   THREAD_LOCAL static UINT_PTR stack_limit  = 0;
+  #endif
 #endif
 
 /* More 'gcc -O0' hackery.
@@ -1312,8 +1315,8 @@ DWORD get_ss_limit (void)
       {
         DWORD result;
         __asm__ __volatile__ (
-                  "movl %%fs:%1,%0"
-                : "=r" (result) ,"=m" ((*(volatile long *) offset)) );
+                  "movl %%fs:%1, %0"
+                : "=r" (result) ,"=m" ((*(volatile long*) offset)) );
         return (result);
       }
     #endif

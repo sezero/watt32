@@ -19,7 +19,7 @@
 default: all
 
 ifneq (1,1)
-!error "This is GNU-make. No pesky Nmake allowed please!"
+!error "This is a GNU makefile. No pesky Wmake or Nmake allowed please!"
 endif
 
 #
@@ -60,10 +60,8 @@ PROGRAMS = bind.$(EXE)        \
            punycode.$(EXE)    \
            select.$(EXE)      \
            socktest.$(EXE)    \
-           swap.$(EXE)        \
            syslog.$(EXE)      \
            tftp.$(EXE)        \
-           timeit_test.$(EXE) \
            ttime.$(EXE)       \
            udp_srv.$(EXE)     \
            udp_test.$(EXE)    \
@@ -73,11 +71,13 @@ ifeq ($(USE_IPV6),1)
   PROGRAMS += get_ai.$(EXE) get_ni.$(EXE) gethost6.$(EXE) presaddr.$(EXE)
 endif
 
+@ifndef DJGPP
+  PROGRAMS += swap.$(EXE) timeit_test.$(EXE)
+@endif
+
 @ifdef DJGPP HIGHC BORLAND
   PROGRAMS += oldstuff.$(EXE) ttime2.$(EXE)
 @endif
-
-BIN_PREFIX =
 
 @ifdef DJGPP
   ifeq ($(OS),Windows_NT)
@@ -99,6 +99,8 @@ BIN_PREFIX =
         $(error Failed to find 'i586-pc-msdosdjgpp-gcc.exe'.)
       endif
     endif
+  else
+    BIN_PREFIX =
   endif
 
   PROGRAMS += fsext.$(EXE)
@@ -111,6 +113,15 @@ CFLAGS = -DTEST_PROG -DWATT32 -DWATT32_STATIC -I.. -I../../inc
   CC      = $(BIN_PREFIX)gcc
   CFLAGS += -O2 -g -W -Wall -Wno-strict-aliasing
   LDFLAGS = -Wl,--print-map,--sort-common
+
+  ifeq ($(filter 2 3 4,$(word 3, $(shell true | $(CC) -E -dD -x c - | grep 'define\ *__GNUC__'))),)
+    #
+    # We have gcc >= 5.x and we must ensure that always traditional
+    # GNU extern inline semantics are used (aka -fgnu89-inline) even
+    # if ISO C99 semantics have been specified.
+    #
+    CFLAGS += -fgnu89-inline
+  endif
 
   define compile_and_link
     $(CC) $(CFLAGS) $(LDFLAGS) -o $(1) $(2) $(WATT_LIB) > $(1:.exe=.map)

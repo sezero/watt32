@@ -2167,7 +2167,7 @@ static DWORD _route_destin (DWORD ip)
 #endif
   }
 //  if (rc)
-     return (rc);
+       return (rc);
 //  return (is_on_LAN(ip) ? INADDR_ANY : INADDR_NONE);
 }
 
@@ -2175,8 +2175,10 @@ static DWORD _route_destin (DWORD ip)
 #include "pcdns.h"
 #include "pcbuf.h"
 
-static int num_okay = 0;
-static int num_fail = 0;
+#if !defined(__DJGPP__)
+  static int num_okay = 0;
+  static int num_fail = 0;
+#endif
 
 #define TEST(func, args, expect) do {                                   \
                                    HIGH_TEXT();                         \

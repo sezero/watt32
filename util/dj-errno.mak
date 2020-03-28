@@ -58,7 +58,13 @@ else
 #
 DJ_ROOT = $(subst /bin/i586-pc-msdosdjgpp-,,$(DJ_PREFIX))
 
-DJ_ERR_CFLAGS = -m32 -s -DWATT32_DJGPP_MINGW  -D__DJGPP__=2 -D__DJGPP_MINOR__=5
+#
+# Make an env-var to suite your djgpp minor version.
+# Otherwise the latest (?) minor version is assumed.
+#
+__DJGPP_MINOR__ ?= 6
+
+DJ_ERR_CFLAGS = -m32 -s -DWATT32_DJGPP_MINGW  -D__DJGPP__=2 -D__DJGPP_MINOR__=$(__DJGPP_MINOR__)
 
 #
 # Force including djgpp's <errno.h> and NOT MinGW's <errno.h>

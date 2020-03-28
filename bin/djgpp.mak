@@ -36,7 +36,7 @@ DPMI_STUB = 0
 #
 MAKE_MAP = 0
 
-prefix ?= /dev/env/DJDIR/net/watt
+prefix = /dev/env/DJDIR/net/watt
 
 INC_DIR = ../inc
 
@@ -53,6 +53,15 @@ endif
 CC      = gcc
 CFLAGS += -Wall -W -Wno-sign-compare -g -O2 -I$(INC_DIR) #-s # strip symbols from .exe
 
+ifeq ($(filter 2 3 4,$(word 3, $(shell true | $(CC) -E -dD -x c - | grep 'define\ *__GNUC__'))),)
+  #
+  # We have gcc >= 5.x and we must ensure that always traditional
+  # GNU extern inline semantics are used (aka -fgnu89-inline) even
+  # if ISO C99 semantics have been specified.
+  #
+  CFLAGS += -fgnu89-inline
+endif
+
 ifeq ($(USE_EXCEPT),1)
   CFLAGS += -DUSE_EXCEPT
   EXTRAS += d:/prog/mw/except/lib/libexc.a
@@ -66,7 +75,6 @@ ifeq ($(MAKE_MAP),1)
 else
   LINK = $(CC)
 endif
-
 
 PROGS = ping.exe     popdump.exe  rexec.exe   tcpinfo.exe cookie.exe \
         daytime.exe  dayserv.exe  finger.exe  host.exe    lpq.exe    \
@@ -96,14 +104,12 @@ ifeq ($(PROFILE),1)
         # run "prog.exe [args]" as usual, then generate profile by
         # "gprof prog.pro > prog.res"
         #
-else
-ifeq ($(DPMI_STUB),1)
+else ifeq ($(DPMI_STUB),1)
 	$(LINK) $(CFLAGS) -s $*.c $(EXTRAS) $(WATTLIB) -o $*
 	@copy /b $(subst /,\,$(DJDIR))\bin\cwsdstub.exe + $* $*.exe
 	@del $*
 else
 	$(LINK) $(CFLAGS) $*.c $(EXTRAS) $(WATTLIB) -o $*.exe
-endif
 endif
 
 $(PROGS): $(WATTLIB)

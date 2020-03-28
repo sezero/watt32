@@ -668,7 +668,15 @@ int W32_CALL _eth_init (void)
 
   rc = pkt_eth_init (&_eth_addr);
   if (rc)
-     return (rc);  /* error message already printed */
+  {
+    if (rc == WERR_NO_DRIVER)
+    {
+      /* Initialize to some sane default.  */
+      mac_tx_format = null_mac_format;
+      mac_transmit  = null_mac_xmit;
+    }
+    return (rc);  /* error message already printed */
+  }
 
   /* Save our MAC-address incase we change it. Change back at exit.
    */

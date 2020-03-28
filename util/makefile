@@ -26,7 +26,7 @@ SLANG_ROOT_LINUX ?=
 SLANG_LIB_LINUX  ?= -lslang
 
 CC     = gcc
-CFLAGS = -Wall -g # -s
+CFLAGS = -Wall -g -save-temps # -s
 
 all: mkmake.exe mkdep.exe mklang.exe mkimp.exe dxegen.exe bin2c.exe
 

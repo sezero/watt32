@@ -152,7 +152,11 @@ extern CONST char  DATA_DECL x86_vendor_id[13];
 #endif
 
 
-#if defined(__GNUC__) && defined(__i386__) && !defined(__NO_INLINE__)
+/*
+ * If __NO_INLINE__ is defined no functions are provided at all, thus disable
+ * this exlusion at least for DJGPP or the build will fail for -O0!
+ */
+#if defined(__GNUC__) && defined(__i386__) && (!defined(__NO_INLINE__) || defined(__DJGPP__))
   /*
    * Call this only if x86_have_cpuid == TRUE.
    */
