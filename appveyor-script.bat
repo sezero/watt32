@@ -236,26 +236,10 @@ if %BUILDER%. == watcom. (
 exit /b 1
 
 ::
-:: Build some example programs in './bin'
+:: './bin/' programs to build for djgpp, Visual-C, MinGW-w64, clang-cl and Watcom (Win32 + large + flat):
 ::
 :build_bin
 
-::
-:: Try 'x64' with 'clang' or 'mingw64'.
-::
-:: if %BUILDER%. == clang.   goto do_it
-:: if %BUILDER%. == mingw64. goto do_it
-::
-:: if %CPU%. == x64. (
-::   %_ECHO% "\e[1;31mNo 'build_bin' for 'x64' yet.\e[0m"
-::   exit /b 0
-:: )
-::
-:: :do_it
-
-::
-:: './bin/' programs to build for djgpp, Visual-C, MinGW-w64, clang-cl and Watcom (Win32 + large + flat):
-::
 set PROGS_DJ=bping.exe ping.exe finger.exe ident.exe htget.exe tcpinfo.exe tracert.exe country.exe
 set PROGS_VC=ping.exe finger.exe tcpinfo.exe host.exe htget.exe tracert.exe con-test.exe gui-test.exe lpq.exe lpr.exe ntime.exe whois.exe ident.exe country.exe
 set PROGS_MW=%PROGS_VC%
@@ -266,6 +250,7 @@ set PROGS_WC_FLAT=%PROGS_WC_LARGE%
 set PROGS_WC_SMALL32=%PROGS_WC_LARGE%
 
 cd bin
+
 if %BUILDER%. == djgpp. (
   %_ECHO% "\e[1;33m[%CPU%]: Building PROGS_DJ=%PROGS_DJ%:\e[0m"
   make -f djgpp_win.mak DPMI_STUB=0 %PROGS_DJ%
@@ -320,7 +305,7 @@ if %BUILDER%. == watcom. (
   exit /b
 )
 
-%_ECHO% "\e[1;31mNo 'build_bin' for 'BUILDER=%BUILDER%' yet.\e[0m"
+%_ECHO% "\e[1;31m[%CPU%]: No 'build_bin' for 'BUILDER=%BUILDER%' yet.\e[0m"
 exit /b 0
 
 ::
