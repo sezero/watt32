@@ -26,13 +26,13 @@ STATIC_LIB = 0
 #  -MT    libcmt.lib   Yes         release
 #  -MTd   libcmtd.lib  Yes         debug
 #
-# The below  '$(Platform)' can be set on cmd-line:
-#   nmake Platform=x64 visualc.mak
+# The below  '$(CPU)' can be set on cmd-line:
+#   nmake CPU=x64 visualc.mak
 #
 # to force the 64-bit version of the Watt-32 library.
 #
-!if "$(Platform)." == "."
-Platform = x86
+!if "$(CPU)." == "."
+CPU = x86
 !endif
 
 # Build with DEBUG_MODE=1 if you want to profile the program with
@@ -56,7 +56,7 @@ CFLAGS = -nologo -DWIN32 -EHsc -W3 -Gy -Zi -I..\inc \
          -D_CRT_NONSTDC_NO_WARNINGS -D_CRT_OBSOLETE_NO_WARNINGS -D_CRT_SECURE_NO_WARNINGS \
        # -DUNICODE -D_UNICODE
 
-LDFLAGS = -nologo -fixed:no -mapinfo:exports -incremental:no
+LDFLAGS = -nologo -fixed:no -mapinfo:exports -incremental:no -machine:$(CPU)
 
 !if $(DEBUG_MODE) == 1
 DEBUG   = _d
@@ -70,11 +70,11 @@ LDFLAGS = $(LDFLAGS) -debug     #-release
 
 !if $(STATIC_LIB) == 1
 CFLAGS  = $(CFLAGS) -DWATT32_STATIC
-WATTLIB = ..\lib\$(Platform)\wattcpvc$(DEBUG).lib
+WATTLIB = ..\lib\$(CPU)\wattcpvc$(DEBUG).lib
 LIBS    = $(WATTLIB) advapi32.lib user32.lib
 
 !else
-WATTLIB = ..\lib\$(Platform)\wattcpvc_imp$(DEBUG).lib
+WATTLIB = ..\lib\$(CPU)\wattcpvc_imp$(DEBUG).lib
 LIBS    = $(WATTLIB)
 !endif
 
@@ -83,7 +83,7 @@ CFLAGS = $(CFLAGS) -MT -DUSE_MPATROL
 LIBS   = $(LIBS) libmpatrolmt.lib imagehlp.lib
 !endif
 
-!if "$(Platform)." == "x64."
+!if "$(CPU)." == "x64."
 CFLAGS = $(CFLAGS) -wd4244 -wd4267
 !endif
 
