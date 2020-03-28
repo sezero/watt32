@@ -1035,10 +1035,10 @@ clean:
 	@echo Cleaning done
 
 $(OBJDIR)/%.obj: %.c
-	$(CC) -c @$(C_ARGS) -Fo.\$@ $<
+	$(CC) -c @$(C_ARGS) -Fo./$@ $<
 
 $(OBJDIR)/%.obj: %.cpp
-	$(CC) -c -TP -EHsc @$(C_ARGS) -Fo.\$@ $<
+	$(CC) -c -TP -EHsc @$(C_ARGS) -Fo./$@ $<
 
 $(OBJDIR)/%.obj: %.asm
 	$(AS) $(AFLAGS) -Fo./$@ -Fl./$(OBJDIR)/$*.lst $<
