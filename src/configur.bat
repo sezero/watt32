@@ -147,8 +147,8 @@ echo Generating LADsoft makefile, directory, errnos and dependencies
 %MKDEP%  -s.obj -p$(OBJDIR)\ *.c *.h   > build\ladsoft\watt32.dep
 echo neterr.c: build\ladsoft\syserr.c >> build\ladsoft\watt32.dep
 
-..\util\ls_err -s > build\ladsoft\syserr.c
-..\util\ls_err -e > ..\inc\sys\ladsoft.err
+..\util\win32\ls_err -s > build\ladsoft\syserr.c
+..\util\win32\ls_err -e > ..\inc\sys\ladsoft.err
 
 echo Run a Borland compatible make to make target:
 echo   "maker -f ladsoft.mak"

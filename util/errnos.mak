@@ -16,7 +16,6 @@ PROGRAMS = bcc_err.exe  \
            dm_err.exe   \
            tcc_err.exe  \
            wc_err.exe   \
-           ms32_err.exe \
            hc_err.exe   \
            dj_err.exe   \
            lcc_err.exe
@@ -31,6 +30,7 @@ WIN_PROGRAMS = win32/clang_err.exe \
                win32/bcc_err.exe   \
                win32/dj_err.exe    \
                win32/dm_err.exe    \
+               win32/vc_err.exe    \
              # win32/hc_err.exe
 
 all:   $(PROGRAMS) $(WIN_PROGRAMS)
@@ -84,8 +84,8 @@ mw_err.exe: errnos.c
 # Note: 'cl386' is LadSoft's compiler. If you have <WATCOM_ROOT\binnt>' in
 #       your PATH, put it after Ladsoft's .'\bin' dir.
 #
-ls_err.exe: errnos.c
-	cl386 /E0 /I..\inc /e=ls_err.exe errnos.c
+win32/ls_err.exe: errnos.c
+	cl386 /E0 /I..\inc /e=win32\ls_err.exe errnos.c
     # cl386 /L$(LADSOFT)\lib /E0 /I..\inc /e=ls_err.exe -$$D=DOS32A errnos.c
 
 lcc_err.exe: errnos.c
@@ -113,7 +113,7 @@ win32/dj_err.exe::
 
 clean:
 	@del bcc_err.exe win32\clang_err.exe wc_err.exe hc_err.exe \
-         tcc_err.exe dj_err.exe mw_err.exe mw64_err.exe ls_err.exe \
+         tcc_err.exe dj_err.exe mw_err.exe mw64_err.exe win32\ls_err.exe \
          lcc.exe po_err.exe win32\vc_err.exe win32\wc_err.exe \
          win32\bcc_err.exe win32\hc_err.exe errnos.obj
 
