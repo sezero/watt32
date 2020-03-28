@@ -349,7 +349,7 @@ MAKEFIL = bcc_f.mak
 #
 # -RT-: Generate RTTI, disable
 #
-CFLAGS  = $(CFLAGS) -RT-
+CFLAGS = $(CFLAGS) -RT-
 
 #
 # Hacks for compiling the generated lang.c file:
@@ -676,7 +676,7 @@ CFLAGS = $(CFLAGS) -MD -Ox -GS- # -Gr
 BITS    = 64
 LDFLAGS = -machine:x64
 AS      = ml64
-AFLAGS  = -c -nologo -DDOSX -DWIN64 -Zi -Fl
+AFLAGS  = -c -nologo -DDOSX -DWIN64 -Zi
 
 @ifdef DEBUG
 TARGETS = ..\lib\x64\wattcpvc_d.lib ..\lib\x64\wattcpvc_imp_d.lib ..\bin\watt-32d_64.dll
@@ -694,7 +694,7 @@ OBJDIR  = build\visualc\64bit\release
 BITS    = 32
 LDFLAGS = -machine:x86
 AS      = ml
-AFLAGS  = -c -nologo -DDOSX -Zi -Fl -coff
+AFLAGS  = -c -nologo -DDOSX -Zi -coff
 
 @ifdef DEBUG
 TARGETS = ..\lib\x86\wattcpvc_d.lib ..\lib\x86\wattcpvc_imp_d.lib ..\bin\watt-32d.dll
@@ -771,7 +771,6 @@ $(C_ARGS): $(MAKEFIL)
 	type link.tmp >> ..\bin\watt-32d_64.map
 	touch ../lib/x64/wattcpvc_imp_d.lib
 @else
-
 #
 # Static libs (release)
 #
@@ -805,8 +804,8 @@ clean:
 	- @del $(TARGETS)
 	- @del $(C_ARGS)
 	- @del $(OBJDIR)\*.obj
+	- @del $(OBJDIR)\*.lst
 	- @del $(RESOURCE)
-	- @del *.lst
 	- @del vc1*.pdb
 	- @del ..\lib\x86\wattcpcvc_*.exp
 	- @del ..\lib\x64\wattcpcvc_*.exp
@@ -823,7 +822,7 @@ $(OBJDIR)\cpumodel.obj: cpumodel.asm
 	$(CC) -c @$(C_ARGS) -Fo.\$*.obj $<
 
 .asm{$(OBJDIR)}.obj:
-	$(AS) $(AFLAGS) -Fo.\$*.obj $<
+	$(AS) $(AFLAGS) -Fo.\$*.obj -Fl.\$*.lst $<
 
 !include build\visualc\watt32.dep
 
@@ -942,7 +941,7 @@ RESOURCE = $(OBJDIR)/watt-32.res
 @ifdef WIN64
   64     = _64
   AS     = ml64
-  AFLAGS = -c -nologo -DDOSX -DWIN64 -Zi -Fl
+  AFLAGS = -c -nologo -DDOSX -DWIN64 -Zi
 
   @ifdef DEBUG
   TARGETS = ../lib/x64/wattcp_clang.lib ../lib/x64/wattcp_clang_imp.lib ../bin/watt-32_64.dll
@@ -954,7 +953,7 @@ RESOURCE = $(OBJDIR)/watt-32.res
 @else
   64     =
   AS     = ml
-  AFLAGS = -c -nologo -DDOSX -Zi -Fl -coff
+  AFLAGS = -c -nologo -DDOSX -Zi -coff
 
   @ifdef DEBUG
   TARGETS = ../lib/x86/wattcp_clang_d.lib ../lib/x86/wattcp_clang_imp_d.lib ../bin/watt-32d.dll
@@ -1040,7 +1039,7 @@ $(OBJDIR)/%.obj: %.cpp
 	$(CC) -c -TP -EHsc @$(C_ARGS) -Fo.\$@ $<
 
 $(OBJDIR)/%.obj: %.asm
-	$(AS) $(AFLAGS) -Fo.\$@ $<
+	$(AS) $(AFLAGS) -Fo./$@ -Fl./$(OBJDIR)/$*.lst $<
 
 include build/clang/watt32.dep
 
@@ -1424,7 +1423,7 @@ clean:
 CFLAGS  = -Tx64-coff -DWIN32
 LDFLAGS = -machine:x64
 AS      = ml64
-AFLAGS  = -DDOSX -DWIN64 -Fl
+AFLAGS  = -DDOSX -DWIN64
 TARGETS = ..\lib\x64\wattcppo.lib ..\lib\x64\wattcppo_imp.lib ..\bin\watt-32_64.dll
 WINLIB  = $(PELLESC)\lib\Win64
 OBJDIR  = build\pellesc\64bit
@@ -1434,7 +1433,7 @@ MAKEFIL = pellesc_64.mak
 CFLAGS  = -Tx86-coff
 LDFLAGS = -machine:x86
 AS      = ml
-AFLAGS  = -DDOSX -DWIN32 -Fl -coff
+AFLAGS  = -DDOSX -DWIN32 -coff
 TARGETS = ..\lib\x86\wattcppo.lib ..\lib\x86\wattcppo_imp.lib ..\bin\watt-32.dll
 WINLIB  = $(PELLESC)\lib\Win
 OBJDIR  = build\pellesc\32bit
@@ -1448,7 +1447,7 @@ CFLAGS  = $(CFLAGS) -DWATT32_BUILD -MT -X -Ox -Ob1 -Ze -Zi -W1 -Go \
 AFLAGS  = -c -nologo -Zi $(AFLAGS)
 
 # AS      = poasm
-# AFLAGS  = -DDOSX -Zd -Fl
+# AFLAGS  = -DDOSX -Zd
 
 RESOURCE = $(OBJDIR)\watt-32.res
 
@@ -1480,8 +1479,8 @@ clean:
 	- @del $(TARGETS)
 	- @del $(RESOURCE)
 	- @del $(OBJDIR)\*.obj
+	- @del $(OBJDIR)\*.lst
 	- @del $(OBJDIR)\cflagsbf.h
-	- @del *.lst
 	@echo Cleaning done
 
 $(OBJDIR)\chksum0.obj:  chksum0.asm
@@ -1491,7 +1490,7 @@ $(OBJDIR)\cpumodel.obj: cpumodel.asm
 	$(CC) -c $(CFLAGS) -Fo$*.obj $<
 
 .asm{$(OBJDIR)}.obj:
-	$(AS) $(AFLAGS) -Fo $*.obj $<
+	$(AS) $(AFLAGS) -Fo $*.obj -Fl $(OBJDIR)\$*.lst $<
 
 !include build\pellesc\watt32.dep
 
