@@ -243,10 +243,12 @@ if %CPU%. == x64. (
 )
 
 ::
-:: './bin/' programs to build for djgpp, Visual-C and Watcom (Win32 + large + flat):
+:: './bin/' programs to build for djgpp, Visual-C, MinGW-w64, clang-cl and Watcom (Win32 + large + flat):
 ::
 set PROGS_DJ=bping.exe ping.exe finger.exe ident.exe htget.exe tcpinfo.exe tracert.exe country.exe
 set PROGS_VC=ping.exe finger.exe tcpinfo.exe host.exe htget.exe tracert.exe con-test.exe gui-test.exe lpq.exe lpr.exe ntime.exe whois.exe ident.exe country.exe
+set PROGS_MW=%PROGS_VC%
+set PROGS_CL=%PROGS_VC%
 set PROGS_WC_WIN=ping.exe htget.exe finger.exe tcpinfo.exe con-test.exe gui-test.exe htget.exe tracert.exe whois.exe
 set PROGS_WC_LARGE=ping.exe htget.exe finger.exe tcpinfo.exe htget.exe whois.exe
 set PROGS_WC_FLAT=%PROGS_WC_LARGE%
@@ -262,6 +264,18 @@ if %BUILDER%. == djgpp. (
 if %BUILDER%. == visualc. (
   %_ECHO% "\e[1;33mBuilding PROGS_VC=%PROGS_VC%:\e[0m"
   nmake -nologo -f visualc.mak %PROGS_VC%
+  exit /b
+)
+
+if %BUILDER%. == mingw64. (
+  %_ECHO% "\e[1;33mBuilding PROGS_MW=%PROGS_MW%:\e[0m"
+  make -f mingw64.mak %PROGS_MW%
+  exit /b
+)
+
+if %BUILDER%. == clang. (
+  %_ECHO% "\e[1;33mBuilding PROGS_CL=%PROGS_CL%:\e[0m"
+  make -f clang.mak %PROGS_CL%
   exit /b
 )
 
