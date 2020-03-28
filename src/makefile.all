@@ -732,17 +732,21 @@ LDFLAGS = $(LDFLAGS) -ignore:4221
 # Enable the watt-32.dll to be used on Win-XP SP3 (5.2) in case
 # it was built under Win-Vista+
 #
-LDFLAGS  = $(LDFLAGS) -subsystem:console,5.02
+LDFLAGS   = $(LDFLAGS) -subsystem:console,5.02
 
-EX_LIBS  = user32.lib advapi32.lib
-RESOURCE = $(OBJDIR)\watt-32.res
-C_ARGS   = $(OBJDIR)\cl.arg
+EX_LIBS   = user32.lib advapi32.lib
+RESOURCE  = $(OBJDIR)\watt-32.res
+C_ARGS    = $(OBJDIR)\cl.arg
+LINK_ARGS = $(OBJDIR)\link.arg
 
 all: $(C_ARGS) $(OBJDIR)\cflags.h $(OBJDIR)\cflagsbf.h $(TARGETS)
 	@echo All done
 
 $(C_ARGS): $(MAKEFIL)
 	@echo $(CFLAGS) > $@
+
+$(LINK_ARGS): $(MAKEFIL)
+	@echo $(OBJS) $(RESOURCE) $(EX_LIBS) > $@
 
 @ifdef DEBUG
 #
@@ -761,15 +765,13 @@ $(C_ARGS): $(MAKEFIL)
 #
 # Import libs + DLLs (debug)
 #
-..\bin\watt-32d.dll ..\lib\x86\wattcpvc_imp_d.lib: $(OBJS) $(RESOURCE)
-	link $(LDFLAGS) -out:..\bin\watt-32d.dll -implib:..\lib\x86\wattcpvc_imp_d.lib \
-	     $** $(EX_LIBS) > link.tmp
+..\bin\watt-32d.dll ..\lib\x86\wattcpvc_imp_d.lib: $(OBJS) $(RESOURCE) $(LINK_ARGS)
+	link $(LDFLAGS) -out:..\bin\watt-32d.dll -implib:..\lib\x86\wattcpvc_imp_d.lib @$(LINK_ARGS) > link.tmp
 	type link.tmp >> ..\bin\watt-32d.map
 	touch ../lib/x86/wattcpvc_imp_d.lib
 
-..\bin\watt-32d_64.dll ..\lib\x64\wattcpvc_imp_d.lib: $(OBJS) $(RESOURCE)
-	link $(LDFLAGS) -out:..\bin\watt-32d_64.dll -implib:..\lib\x64\wattcpvc_imp_d.lib \
-	     $** $(EX_LIBS) > link.tmp
+..\bin\watt-32d_64.dll ..\lib\x64\wattcpvc_imp_d.lib: $(OBJS) $(RESOURCE) $(LINK_ARGS)
+	link $(LDFLAGS) -out:..\bin\watt-32d_64.dll -implib:..\lib\x64\wattcpvc_imp_d.lib @$(LINK_ARGS) > link.tmp
 	type link.tmp >> ..\bin\watt-32d_64.map
 	touch ../lib/x64/wattcpvc_imp_d.lib
 @else
@@ -789,22 +791,20 @@ $(C_ARGS): $(MAKEFIL)
 #
 # Import libs + DLLs (release)
 #
-..\bin\watt-32.dll ..\lib\x86\wattcpvc_imp.lib: $(OBJS) $(RESOURCE)
-	link $(LDFLAGS) -out:..\bin\watt-32.dll -implib:..\lib\x86\wattcpvc_imp.lib \
-	     $** $(EX_LIBS) > link.tmp
+..\bin\watt-32.dll ..\lib\x86\wattcpvc_imp.lib: $(OBJS) $(RESOURCE) $(LINK_ARGS)
+	link $(LDFLAGS) -out:..\bin\watt-32.dll -implib:..\lib\x86\wattcpvc_imp.lib @$(LINK_ARGS) > link.tmp
 	type link.tmp >> ..\bin\watt-32.map
 	touch ../lib/x86/wattcpvc_imp.lib
 
 ..\bin\watt-32_64.dll ..\lib\x64\wattcpvc_imp.lib: $(OBJS) $(RESOURCE)
-	link $(LDFLAGS) -out:..\bin\watt-32_64.dll -implib:..\lib\x64\wattcpvc_imp.lib \
-	     $** $(EX_LIBS) > link.tmp
+	link $(LDFLAGS) -out:..\bin\watt-32_64.dll -implib:..\lib\x64\wattcpvc_imp.lib @$(LINK_ARGS) > link.tmp
 	type link.tmp >> ..\bin\watt-32_64.map
 	touch ../lib/x64/wattcpvc_imp.lib
 @endif
 
 clean:
 	- @del $(TARGETS)
-	- @del $(C_ARGS)
+	- @del $(C_ARGS) $(LINK_ARGS)
 	- @del $(OBJDIR)\*.obj
 	- @del $(OBJDIR)\*.lst
 	- @del $(RESOURCE)
