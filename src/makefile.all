@@ -1585,7 +1585,7 @@ $(PKT_STUB): asmpkt.nas
 
 @endif  # FLAT
 
-@ifdef MINGW32 MINGW64 CLANG CYGWIN32 CYGWIN64
+@ifdef DJGPP MINGW32 MINGW64 CLANG CYGWIN32 CYGWIN64
   #
   # All these Windows targets uses GNU-make. Hence it should be safe to
   # assume the 'date' program is available.
