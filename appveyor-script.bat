@@ -241,14 +241,17 @@ exit /b 1
 :build_bin
 
 ::
-:: Try 'x64' with 'clang'.
+:: Try 'x64' with 'clang' or 'mingw64'.
 ::
-if not %BUILDER%. == clang. (
-  if %CPU%. == x64. (
-    %_ECHO% "\e[1;31mNo 'build_bin' for 'x64' yet.\e[0m"
-    exit /b 0
-  )
-)
+:: if %BUILDER%. == clang.   goto do_it
+:: if %BUILDER%. == mingw64. goto do_it
+::
+:: if %CPU%. == x64. (
+::   %_ECHO% "\e[1;31mNo 'build_bin' for 'x64' yet.\e[0m"
+::   exit /b 0
+:: )
+::
+:: :do_it
 
 ::
 :: './bin/' programs to build for djgpp, Visual-C, MinGW-w64, clang-cl and Watcom (Win32 + large + flat):
@@ -281,10 +284,11 @@ if %BUILDER%. == mingw64. (
   exit /b
 )
 
+::
+:: Need to do 'call :install_LLVM' here to set the PATH for 'clang-cl.exe' again.
+::
 if %BUILDER%. == clang. (
   call :install_LLVM
-  %_ECHO% "\e[1;33mwhere clang-cl.exe:\e[0m"
-  where clang-cl.exe
   %_ECHO% "\e[1;33m[%CPU%]: Building PROGS_CL=%PROGS_CL%:\e[0m"
   make -f clang.mak check_CPU %PROGS_CL%
   exit /b
