@@ -19,7 +19,7 @@ ifeq ($(CPU),X64)
 endif
 
 #
-# Set to 1 to link using static libwatt32.a
+# Set to 1 to link using static '$(LIBDIR)/libwatt32.a'.
 #
 STATIC_LIB = 0
 
@@ -80,11 +80,11 @@ con-test.exe: w32-test.c $(WATT_LIB)
 
 gui-test.exe: w32-test.c $(WATT_LIB)
 	$(CC) -DIS_GUI=1 $(CFLAGS) $(LDFLAGS) -Wl,--subsystem,windows \
-	      -o $*.exe $^ $(EXTRAS) $(MAPFILE)
+	      -o $@ $^ $(EXTRAS) $(MAPFILE)
 	@echo
 
 %.exe: %.c $(WATT_LIB)
-	$(CC) $(CFLAGS) $(LDFLAGS) -o $*.exe $(EXTRAS) $^ $(MAPFILE)
+	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ $(EXTRAS) $^ $(MAPFILE)
 	@echo
 
 clean:
