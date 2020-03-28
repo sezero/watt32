@@ -796,7 +796,7 @@ $(LINK_ARGS): $(MAKEFIL)
 	type link.tmp >> ..\bin\watt-32.map
 	touch ../lib/x86/wattcpvc_imp.lib
 
-..\bin\watt-32_64.dll ..\lib\x64\wattcpvc_imp.lib: $(OBJS) $(RESOURCE)
+..\bin\watt-32_64.dll ..\lib\x64\wattcpvc_imp.lib: $(OBJS) $(RESOURCE) $(LINK_ARGS)
 	link $(LDFLAGS) -out:..\bin\watt-32_64.dll -implib:..\lib\x64\wattcpvc_imp.lib @$(LINK_ARGS) > link.tmp
 	type link.tmp >> ..\bin\watt-32_64.map
 	touch ../lib/x64/wattcpvc_imp.lib
