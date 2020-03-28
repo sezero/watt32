@@ -167,7 +167,7 @@ if %USES_CL%. == 1. (
 
 if %BUILDER%. == visualc. (
   call configur.bat visualc
-  %_ECHO% "\e[1;33mBuilding release for %CPU%:\e[0m"
+  %_ECHO% "\e[1;33m[%CPU%]: Building release:\e[0m"
   nmake -nologo -f visualc-release_%BITS%.mak
   exit /b
 )
@@ -178,21 +178,21 @@ if %BUILDER%. == visualc. (
 if %BUILDER%. == clang. (
   call :install_LLVM
   call configur.bat clang
-  %_ECHO% "\e[1;33mBuilding release for '%CPU%':\e[0m"
+  %_ECHO% "\e[1;33m[%CPU%]: Building release:\e[0m"
   make -f clang-release_%BITS%.mak
   exit /b
 )
 
 if %BUILDER%. == mingw32. (
   call configur.bat mingw32
-  %_ECHO% "\e[1;33mBuilding for 'x86' only:\e[0m"
+  %_ECHO% "\e[1;33m[%CPU%]: Building:\e[0m"
   make -f MinGW32.mak
   exit /b
 )
 
 if %BUILDER%. == mingw64. (
   call configur.bat mingw64
-  %_ECHO% "\e[1;33mBuilding for '%CPU%':\e[0m"
+  %_ECHO% "\e[1;33m[%CPU%]: Building:\e[0m"
   make -f MinGW64_%BITS%.mak
   exit /b
 )
@@ -200,7 +200,7 @@ if %BUILDER%. == mingw64. (
 if %BUILDER%. == djgpp. (
   call :install_djgpp
   call configur.bat djgpp
-  %_ECHO% "\e[1;33mBuilding for djgpp:\e[0m"
+  %_ECHO% "\e[1;33m[%CPU%]: Building:\e[0m"
   make -f djgpp.mak
   exit /b
 )
@@ -210,23 +210,23 @@ if %BUILDER%. == watcom. (
   call configur.bat watcom
 
   if %MODEL%. == win32. (
-    %_ECHO% "\e[1;33mBuilding for Watcom/Win32:\e[0m"
+    %_ECHO% "\e[1;33m[%CPU%]: Building for Watcom/Win32:\e[0m"
     wmake -f watcom_w.mak
 
   ) else if %MODEL%. == flat. (
-    %_ECHO% "\e[1;33mBuilding for Watcom/flat:\e[0m"
+    %_ECHO% "\e[1;33m[%CPU%]: Building for Watcom/flat:\e[0m"
     wmake -f watcom_f.mak
 
   ) else if %MODEL%. == large. (
-    %_ECHO% "\e[1;33mBuilding for Watcom/large:\e[0m"
+    %_ECHO% "\e[1;33m[%CPU%]: Building for Watcom/large:\e[0m"
     wmake -f watcom_l.mak
 
   ) else if %MODEL%. == small32. (
-    %_ECHO% "\e[1;33mBuilding for Watcom/small32:\e[0m"
+    %_ECHO% "\e[1;33m[%CPU%]: Building for Watcom/small32:\e[0m"
     wmake -f watcom_3.mak
 
   ) else (
-    %_ECHO% "\e[1;31mBUILDER 'watcom' needs a 'MODEL'!\e[0m"
+    %_ECHO% "\e[1;31m[%CPU%]: BUILDER 'watcom' needs a 'MODEL'!\e[0m"
      exit /b 1
   )
   exit /b
