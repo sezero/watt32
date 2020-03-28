@@ -173,14 +173,6 @@ struct ulong_long {
 
 #elif defined(USE_FORTIFY)
   #include "fortify.h"       /**< use Fortify malloc code (internal to watt-32) */
-
-#elif defined(USE_MPATROL)
-  #include <mpatrol.h>       /**< use Mpatrol malloc library (externally linked). */
-
-  #if defined(_MSC_VER) && (_MSC_VER >= 1400)
-  #pragma comment(lib, "libmpatrol.lib")
-  #pragma comment(lib, "imagehlp.lib")
-  #endif
 #endif
 
 #ifndef FALSE

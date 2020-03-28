@@ -14,35 +14,18 @@
 STATIC_LIB = 0
 
 #
-# Set to 1 to use Mpatrol malloc-debugger.
-#
-# Notes: The directory of mpatrol.h should be in
-#        %C_INCLUDE_PATH and %CPLUS_INCLUDE_PATH.
-#        The directory of libmpatrol*.a should be in
-#        %LIBRARY_PATH.
-#
-USE_MPATROL = 0
-
-#
 # Define 'MAKE_MAP = 1' if you like a .map-file
 #
 MAKE_MAP = 0
 
 CC       = gcc
 CFLAGS  = -m32 -g -Wall -W -Wno-sign-compare -O2 -I../inc
-LDFLAGS = -m32
-
-ifeq ($(USE_MPATROL),0)
-# LDFLAGS += -s
-endif
+LDFLAGS = -m32 # -s
 
 ifeq ($(STATIC_LIB),1)
   CFLAGS  += -DWATT32_STATIC
   LDFLAGS += -Wl,--enable-stdcall-fixup
   WATT_LIB = ../lib/libwatt32.a
-  ifeq ($(USE_MPATROL),1)
-    EXTRAS += -DUSE_MPATROL -lmpatrolmt -lbfd -liberty -lintl -limagehlp
-  endif
 else
   WATT_LIB = ../lib/libwatt32.dll.a
 endif

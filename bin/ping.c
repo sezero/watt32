@@ -36,10 +36,6 @@
 #include "d:/prog/mw/except/exc.h"
 #endif
 
-#ifdef USE_MPATROL
-#include <mpatrol.h>
-#endif
-
 #if defined(DJGPP) && defined(DYNAMIC)
   #include <sys/dxe.h>
   DXE_DEMAND (Watt32);

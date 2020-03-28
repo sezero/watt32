@@ -1150,12 +1150,6 @@ CFLAGS  = -O2 -g -Wall -Wno-strict-aliasing -mthreads -pipe -I. -I../inc \
 LDFLAGS = -shared -Wl,--enable-stdcall-fixup,--print-map,--sort-common,--cref
 
 #
-# Generate PCH
-#
-# $(CC) -x c-header -c $(CFLAGS) -o $(OBDIR)/pch.gch/c socket.h
-#
-# CFLAGS += -mavx -mfma
-#
 # gcc/as debug formats:
 #
 CFLAGS += -gstabs
@@ -1191,10 +1185,6 @@ RESOURCE = $(OBJDIR)/watt-32.res
 
 OBJS := $(subst \,/,$(OBJS))
 OBJS := $(subst .obj,.o,$(OBJS))
-
-ifeq ($(USE_MPATROL),1)
-  EX_LIBS = -lmpatrol -lbfd -liberty -lintl -limagehlp
-endif
 
 all: $(OBJDIR)/cflags.h $(OBJDIR)/cflagsbf.h $(TARGETS)
 	@echo All done

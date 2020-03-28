@@ -32,7 +32,6 @@
 #undef USE_FRAGMENTS   /* Include IP-fragment handling */
 #undef USE_STATISTICS  /* Include protocol statistics count */
 #undef USE_FORTIFY     /* Use Fortify malloc-lib for allocations */
-#undef USE_MPATROL     /* Use mpatrol malloc-lib for allocations etc. */
 #undef USE_STACKWALKER /* Use StackWalker for allocations and crash-dumps. */
 #undef USE_FSEXT       /* Use djgpp's File Extensions for file I/O functions */
 #undef USE_LOOPBACK    /* Use the simple loopback device */
@@ -144,10 +143,8 @@
  */
 #if defined(_WIN32) && defined(_MSC_VER) && defined(_DEBUG)  /* cl -MDd -D_DEBUG */
   #define USE_CRTDBG                       /* use CrtDebug; faster than Fortify? */
-/*#define USE_MPATROL */
 
 #elif defined(__MINGW32__) && !defined(NDEBUG)
-/*#define USE_MPATROL */
 /*#define USE_FORTIFY */
 
 #elif defined(_WIN32) && defined(__WATCOMC__)
@@ -182,7 +179,6 @@
   #undef USE_SCTP
   #undef USE_CRTDBG
   #undef USE_BUGTRAP
-  #undef USE_MPATROL
   #undef USE_FORTIFY
 #endif
 
@@ -236,20 +232,8 @@
   #endif
 #endif
 
-#if defined(USE_FORTIFY) && defined(USE_MPATROL)
-  #error Cannot use both Fortify and mpatrol malloc libs.
-#endif
-
 #if defined(USE_FORTIFY) && defined(USE_CRTDBG)
   #error Cannot use both Fortify and CrtDebug.
-#endif
-
-#if defined(USE_MPATROL) && defined(USE_CRTDBG)
-  #error Cannot use both mpatrol malloc libs and CrtDebug.
-#endif
-
-#if defined(USE_MPATROL) && defined(USE_STACKWALKER)
-  #error Cannot use mpatrol with StackWalker.
 #endif
 
 /**

@@ -42,15 +42,6 @@ CPU = x86
 DEBUG_MODE = 0
 !endif
 
-#
-# Set to 1 to use Mpatrol malloc-debugger.
-#
-# Notes: The directory of mpatrol.h should be in %INCLUDE.
-#        The directory of mpatrol*.lib should be in %LIB path.
-#
-USE_MPATROL = 0
-
-
 CC     = cl
 CFLAGS = -nologo -DWIN32 -EHsc -W3 -Gy -Zi -I..\inc \
          -D_CRT_NONSTDC_NO_WARNINGS -D_CRT_OBSOLETE_NO_WARNINGS -D_CRT_SECURE_NO_WARNINGS \
@@ -76,11 +67,6 @@ LIBS    = $(WATTLIB) advapi32.lib user32.lib
 !else
 WATTLIB = ..\lib\$(CPU)\wattcpvc_imp$(DEBUG).lib
 LIBS    = $(WATTLIB)
-!endif
-
-!if $(USE_MPATROL) == 1
-CFLAGS = $(CFLAGS) -MT -DUSE_MPATROL
-LIBS   = $(LIBS) libmpatrolmt.lib imagehlp.lib
 !endif
 
 !if "$(CPU)." == "x64."
