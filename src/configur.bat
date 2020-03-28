@@ -182,8 +182,8 @@ echo Generating Microsoft Visual-C (x86/x64) makefiles, directories, errnos and 
 echo $(OBJDIR)\stkwalk.obj: stkwalk.cpp wattcp.h misc.h stkwalk.h >> build\visualc\watt32.dep
 echo neterr.c:  build\visualc\syserr.c                            >> build\visualc\watt32.dep
 
-..\util\vc_err -s > build\visualc\syserr.c
-..\util\vc_err -e > ..\inc\sys\visualc.err
+..\util\win32\vc_err -s > build\visualc\syserr.c
+..\util\win32\vc_err -e > ..\inc\sys\visualc.err
 
 echo Run nmake to make target(s):
 echo   E.g. "nmake -f visualc-release_32.mak"

@@ -68,8 +68,8 @@ dm_err.exe: errnos.c
 win32/dm_err.exe: errnos.c
 	dmc -mn -g -I..\inc -owin32\dm_err.exe errnos.c
 
-vc_err.exe: errnos.c
-	cl -nologo -I..\inc -DWIN32 -Fe./vc_err.exe errnos.c
+win32/vc_err.exe: errnos.c
+	cl -nologo -I..\inc -DWIN32 -Fe./win32/vc_err.exe errnos.c
 
 #
 # See errnos.c for the idea behind this.
@@ -114,6 +114,6 @@ win32/dj_err.exe::
 clean:
 	@del bcc_err.exe win32\clang_err.exe wc_err.exe hc_err.exe \
          tcc_err.exe dj_err.exe mw_err.exe mw64_err.exe ls_err.exe \
-         lcc.exe po_err.exe vc_err.exe win32\wc_err.exe \
+         lcc.exe po_err.exe win32\vc_err.exe win32\wc_err.exe \
          win32\bcc_err.exe win32\hc_err.exe errnos.obj
 
