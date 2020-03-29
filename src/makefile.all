@@ -1613,7 +1613,7 @@ $(C_ARGS): $(MAKEFILE_LIST)
 	@echo $(CFLAGS) > $@
 
 $(LIB_ARGS): $(OBJS) $(MAKEFILE_LIST)
-	$(call create_response_file, $@, $^)
+	$(call create_response_file, $@, $(OBJS))
 
 $(LINK_ARGS): $(OBJS) $(RESOURCE)
 	$(call create_response_file, $@, $^ $(EX_LIBS))
