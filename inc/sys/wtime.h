@@ -14,8 +14,8 @@
 
 #include <time.h>
 
-#ifdef __BORLANDC__
-#undef timezone   /* a macro in bcc 5+ */
+#if defined(__HIGHC__) || defined(__BORLANDC__)
+#undef timezone   /* a macro in HigHC / bcc 5+ */
 #endif
 
 #ifndef __SYS_W32API_H
@@ -50,17 +50,13 @@
   #define STRUCT_TIMEVAL_DEFINED
 #endif
 
-#if defined(__HIGHC__)
-  struct timezone {
-         int tz_minuteswest;
-         int tz_dsttime;
-       };
-
-#elif !defined(__DJGPP__) && !defined(__CYGWIN__) && !defined(__MINGW32__)
-  struct timezone {         /* Added in MinGW 3.1 */
-         int tz_minuteswest;
-         int tz_dsttime;
-       };
+#if !defined(__DJGPP__) && !defined(__CYGWIN__)
+  #if !defined(__MINGW32__)
+    struct timezone {             /* Added in MinGW 3.1 */
+           int tz_minuteswest;
+           int tz_dsttime;
+         };
+  #endif
 
   struct tms {
          unsigned long tms_utime;
