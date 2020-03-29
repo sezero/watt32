@@ -178,37 +178,9 @@
  *   http://tdm-gcc.tdragon.net/
  *
  * It uses it's own versioning.
- *
- * Using the "official" 32-bit MinGW with Watt-32, the W32_MINGW_VER() macro
- * tests for some structs and prototypes added in MinGW 3.1 (?). For newer
- * MinGW-[32|64] versions, we just assume e.g. 'struct timezone' etc. are
- * available.
  */
-#if !defined(__MINGW32__)
-  #define W32_MINGW_VER(major,minor)  0
-#else
-  #include <_mingw.h>
-
-  #if defined(__MINGW64_VERSION_MAJOR)
-    /*
-     * '__MINGW64_VERSION_[MAJOR|MINOR]' is defined in _mingw.h in the
-     * MinGW-w64 project.
-     * Not a typo; MinGW-64 doesn't define __MINGW64_[MAJOR|MINOR]_VERSION
-     */
-    #define W32_MINGW_VER(major,minor)  1
-    #define W32_IS_MINGW64              1
-
-  #elif defined(__MINGW_MAJOR_VERSION)
-    /*
-     * '__MINGW_MAJOR_VERSION' is defined through _mingw.h in MinGW-RT v4+.
-     */
-    #define W32_MINGW_VER(major,minor)  1
-
-  #else /* plain old mingw.org (prior to v4.0): */
-    #define W32_MINGW_VER(major,minor) (__MINGW32_MAJOR_VERSION > (major) ||   \
-                                        (__MINGW32_MAJOR_VERSION == (major) && \
-                                         __MINGW32_MINOR_VERSION >= (minor)))
-  #endif
+#if defined(__MINGW32__)
+  // #include <_mingw.h>
 #endif
 
 #if defined(_MSC_VER) && !defined(__POCC__)

@@ -50,13 +50,17 @@
   #define STRUCT_TIMEVAL_DEFINED
 #endif
 
-#if !defined(__DJGPP__) && !defined(__CYGWIN__)
-  #if !W32_MINGW_VER(3,10)
-    struct timezone {         /* Added in MinGW 3.1 */
-           int tz_minuteswest;
-           int tz_dsttime;
-         };
-  #endif
+#if defined(__HIGHC__)
+  struct timezone {
+         int tz_minuteswest;
+         int tz_dsttime;
+       };
+
+#elif !defined(__DJGPP__) && !defined(__CYGWIN__) && !defined(__MINGW32__)
+  struct timezone {         /* Added in MinGW 3.1 */
+         int tz_minuteswest;
+         int tz_dsttime;
+       };
 
   struct tms {
          unsigned long tms_utime;
@@ -80,7 +84,7 @@
   W32_FUNC int W32_CALL getitimer (int, struct itimerval *);
   W32_FUNC int W32_CALL setitimer (int, struct itimerval *, struct itimerval *);
 
-  #if !W32_MINGW_VER(3,10)   /* Added in MinGW 3.1 */
+  #if !defined(__MINGW32__)   /* Added in MinGW 3.1 */
     W32_FUNC int W32_CALL gettimeofday (struct timeval *, struct timezone *);
   #endif
 
@@ -105,7 +109,7 @@
 #elif defined(_pthread_signal_h) || defined(__CYGWIN__)
   #define W32_HAVE_STRUCT_TIMESPEC
 
-#elif W32_MINGW_VER(3,21)                     /* MinGW 3.21 + */
+#elif defined(__MINGW32__)              /* MinGW 3.21 + */
   #define W32_HAVE_STRUCT_TIMESPEC
 #endif
 

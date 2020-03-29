@@ -224,7 +224,7 @@
   #define HAVE_WLANAPI_H
   #define COMPILE_WINADINF_C
 
-#elif defined(W32_IS_MINGW64 )  /* MinGW64 / TDM-gcc */
+#elif defined(__MINGW64_VERSION_MAJOR)  /* MinGW64 / TDM-gcc */
   #include <wtypes.h>
   #include <wlanapi.h>
   #include <windot11.h>

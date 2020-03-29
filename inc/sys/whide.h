@@ -268,8 +268,7 @@
   #define delay  W32_NAMESPACE (delay)
 #endif
 
-#if !W32_MINGW_VER(3,10) /* Added in MinGW 3.1 */ && \
-    !defined(__CYGWIN__) && !defined(__DJGPP__)
+#if !defined(__CYGWIN__) && !defined(__DJGPP__)
   #define gettimeofday  W32_NAMESPACE (gettimeofday)
 #endif
 
