@@ -18,22 +18,6 @@
 #undef timezone   /* a macro in HigHC / bcc 5+ */
 #endif
 
-#ifndef __SYS_W32API_H
-#include <sys/w32api.h>
-#endif
-
-#ifndef __SYS_CDEFS_H
-#include <sys/cdefs.h>
-#endif
-
-#ifndef __SYS_WHIDE_H
-#include <sys/whide.h>
-#endif
-
-#ifdef __WATCOMC__
-#include <signal.h>  /* Latest OpenWatcom has 'struct timespec' defined in <signal.h> */
-#endif
-
 #if defined(__DJGPP__) || defined(__CYGWIN__)
   #include <sys/time.h>
   #include <sys/times.h>
@@ -48,6 +32,22 @@
          long tv_usec;
        };
   #define STRUCT_TIMEVAL_DEFINED
+#endif
+
+#ifndef __SYS_W32API_H
+#include <sys/w32api.h>
+#endif
+
+#ifndef __SYS_CDEFS_H
+#include <sys/cdefs.h>
+#endif
+
+#ifndef __SYS_WHIDE_H
+#include <sys/whide.h>
+#endif
+
+#ifdef __WATCOMC__
+#include <signal.h>  /* Latest OpenWatcom has 'struct timespec' defined in <signal.h> */
 #endif
 
 #if !defined(__DJGPP__) && !defined(__CYGWIN__)
