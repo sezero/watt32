@@ -180,7 +180,7 @@
  * It uses it's own versioning.
  */
 #if defined(__MINGW32__)
-  // #include <_mingw.h>
+  #include <_mingw.h>
 #endif
 
 #if defined(_MSC_VER) && !defined(__POCC__)
