@@ -1955,7 +1955,6 @@ static void print_ip_interface_details (const NET_LUID *luid, int family, int in
   IF_PRINT ("%d",  ReceiveOffload.TlGiantSendOffloadSupported);
 
   #undef IF_PRINT
-
 #endif  /* __WATCOMC__ */
 }
 
@@ -2011,7 +2010,7 @@ static void print_mib_if_row2 (DWORD index, const MIB_IF_ROW2 *row)
     }
   }
 }
-#endif
+#endif /* ON_WIN_VISTA && HAVE_NETIOAPI_H */
 
 /*
  * Use GetIfTable2Ex() and dump information from MIB.
@@ -2529,7 +2528,10 @@ static void print_mib_ipforward_row2 (DWORD index, const MIB_IPFORWARD_ROW2 *row
     (*_printf) ("   Origin:        %s (%d)\n", get_route_origin(row->Origin), (int)row->Origin);
 
     (*_printf) (luid);
+
+#if defined(ON_WIN_VISTA) && defined(HAVE_NETIOAPI_H)
     print_net_luid (&row->InterfaceLuid, strlen(luid));
+#endif
     (*_printf) ("\n");
   }
 }
@@ -3890,7 +3892,7 @@ quit:
                    indent, "", win_strerror(rc));
     }
   }
-#endif
+#endif  /* ON_WIN_VISTA && HAVE_NETIOAPI_H */
 
 static int compare_ipnetrow (const void *_a, const void *_b)
 {
