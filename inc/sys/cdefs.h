@@ -68,7 +68,14 @@
   #endif
 #endif
 
-
+/*
+ * Gets the 'gcc' version as 'MmmP' where:
+ *   'M'  = major: >= 3.
+ *   'mm' = minor: 00 - 99.
+ *   'P'  = patch-level.
+ *
+ * gcc >= 3.1 is assumed throughout the Watt-32 library.
+ */
 #if defined(__GNUC__)
   #define W32_GCC_VERSION  (__GNUC__ * 10000 + __GNUC_MINOR__ * 100 + \
                             __GNUC_PATCHLEVEL__)
@@ -77,9 +84,9 @@
 #endif
 
 /*
- * Macros for gcc 2.5+ features.
+ * Macros for 'gcc / clang-cl' features.
  */
-#if (W32_GCC_VERSION >= 20500)
+#if defined(__GNUC__) || defined(__clang__)
   #if (W32_GCC_VERSION >= 50100)    /* correct? */
     #define W32_ATTR_PRINTF(_1,_2)  __attribute__ ((__format__(gnu_printf,_1,_2)))
     #define W32_ATTR_SCANF(_1,_2)   __attribute__ ((__format__(gnu_scanf,_1,_2)))
@@ -93,23 +100,17 @@
   #define W32_ATTR_NORETURN()       __attribute__ ((noreturn))         /* function never returns */
   #define W32_ARG_NONNULL(_1)       __attribute__ ((nonnull(_1)))      /* argument cannot be NULL */
 #else
-  #if defined(__clang__)
-    #define W32_ATTR_PRINTF(_1,_2)  __attribute__ ((format(printf,_1,_2)))
-    #define W32_ATTR_SCANF(_1,_2)   __attribute__ ((format(scanf,_1,_2)))
-  #else
-    #define W32_ATTR_PRINTF(_1,_2)
-    #define W32_ATTR_SCANF(_1,_2)
-  #endif
-
+  #define W32_ATTR_PRINTF(_1,_2)
+  #define W32_ATTR_SCANF(_1,_2)
   #define W32_ATTR_NOINLINE()
   #define W32_ATTR_REGPARM(_n)
   #define W32_ATTR_NORETURN()
   #define W32_ARG_NONNULL(_1)
 #endif
 
-/* Warn on deprecated type/func
+/* Warn on deprecated type/func.
  */
-#if (W32_GCC_VERSION >= 30100)
+#if defined(__GNUC__) || defined(__clang__)
   #define W32_ATTR_DEPRECATED    __attribute__((__deprecated__))
 #else
   #if defined(_MSC_VER) && (_MSC_VER >= 1700)  /* Visual Studio 2011+ ? */
@@ -259,26 +260,6 @@
   #endif  /* !__GNUC__ */
 #endif    /* (__STDC__ || __cpluplus) && !__CYGWIN__ */
 
-/*
- * GCC1 and some versions of GCC2 declare dead (non-returning) and
- * pure (no side effects) functions using "volatile" and "const";
- * unfortunately, these then cause warnings under "-ansi -pedantic".
- * GCC2 uses a new, peculiar __attribute__((attrs)) style.  All of
- * these work for GNU C++ (modulo a slight glitch in the C++ grammar
- * in the distribution version of 2.5.5).
- */
-#if (W32_GCC_VERSION > 0) && (W32_GCC_VERSION < 20500)
-  #undef  __attribute__
-  #define __attribute__(x)  /* delete __attribute__ if non-gcc */
-  #if defined(__GNUC__) && !defined(__STRICT_ANSI__)
-    #undef __dead
-    #undef __pure
-    #define __dead  __volatile
-    #define __pure  __const
-    #undef  __dead2
-    #define __dead2
-  #endif
-#endif
 
 /*
  * Macros for gcc 4.6+ Pragmas. Ref.:
