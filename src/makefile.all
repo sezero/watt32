@@ -1107,9 +1107,6 @@ $(OBJDIR)/chksum0.obj: chksum0.asm
 $(OBJDIR)/cpumodel.obj: cpumodel.asm
 	$(AS) $(AFLAGS) $<, $(OBJDIR_)\cpumodel.obj
 
-$(C_ARGS): $(MAKEFIL)
-	@echo '$(CFLAGS)' > $@
-
 $(OBJDIR)/%.obj: %.c
 	$(CC) -c @$(C_ARGS) -o $@ $<
 
@@ -1526,19 +1523,37 @@ doxygen:
 lang.c: lang.l
 	flex -8 -t lang.l > lang.c
 
-@ifdef DJGPP MINGW32 MINGW64 CLANG CYGWIN32 CYGWIN64 CLANG HIGHC
-#
-# Create a response file $(1).
-# One word from $(2) per line into $(1).
-#
-define create_response_file
-  $(file > $(1))
-  $(foreach f, $(2), $(file >> $(1),$(strip $(f))) )
-endef
+@ifdef HIGHC DJGPP MINGW32 MINGW64 CLANG CYGWIN32 CYGWIN64 CLANG
+  #
+  # All these Windows targets uses GNU-make. Hence it should be safe to
+  # assume the 'date' program is available.
+  #
+  DATE = $(shell date +%d-%B-%Y)
 
-#
-# GNU-Make rules uses shell 'sh' commands:
-#
+  #
+  # Create a response file $(1).
+  # One word from $(2) per line into $(1).
+  #
+  define create_response_file
+    $(file > $(1))
+    $(foreach f, $(2), $(file >> $(1),$(strip $(f))) )
+  endef
+
+# $(C_ARGS): $(MAKEFILE_LIST)
+# 	@echo '$(CFLAGS)' > $@
+
+$(C_ARGS): $(MAKEFILE_LIST)
+	$(call create_response_file, $@, $(CFLAGS))
+
+$(LIB_ARGS): $(OBJS) $(MAKEFILE_LIST)
+	$(call create_response_file, $@, $(OBJS))
+
+$(LINK_ARGS): $(OBJS) $(RESOURCE)
+	$(call create_response_file, $@, $^ $(EX_LIBS))
+
+  #
+  # GNU-Make rules uses shell 'sh' commands:
+  #
 $(OBJDIR)/cflags.h: $(MAKEFILE_LIST)
 	echo 'const char *w32_cflags = "$(CFLAGS)";' > $(OBJDIR)/cflags.h
 	echo 'const char *w32_cc     = "$(CC)";'    >> $(OBJDIR)/cflags.h
@@ -1595,23 +1610,6 @@ $(PKT_STUB): asmpkt.nas
 @endif
 
 @endif  # FLAT
-
-@ifdef DJGPP MINGW32 MINGW64 CLANG CYGWIN32 CYGWIN64
-  #
-  # All these Windows targets uses GNU-make. Hence it should be safe to
-  # assume the 'date' program is available.
-  #
-  DATE = $(shell date +%d-%B-%Y)
-
-$(C_ARGS): $(MAKEFILE_LIST)
-	@echo $(CFLAGS) > $@
-
-$(LIB_ARGS): $(OBJS) $(MAKEFILE_LIST)
-	$(call create_response_file, $@, $(OBJS))
-
-$(LINK_ARGS): $(OBJS) $(RESOURCE)
-	$(call create_response_file, $@, $^ $(EX_LIBS))
-@endif
 
 build\Borland\Win32\watt-32.res: watt-32.rc
 	$(BRC32) -DDEBUG=0 -D__BORLANDC__ -r -i..\inc -fo build\Borland\Win32\watt-32.res watt-32.rc
