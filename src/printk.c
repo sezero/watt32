@@ -54,7 +54,7 @@
 
 int _printk_safe = 1;     /* must be set to 0 in intr-handlers */
 
-#if defined(_WIN32)
+#if defined(_WIN32) || defined(__CYGWIN__)
   FILE *_printk_file = NULL;
 #else
   FILE *_printk_file = stderr;
@@ -157,7 +157,7 @@ int _printk_init (int size, const char *file)
     }
   }
 
-#if defined(_WIN32)
+#if defined(_WIN32) || defined(__CYGWIN__)
   _printk_file = stderr;
 #endif
 
