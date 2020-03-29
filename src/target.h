@@ -45,6 +45,18 @@
  *
  */
 
+/* 
+ * explicitly configure DOS Extender from make file 
+ * for compilers which support multiple DOS Extenders
+ */
+#if defined(DOSX_DOS4GW)
+  #define DOSX    DOS4GW
+#elif defined(DOSX_X32VM)
+  #define DOSX    X32VM
+#elif defined(DOSX_PHARLAP)
+  #define DOSX    PHARLAP
+#endif
+
 #ifndef BUGGY_FARPTR
 #define BUGGY_FARPTR 0      /* Assume no compilers have fp-bugs, duh! */
 #endif
