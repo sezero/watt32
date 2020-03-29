@@ -1201,28 +1201,33 @@ RESOURCE = $(OBJDIR)/watt-32.res
 OBJS := $(subst \,/,$(OBJS))
 OBJS := $(subst .obj,.o,$(OBJS))
 
-all: $(OBJDIR)/cflags.h $(OBJDIR)/cflagsbf.h $(TARGETS)
+C_ARGS    = $(OBJDIR)/gcc.arg
+LIB_ARGS  = $(OBJDIR)/ar.arg
+LINK_ARGS = $(OBJDIR)/ld.arg
+
+all: $(C_ARGS) $(OBJDIR)/cflags.h $(OBJDIR)/cflagsbf.h $(TARGETS)
 	@echo All done
 
-../lib/libwatt32.a: $(OBJS)
-	$(AR) $@ $?
+../lib/libwatt32.a: $(OBJS) $(LIB_ARGS)
+	$(AR) $@ @$(LIB_ARGS)
 
-../lib/libwatt32.dll.a ../bin/watt-32.dll: $(OBJS) $(RESOURCE)
-	$(CC) $(LDFLAGS) -Wl,--out-implib,../lib/libwatt32.dll.a \
-          -o ../bin/watt-32.dll $^ $(EX_LIBS) > ../bin/watt-32.map
+../lib/libwatt32.dll.a: ../bin/watt-32.dll
+
+../bin/watt-32.dll: $(OBJS) $(RESOURCE) $(LINK_ARGS)
+	$(CC) $(LDFLAGS) -Wl,--out-implib,../lib/libwatt32.dll.a -o $@ @$(LINK_ARGS) > ../bin/watt-32.map
 
 $(OBJDIR)/chksum0.o:  chksum0.S
 $(OBJDIR)/cpumodel.o: cpumodel.S
 
 $(OBJDIR)/%.o: %.c
-	$(CC) $(CFLAGS) -o $@ -c $<
+	$(CC) -c @$(C_ARGS) -o $@ $<
 
 $(OBJDIR)/%.o: %.S
-	$(CC) -E $(CFLAGS) $< > $(OBJDIR)/$*.iS
+	$(CC) -E @$(C_ARGS) $< > $(OBJDIR)/$*.iS
 	$(AS) $(AFLAGS) $(OBJDIR)/$*.iS -o $@
 
 clean:
-	rm -f $(TARGETS) $(OBJDIR)/*.o $(OBJDIR)/*.iS $(RESOURCE) $(OBJDIR)/cflags.h $(OBJDIR)/cflagsbf.h
+	rm -f $(TARGETS) $(OBJDIR)/*.o $(OBJDIR)/*.iS $(OBJDIR)/*.arg $(RESOURCE) $(OBJDIR)/cflags.h $(OBJDIR)/cflagsbf.h
 	@echo Cleaning done
 
 -include $(OBJDIR)/watt32.dep
@@ -1354,8 +1359,7 @@ all: $(C_ARGS) $(OBJDIR)/cflags.h $(OBJDIR)/cflagsbf.h $(TARGETS)
 ../lib/x86/libwatt32-cygwin.dll.a: ../bin/watt-32.dll
 
 ../bin/watt-32.dll: $(OBJS) $(RESOURCE) $(LINK_ARGS)
-	$(CC) $(LDFLAGS) -Wl,--enable-stdcall-fixup,--out-implib,../lib/x86/libwatt32-cygwin.dll.a \
-          -o ../bin/watt-32.dll @$(LINK_ARGS)
+	$(CC) $(LDFLAGS) -Wl,--enable-stdcall-fixup,--out-implib,../lib/x86/libwatt32-cygwin.dll.a -o $@ @$(LINK_ARGS)
 
 $(OBJDIR)/chksum0.o:  chksum0.S
 $(OBJDIR)/cpumodel.o: cpumodel.S
@@ -1405,8 +1409,7 @@ all: $(C_ARGS) $(OBJDIR)/cflags.h $(OBJDIR)/cflagsbf.h $(TARGETS)
 ../lib/x64/libwatt32-cygwin.dll.a: ../bin/watt-32_64.dll
 
 ../bin/watt-32_64.dll: $(OBJS) $(RESOURCE) $(LINK_ARGS)
-	$(CC) $(LDFLAGS) -Wl,--out-implib,../lib/x64/libwatt32-cygwin.dll.a \
-          -o ../bin/watt-32_64.dll @$(LINK_ARGS)
+	$(CC) $(LDFLAGS) -Wl,--out-implib,../lib/x64/libwatt32-cygwin.dll.a -o $@ @$(LINK_ARGS)
 
 $(OBJDIR)/chksum0.o:  chksum0.S
 $(OBJDIR)/cpumodel.o: cpumodel.S
