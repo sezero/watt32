@@ -103,30 +103,48 @@ const char * W32_CALL wattcpVersion (void)
     p += sprintf (p, "Watcom C %d.%d", __WATCOMC__/100, __WATCOMC__ % 100);
   #endif
 
-  #if defined(__SMALL__)
-    strcpy (p, " (small model), ");
-  #elif defined(__LARGE__)
-    strcpy (p, " (large model), ");
-  #else
-    #if (_M_IX86 >= 600)              /* -6r/s */
-      strcpy (p, " (686");
-    #elif (_M_IX86 >= 500)            /* -5r/s */
-      strcpy (p, " (586");
-    #elif (_M_IX86 >= 400)            /* -4r/s */
-      strcpy (p, " (486");
-    #else                             /* -3r/s */
-      strcpy (p, " (386");
-    #endif
-
-    p += 5;
-
-    #if defined(__SW_3S)              /* -3/4/5/6s */
-      strcpy (p, "S), ");
+  #if !defined(__FLAT__)
+    #if defined(__I86__)
+      strcpy (p, " (16-bit");
     #else
-      strcpy (p, "R), ");    /* Register based calls is default */
+      strcpy (p, " (32-bit");
     #endif
- #endif
-
+    p += 8;
+    #if defined(__SMALL__)
+      strcpy (p, " small model),");
+      p += 14;
+    #elif defined(__LARGE__)
+      strcpy (p, " large model),");
+      p += 14;
+    #else
+      strcpy (p, "),");
+      p += 2;
+    #endif
+  #endif
+  #if (_M_IX86 >= 600)    /* 32-bit can be >= 300 only */
+    strcpy (p, " (686");
+  #elif (_M_IX86 >= 500)
+    strcpy (p, " (586");
+  #elif (_M_IX86 >= 400)
+    strcpy (p, " (486");
+  #elif (_M_IX86 >= 300)
+    strcpy (p, " (386");
+  #if (_M_IX86 >= 200)
+    strcpy (p, " (286");
+  #elif (_M_IX86 >= 100)
+    strcpy (p, " (186");
+  #else
+    strcpy (p, " (8086");
+    p++;
+  #endif
+  p += 5;
+  #if defined(__I86__)      /* 16-bit Register based calls only */
+    strcpy (p, "), ");
+  #elif defined(__SW_3S)    /* 32-bit Stack based calls */
+    strcpy (p, "S), ");
+  #else
+    strcpy (p, "R), ");     /* 32-bit Register based calls is default */
+  #endif
 
 #elif defined(__BORLANDC__)
   #if defined(__CODEGEARC_VERSION__)
@@ -440,8 +458,16 @@ const char * W32_CALL wattcpVersion (void)
       #define CFLAGS       "build/watcom/win32/cflags.h"
       #define CFLAGS_BUF   "build/watcom/win32/cflagsbf.h"
     #elif defined(__FLAT__)
-      #define CFLAGS       "build/watcom/flat/cflags.h"
-      #define CFLAGS_BUF   "build/watcom/flat/cflagsbf.h"
+      #if (DOSX == X32VM)
+        #define CFLAGS     "build/watcom/x32vm/cflags.h"
+        #define CFLAGS_BUF "build/watcom/x32vm/cflagsbf.h"
+      #elif (DOSX == PHARLAP)
+        #define CFLAGS     "build/watcom/phar/cflags.h"
+        #define CFLAGS_BUF "build/watcom/phar/cflagsbf.h"
+      #else
+        #define CFLAGS     "build/watcom/flat/cflags.h"
+        #define CFLAGS_BUF "build/watcom/flat/cflagsbf.h"
+      #endif
     #elif defined(__SMALL__)
       #define CFLAGS       "build/watcom/small32/cflags.h"
       #define CFLAGS_BUF   "build/watcom/small32/cflagsbf.h"
