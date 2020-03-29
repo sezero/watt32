@@ -211,19 +211,19 @@ if %BUILDER%. == watcom. (
 
   if %MODEL%. == win32. (
     %_ECHO% "\e[1;33m[%CPU%]: Building for Watcom/Win32:\e[0m"
-    wmake -f watcom_w.mak
+    wmake -h -f watcom_w.mak
 
   ) else if %MODEL%. == flat. (
     %_ECHO% "\e[1;33m[%CPU%]: Building for Watcom/flat:\e[0m"
-    wmake -f watcom_f.mak
+    wmake -h -f watcom_f.mak
 
   ) else if %MODEL%. == large. (
     %_ECHO% "\e[1;33m[%CPU%]: Building for Watcom/large:\e[0m"
-    wmake -f watcom_l.mak
+    wmake -h -f watcom_l.mak
 
   ) else if %MODEL%. == small32. (
     %_ECHO% "\e[1;33m[%CPU%]: Building for Watcom/small32:\e[0m"
-    wmake -f watcom_3.mak
+    wmake -h -f watcom_3.mak
 
   ) else (
     %_ECHO% "\e[1;31m[%CPU%]: BUILDER 'watcom' needs a 'MODEL'!\e[0m"
@@ -283,17 +283,17 @@ if %BUILDER%. == watcom. (
   if %MODEL%. == win32. (
     %_ECHO% "\e[1;33mwatcom/Win32: Building PROGS_WC_WIN=%PROGS_WC_WIN%:\e[0m"
     rm -f %PROGS_WC_WIN%
-    wmake -f wc_win.mak %PROGS_WC_WIN%
+    wmake -h -f wc_win.mak %PROGS_WC_WIN%
 
   ) else if %MODEL%. == flat. (
     %_ECHO% "\e[1;33mwatcom/flat: Building PROGS_WC_FLAT=%PROGS_WC_FLAT%:\e[0m"
     rm -f %PROGS_WC_LARGE%
-    wmake -f causeway.mak %PROGS_WC_FLAT%
+    wmake -h -f causeway.mak %PROGS_WC_FLAT%
 
   ) else if %MODEL%. == large. (
     %_ECHO% "\e[1;33mwatcom/large: Building PROGS_WC_LARGE=%PROGS_WC_LARGE%:\e[0m"
     rm -f %PROGS_WC_LARGE%
-    wmake -f watcom.mak %PROGS_WC_LARGE%
+    wmake -h -f watcom.mak %PROGS_WC_LARGE%
 
   ) else if %MODEL%. == small32. (
     %_ECHO% "\e[1;33mwatcom/small32: Not yet.\e[0m"
