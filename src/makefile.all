@@ -267,26 +267,27 @@ OBJDIR = build/djgpp
 OBJS := $(subst \,/,$(OBJS))
 OBJS := $(subst .obj,.o,$(OBJS))
 
+C_ARGS   = $(OBJDIR)/gcc.arg
 LIB_ARGS = $(OBJDIR)/ar.arg
 
-all: $(PKT_STUB) $(OBJDIR)/cflags.h $(TARGET)
+all: $(C_ARGS) $(PKT_STUB) $(OBJDIR)/cflags.h $(TARGET)
 	@echo All done
 
 $(TARGET): $(OBJS) $(LIB_ARGS)
 	$(AR) $@ @$(LIB_ARGS)
 
 $(OBJDIR)/%.o: %.c
-	$(CC) $(CFLAGS) -o $@ -c $<
+	$(CC) -c @$(C_ARGS) -o $@ $<
 
 $(OBJDIR)/%.o: %.S
-	$(CC) -E $(CFLAGS) $< > $(OBJDIR)/$*.iS
+	$(CC) -E @$(C_ARGS) $< > $(OBJDIR)/$*.iS
 	$(AS) $(AFLAGS) $(OBJDIR)/$*.iS -o $@
 
 $(OBJDIR)/chksum0.o:  chksum0.S
 $(OBJDIR)/cpumodel.o: cpumodel.S
 
 clean:
-	rm -f $(TARGET) $(OBJDIR)/*.o $(OBJDIR)/*.iS $(PKT_STUB) $(OBJDIR)/cflags.h $(LIB_ARGS)
+	rm -f $(TARGET) $(OBJDIR)/*.o $(OBJDIR)/*.iS $(OBJDIR)/*.arg $(PKT_STUB) $(OBJDIR)/cflags.h
 	@echo Cleaning done
 
 install: all
@@ -1012,9 +1013,6 @@ all: $(C_ARGS) $(OBJDIR)/cflags.h $(OBJDIR)/cflagsbf.h $(TARGETS)
 ../lib/x64/wattcp_clang_d.lib: $(OBJS) $(LIB_ARGS)
 	$(AR) -machine:x64 -out:$@  @$(LIB_ARGS)
 
-$(C_ARGS): $(MAKEFILE_LIST)
-	@echo $(CFLAGS) > $@
-
 #
 # Import lib + DLL (release)
 #
@@ -1285,10 +1283,11 @@ EX_LIBS  =
 OBJS := $(subst \,/,$(OBJS))
 OBJS := $(subst .obj,.o,$(OBJS))
 
+C_ARGS    = $(OBJDIR)/gcc.arg
 LIB_ARGS  = $(OBJDIR)/ar.arg
 LINK_ARGS = $(OBJDIR)/ld.arg
 
-all: $(OBJDIR)/cflags.h $(OBJDIR)/cflagsbf.h $(TARGETS)
+all: $(C_ARGS) $(OBJDIR)/cflags.h $(OBJDIR)/cflagsbf.h $(TARGETS)
 	@echo All done
 
 ../lib/x86/libwatt32.a: $(OBJS) $(LIB_ARGS)
@@ -1310,10 +1309,10 @@ $(OBJDIR)/chksum0.o:  chksum0.S
 $(OBJDIR)/cpumodel.o: cpumodel.S
 
 $(OBJDIR)/%.o: %.c
-	$(CC) $(CFLAGS) -o $@ -c $<
+	$(CC) -c @$(C_ARGS) -o $@ -c $<
 
 $(OBJDIR)/%.o: %.S
-	$(CC) -E $(CFLAGS) $< > $(OBJDIR)/$*.iS
+	$(CC) -E @$(C_ARGS) $< > $(OBJDIR)/$*.iS
 	$(AS) $(AFLAGS) $(OBJDIR)/$*.iS -o $@
 
 clean:
@@ -1342,30 +1341,34 @@ RESOURCE = $(OBJDIR)/watt-32.res
 OBJS := $(subst \,/,$(OBJS))
 OBJS := $(subst .obj,.o,$(OBJS))
 
-all: $(OBJDIR)/cflags.h $(OBJDIR)/cflagsbf.h $(TARGETS)
+C_ARGS    = $(OBJDIR)/gcc.arg
+LIB_ARGS  = $(OBJDIR)/ar.arg
+LINK_ARGS = $(OBJDIR)/ld.arg
+
+all: $(C_ARGS) $(OBJDIR)/cflags.h $(OBJDIR)/cflagsbf.h $(TARGETS)
 	@echo All done
 
-../lib/x86/libwatt32-cygwin.a: $(OBJS)
-	$(AR) $@ $?
+../lib/x86/libwatt32-cygwin.a: $(OBJS) $(LIB_ARGS)
+	$(AR) $@ @$(LIB_ARGS)
 
 ../lib/x86/libwatt32-cygwin.dll.a: ../bin/watt-32.dll
 
-../bin/watt-32.dll: $(OBJS) $(RESOURCE)
+../bin/watt-32.dll: $(OBJS) $(RESOURCE) $(LINK_ARGS)
 	$(CC) $(LDFLAGS) -Wl,--enable-stdcall-fixup,--out-implib,../lib/x86/libwatt32-cygwin.dll.a \
-          -o ../bin/watt-32.dll $^
+          -o ../bin/watt-32.dll @$(LINK_ARGS)
 
 $(OBJDIR)/chksum0.o:  chksum0.S
 $(OBJDIR)/cpumodel.o: cpumodel.S
 
 $(OBJDIR)/%.o: %.c
-	$(CC) $(CFLAGS) -o $@ -c $<
+	$(CC) -c @$(C_ARGS) -o $@ $<
 
 $(OBJDIR)/%.o: %.S
-	$(CC) -E $(CFLAGS) $< > $(OBJDIR)/$*.iS
+	$(CC) -E @$(C_ARGS) $< > $(OBJDIR)/$*.iS
 	$(AS) $(AFLAGS) $(OBJDIR)/$*.iS -o $@
 
 clean:
-	rm -f $(TARGETS) $(OBJDIR)/*.o $(OBJDIR)/*.iS $(RESOURCE) $(OBJDIR)/cflags.h $(OBJDIR)/cflagsbf.h
+	rm -f $(TARGETS) $(OBJDIR)/*.o $(OBJDIR)/*.iS $(OBJDIR)/*.arg $(RESOURCE) $(OBJDIR)/cflags.h $(OBJDIR)/cflagsbf.h
 	@echo Cleaning done
 
 -include $(OBJDIR)/watt32.dep
@@ -1389,33 +1392,37 @@ RESOURCE = $(OBJDIR)/watt-32.res
 OBJS := $(subst \,/,$(OBJS))
 OBJS := $(subst .obj,.o,$(OBJS))
 
-all: $(OBJDIR)/cflags.h $(OBJDIR)/cflagsbf.h $(TARGETS)
+C_ARGS    = $(OBJDIR)/gcc.arg
+LIB_ARGS  = $(OBJDIR)/ar.arg
+LINK_ARGS = $(OBJDIR)/ld.arg
+
+all: $(C_ARGS) $(OBJDIR)/cflags.h $(OBJDIR)/cflagsbf.h $(TARGETS)
 	@echo All done
 
-../lib/x64/libwatt32-cygwin.a: $(OBJS)
-	$(AR) $@ $?
+../lib/x64/libwatt32-cygwin.a: $(OBJS) $(LIB_ARGS)
+	$(AR) $@ @$(LIB_ARGS)
 
 ../lib/x64/libwatt32-cygwin.dll.a: ../bin/watt-32_64.dll
 
-../bin/watt-32_64.dll: $(OBJS) $(RESOURCE)
+../bin/watt-32_64.dll: $(OBJS) $(RESOURCE) $(LINK_ARGS)
 	$(CC) $(LDFLAGS) -Wl,--out-implib,../lib/x64/libwatt32-cygwin.dll.a \
-          -o ../bin/watt-32_64.dll $^
+          -o ../bin/watt-32_64.dll @$(LINK_ARGS)
 
 $(OBJDIR)/chksum0.o:  chksum0.S
 $(OBJDIR)/cpumodel.o: cpumodel.S
 
 $(OBJDIR)/%.o: %.c
-	$(CC) $(CFLAGS) -o $@ -c $<
+	$(CC) -c @$(C_ARGS) -o $@ $<
 
 $(OBJDIR)/%.i: %.c
-	$(CC) -E $(CFLAGS) -o $@ -c $<
+	$(CC) -E -c @$(C_ARGS) -o $@ $<
 
 $(OBJDIR)/%.o: %.S
-	$(CC) -E $(CFLAGS) $< > $(OBJDIR)/$*.iS
+	$(CC) -E @$(C_ARGS) $< > $(OBJDIR)/$*.iS
 	$(AS) $(AFLAGS) $(OBJDIR)/$*.iS -o $@ > $*.lst
 
 clean:
-	rm -f $(TARGETS) $(OBJDIR)/*.o $(OBJDIR)/*.iS $(RESOURCE) $(OBJDIR)/cflags.h $(OBJDIR)/cflagsbf.h
+	rm -f $(TARGETS) $(OBJDIR)/*.o $(OBJDIR)/*.iS $(OBJDIR)/*.arg $(RESOURCE) $(OBJDIR)/cflags.h $(OBJDIR)/cflagsbf.h
 	@echo Cleaning done
 
 -include $(OBJDIR)/watt32.dep
@@ -1599,7 +1606,10 @@ $(PKT_STUB): asmpkt.nas
   #
   DATE = $(shell date +%d-%B-%Y)
 
-$(LIB_ARGS): $(OBJS)
+$(C_ARGS): $(MAKEFILE_LIST)
+	@echo $(CFLAGS) > $@
+
+$(LIB_ARGS): $(OBJS) $(MAKEFILE_LIST)
 	$(call create_response_file, $@, $^)
 
 $(LINK_ARGS): $(OBJS) $(RESOURCE)
