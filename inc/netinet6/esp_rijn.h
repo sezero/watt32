@@ -29,11 +29,12 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
+#ifndef _NETINET_ESP_RIJN_H_
+#define _NETINET_ESP_RIJN_H_
 
-int esp_rijndael_schedlen __P((const struct esp_algorithm *));
-int esp_rijndael_schedule __P((const struct esp_algorithm *,
-	struct secasvar *));
-int esp_rijndael_blockdecrypt __P((const struct esp_algorithm *,
-	struct secasvar *, u_int8_t *, u_int8_t *));
-int esp_rijndael_blockencrypt __P((const struct esp_algorithm *,
-	struct secasvar *, u_int8_t *, u_int8_t *));
+int esp_rijndael_schedlen (const struct esp_algorithm *);
+int esp_rijndael_schedule (const struct esp_algorithm *, struct secasvar *);
+int esp_rijndael_blockdecrypt (const struct esp_algorithm *, struct secasvar *, u_int8_t *, u_int8_t *);
+int esp_rijndael_blockencrypt (const struct esp_algorithm *, struct secasvar *, u_int8_t *, u_int8_t *);
+
+#endif

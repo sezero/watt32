@@ -52,6 +52,10 @@
 #include <sys/socket.h>
 #endif
 
+#ifndef __RPC_TYPES_H
+#include <rpc/xdr.h>
+#endif
+
 #define MAX_AUTH_BYTES  400
 #define MAXNETNAMELEN   255 /* maximum length of network user's name */
 
@@ -59,20 +63,20 @@
  * Status returned from authentication check
  */
 enum auth_stat {
-    AUTH_OK=0,
+    AUTH_OK = 0,
     /*
      * failed at remote end
      */
-    AUTH_BADCRED=1,         /* bogus credentials (seal broken) */
-    AUTH_REJECTEDCRED=2,        /* client should begin new session */
-    AUTH_BADVERF=3,         /* bogus verifier (seal broken) */
-    AUTH_REJECTEDVERF=4,        /* verifier expired or was replayed */
-    AUTH_TOOWEAK=5,         /* rejected due to security reasons */
+    AUTH_BADCRED = 1,         /* bogus credentials (seal broken) */
+    AUTH_REJECTEDCRED = 2,    /* client should begin new session */
+    AUTH_BADVERF = 3,         /* bogus verifier (seal broken) */
+    AUTH_REJECTEDVERF = 4,    /* verifier expired or was replayed */
+    AUTH_TOOWEAK = 5,         /* rejected due to security reasons */
     /*
      * failed locally
-    */
-    AUTH_INVALIDRESP=6,     /* bogus response verifier */
-    AUTH_FAILED=7           /* some unknown reason */
+     */
+    AUTH_INVALIDRESP = 6,     /* bogus response verifier */
+    AUTH_FAILED = 7           /* some unknown reason */
 };
 
 union des_block {

@@ -32,35 +32,35 @@
  */
 
 /*
- * Rpc additions to <sys/wtypes.h>
+ * RPC additions to <sys/wtypes.h>
  */
 #ifndef __RPC_TYPES_H
 #define __RPC_TYPES_H
 
-#define	bool_t	int
-#define	enum_t	int
-#define __dontcare__	-1
+#define bool_t  int
+#define enum_t  int
 
 #ifndef FALSE
-#	define FALSE	(0)
-#endif
-#ifndef TRUE
-#	define TRUE	(1)
+#define FALSE   (0)
 #endif
 
-#define mem_alloc(bsize)	malloc(bsize)
-#define mem_free(ptr, bsize)	free(ptr)
+#ifndef TRUE
+#define TRUE    (1)
+#endif
+
+#define mem_alloc(bsize)      malloc (bsize)
+#define mem_free(ptr, bsize)  free (ptr)
 
 #include <sys/wtypes.h>
 #include <sys/wtime.h>
 #include <netinet/in.h>
 
 #ifndef INADDR_LOOPBACK
-#define	INADDR_LOOPBACK		(u_long)0x7F000001
+#define INADDR_LOOPBACK     (u_long)0x7F000001
 #endif
 
 #ifndef MAXHOSTNAMELEN
-#define MAXHOSTNAMELEN          64
+#define MAXHOSTNAMELEN      64
 #endif
 
 #endif

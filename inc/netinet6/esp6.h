@@ -42,11 +42,10 @@
 #endif
 
 #ifdef _KERNEL
-extern int esp6_output __P((struct mbuf *, u_char *, struct mbuf *,
-	struct ipsecrequest *));
-extern int esp6_input __P((struct mbuf **, int *, int));
+extern int esp6_output (struct mbuf *, u_char *, struct mbuf *, struct ipsecrequest *);
+extern int esp6_input (struct mbuf **, int *, int);
 
-extern void esp6_ctlinput __P((int, struct sockaddr *, void *));
+extern void esp6_ctlinput (int, struct sockaddr *, void *);
 #endif /*_KERNEL*/
 
 #endif /*_NETINET6_ESP6_H_*/

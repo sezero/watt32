@@ -245,8 +245,6 @@
  */
 #if ((defined(__STDC__) && __STDC__) || defined(__cplusplus) || \
     defined(__TURBOC__)) && !defined(__CYGWIN__)
-  #undef  __P
-  #define __P(protos)     protos        /* full-blown ANSI C */
   #define __CONCAT(x,y)   x ## y
   #define __STRING(x)     #x
 
@@ -260,7 +258,6 @@
   #endif
 
 #else
-  #define __P(protos)     ()            /* traditional C preprocessor */
   #define __CONCAT(x,y)   x/**/y
   #define __STRING(x)     "x"
 

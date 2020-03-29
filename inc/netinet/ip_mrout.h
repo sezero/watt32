@@ -70,7 +70,7 @@
 #define MRT_VERSION     106     /* get kernel version number */
 #define MRT_ASSERT      107     /* enable PIM assert processing */
 
-
+#undef  GET_TIME
 #define GET_TIME(t)     microtime(&t)
 
 /*

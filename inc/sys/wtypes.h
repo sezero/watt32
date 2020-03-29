@@ -16,8 +16,8 @@
  *    documentation and/or other materials provided with the distribution.
  * 3. All advertising materials mentioning features or use of this software
  *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
+ *    This product includes software developed by the University of
+ *    California, Berkeley and its contributors.
  * 4. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
@@ -167,6 +167,12 @@
     #define HAVE_CADDR_T
     #define __caddr_t_defined
   #endif
+
+  #if !defined(HAVE_DADDR_T) && !defined(daddr_t) && !defined(__daddr_t_defined)
+    typedef long daddr_t;
+    #define HAVE_DADDR_T
+    #define __daddr_t_defined
+  #endif
 #endif
 
 #if !defined(HAVE_U_INT8_T) && !defined(u_int8_t)
@@ -195,7 +201,7 @@
 
 #if !defined(HAVE_U_QUAD_T) && !defined(u_quad_t)
   #define HAVE_U_QUAD_T
-  #ifdef HAVE_U_INT64_T
+  #ifdef  HAVE_U_INT64_T
     #define u_quad_t  u_int64_t
   #else
     #define u_quad_t  unsigned long
@@ -331,4 +337,65 @@ typedef void (W32_CALL *VoidProc) (void);
  */
 typedef int (W32_CALL *icmp_upcall) (void *socket, BYTE icmp_type, BYTE icmp_code);
 
+/*
+ * The following defines and structures are needed in some BSD
+ * or WIDE project headers.
+ */
+#ifndef NBBY
+#define NBBY 8
 #endif
+
+#if !defined(HAVE_STRUCT_SELINFO) && !defined(STRUCT_SELINFO_DEFINED)
+  #define STRUCT_SELINFO_DEFINED
+
+  /*
+   * Used to maintain information about processes that wish to be
+   * notified when I/O becomes possible.
+   */
+  struct selinfo {
+      /* struct klist si_note; */   /* kernel note list */
+         int          si_seltid;    /* thread to be notified */
+         short        si_flags;     /* see below */
+       };
+#endif
+
+#if defined(STRUCT_IFPREFIX_NEEDED) && !defined(HAVE_STRUCT_IFPREFIX) && !defined(STRUCT_IFPREFIX_DEFINED)
+  #define STRUCT_IFPREFIX_DEFINED
+  #include <sys/queue.h>
+
+  /*
+   * The prefix structure contains information about one prefix
+   * of an interface.  They are maintained by the different address families,
+   * are allocated and attached when an prefix or an address is set,
+   * and are linked together so all prefixes for an interface can be located.
+   */
+  struct ifnet;
+
+  struct ifprefix {
+         struct sockaddr       *ifpr_prefix;   /* prefix of interface */
+         struct ifnet          *ifpr_ifp;      /* back-pointer to interface */
+         TAILQ_ENTRY(ifprefix)  ifpr_list;     /* queue macro glue */
+         u_char                 ifpr_plen;     /* prefix length in bits */
+         u_char                 ifpr_type;     /* protocol dependent prefix type */
+  };
+#endif
+
+#if !defined(HAVE_STRUCT_OSOCKADDR) && !defined(STRUCT_OSOCKADDR_DEFINED)
+  #define STRUCT_OSOCKADDR_DEFINED
+  struct osockaddr {
+         char           sa_data[14];
+         unsigned short sa_family;
+       };
+#endif
+
+#if !defined(HAVE_STRUCT_CALLOUT) && !defined(STRUCT_CALLOUT_DEFINED)
+  #define STRUCT_CALLOUT_DEFINED
+  struct callout {
+         struct callout *c_next;           /* next callout in queue */
+         void           *c_arg;            /* function argument */
+         void          (*c_func) (void *); /* function to call */
+         int             c_time;           /* ticks to the event */
+       };
+#endif
+
+#endif /* __SYS_WTYPES_H */

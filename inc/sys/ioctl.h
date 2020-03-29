@@ -16,8 +16,8 @@
  *    documentation and/or other materials provided with the distribution.
  * 3. All advertising materials mentioning features or use of this software
  *    must display the following acknowledgement:
- *	This product includes software developed by the University of
- *	California, Berkeley and its contributors.
+ *    This product includes software developed by the University of
+ *    California, Berkeley and its contributors.
  * 4. Neither the name of the University nor the names of its contributors
  *    may be used to endorse or promote products derived from this software
  *    without specific prior written permission.
@@ -35,7 +35,7 @@
  * SUCH DAMAGE.
  */
 
-#ifndef __SYS_IOCTL_H
+#if !defined(__SYS_IOCTL_H) && !defined(__SYS_SO_IOCTL_H)
 #define __SYS_IOCTL_H
 
 /*

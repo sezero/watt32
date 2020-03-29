@@ -38,9 +38,8 @@
 #define _NETINET6_IPCOMP6_H_
 
 #ifdef _KERNEL
-extern int ipcomp6_input __P((struct mbuf **, int *, int));
-extern int ipcomp6_output __P((struct mbuf *, u_char *, struct mbuf *,
-	struct ipsecrequest *));
-#endif /*KERNEL*/
+extern int ipcomp6_input (struct mbuf **, int *, int);
+extern int ipcomp6_output (struct mbuf *, u_char *, struct mbuf *,struct ipsecrequest *);
+#endif
 
 #endif /*_NETINET6_IPCOMP6_H_*/

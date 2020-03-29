@@ -47,7 +47,6 @@ struct ipv6hdr {
      };
 
 
-
 /*
  *  The length of this struct cannot be greater than the length of
  *  the proto_priv field in a sk_buff which is currently
@@ -70,7 +69,6 @@ struct in6_pktinfo {
        int             ipi6_ifindex;
      };
 
-
 struct in6_ifreq {
        struct in6_addr ifr6_addr;
        unsigned long   ifr6_prefixlen;
@@ -81,7 +79,7 @@ struct in6_ifreq {
 #define IPV6_SRCRT_TYPE_0       0       /* IPv6 type 0 Routing Header   */
 
 /*
- *      routing header
+ * routing header
  */
 struct ipv6_rt_hdr {
        unsigned char  nexthdr;
@@ -159,7 +157,6 @@ struct ipv6_rt0_hdr {
 /*
  *      fragmentation header
  */
-
 struct ipv6_fraghdr {
        unsigned char   nexthdr;
        unsigned char   reserved;

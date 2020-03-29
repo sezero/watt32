@@ -42,30 +42,31 @@
 #endif
 
 struct ipcomp {
-	u_int8_t comp_nxt;	/* Next Header */
-	u_int8_t comp_flags;	/* reserved, must be zero */
-	u_int16_t comp_cpi;	/* Compression parameter index */
+    u_int8_t comp_nxt;     /* Next Header */
+    u_int8_t comp_flags;   /* reserved, must be zero */
+    u_int16_t comp_cpi;    /* Compression parameter index */
 };
 
-/* well-known algorithm number (in CPI), from RFC2409 */
-#define IPCOMP_OUI	1	/* vendor specific */
-#define IPCOMP_DEFLATE	2	/* RFC2394 */
-#define IPCOMP_LZS	3	/* RFC2395 */
-#define IPCOMP_MAX	4
+/* well-known algorithm number (in CPI), from RFC2409
+ */
+#define IPCOMP_OUI      1   /* vendor specific */
+#define IPCOMP_DEFLATE  2   /* RFC2394 */
+#define IPCOMP_LZS      3   /* RFC2395 */
+#define IPCOMP_MAX      4
 
-#define IPCOMP_CPI_NEGOTIATE_MIN	256
+#define IPCOMP_CPI_NEGOTIATE_MIN    256
 
 #ifdef _KERNEL
 struct ipcomp_algorithm {
-	int (*compress) __P((struct mbuf *, struct mbuf *, size_t *));
-	int (*decompress) __P((struct mbuf *, struct mbuf *, size_t *));
-	size_t minplen;		/* minimum required length for compression */
+    int  (*compress) (struct mbuf *, struct mbuf *, size_t *);
+    int  (*decompress) (struct mbuf *, struct mbuf *, size_t *);
+    size_t minplen;     /* minimum required length for compression */
 };
 
 struct ipsecrequest;
-extern const struct ipcomp_algorithm *ipcomp_algorithm_lookup __P((int));
-extern void ipcomp4_input __P((struct mbuf *, int));
-extern int ipcomp4_output __P((struct mbuf *, struct ipsecrequest *));
+extern const struct ipcomp_algorithm *ipcomp_algorithm_lookup (int);
+extern void                           ipcomp4_input (struct mbuf *, int);
+extern int                            ipcomp4_output (struct mbuf *, struct ipsecrequest *);
 #endif /* KERNEL */
 
 #endif /* _NETINET6_IPCOMP_H_ */

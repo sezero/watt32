@@ -71,16 +71,15 @@
 SYSCTL_DECL(_net_inet6_tcp6);
 #endif
 
-extern	int tcp_v6mssdflt;	/* XXX */
+extern int tcp_v6mssdflt;	/* XXX */
 
-struct	ip6_hdr;
-void	tcp6_ctlinput __P((int, struct sockaddr *, void *));
-void	tcp6_init __P((void));
-int	tcp6_input __P((struct mbuf **, int *, int));
-struct	rtentry *tcp_rtlookup6(struct in_conninfo *);
+struct ip6_hdr;
+void   tcp6_ctlinput (int, struct sockaddr *, void *);
+void   tcp6_init (void);
+int    tcp6_input (struct mbuf **, int *, int);
+struct rtentry *tcp_rtlookup6(struct in_conninfo *);
 
-extern struct	pr_usrreqs tcp6_usrreqs;
-
+extern struct pr_usrreqs tcp6_usrreqs;
 #endif /* _KERNEL */
 
 #endif /* _NETINET_TCP6_VAR_H_ */

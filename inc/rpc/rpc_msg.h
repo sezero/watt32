@@ -39,7 +39,7 @@
  */
 
 #ifndef __RPC_RPC_MSG_H
-#define __RPC_RPCM_SG_H
+#define __RPC_RPC_MSG_H
 
 #include <sys/cdefs.h>
 
@@ -51,29 +51,33 @@
  * NOTE: call and reply use the same overall stuct but
  * different parts of unions within it.
  */
+#undef CALL
+#undef REPLY
 
 enum msg_type {
-	CALL=0,
-	REPLY=1
+    CALL=0,
+    REPLY=1
 };
 
 enum reply_stat {
-	MSG_ACCEPTED=0,
-	MSG_DENIED=1
+    MSG_ACCEPTED=0,
+    MSG_DENIED=1
 };
 
+#undef SUCCESS
+
 enum accept_stat {
-	SUCCESS=0,
-	PROG_UNAVAIL=1,
-	PROG_MISMATCH=2,
-	PROC_UNAVAIL=3,
-	GARBAGE_ARGS=4,
-	SYSTEM_ERR=5
+    SUCCESS=0,
+    PROG_UNAVAIL=1,
+    PROG_MISMATCH=2,
+    PROC_UNAVAIL=3,
+    GARBAGE_ARGS=4,
+    SYSTEM_ERR=5
 };
 
 enum reject_stat {
-	RPC_MISMATCH=0,
-	AUTH_ERROR=1
+    RPC_MISMATCH=0,
+    AUTH_ERROR=1
 };
 
 /*
@@ -88,79 +92,79 @@ enum reject_stat {
  * accepted.
  */
 struct accepted_reply {
-	struct opaque_auth	ar_verf;
-	enum accept_stat	ar_stat;
-	union {
-		struct {
-			u_long	low;
-			u_long	high;
-		} AR_versions;
-		struct {
-			caddr_t	where;
-			xdrproc_t proc;
-		} AR_results;
-		/* and many other null cases */
-	} ru;
-#define	ar_results	ru.AR_results
-#define	ar_vers		ru.AR_versions
+    struct opaque_auth  ar_verf;
+    enum accept_stat    ar_stat;
+    union {
+        struct {
+            u_long  low;
+            u_long  high;
+        } AR_versions;
+        struct {
+            caddr_t   where;
+            xdrproc_t proc;
+        } AR_results;
+        /* and many other null cases */
+    } ru;
+#define ar_results  ru.AR_results
+#define ar_vers     ru.AR_versions
 };
 
 /*
  * Reply to an rpc request that was rejected by the server.
  */
 struct rejected_reply {
-	enum reject_stat rj_stat;
-	union {
-		struct {
-			u_long low;
-			u_long high;
-		} RJ_versions;
-		enum auth_stat RJ_why;  /* why authentication did not work */
-	} ru;
-#define	rj_vers	ru.RJ_versions
-#define	rj_why	ru.RJ_why
+    enum reject_stat rj_stat;
+    union {
+        struct {
+            u_long low;
+            u_long high;
+        } RJ_versions;
+        enum auth_stat RJ_why;  /* why authentication did not work */
+    } ru;
+#define rj_vers ru.RJ_versions
+#define rj_why  ru.RJ_why
 };
 
 /*
  * Body of a reply to an rpc request.
  */
 struct reply_body {
-	enum reply_stat rp_stat;
-	union {
-		struct accepted_reply RP_ar;
-		struct rejected_reply RP_dr;
-	} ru;
-#define	rp_acpt	ru.RP_ar
-#define	rp_rjct	ru.RP_dr
+    enum reply_stat rp_stat;
+    union {
+        struct accepted_reply RP_ar;
+        struct rejected_reply RP_dr;
+    } ru;
+#define rp_acpt ru.RP_ar
+#define rp_rjct ru.RP_dr
 };
 
 /*
  * Body of an rpc request call.
  */
 struct call_body {
-	u_long cb_rpcvers;	/* must be equal to two */
-	u_long cb_prog;
-	u_long cb_vers;
-	u_long cb_proc;
-	struct opaque_auth cb_cred;
-	struct opaque_auth cb_verf; /* protocol specific - provided by client */
+    u_long cb_rpcvers;  /* must be equal to two */
+    u_long cb_prog;
+    u_long cb_vers;
+    u_long cb_proc;
+    struct opaque_auth cb_cred;
+    struct opaque_auth cb_verf; /* protocol specific - provided by client */
 };
 
 /*
  * The rpc message
  */
 struct rpc_msg {
-	u_long			rm_xid;
-	enum msg_type		rm_direction;
-	union {
-		struct call_body RM_cmb;
-		struct reply_body RM_rmb;
-	} ru;
-#define	rm_call		ru.RM_cmb
-#define	rm_reply	ru.RM_rmb
+    u_long          rm_xid;
+    enum msg_type   rm_direction;
+    union {
+        struct call_body  RM_cmb;
+        struct reply_body RM_rmb;
+    } ru;
+#define rm_call     ru.RM_cmb
+#define rm_reply    ru.RM_rmb
 };
-#define	acpted_rply	ru.RM_rmb.ru.RP_ar
-#define	rjcted_rply	ru.RM_rmb.ru.RP_dr
+#define acpted_rply ru.RM_rmb.ru.RP_ar
+#define rjcted_rply ru.RM_rmb.ru.RP_dr
 
 #include <sys/pack_off.h>
 
@@ -169,32 +173,32 @@ __BEGIN_DECLS
 /*
  * XDR routine to handle a rpc message.
  * xdr_callmsg(xdrs, cmsg)
- * 	XDR *xdrs;
- * 	struct rpc_msg *cmsg;
+ *  XDR *xdrs;
+ *  struct rpc_msg *cmsg;
  */
 extern bool_t xdr_callmsg (XDR *, struct rpc_msg *);
 
 /*
  * XDR routine to pre-serialize the static part of a rpc message.
  * xdr_callhdr(xdrs, cmsg)
- * 	XDR *xdrs;
- * 	struct rpc_msg *cmsg;
+ *  XDR *xdrs;
+ *  struct rpc_msg *cmsg;
  */
 extern bool_t xdr_callhdr (XDR *, struct rpc_msg *);
 
 /*
  * XDR routine to handle a rpc reply.
  * xdr_replymsg(xdrs, rmsg)
- * 	XDR *xdrs;
- * 	struct rpc_msg *rmsg;
+ *  XDR *xdrs;
+ *  struct rpc_msg *rmsg;
  */
 extern bool_t xdr_replymsg (XDR *, struct rpc_msg *);
 
 /*
  * Fills in the error part of a reply message.
  * _seterr_reply(msg, error)
- * 	struct rpc_msg *msg;
- * 	struct rpc_err *error;
+ *  struct rpc_msg *msg;
+ *  struct rpc_err *error;
  */
 struct rpc_err;
 extern void _seterr_reply (struct rpc_msg *, struct rpc_err *);

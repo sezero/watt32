@@ -40,30 +40,31 @@
 /*
  * PIM packet header
  */
-#define PIM_VERSION	2
+#define PIM_VERSION 2
+
 struct pim {
 #if defined(BYTE_ORDER) && (BYTE_ORDER == LITTLE_ENDIAN)
-	u_char	pim_type:4, /* the PIM message type, currently they are:
-			     * Hello, Register, Register-Stop, Join/Prune,
-			     * Bootstrap, Assert, Graft (PIM-DM only),
-			     * Graft-Ack (PIM-DM only), C-RP-Adv
-			     */
-		pim_ver:4;  /* PIM version number; 2 for PIMv2 */
+    u_char  pim_type:4, /* the PIM message type, currently they are:
+                 * Hello, Register, Register-Stop, Join/Prune,
+                 * Bootstrap, Assert, Graft (PIM-DM only),
+                 * Graft-Ack (PIM-DM only), C-RP-Adv
+                 */
+        pim_ver:4;  /* PIM version number; 2 for PIMv2 */
 #else
-	u_char	pim_ver:4,	/* PIM version */
-		pim_type:4;	/* PIM type    */
+    u_char  pim_ver:4,  /* PIM version */
+        pim_type:4; /* PIM type    */
 #endif
-	u_char  pim_rsv;	/* Reserved */
-	u_short	pim_cksum;	/* IP style check sum */
+    u_char  pim_rsv;    /* Reserved */
+    u_short pim_cksum;  /* IP style check sum */
 };
 
-#define PIM_MINLEN	8		/* The header min. length is 8    */
-#define PIM6_REG_MINLEN	(PIM_MINLEN+40)	/* Register message + inner IP6 header */
+#define PIM_MINLEN  8       /* The header min. length is 8    */
+#define PIM6_REG_MINLEN (PIM_MINLEN+40) /* Register message + inner IP6 header */
 
 /*
  * Message types
  */
-#define PIM_REGISTER	1	/* PIM Register type is 1 */
+#define PIM_REGISTER    1   /* PIM Register type is 1 */
 
 /* second bit in reg_head is the null bit */
 #define PIM_NULL_REGISTER 0x40000000

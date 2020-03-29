@@ -34,13 +34,13 @@
 #define _NETINET6_IN6_IFATTACH_H_
 
 #ifdef _KERNEL
-void in6_nigroup_attach __P((const char *, int));
-void in6_nigroup_detach __P((const char *, int));
-void in6_ifattach __P((struct ifnet *, struct ifnet *));
-void in6_ifdetach __P((struct ifnet *));
-void in6_get_tmpifid __P((struct ifnet *, u_int8_t *, const u_int8_t *, int));
-void in6_tmpaddrtimer __P((void *));
-int in6_nigroup __P((struct ifnet *, const char *, int, struct in6_addr *));
+void in6_nigroup_attach (const char *, int);
+void in6_nigroup_detach (const char *, int);
+void in6_ifattach (struct ifnet *, struct ifnet *);
+void in6_ifdetach (struct ifnet *);
+void in6_get_tmpifid (struct ifnet *, u_int8_t *, const u_int8_t *, int);
+void in6_tmpaddrtimer (void *);
+int in6_nigroup (struct ifnet *, const char *, int, struct in6_addr *);
 #endif /* _KERNEL */
 
 #endif /* _NETINET6_IN6_IFATTACH_H_ */

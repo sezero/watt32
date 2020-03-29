@@ -24,6 +24,9 @@
 #ifndef __NET_IF_PPP_H
 #define __NET_IF_PPP_H
 
+#include <net/ppp_defs.h>
+
+
 /*
  * Bit definitions for flags.
  */

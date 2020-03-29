@@ -33,6 +33,6 @@
  * http://www.aciri.org/floyd/papers/draft-ipsec-ecn-00.txt
  */
 #ifdef _KERNEL
-extern void ip6_ecn_ingress __P((int, u_int32_t *, const u_int32_t *));
-extern void ip6_ecn_egress __P((int, const u_int32_t *, u_int32_t *));
+extern void ip6_ecn_ingress (int, u_int32_t *, const u_int32_t *);
+extern void ip6_ecn_egress (int, const u_int32_t *, u_int32_t *);
 #endif

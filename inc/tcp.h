@@ -894,15 +894,13 @@ W32_FUNC const char * W32_CALL pkt_get_drvr_name (void);    /* NPF.SYS/SwsVpkt.s
 W32_FUNC const char * W32_CALL pkt_get_drvr_descr (void);   /* Driver description */
 W32_FUNC WORD         W32_CALL pkt_get_drvr_class (void);   /* Driver class */
 
-#if !defined(WATT32_ON_WINDOWS)
-  /*
-   * Controlling timer interrupt handler for background processing.
-   * Not recommended, little tested
-   */
-  W32_FUNC void W32_CALL backgroundon (void);
-  W32_FUNC void W32_CALL backgroundoff (void);
-  W32_FUNC void W32_CALL backgroundfn  (VoidProc func);
-#endif
+/*
+ * Controlling timer interrupt handler for background processing.
+ * Not recommended, little tested and not for Windows.
+ */
+W32_FUNC void W32_CALL backgroundon (void);
+W32_FUNC void W32_CALL backgroundoff (void);
+W32_FUNC void W32_CALL backgroundfn  (VoidProc func);
 
 /*
  * Misc internal or deprecated functions:

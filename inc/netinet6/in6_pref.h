@@ -32,64 +32,71 @@
 #ifndef _NETINET6_IN6_PREF_H_
 #define _NETINET6_IN6_PREF_H_
 
-#include <sys/callout.h>
+#undef  STRUCT_IFPREFIX_NEEDED
+#define STRUCT_IFPREFIX_NEEDED
+
+#ifndef __SYS_WTYPES_H
+#error "Include <sys/wtypes.h> before me."
+#endif
+
+#include <sys/wtypes.h>
+#include <netinet6/in6_var.h>
 
 struct rr_prefix {
-	struct ifprefix	rp_ifpr;
-	LIST_ENTRY(rr_prefix) rp_entry;
-	LIST_HEAD(rp_addrhead, rp_addr) rp_addrhead;
-	struct sockaddr_in6 rp_prefix;	/* prefix */
-	u_int32_t rp_vltime;	/* advertised valid lifetime */
-	u_int32_t rp_pltime;	/* advertised preferred lifetime */
-	time_t rp_expire;	/* expiration time of the prefix */
-	time_t rp_preferred;	/* preferred time of the prefix */
-	struct in6_prflags rp_flags;
-	u_char	rp_origin; /* from where this prefix info is obtained */
-	struct	rp_stateflags {
-		/* if some prefix should be added to this prefix */
-		u_char addmark : 1;
-		u_char delmark : 1; /* if this prefix will be deleted */
-	} rp_stateflags;
+    struct ifprefix                  rp_ifpr;
+    LIST_ENTRY(rr_prefix)            rp_entry;
+    LIST_HEAD(rp_addrhead, rp_addr)  rp_addrhead;
+    struct sockaddr_in6              rp_prefix;    /* prefix */
+    u_int32_t                        rp_vltime;    /* advertised valid lifetime */
+    u_int32_t                        rp_pltime;    /* advertised preferred lifetime */
+    time_t                           rp_expire;    /* expiration time of the prefix */
+    time_t                           rp_preferred; /* preferred time of the prefix */
+    struct in6_prflags               rp_flags;
+    u_char                           rp_origin;    /* from where this prefix info is obtained */
+    struct rp_stateflags {
+       /* if some prefix should be added to this prefix */
+       u_char addmark : 1;
+       u_char delmark : 1; /* if this prefix will be deleted */
+    } rp_stateflags;
 };
 
-#define rp_type		rp_ifpr.ifpr_type
-#define rp_ifp		rp_ifpr.ifpr_ifp
-#define rp_plen		rp_ifpr.ifpr_plen
+#define rp_type             rp_ifpr.ifpr_type
+#define rp_ifp              rp_ifpr.ifpr_ifp
+#define rp_plen             rp_ifpr.ifpr_plen
 
-#define rp_raf		rp_flags.prf_ra
-#define rp_raf_onlink		rp_flags.prf_ra.onlink
-#define rp_raf_auto		rp_flags.prf_ra.autonomous
+#define rp_raf              rp_flags.prf_ra
+#define rp_raf_onlink       rp_flags.prf_ra.onlink
+#define rp_raf_auto         rp_flags.prf_ra.autonomous
 
-#define rp_statef_addmark	rp_stateflags.addmark
-#define rp_statef_delmark	rp_stateflags.delmark
+#define rp_statef_addmark   rp_stateflags.addmark
+#define rp_statef_delmark   rp_stateflags.delmark
 
-#define rp_rrf		rp_flags.prf_rr
-#define rp_rrf_decrvalid	rp_flags.prf_rr.decrvalid
-#define rp_rrf_decrprefd	rp_flags.prf_rr.decrprefd
+#define rp_rrf              rp_flags.prf_rr
+#define rp_rrf_decrvalid    rp_flags.prf_rr.decrvalid
+#define rp_rrf_decrprefd    rp_flags.prf_rr.decrprefd
 
 struct rp_addr {
-	LIST_ENTRY(rp_addr)	ra_entry;
-	struct in6_addr		ra_ifid;
-	struct in6_ifaddr	*ra_addr;
-	struct ra_flags {
-		u_char anycast : 1;
-	} ra_flags;
+    LIST_ENTRY(rp_addr)  ra_entry;
+    struct in6_addr      ra_ifid;
+    struct in6_ifaddr   *ra_addr;
+    struct ra_flags {
+        u_char anycast : 1;
+    } ra_flags;
 };
 
-#define ifpr2rp(ifpr)	((struct rr_prefix *)(ifpr))
-#define rp2ifpr(rp)	((struct ifprefix *)(rp))
+#define ifpr2rp(ifpr)   ((struct rr_prefix *)(ifpr))
+#define rp2ifpr(rp)     ((struct ifprefix *)(rp))
 
-#define RP_IN6(rp)	(&(rp)->rp_prefix.sin6_addr)
+#define RP_IN6(rp)      (&(rp)->rp_prefix.sin6_addr)
 
-#define RR_INFINITE_LIFETIME		0xffffffff
-
+#define RR_INFINITE_LIFETIME        0xffffffff
 
 LIST_HEAD(rr_prhead, rr_prefix);
 
 extern struct rr_prhead rr_prefix;
-
-void in6_rr_timer __P((void *));
 extern struct callout in6_rr_timer_ch;
-int delete_each_prefix  __P((struct rr_prefix *rpp, u_char origin));
+
+extern void in6_rr_timer (void *);
+extern int delete_each_prefix (struct rr_prefix *rpp, u_char origin);
 
 #endif /* _NETINET6_IN6_PREF_H_ */

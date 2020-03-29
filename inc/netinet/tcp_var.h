@@ -42,6 +42,10 @@
 #include <sys/mbuf.h>
 #endif
 
+#ifndef __NETINET_TCP_TIMER_H
+#include <netinet/tcp_time.h>
+#endif
+
 /*
  * Kernel variables for tcp.
  */

@@ -38,6 +38,8 @@
 #ifndef __NETINET_TCP_DEBUG_H
 #define __NETINET_TCP_DEBUG_H
 
+#include <netinet/tcp_var.h>
+
 struct tcp_debug {
        n_time           td_time;
        short            td_act;

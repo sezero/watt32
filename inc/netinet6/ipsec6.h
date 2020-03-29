@@ -39,7 +39,7 @@
 #define _NETINET6_IPSEC6_H_
 
 #include <net/pfkeyv2.h>
-#include <netkey/keydb.h>
+// #include <netkey/keydb.h>
 
 #ifdef _KERNEL
 extern struct ipsecstat ipsec6stat;
@@ -51,34 +51,27 @@ extern int ip6_ah_net_deflev;
 extern int ip6_ipsec_ecn;
 extern int ip6_esp_randpad;
 
-extern struct secpolicy *ipsec6_getpolicybysock
-	__P((struct mbuf *, u_int, struct socket *, int *));
-extern struct secpolicy *ipsec6_getpolicybyaddr
-	__P((struct mbuf *, u_int, int, int *));
+extern struct secpolicy *ipsec6_getpolicybysock (struct mbuf *, u_int, struct socket *, int *);
+extern struct secpolicy *ipsec6_getpolicybyaddr (struct mbuf *, u_int, int, int *);
 
 struct inpcb;
 
-extern int ipsec6_in_reject_so __P((struct mbuf *, struct socket *));
-extern int ipsec6_delete_pcbpolicy __P((struct inpcb *));
-extern int ipsec6_set_policy __P((struct inpcb *inp, int optname,
-	caddr_t request, size_t len, int priv));
-extern int ipsec6_get_policy
-	__P((struct inpcb *inp, caddr_t request, size_t len, struct mbuf **mp));
-extern int ipsec6_in_reject __P((struct mbuf *, struct inpcb *));
+extern int ipsec6_in_reject_so (struct mbuf *, struct socket *);
+extern int ipsec6_delete_pcbpolicy (struct inpcb *);
+extern int ipsec6_set_policy (struct inpcb *inp, int optname, caddr_t request, size_t len, int priv);
+extern int ipsec6_get_policy (struct inpcb *inp, caddr_t request, size_t len, struct mbuf **mp);
+extern int ipsec6_in_reject (struct mbuf *, struct inpcb *);
 
 struct tcp6cb;
 
-extern size_t ipsec6_hdrsiz __P((struct mbuf *, u_int, struct inpcb *));
+extern size_t ipsec6_hdrsiz (struct mbuf *, u_int, struct inpcb *);
 
 struct ip6_hdr;
-extern const char *ipsec6_logpacketstr __P((struct ip6_hdr *, u_int32_t));
+extern const char *ipsec6_logpacketstr (struct ip6_hdr *, u_int32_t);
 
-extern int ipsec6_output_trans __P((struct ipsec_output_state *, u_char *,
-	struct mbuf *, struct secpolicy *, int, int *));
-extern int ipsec6_output_tunnel __P((struct ipsec_output_state *,
-	struct secpolicy *, int));
-extern int ipsec6_tunnel_validate __P((struct mbuf *, int, u_int,
-	struct secasvar *));
+extern int ipsec6_output_trans (struct ipsec_output_state *, u_char *, struct mbuf *, struct secpolicy *, int, int *);
+extern int ipsec6_output_tunnel (struct ipsec_output_state *, struct secpolicy *, int);
+extern int ipsec6_tunnel_validate (struct mbuf *, int, u_int, struct secasvar *);
 #endif /*_KERNEL*/
 
 #endif /*_NETINET6_IPSEC6_H_*/
