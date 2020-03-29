@@ -287,7 +287,7 @@ W32_FUNC int  * W32_CALL __h_errno_location (void);
            struct hostent **result, int *h_errnop);
 
   W32_FUNC int W32_CALL getnetbyaddr_r (
-           uint32_t net, int type, struct netent *result_buf, char *buf,
+           u_int32_t net, int type, struct netent *result_buf, char *buf,
            size_t buflen, struct netent **result, int *h_errnop);
 
   W32_FUNC int W32_CALL getnetbyname_r (
