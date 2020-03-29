@@ -31,13 +31,13 @@
 # Makefile for the Watt-32 TCP/IP stack.
 #
 
-@ifdef VISUALC HIGHC BORLAND LADSOFT LCC
+@ifdef VISUALC BORLAND LADSOFT LCC
 !if "$(W32_BIN2C)" == ""
 !error "'W32_BIN2C' is not defined. Try running 'configur.bat <target>' again."
 !endif
 @endif
 
-@ifdef DJGPP MINGW32 MINGW64 CYGWIN32 CYGWIN64 CLANG
+@ifdef HIGHC DJGPP MINGW32 MINGW64 CYGWIN32 CYGWIN64 CLANG
 ifeq ($(W32_BIN2C_),)
   $(error 'W32_BIN2C_' is not defined. Try running 'configur.bat <target>' again.)
 endif
@@ -1063,8 +1063,11 @@ include build/clang/watt32.dep
 ########################################################################
 
 @elifdef HIGHC
-
+#
+# Using HighC with GNU-make
+#
 OBJDIR  = build/highc
+OBJDIR_ = build\highc
 TARGET  = ../lib/wattcphf.lib
 MAKEFIL = highc.mak
 
@@ -1086,7 +1089,7 @@ AR     = 386lib -nobanner
 
 OBJS := $(subst \,/,$(OBJS))
 
-all: $(PKT_STUB) $(C_ARGS) $(OBJDIR)/cflagsbf.h $(TARGET)
+all: $(PKT_STUB) $(C_ARGS) $(OBJDIR)/cflags.h $(OBJDIR)/cflagsbf.h $(TARGET)
 	@echo All done
 
 $(TARGET): $(OBJS)
@@ -1095,14 +1098,14 @@ $(TARGET): $(OBJS)
 	$(AR) $(TARGET) @$(OBJDIR)/lib.arg
 
 clean:
-	rm -f $(OBJDIR)/*.obj $(OBJDIR)/cflagsbf.h chksum0.lst cpumodel.lst $(TARGET) pkt_stub.h
+	rm -f $(OBJDIR)/*.obj $(OBJDIR)/*.arg $(OBJDIR)/cflags.h $(OBJDIR)/cflagsbf.h chksum0.lst cpumodel.lst $(TARGET) pkt_stub.h
 	@echo Cleaning done
 
 $(OBJDIR)/chksum0.obj: chksum0.asm
-	$(AS) $(AFLAGS) $<, $(OBJDIR)\chksum0.obj
+	$(AS) $(AFLAGS) $<, $(OBJDIR_)\chksum0.obj
 
 $(OBJDIR)/cpumodel.obj: cpumodel.asm
-	$(AS) $(AFLAGS) $<, $(OBJDIR)\cpumodel.obj
+	$(AS) $(AFLAGS) $<, $(OBJDIR_)\cpumodel.obj
 
 $(C_ARGS): $(MAKEFIL)
 	@echo '$(CFLAGS)' > $@
@@ -1568,24 +1571,15 @@ $(OBJDIR)\cflags.h: $(MAKEFIL)
 	echo const char *w32_cc = "$(CC)"; >> $(OBJDIR)\cflags.h
 @endif
 
-@ifdef DJGPP
-
-$(OBJDIR)/pcpkt.o: asmpkt.nas
+@ifdef DJGPP HIGHC
+$(OBJDIR)/pcpkt.obj: asmpkt.nas
+$(OBJDIR)/pcpkt.o:   asmpkt.nas
 
 $(PKT_STUB): asmpkt.nas
 	$(W32_NASM_) -f bin -l asmpkt.lst -o asmpkt.bin asmpkt.nas
 	$(W32_BIN2C_) asmpkt.bin > $@
 
-@elifdef HIGHC
-
-$(OBJDIR)/pcpkt.obj: asmpkt.nas
-
-$(PKT_STUB): asmpkt.nas
-	$(W32_NASM) -f bin -l asmpkt.lst -o asmpkt.bin asmpkt.nas
-	$(W32_BIN2C) asmpkt.bin > $@
-
 @elifdef FLAT SMALL32
-
 $(OBJDIR)\pcpkt.obj: asmpkt.nas
 
 @ifdef WATCOM
@@ -1698,9 +1692,6 @@ build\borland\flat\cflagsbf.h: $(C_ARGS)
 build\borland\win32\cflagsbf.h: $(C_ARGS)
 	$(W32_BIN2C) $(C_ARGS)                     > build\borland\win32\cflagsbf.h
 
-build\highc\cflagsbf.h: $(C_ARGS)
-	$(W32_BIN2C) $(C_ARGS)                     > build\highc\cflagsbf.h
-
 build\ladsoft\cflagsbf.h:
 	echo $(CFLAGS) | $(W32_BIN2C)            - > build\ladsoft\cflagsbf.h
 
@@ -1713,19 +1704,19 @@ build\pellesc\32bit\cflagsbf.h:
 build\pellesc\64bit\cflagsbf.h:
 	echo $(CFLAGS) | $(W32_BIN2C)            - > build\pellesc\64bit\cflagsbf.h
 
-build\visualc\32bit\release\cflagsbf.h: $(C_ARGS)
+build\visualc\32bit\release\cflagsbf.h: # $(C_ARGS)
 	- echo $(CFLAGS) | $(W32_BIN2C)          - > build\visualc\32bit\release\cflagsbf.h
 
-build\visualc\32bit\debug\cflagsbf.h: $(C_ARGS)
+build\visualc\32bit\debug\cflagsbf.h: # $(C_ARGS)
 	- echo $(CFLAGS) | $(W32_BIN2C)          - > build\visualc\32bit\debug\cflagsbf.h
 
 build\visualc\64bit\release\cflagsbf.h: $(C_ARGS)
 	- echo $(CFLAGS) | $(W32_BIN2C)          - > build\visualc\64bit\release\cflagsbf.h
 
-build\visualc\64bit\debug\cflagsbf.h: $(C_ARGS)
+build\visualc\64bit\debug\cflagsbf.h: # $(C_ARGS)
 	- echo $(CFLAGS) | $(W32_BIN2C)          - > build\visualc\64bit\debug\cflagsbf.h
 
-@ifdef DJGPP MINGW32 MINGW64 CYGWIN32 CYGWIN64
+@ifdef HIGHC DJGPP MINGW32 MINGW64 CYGWIN32 CYGWIN64
 #
 # Nmake doesn't like these rules. Hence inside this block.
 #
@@ -1743,6 +1734,9 @@ build/MinGW64/32bit/cflagsbf.h:
 
 build/MinGW64/64bit/cflagsbf.h:
 	echo $(CFLAGS) | $(W32_BIN2C_)           - > build/MinGW64/64bit/cflagsbf.h
+
+build/highc/cflagsbf.h:
+	echo "$(CFLAGS)" | $(W32_BIN2C_)         - > build/highc/cflagsbf.h
 @endif
 
 @ifdef WATCOM
@@ -1760,17 +1754,15 @@ build\watcom\win32\cflagsbf.h: $(C_ARGS)
 
 build\watcom\small32\cflagsbf.h: $(C_ARGS)
 	$(%W32_BIN2C) $(C_ARGS)                    > build\watcom\small32\cflagsbf.h
-@endif
 
-@ifdef CLANG
+@elifdef CLANG
 build/clang/32bit/release/cflagsbf.h \
 build/clang/32bit/debug/cflagsbf.h   \
 build/clang/64bit/release/cflagsbf.h \
 build/clang/64bit/debug/cflagsbf.h:
 	$(W32_BIN2C_) $(C_ARGS) > $@
-@endif
 
-@ifdef DJGPP MINGW32 MINGW64 CYGWIN32 CYGWIN64
+@elifdef DJGPP MINGW32 MINGW64 CYGWIN32 CYGWIN64
 
 DEP_REPLACE = sed -e 's/\(.*\)\.o: /\n$$(OBJDIR)\/\1.o: /'
 
