@@ -3,7 +3,7 @@
 #
 #  Watcom-16 real-mode (large/small) executables.
 #
-#  Usage: 'wmake -f watcom.mak'
+#  Usage: 'wmake -h -f watcom.mak'
 #
 
 .EXTENSIONS:

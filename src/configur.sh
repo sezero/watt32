@@ -203,7 +203,7 @@ gen_watcom ()
 # ../util/wc_err -e > ../inc/sys/watcom.err
 
   echo "Run wmake to make target(s):"
-  echo "  E.g. 'wmake -f watcom_l.mak' for large model (16-bit)"
+  echo "  E.g. 'wmake -h -f watcom_l.mak' for large model (16-bit)"
 }
 
 gen_all ()

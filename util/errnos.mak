@@ -5,8 +5,8 @@
 #        targets due to DPMI/DOS-extender conflicts etc.
 #        Use your native make tool to make only the target
 #        you need.
-#          E.g. say: 'wmake -f errnos.mak wc_err.exe' for Watcom
-#                or: 'maker -f errnos.mak hc_err.exe' for High-C
+#          E.g. say: 'wmake -h -f errnos.mak wc_err.exe' for Watcom
+#                or: 'maker -h -f errnos.mak hc_err.exe' for High-C
 #
 # Therefore, do not use any GNU-make specific syntax here.
 # (use explicit rules only). Thus, this makefile could also

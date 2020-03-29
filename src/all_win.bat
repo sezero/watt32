@@ -16,7 +16,7 @@ echo ---- running visualc-debug_64.mak %1 ---- >> make.log
 nmake -f visualc-debug_64.mak %1 >> make.log
 
 echo ---- running watcom_w.mak %1 ---- >> make.log
-wmake -f watcom_w.mak %1 >> make.log
+wmake -h -f watcom_w.mak %1 >> make.log
 
 call mingw.bat
 echo ---- running mingw32.mak %1 ---- > make.log

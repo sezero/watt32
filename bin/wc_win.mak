@@ -3,7 +3,7 @@
 #
 #  Watcom Win32 executables.
 #
-#  Usage: 'wmake -f wc_win.mak'
+#  Usage: 'wmake -h -f wc_win.mak'
 #
 
 .EXTENSIONS:

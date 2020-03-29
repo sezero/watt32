@@ -114,12 +114,12 @@ echo neterr.c: build\watcom\syserr.c >> build\watcom\watt32.dep
 %WC_ERR% -e > ..\inc\sys\watcom.err
 
 echo Run wmake to make target(s):
-echo E.g. "wmake -f watcom_s.mak" for small model (16-bit)
-echo      "wmake -f watcom_l.mak" for large model (16-bit)
-echo      "wmake -f watcom_f.mak" for flat model
-echo      "wmake -f watcom_x.mak" for flat/X32VM model
-echo      "wmake -f watcom_w.mak" for Win32
-echo      "wmake -f watcom_3.mak" for small model (32-bit)
+echo E.g. "wmake -h -f watcom_s.mak" for small model (16-bit)
+echo      "wmake -h -f watcom_l.mak" for large model (16-bit)
+echo      "wmake -h -f watcom_f.mak" for flat model
+echo      "wmake -h -f watcom_x.mak" for flat/X32VM model
+echo      "wmake -h -f watcom_w.mak" for Win32
+echo      "wmake -h -f watcom_3.mak" for small model (32-bit)
 goto next
 
 ::--------------------------------------------------------------------------
