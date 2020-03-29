@@ -26,7 +26,6 @@
 #define __SYS_WERRNO_H
 #define __SYS_WTIME_H
 #define __SYS_SWAP_BYTES_H
-#define _SYS_SELECT_H            /* For CygWin's <sys/select.h> */
 
 #define _WATT32_FAKE_WINSOCK_H   /* Suppress errors from <w32api.h> */
 #define _WATT32_FAKE_WINSOCK2_H
