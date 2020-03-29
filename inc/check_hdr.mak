@@ -48,14 +48,12 @@ define check_hdr_c
   #include <resolv.h>
   #include <syslog.h>
 
-  #include <netinet6/ipsec.h>
-  #include <netinet6/ipsec6.h>
-
   #include <arpa/ftp.h>
   #include <arpa/inet.h>
   #include <arpa/nameser.h>
   #include <arpa/telnet.h>
   #include <arpa/tftp.h>
+
   #include <net/bpf.h>
   #include <net/bpfdesc.h>
   #include <net/ethertyp.h>
@@ -85,6 +83,7 @@ define check_hdr_c
   #include <net/route.h>
   #include <net/slcompre.h>
   #include <net/slip.h>
+
   #include <netinet/icmp6.h>
   #include <netinet/icmp_var.h>
   #include <netinet/if_ether.h>
@@ -112,6 +111,10 @@ define check_hdr_c
   #include <netinet/tcp_var.h>
   #include <netinet/udp.h>
   #include <netinet/udp_var.h>
+
+  #include <netinet6/ipsec.h>
+  #include <netinet6/ipsec6.h>
+
   #include <netinet6/ah.h>
   #include <netinet6/ah6.h>
   #include <netinet6/esp.h>
@@ -130,7 +133,6 @@ define check_hdr_c
   #include <netinet6/ip6_var.h>
   #include <netinet6/ipcomp.h>
   #include <netinet6/ipcomp6.h>
-
   #include <netinet6/mld6_var.h>
   #include <netinet6/nd6.h>
   #include <netinet6/pim6.h>
@@ -139,11 +141,13 @@ define check_hdr_c
   #include <netinet6/scope6_v.h>
   #include <netinet6/tcp6_var.h>
   #include <netinet6/udp6_var.h>
+
   #include <protocol/dumprest.h>
   #include <protocol/routed.h>
   #include <protocol/rwhod.h>
   #include <protocol/talkd.h>
   #include <protocol/timed.h>
+
   #include <rpc/auth.h>
   #include <rpc/auth_des.h>
   #include <rpc/auth_uni.h>
@@ -160,6 +164,7 @@ define check_hdr_c
   #include <rpc/xdr.h>
   #include <rpcsvc/ypclnt.h>
   #include <rpcsvc/yp_prot.h>
+
   #include <sys/cdefs.h>
   #include <sys/errno.h>
   #include <sys/ioctl.h>
