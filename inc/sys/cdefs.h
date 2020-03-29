@@ -51,7 +51,7 @@
    *   '-Hpragma=Offwarn(491)'.
    *
    *   The warning w/o this pragma is something like:
-   *    "w "../../inc/sys/cdefs.h",L60/C23(#491):  Unrecognized preprocessor directive:"
+   *    "w "../../inc/sys/cdefs.h",L59/C23(#491):  Unrecognized preprocessor directive:"
    */
 #endif
 
@@ -221,9 +221,6 @@
   #define __CONCAT(x,y)   x ## y
   #define __STRING(x)     #x
 
-  #define __const         const         /* define reserved names to standard */
-  #define __signed        signed
-/*#define __volatile      volatile */
   #if defined(__cplusplus)
     #define __inline      inline        /* convert to C++ keyword */
   #elif !defined(__GNUC__) && !defined(_MSC_VER) && !defined(__WATCOMC__)
@@ -239,10 +236,6 @@
   #endif
 
   #if !defined(__GNUC__)
-    #define __const                     /* delete pseudo-ANSI C keywords */
-    #define __signed
- /* #define __volatile */
-
     /*
      * In non-ANSI C environments, new programs will want ANSI-only C keywords
      * deleted from the program and old programs will want them left alone.
@@ -346,13 +339,12 @@
                                       W32_GCC_PRAGMA (clang diagnostic ignored "-Wpragma-pack")
 
     #undef  W32_CLANG_PACK_WARN_DEF
-    #define W32_CLANG_PACK_WARN_DEF()  W32_GCC_PRAGMA (clang diagnostic pop)
+    #define W32_CLANG_PACK_WARN_DEF() W32_GCC_PRAGMA (clang diagnostic pop)
   #endif
 
 #else
   #define W32_CLANG_NONNULL(x) 0
 #endif
-
 
 /*
  * Delete pseudo-keywords wherever they are not available or needed.
@@ -377,49 +369,17 @@
   #if defined(__HIGHC__)
     #undef  min
     #undef  max
-    #define min(a,b) _min(a,b)  /* intrinsic functions */
-    #define max(a,b) _max(a,b)
+    #define min(a, b) _min(a, b)  /* intrinsic functions */
+    #define max(a, b) _max(a, b)
   #endif
 
   #ifndef min
-  #define min(a,b) (((a) < (b)) ? (a) : (b))
+  #define min(a, b) (((a) < (b)) ? (a) : (b))
   #endif
 
   #ifndef max
-  #define max(a,b) (((a) > (b)) ? (a) : (b))
+  #define max(a, b) (((a) > (b)) ? (a) : (b))
   #endif
 #endif
-
-/*
- * from NetBSD's <sys/cdefs_aout.h>
- *
- * Written by J.T. Conklin <jtc@wimsey.com> 01/17/95.
- * Public domain.
- */
-
-/* #define _C_LABEL(x) __CONCAT(_,x) */
-
-#if defined(__GNUC__)
-  #define __indr_reference(sym,alias)                \
-          __asm__(".stabs \"_" #alias "\",11,0,0,0");\
-          __asm__(".stabs \"_" #sym "\",1,0,0,0");
-
-  #define __warn_references(sym,msg)                 \
-          __asm__(".stabs \"" msg "\",30,0,0,0");    \
-          __asm__(".stabs \"_" #sym "\",1,0,0,0");
-
-  #define __IDSTRING(name,string)  \
-          static const char name[] __attribute__((__unused__)) = string
-#else
-  #define __indr_reference(sym,alias)
-  #define __warn_references(sym,msg)
-  #define __IDSTRING(name,string)  static const char name[] = string
-#endif
-
-#define __RCSID(_s)                __IDSTRING(rcsid,_s)
-#define __COPYRIGHT(_s)            __IDSTRING(copyright,_s)
-
-#define __KERNEL_RCSID(_n,_s)      __IDSTRING(__CONCAT(rcsid,_n),_s)
-#define __KERNEL_COPYRIGHT(_n,_s)  __IDSTRING(__CONCAT(copyright,_n),_s)
 
 #endif
