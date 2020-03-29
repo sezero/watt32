@@ -43,6 +43,15 @@ int makecmdbuf (const char *name, const char *pass, const char *cmd)
   return sprintf (cmdbuf, "%c%s%s%s", 0, name, pass, cmd);
 }
 
+const char *my_fgets (char *buf, size_t sz)
+{
+  const char *rc = fgets (buf, sz, stdin);
+
+  if (!rc || !*rc || *rc == '\n')
+     return (NULL);
+  return (rc);
+}
+
 int exec (const char *hostname, WORD port, const char *name, char *pass, const char *cmd)
 {
   WORD   lport, jqpublic, count;
@@ -64,8 +73,8 @@ int exec (const char *hostname, WORD port, const char *name, char *pass, const c
   if (!name)
   {
     printf (" Userid   : ");
-    gets (name = lname);
-    if (!*name)
+    name = my_fgets (lname, sizeof(lname));
+    if (!name)
     {
       name = "JQPUBLIC";
       printf ("%s", name);
@@ -82,15 +91,15 @@ int exec (const char *hostname, WORD port, const char *name, char *pass, const c
   if (!cmd)
   {
     printf (" Command  : ");
-    gets (cmd = lcmd);
-    if (!*cmd)
+    cmd = my_fgets (lcmd, sizeof(lcmd));
+    if (!cmd)
     {
       puts ("No command given\n");
       return (2);
     }
   }
 
-  if (!tcp_open(&rsh_sock,lport,host,port,NULL))
+  if (!tcp_open(&rsh_sock, lport, host, port, NULL))
   {
     printf ("Remote host unaccessible");
     return (1);
