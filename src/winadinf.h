@@ -159,11 +159,6 @@
   #define _STR2(x) #x
   #define _STR(x)  _STR2(x)
 
-  #if ((W32_GCC_VERSION >= 40600) && (W32_GCC_VERSION < 40900))
-    #pragma message ("WINVER=" _STR(WINVER))
-    #pragma message (__FILE__ "(" _STR(__LINE__) "): WINVER=" _STR(WINVER))
-  #endif
-
   #if (_WIN32_WINNT >= 0x0601)          /* Is this right? */
     #define ON_WIN_VISTA
     #define ON_WIN_VISTA_SP1
