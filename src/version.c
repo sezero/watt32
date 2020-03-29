@@ -129,7 +129,7 @@ const char * W32_CALL wattcpVersion (void)
     strcpy (p, " (486");
   #elif (_M_IX86 >= 300)
     strcpy (p, " (386");
-  #if (_M_IX86 >= 200)
+  #elif (_M_IX86 >= 200)
     strcpy (p, " (286");
   #elif (_M_IX86 >= 100)
     strcpy (p, " (186");
