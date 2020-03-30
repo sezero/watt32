@@ -1,6 +1,6 @@
 #
 #  GNU Makefile for some Waterloo TCP sample applications
-#  Gisle Vanem 2004
+#  Gisle Vanem 2004 - 2020.
 #
 #  Target:
 #    CygWin, 32-bit or 64-bit selectable by 'CPU=[x86|x64]'.
