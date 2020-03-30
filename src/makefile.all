@@ -183,9 +183,23 @@ DOS_OBJS = \
            $(OBJDIR)\wdpmi.obj    \
            $(OBJDIR)\x32vm.obj
 
+#
+# CPU, bit-width and suffix.
+# Not used for any DOS targets.
+#
+@ifdef WIN64
+CPU    = x64
+BITS   = 64
+SUFFIX = _64
+@else
+CPU    = x86
+BITS   = 32
+SUFFIX =
+@endif
+
 @ifdef WIN32 WIN64
 #
-# For all 32/64-bit Windows targets
+# For all 32/64-bit Windows targets:
 #
 OBJS = $(COMMON_OBJS) $(WINDOWS_OBJS)
 
@@ -199,33 +213,38 @@ OBJS += $(OBJDIR)/stkwalk.obj
 
 @else
 #
-# For all 16/32-bit DOS targets
+# For all 16/32-bit DOS targets:
 #
 OBJS = $(COMMON_OBJS) $(DOS_OBJS)
 @endif
 
+@ifdef FLAT SMALL32
 #
 # This generated file is used for all 32-bit MSDOS targets
 # (and when USE_FAST_PKT is defined). This enables a faster real-mode
 # callback for the PKTDRVR receiver. Included as an array in pcpkt2.c.
 #
-@ifdef FLAT SMALL32
 PKT_STUB = pkt_stub.h
 @endif
 
 ########################################################################
 
 @ifdef DJGPP
-
+#
+# Only used by 'make -f djgpp install':
+#
 prefix = /dev/env/DJDIR/net/watt
 
 ifeq ($(OS),Windows_NT)
   ifneq ($(DJ_PREFIX),)
     #
     # Windows hosted djgpp cross compiler. Get it from:
-    #   https://github.com/andrewwutw/build-djgpp/releases
+    #   https://github.com/andrewwutw/build-djgpp/releases  - djgpp-mingw-gcc*.zip
     #
-    # Define an env-var 'DJ_PREFIX=f:/gv/djgpp/bin/i586-pc-msdosdjgpp-'
+    # and install to e.g. 'c:/djgpp/contrib'.
+    # And then define an env-var:
+    #   DJ_PREFIX=c:/djgpp/contrib/win-cross/bin/i586-pc-msdosdjgpp-
+    #
     # Thus the full path to 'gcc' becomes:
     #   $(DJ_PREFIX)gcc.exe
     #
@@ -257,12 +276,13 @@ ifeq ($(filter 2 3 4,$(word 3, $(shell true | $(CC) -E -dD -x c - | grep 'define
   CFLAGS += -fgnu89-inline
 endif
 
-CC     = $(BIN_PREFIX)gcc
-AS     = $(BIN_PREFIX)as
-AR     = $(BIN_PREFIX)ar rs
-AFLAGS = # --gdwarf2
 TARGET = ../lib/libwatt.a
 OBJDIR = build/djgpp
+
+CC     = $(BIN_PREFIX)gcc
+AR     = $(BIN_PREFIX)ar rs
+AS     = $(BIN_PREFIX)as
+AFLAGS = # --gdwarf2
 
 OBJS := $(subst \,/,$(OBJS))
 OBJS := $(subst .obj,.o,$(OBJS))
@@ -347,7 +367,7 @@ MAKEFIL = bcc_f.mak
   C_ARGS = $(OBJDIR)\bcc32.arg
 
   #
-  # -5:  Use Pentiom instructions.
+  # -5:  Use Pentium instructions.
   # -WM: Create Windows application.
   # -Vd: Virtual table control, disable
   # -H:  Use pre-compiled headers. '-H=xx' names the file.
@@ -450,7 +470,7 @@ clean:
 	- @del $(OBJDIR)\*.asm
 	- @del $(OBJDIR)\*.res
 	- @del $(OBJDIR)\*.arg
-	- @del *.lst
+	- @del asmpkt.lst
 	- @del $(TARGETS)
 	- @del $(TEMP)\bcc_?.pch
 	- @del pkt_stub.h
@@ -668,16 +688,9 @@ $(LINKARG): $(__MAKEFILES__)
 # The Microsoft Macro Assembler (ml and ml64) is available here:
 #   http://www.microsoft.com/en-us/download/details.aspx?id=12654
 #
-@ifndef WIN32 WIN64
-!error The only possible targets for VISUALC are WIN32 or WIN64
-@endif
-
 CFLAGS = -nologo -Zi -W3 -DWATT32_BUILD -D_WIN32_WINNT=0x0601 -I. -I../inc
 
-#
-# Just a test
-#
-# CFLAGS = $(CFLAGS) -DWATT32_NO_NAMESPACE
+LDFLAGS = -machine:$(CPU)
 
 #
 # Do not use the so called "POSIX supplemented" error-codes.
@@ -693,40 +706,25 @@ CFLAGS = $(CFLAGS) -MD -Ox -GS- # -Gr
 @endif
 
 @ifdef WIN64
-BITS    = 64
-LDFLAGS = -machine:x64
-AS      = ml64
-AFLAGS  = -c -nologo -DDOSX -DWIN64 -Zi
-
-@ifdef DEBUG
-TARGETS = ..\lib\x64\wattcpvc_d.lib ..\lib\x64\wattcpvc_imp_d.lib ..\bin\watt-32d_64.dll
-OBJDIR  = build\visualc\64bit\debug
-
-@else
-TARGETS = ..\lib\x64\wattcpvc.lib ..\lib\x64\wattcpvc_imp.lib ..\bin\watt-32_64.dll
-OBJDIR  = build\visualc\64bit\release
-@endif
-
+AS     = ml64
+AFLAGS = -c -nologo -DDOSX -DWIN64 -Zi
 @else
 #
 # WIN32
 #
-BITS    = 32
-LDFLAGS = -machine:x86
-AS      = ml
-AFLAGS  = -c -nologo -DDOSX -Zi -coff
+AS     = ml
+AFLAGS = -c -nologo -DDOSX -Zi -coff
+@endif
 
 @ifdef DEBUG
-TARGETS = ..\lib\x86\wattcpvc_d.lib ..\lib\x86\wattcpvc_imp_d.lib ..\bin\watt-32d.dll
-OBJDIR  = build\visualc\32bit\debug
+TARGETS = ..\lib\$(CPU)\wattcpvc_d.lib ..\lib\$(CPU)\wattcpvc_imp_d.lib ..\bin\watt-32d$(SUFFIX).dll
+OBJDIR  = build\visualc\$(BITS)bit\debug
 MAKEFIL = visualc-debug_$(BITS).mak
 
 @else
-TARGETS = ..\lib\x86\wattcpvc.lib ..\lib\x86\wattcpvc_imp.lib ..\bin\watt-32.dll
-OBJDIR  = build\visualc\32bit\release
+TARGETS = ..\lib\$(CPU)\wattcpvc.lib ..\lib\$(CPU)\wattcpvc_imp.lib ..\bin\watt-32$(SUFFIX).dll
+OBJDIR  = build\visualc\$(BITS)bit\release
 MAKEFIL = visualc-release_$(BITS).mak
-@endif
-
 @endif
 
 CC      = cl
@@ -766,59 +764,33 @@ $(C_ARGS): $(MAKEFIL)
 $(LINK_ARGS): $(MAKEFIL)
 	@echo $(OBJS) $(RESOURCE) $(EX_LIBS) > $@
 
-@ifdef DEBUG
 #
-# Static libs (debug)
+# Static libs
 #
-..\lib\x86\wattcpvc_d.lib: $(OBJS)
-	$(AR) -machine:x86 -out:$@ @<<
+..\lib\$(CPU)\wattcpvc.lib: $(OBJS)
+	$(AR) -machine:$(CPU) -out:$@ @<<
 	 $**
 <<
 
-..\lib\x64\wattcpvc_d.lib: $(OBJS)
-	$(AR) -machine:x64 -out:$@ @<<
-	 $**
-<<
-
-#
-# Import libs + DLLs (debug)
-#
-..\bin\watt-32d.dll ..\lib\x86\wattcpvc_imp_d.lib: $(OBJS) $(RESOURCE) $(LINK_ARGS)
-	link $(LDFLAGS) -out:..\bin\watt-32d.dll -implib:..\lib\x86\wattcpvc_imp_d.lib @$(LINK_ARGS) > link.tmp
-	type link.tmp >> ..\bin\watt-32d.map
-	touch ../lib/x86/wattcpvc_imp_d.lib
-
-..\bin\watt-32d_64.dll ..\lib\x64\wattcpvc_imp_d.lib: $(OBJS) $(RESOURCE) $(LINK_ARGS)
-	link $(LDFLAGS) -out:..\bin\watt-32d_64.dll -implib:..\lib\x64\wattcpvc_imp_d.lib @$(LINK_ARGS) > link.tmp
-	type link.tmp >> ..\bin\watt-32d_64.map
-	touch ../lib/x64/wattcpvc_imp_d.lib
-@else
-#
-# Static libs (release)
-#
-..\lib\x86\wattcpvc.lib: $(OBJS)
-	$(AR) -machine:x86 -out:$@ @<<
-	 $**
-<<
-
-..\lib\x64\wattcpvc.lib: $(OBJS)
-	$(AR) -machine:x64 -out:$@ @<<
+..\lib\$(CPU)\wattcpvc_d.lib: $(OBJS)
+	$(AR) -machine:$(CPU) -out:$@ @<<
 	 $**
 <<
 
 #
-# Import libs + DLLs (release)
+# Import libs + DLLs
 #
-..\bin\watt-32.dll ..\lib\x86\wattcpvc_imp.lib: $(OBJS) $(RESOURCE) $(LINK_ARGS)
-	link $(LDFLAGS) -out:..\bin\watt-32.dll -implib:..\lib\x86\wattcpvc_imp.lib @$(LINK_ARGS) > link.tmp
-	type link.tmp >> ..\bin\watt-32.map
-	touch ../lib/x86/wattcpvc_imp.lib
+..\bin\watt-32$(SUFFIX).dll ..\lib\$(CPU)\wattcpvc_imp.lib: $(OBJS) $(RESOURCE) $(LINK_ARGS)
+	link $(LDFLAGS) -out:..\bin\watt-32$(SUFFIX).dll -implib:..\lib\$(CPU)\wattcpvc_imp.lib @$(LINK_ARGS) > link.tmp
+	type link.tmp >> ..\bin\watt-32$(SUFFIX).map
+	@del ..\lib\$(CPU)\wattcpcvc_imp.exp
+	touch ../lib/$(CPU)/wattcpvc_imp.lib
 
-..\bin\watt-32_64.dll ..\lib\x64\wattcpvc_imp.lib: $(OBJS) $(RESOURCE) $(LINK_ARGS)
-	link $(LDFLAGS) -out:..\bin\watt-32_64.dll -implib:..\lib\x64\wattcpvc_imp.lib @$(LINK_ARGS) > link.tmp
-	type link.tmp >> ..\bin\watt-32_64.map
-	touch ../lib/x64/wattcpvc_imp.lib
-@endif
+..\bin\watt-32d$(SUFFIX).dll ..\lib\$(CPU)\wattcpvc_imp_d.lib: $(OBJS) $(RESOURCE) $(LINK_ARGS)
+	link $(LDFLAGS) -out:..\bin\watt-32d$(SUFFIX).dll -implib:..\lib\$(CPU)\wattcpvc_imp_d.lib @$(LINK_ARGS) > link.tmp
+	type link.tmp >> ..\bin\watt-32d$(SUFFIX).map
+	@del ..\lib\$(CPU)\wattcpcvc_imp_d.exp
+	touch ../lib/$(CPU)/wattcpvc_imp_d.lib
 
 clean:
 	- @del $(TARGETS)
@@ -826,10 +798,7 @@ clean:
 	- @del $(OBJDIR)\*.obj $(OBJDIR)\cflags.h $(OBJDIR)\cflagsbf.h
 	- @del $(OBJDIR)\*.lst
 	- @del $(RESOURCE)
-	- @del vc1*.pdb
-	- @del ..\lib\x86\wattcpcvc_*.exp
-	- @del ..\lib\x64\wattcpcvc_*.exp
-	- @del ..\bin\watt-32?$(64).pdb
+	- @del vc1*.pdb ..\lib\x86\wattcpcvc_*.exp ..\lib\x64\wattcpcvc_*.exp ..\bin\watt-32$(SUFFIX).pdb ..\bin\watt-32d$(SUFFIX).pdb
 	@echo Cleaning done
 
 $(OBJDIR)\chksum0.obj:  chksum0.asm
@@ -958,30 +927,20 @@ LDFLAGS += -subsystem:console,5.02
 EX_LIBS  = user32.lib advapi32.lib
 RESOURCE = $(OBJDIR)/watt-32.res
 
-@ifdef WIN64
-  64     = _64
-  AS     = ml64
-  AFLAGS = -c -nologo -DDOSX -DWIN64 -Zi
-
-  @ifdef DEBUG
-  TARGETS = ../lib/x64/wattcp_clang.lib ../lib/x64/wattcp_clang_imp.lib ../bin/watt-32_64.dll
-  OBJDIR  = build/clang/64bit/debug
-  @else
-  TARGETS = ../lib/x64/wattcp_clang.lib ../lib/x64/wattcp_clang_imp.lib ../bin/watt-32_64.dll
-  OBJDIR  = build/clang/64bit/release
-  @endif
+@ifdef DEBUG
+TARGETS = ../lib/$(CPU)/wattcp_clang_d.lib ../lib/$(CPU)/wattcp_clang_imp_d.lib ../bin/watt-32$(SUFFIX)d.dll
+OBJDIR  = build/clang/$(BITS)bit/debug
 @else
-  64     =
+TARGETS = ../lib/$(CPU)/wattcp_clang.lib ../lib/$(CPU)/wattcp_clang_imp.lib ../bin/watt-32$(SUFFIX).dll
+OBJDIR  = build/clang/$(BITS)bit/release
+@endif
+
+@ifdef WIN64
+  AS     = ml64
+  AFLAGS = -c -nologo -DDOSX -Zi -DWIN64
+@else
   AS     = ml
   AFLAGS = -c -nologo -DDOSX -Zi -coff
-
-  @ifdef DEBUG
-  TARGETS = ../lib/x86/wattcp_clang_d.lib ../lib/x86/wattcp_clang_imp_d.lib ../bin/watt-32d.dll
-  OBJDIR  = build/clang/32bit/debug
-  @else
-  TARGETS = ../lib/x86/wattcp_clang.lib ../lib/x86/wattcp_clang_imp.lib ../bin/watt-32.dll
-  OBJDIR  = build/clang/32bit/release
-  @endif
 @endif
 
 C_ARGS    = $(OBJDIR)/clang.arg
@@ -1001,52 +960,30 @@ all: $(C_ARGS) $(OBJDIR)/cflags.h $(OBJDIR)/cflagsbf.h $(TARGETS)
 #
 # Static library rules:
 #
-../lib/x86/wattcp_clang.lib: $(OBJS) $(LIB_ARGS)
-	$(AR) -machine:x86 -out:$@ @$(LIB_ARGS)
+../lib/$(CPU)/wattcp_clang_d.lib: $(OBJS) $(LIB_ARGS)
+	$(AR) -machine:$(CPU) -out:$@ @$(LIB_ARGS)
 
-../lib/x86/wattcp_clang_d.lib: $(OBJS) $(LIB_ARGS)
-	$(AR) -machine:x86 -out:$@ @$(LIB_ARGS)
-
-../lib/x64/wattcp_clang.lib: $(OBJS) $(LIB_ARGS)
-	$(AR) -machine:x64 -out:$@  @$(LIB_ARGS)
-
-../lib/x64/wattcp_clang_d.lib: $(OBJS) $(LIB_ARGS)
-	$(AR) -machine:x64 -out:$@  @$(LIB_ARGS)
+../lib/$(CPU)/wattcp_clang.lib: $(OBJS) $(LIB_ARGS)
+	$(AR) -machine:$(CPU) -out:$@  @$(LIB_ARGS)
 
 #
-# Import lib + DLL (release)
+# Import lib + DLLs (release, debug)
 #
-../lib/x86/wattcp_clang_imp.lib: ../bin/watt-32.dll
-../lib/x64/wattcp_clang_imp.lib: ../bin/watt-32_64.dll
+../lib/$(CPU)/wattcp_clang_imp.lib:   ../bin/watt-32$(SUFFIX).dll
+../lib/$(CPU)/wattcp_clang_imp_d.lib: ../bin/watt-32$(SUFFIX)d.dll
 
-../bin/watt-32.dll: $(OBJS) $(RESOURCE) $(LINK_ARGS)
-	link $(LDFLAGS) -machine:x86 -out:$@ -implib:../lib/x86/wattcp_clang_imp.lib @$(LINK_ARGS) > link.tmp
-	cat link.tmp >> ../bin/watt-32.map
-	rm -f ../lib/x86/wattcp_clang_imp.exp
+../bin/watt-32$(SUFFIX).dll: $(OBJS) $(RESOURCE) $(LINK_ARGS)
+	link $(LDFLAGS) -machine:$(CPU) -out:$@ -implib:../lib/$(CPU)/wattcp_clang_imp.lib @$(LINK_ARGS) > link.tmp
+	cat link.tmp >> ../bin/watt-32$(SUFFIX).map
+	rm -f ../lib/$(CPU)/wattcp_clang_imp.exp
 
-../bin/watt-32_64.dll: $(OBJS) $(RESOURCE) $(LINK_ARGS)
-	link $(LDFLAGS) -machine:x64 -out:$@ -implib:../lib/x64/wattcp_clang_imp.lib @$(LINK_ARGS) > link.tmp
-	cat link.tmp >> ../bin/watt-32_64.map
-	rm -f ../lib/x64/wattcp_clang_imp.exp
-
-#
-# Import lib + DLL (debug)
-#
-../lib/x86/wattcp_clang_imp_d.lib: ../bin/watt-32d.dll
-../lib/x64/wattcp_clang_imp_d.lib: ../bin/watt-32_64d.dll
-
-../bin/watt-32d.dll: $(OBJS) $(RESOURCE) $(LINK_ARGS)
-	link $(LDFLAGS) -machine:x86 -out:$@ -implib:../lib/x86/wattcp_clang_imp_d.lib @$(LINK_ARGS) > link.tmp
-	cat link.tmp >> ../bin/watt-32d.map
-	rm -f ../lib/x86/wattcp_clang_imp_d.exp
-
-../bin/watt-32_64d.dll: $(OBJS) $(RESOURCE)
-	link $(LDFLAGS) -machine:x64 -out:$@ -implib:../lib/x64/wattcp_clang_imp_d.lib @$(LINK_ARGS) > link.tmp
-	cat link.tmp >> ../bin/watt-32_64d.map
-	rm -f ../lib/x64/wattcp_clang_imp_d.exp
+../bin/watt-32$(SUFFIX)d.dll: $(OBJS) $(RESOURCE) $(LINK_ARGS)
+	link $(LDFLAGS) -machine:$(CPU) -out:$@ -implib:../lib/$(CPU)/wattcp_clang_imp_d.lib @$(LINK_ARGS) > link.tmp
+	cat link.tmp >> ../bin/watt-32$(SUFFIX)d.map
+	rm -f ../lib/$(CPU)/wattcp_clang_imp_d.exp
 
 clean:
-	- rm -f $(TARGETS) $(OBJDIR)/*.obj $(OBJDIR)/*.arg $(OBJDIR)/cflags.h $(OBJDIR)/cflagsbf.h $(RESOURCE) chksum0.lst cpumodel.lst
+	- rm -f $(TARGETS) $(OBJDIR)/*.obj $(OBJDIR)/*.arg $(OBJDIR)/cflags.h $(OBJDIR)/cflagsbf.h $(RESOURCE)
 	@echo Cleaning done
 
 $(OBJDIR)/%.obj: %.c
@@ -1098,7 +1035,7 @@ $(TARGET): $(OBJS)
 	$(AR) $(TARGET) @$(OBJDIR)/lib.arg
 
 clean:
-	rm -f $(OBJDIR)/*.obj $(OBJDIR)/*.arg $(OBJDIR)/cflags.h $(OBJDIR)/cflagsbf.h chksum0.lst cpumodel.lst $(TARGET) pkt_stub.h
+	rm -f $(TARGET) $(OBJDIR)/*.obj $(OBJDIR)/*.arg $(OBJDIR)/*.h chksum0.lst cpumodel.lst $(PKT_STUB)
 	@echo Cleaning done
 
 $(OBJDIR)/chksum0.obj: chksum0.asm
@@ -1183,9 +1120,9 @@ AFLAGS += -gstabs
 # If your gcc/ld/as bundled with the old-school MinGW is too old,
 # comment away the '-m32' + '--32' below.
 #
-CFLAGS  += -m32
-LDFLAGS += -m32
-AFLAGS  += --32
+CFLAGS  += -m$(BITS)
+LDFLAGS += -m$(BITS)
+AFLAGS  += --$(BITS)
 
 #
 # Just a test
@@ -1249,8 +1186,7 @@ else
   CFLAGS = -O0 -g2 -fgnu89-inline
 endif
 
-CFLAGS += -Wall -Wundef -Wno-strict-aliasing -I. -I../inc \
-          -DWATT32_BUILD -D_WIN32_WINNT=0x0601 -DWINVER=0x0601
+CFLAGS += -Wall -Wundef -Wno-strict-aliasing -I. -I../inc -DWATT32_BUILD -D_WIN32_WINNT=0x0601 -DWINVER=0x0601
 LDFLAGS = -shared -Wl,--enable-stdcall-fixup,--print-map,--sort-common,--cref
 
 #
@@ -1267,13 +1203,7 @@ LDFLAGS = -shared -Wl,--enable-stdcall-fixup,--print-map,--sort-common,--cref
 #
 # And the 'PATH' must have been setup to choose the correct 'gcc.exe'.
 #
-@ifdef WIN64
-  BITS    = 64
-  TARGETS = ../lib/x64/libwatt32.a ../lib/x64/libwatt32.dll.a ../bin/watt-32_64.dll
-@else
-  BITS    = 32
-  TARGETS = ../lib/x86/libwatt32.a ../lib/x86/libwatt32.dll.a ../bin/watt-32.dll
-@endif
+TARGETS = ../lib/$(CPU)/libwatt32.a ../lib/$(CPU)/libwatt32.dll.a ../bin/watt-32$(SUFFIX).dll
 
 OBJDIR   = build/MinGW64/$(BITS)bit
 CFLAGS  += -m$(BITS)
@@ -1295,20 +1225,13 @@ LINK_ARGS = $(OBJDIR)/ld.arg
 all: $(C_ARGS) $(OBJDIR)/cflags.h $(OBJDIR)/cflagsbf.h $(TARGETS)
 	@echo All done
 
-../lib/x86/libwatt32.a: $(OBJS) $(LIB_ARGS)
+../lib/$(CPU)/libwatt32.a: $(OBJS) $(LIB_ARGS)
 	$(AR) $@ @$(LIB_ARGS)
 
-../lib/x64/libwatt32.a: $(OBJS) $(LIB_ARGS)
-	$(AR) $@ @$(LIB_ARGS)
+../lib/$(CPU)/libwatt32.dll.a: ../bin/watt-32$(SUFFIX).dll
 
-../lib/x86/libwatt32.dll.a: ../bin/watt-32.dll
-../lib/x64/libwatt32.dll.a: ../bin/watt-32_64.dll
-
-../bin/watt-32.dll: $(OBJS) $(RESOURCE) $(LINK_ARGS)
-	$(CC) $(LDFLAGS) -Wl,--out-implib,../lib/x86/libwatt32.dll.a -o $@ @$(LINK_ARGS) > ../bin/watt-32.map
-
-../bin/watt-32_64.dll: $(OBJS) $(RESOURCE) $(LINK_ARGS)
-	$(CC) $(LDFLAGS) -Wl,--out-implib,../lib/x64/libwatt32.dll.a -o $@ @$(LINK_ARGS) > ../bin/watt-32_64.map
+../bin/watt-32$(SUFFIX).dll: $(OBJS) $(RESOURCE) $(LINK_ARGS)
+	$(CC) $(LDFLAGS) -Wl,--out-implib,../lib/$(CPU)/libwatt32.dll.a -o $@ @$(LINK_ARGS) > ../bin/watt-32$(SUFFIX).map
 
 $(OBJDIR)/chksum0.o:  chksum0.S
 $(OBJDIR)/cpumodel.o: cpumodel.S
@@ -1328,21 +1251,23 @@ clean:
 
 ########################################################################
 
-@elifdef CYGWIN32
+@elifdef CYGWIN32 CYGWIN64
 
 CC       = gcc
-CFLAGS   = -O2 -g -Wall -mthreads -fno-strict-aliasing -static-libgcc -I. -I../inc -DWATT32_BUILD
-LDFLAGS  = -shared -static-libgcc
+CFLAGS   = -m$(BITS) -O2 -g -Wall -mthreads -fno-strict-aliasing -static-libgcc -I. -I../inc -DWATT32_BUILD
+LDFLAGS  = -m$(BITS) -shared -static-libgcc
 AS       = as
+AFLAGS   = --$(BITS) -ahls
+
 AR       = ar rs
-TARGETS  = ../lib/x86/libwatt32-cygwin.a ../lib/x86/libwatt32-cygwin.dll.a ../bin/watt-32.dll
-OBJDIR   = ./build/CygWin/32bit
+TARGETS  = ../lib/(CPU)/libwatt32-cygwin.a ../lib/$(CPU)/libwatt32-cygwin.dll.a ../bin/watt-32$(SUFFIX).dll
+OBJDIR   = ./build/CygWin/$(BITS)bit
 RESOURCE = $(OBJDIR)/watt-32.res
 
-#
-# This seems to require NewLib which I've not tested.
-# CFLAGS += -D_REENT_ONLY
-#
+ifeq ($(CPU),x86)
+  LDFLAGS += -Wl,--enable-stdcall-fixup
+endif
+
 OBJS := $(subst \,/,$(OBJS))
 OBJS := $(subst .obj,.o,$(OBJS))
 
@@ -1353,13 +1278,13 @@ LINK_ARGS = $(OBJDIR)/ld.arg
 all: $(C_ARGS) $(OBJDIR)/cflags.h $(OBJDIR)/cflagsbf.h $(TARGETS)
 	@echo All done
 
-../lib/x86/libwatt32-cygwin.a: $(OBJS) $(LIB_ARGS)
+../lib/$(CPU)/libwatt32-cygwin.a: $(OBJS) $(LIB_ARGS)
 	$(AR) $@ @$(LIB_ARGS)
 
-../lib/x86/libwatt32-cygwin.dll.a: ../bin/watt-32.dll
+../lib/(CPU)/libwatt32-cygwin.dll.a: ../bin/watt-32.dll
 
 ../bin/watt-32.dll: $(OBJS) $(RESOURCE) $(LINK_ARGS)
-	$(CC) $(LDFLAGS) -Wl,--enable-stdcall-fixup,--out-implib,../lib/x86/libwatt32-cygwin.dll.a -o $@ @$(LINK_ARGS)
+	$(CC) $(LDFLAGS) -Wl,--out-implib,../lib/(CPU)/libwatt32-cygwin.dll.a -o $@ @$(LINK_ARGS)
 
 $(OBJDIR)/chksum0.o:  chksum0.S
 $(OBJDIR)/cpumodel.o: cpumodel.S
@@ -1379,85 +1304,23 @@ clean:
 
 ########################################################################
 
-@elifdef CYGWIN64
-
-CC       = gcc
-CFLAGS   = -m64 -O2 -g -Wall -mthreads -fno-strict-aliasing -static-libgcc -I. -I../inc \
-           -DWATT32_BUILD
-LDFLAGS += -m64 -shared -static-libgcc
-AS       = as
-AFLAGS   = --64 -ahls
-AR       = ar rs
-
-TARGETS  = ../lib/x64/libwatt32-cygwin.a ../lib/x64/libwatt32-cygwin.dll.a ../bin/watt-32_64.dll
-OBJDIR   = ./build/CygWin/64bit
-RESOURCE = $(OBJDIR)/watt-32.res
-
-OBJS := $(subst \,/,$(OBJS))
-OBJS := $(subst .obj,.o,$(OBJS))
-
-C_ARGS    = $(OBJDIR)/gcc.arg
-LIB_ARGS  = $(OBJDIR)/ar.arg
-LINK_ARGS = $(OBJDIR)/ld.arg
-
-all: $(C_ARGS) $(OBJDIR)/cflags.h $(OBJDIR)/cflagsbf.h $(TARGETS)
-	@echo All done
-
-../lib/x64/libwatt32-cygwin.a: $(OBJS) $(LIB_ARGS)
-	$(AR) $@ @$(LIB_ARGS)
-
-../lib/x64/libwatt32-cygwin.dll.a: ../bin/watt-32_64.dll
-
-../bin/watt-32_64.dll: $(OBJS) $(RESOURCE) $(LINK_ARGS)
-	$(CC) $(LDFLAGS) -Wl,--out-implib,../lib/x64/libwatt32-cygwin.dll.a -o $@ @$(LINK_ARGS)
-
-$(OBJDIR)/chksum0.o:  chksum0.S
-$(OBJDIR)/cpumodel.o: cpumodel.S
-
-$(OBJDIR)/%.o: %.c
-	$(CC) -c @$(C_ARGS) -o $@ $<
-
-$(OBJDIR)/%.i: %.c
-	$(CC) -E -c @$(C_ARGS) -o $@ $<
-
-$(OBJDIR)/%.o: %.S
-	$(CC) -E @$(C_ARGS) $< > $(OBJDIR)/$*.iS
-	$(AS) $(AFLAGS) $(OBJDIR)/$*.iS -o $@ > $*.lst
-
-clean:
-	rm -f $(TARGETS) $(OBJDIR)/*.o $(OBJDIR)/*.iS $(OBJDIR)/*.arg $(RESOURCE) $(OBJDIR)/cflags.h $(OBJDIR)/cflagsbf.h
-	@echo Cleaning done
-
--include $(OBJDIR)/watt32.dep
-
-########################################################################
-
 @elifdef PELLESC
 
-@ifndef WIN32 WIN64
-!error The only possible target for PELLESC is WIN32 or WIN64
-@endif
+CFLAGS  = -T$(CPU)-coff
+LDFLAGS = -machine:$(CPU)
 
 @ifdef WIN64
-CFLAGS  = -Tx64-coff -DWIN32
-LDFLAGS = -machine:x64
 AS      = ml64
 AFLAGS  = -DDOSX -DWIN64
-TARGETS = ..\lib\x64\wattcppo.lib ..\lib\x64\wattcppo_imp.lib ..\bin\watt-32_64.dll
 WINLIB  = $(PELLESC)\lib\Win64
-OBJDIR  = build\pellesc\64bit
-MAKEFIL = pellesc_64.mak
-
 @else
-CFLAGS  = -Tx86-coff
-LDFLAGS = -machine:x86
 AS      = ml
 AFLAGS  = -DDOSX -DWIN32 -coff
-TARGETS = ..\lib\x86\wattcppo.lib ..\lib\x86\wattcppo_imp.lib ..\bin\watt-32.dll
 WINLIB  = $(PELLESC)\lib\Win
-OBJDIR  = build\pellesc\32bit
-MAKEFIL = pellesc.mak
 @endif
+
+MAKEFIL = pellesc_$(BITS).mak
+OBJDIR  = build\pellesc\$(BITS)bit
 
 CC      = pocc
 CFLAGS  = $(CFLAGS) -DWATT32_BUILD -MT -X -Ox -Ob1 -Ze -Zi -W1 -Go \
@@ -1465,41 +1328,26 @@ CFLAGS  = $(CFLAGS) -DWATT32_BUILD -MT -X -Ox -Ob1 -Ze -Zi -W1 -Go \
 
 AFLAGS  = -c -nologo -Zi $(AFLAGS)
 
-# AS      = poasm
-# AFLAGS  = -DDOSX -Zd
+TARGETS = ..\lib\$(CPU)\wattcppo.lib ..\lib\$(CPU)\wattcppo_imp.lib ..\bin\watt-32$(SUFFIX).dll
 
 RESOURCE = $(OBJDIR)\watt-32.res
-
-LDFLAGS =  $(LDFLAGS) -dll -map -libpath:$(PELLESC)\lib -libpath:$(WINLIB) \
-          -subsystem:console -debug -verbose
-
-EX_LIBS = user32.lib kernel32.lib advapi32.lib
+LDFLAGS  = $(LDFLAGS) -dll -map -libpath:$(PELLESC)\lib -libpath:$(WINLIB) -subsystem:console -debug -verbose
+EX_LIBS  = user32.lib kernel32.lib advapi32.lib
 
 all: $(OBJDIR)\cflagsbf.h $(TARGETS)
 	@echo All done
 
-..\lib\x86\wattcppo.lib: $(OBJS)
+..\lib\$(CPU)\wattcppo.lib: $(OBJS)
 	polib -out:$@ $**
 
-..\lib\x64\wattcppo.lib: $(OBJS)
-	polib -out:$@ $**
-
-..\bin\watt-32.dll ..\lib\x86\wattcppo_imp.lib: $(OBJS) $(RESOURCE)
-	polink $(LDFLAGS) -out:..\bin\watt-32.dll -implib:..\lib\x86\wattcppo_imp.lib \
+..\bin\watt-32$(SUFFIX).dll ..\lib\$(CPU)\wattcppo_imp.lib: $(OBJS) $(RESOURCE)
+	polink $(LDFLAGS) -out:..\bin\watt-32$(SUFFIX).dll -implib:..\lib\$(CPU)\wattcppo_imp.lib \
            $** $(EX_LIBS) > link.tmp
-	type link.tmp >> ..\bin\watt-32.map
-
-..\bin\watt-32_64.dll ..\lib\x64\wattcppo_imp.lib: $(OBJS) $(RESOURCE)
-	polink $(LDFLAGS) -out:..\bin\watt-32_64.dll -implib:..\lib\x64\wattcppo_imp.lib \
-           $** $(EX_LIBS) > link.tmp
-	type link.tmp >> ..\bin\watt-32_64.map
+	type link.tmp >> ..\bin\watt-32$(SUFFIX).map
 
 clean:
-	- @del $(TARGETS)
-	- @del $(RESOURCE)
-	- @del $(OBJDIR)\*.obj
-	- @del $(OBJDIR)\*.lst
-	- @del $(OBJDIR)\cflagsbf.h
+	- @del $(TARGETS) $(RESOURCE)
+	- @del $(OBJDIR)\*.obj $(OBJDIR)\*.lst $(OBJDIR)\cflagsbf.h
 	@echo Cleaning done
 
 $(OBJDIR)\chksum0.obj:  chksum0.asm
@@ -1538,9 +1386,6 @@ lang.c: lang.l
     $(file > $(1))
     $(foreach f, $(2), $(file >> $(1),$(strip $(f))) )
   endef
-
-# $(C_ARGS): $(MAKEFILE_LIST)
-# 	@echo '$(CFLAGS)' > $@
 
 $(C_ARGS): $(MAKEFILE_LIST)
 	$(call create_response_file, $@, $(CFLAGS))
@@ -1603,7 +1448,6 @@ $(PKT_STUB): asmpkt.nas
 	$(%W32_BIN2C) asmpkt.bin > $@
 
 @else
-
 $(PKT_STUB): asmpkt.nas
 	$(W32_NASM) -f bin -l asmpkt.lst -o asmpkt.bin asmpkt.nas
 	$(W32_BIN2C) asmpkt.bin > $@
@@ -1702,16 +1546,16 @@ build\pellesc\32bit\cflagsbf.h:
 build\pellesc\64bit\cflagsbf.h:
 	echo $(CFLAGS) | $(W32_BIN2C)            - > build\pellesc\64bit\cflagsbf.h
 
-build\visualc\32bit\release\cflagsbf.h: # $(C_ARGS)
+build\visualc\32bit\release\cflagsbf.h:
 	- echo $(CFLAGS) | $(W32_BIN2C)          - > build\visualc\32bit\release\cflagsbf.h
 
-build\visualc\32bit\debug\cflagsbf.h: # $(C_ARGS)
+build\visualc\32bit\debug\cflagsbf.h:
 	- echo $(CFLAGS) | $(W32_BIN2C)          - > build\visualc\32bit\debug\cflagsbf.h
 
-build\visualc\64bit\release\cflagsbf.h: $(C_ARGS)
+build\visualc\64bit\release\cflagsbf.h:
 	- echo $(CFLAGS) | $(W32_BIN2C)          - > build\visualc\64bit\release\cflagsbf.h
 
-build\visualc\64bit\debug\cflagsbf.h: # $(C_ARGS)
+build\visualc\64bit\debug\cflagsbf.h:
 	- echo $(CFLAGS) | $(W32_BIN2C)          - > build\visualc\64bit\debug\cflagsbf.h
 
 @ifdef HIGHC DJGPP MINGW32 MINGW64 CYGWIN32 CYGWIN64
@@ -1735,9 +1579,8 @@ build/MinGW64/64bit/cflagsbf.h:
 
 build/highc/cflagsbf.h:
 	echo "$(CFLAGS)" | $(W32_BIN2C_)         - > build/highc/cflagsbf.h
-@endif
 
-@ifdef WATCOM
+@elifdef WATCOM
 build\watcom\small\cflagsbf.h: $(C_ARGS)
 	$(%W32_BIN2C) $(C_ARGS)                    > build\watcom\small\cflagsbf.h
 
@@ -1759,17 +1602,12 @@ build/clang/32bit/debug/cflagsbf.h   \
 build/clang/64bit/release/cflagsbf.h \
 build/clang/64bit/debug/cflagsbf.h:
 	$(W32_BIN2C_) $(C_ARGS) > $@
-
-@elifdef DJGPP MINGW32 MINGW64 CYGWIN32 CYGWIN64
-
-DEP_REPLACE = sed -e 's/\(.*\)\.o: /\n$$(OBJDIR)\/\1.o: /'
-
-@ifdef CYGWIN32 CYGWIN64
-  #
-  # Change the 'f:' drive letter for your CygWin installation:
-  #
-  DEP_REPLACE += -e 's@/cygdrive/f@f:@'
 @endif
+
+@ifdef HIGHC DJGPP MINGW32 MINGW64 CLANG CYGWIN32 CYGWIN64 CLANG
+
+DEP_REPLACE = sed -e 's/\(.*\)\.o: /\n$$(OBJDIR)\/\1.o: /' \
+                  -e 's@/cygdrive/@:@'
 
 DEP_FILE = $(OBJDIR)/watt-32.dep
 
