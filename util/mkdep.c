@@ -118,7 +118,7 @@ int main (int argc, char **argv)
       while (isspace(*cp1))
             cp1++;
 
-      if (*cp1 != '#' || ++cp1 == '\0')
+      if (*cp1++ != '#' || *cp1 == '\0')
          continue;
 
       while (isspace(*cp1))
@@ -150,7 +150,7 @@ int main (int argc, char **argv)
       if (!rvalue)  /* processing left side of dependency */
       {
         if (c_file)
-             printf ("%s%.*s%s: %s", obj_prefix, dot-fname, fname, obj_suffix, fname);
+             printf ("%s%.*s%s: %s", obj_prefix, (int)(dot-fname), fname, obj_suffix, fname);
         else printf ("%s:", fname);
         rvalue = 1;
       }
@@ -158,7 +158,7 @@ int main (int argc, char **argv)
       /* now print the right side */
       *cp1 = '\0';
       if (slash && c_file)
-           printf (" %.*s%s", slash-fname, fname, cp);
+           printf (" %.*s%s", (int)(slash-fname), fname, cp);
       else printf (" %s", cp);
 
 #if 0

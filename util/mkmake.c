@@ -100,7 +100,7 @@ void process_makefile (const char *infname, const char *outfname)
          p[len-1] = '&';
     }
     if (p > buf)
-      fprintf (out, "%*s", p-buf, " ");
+      fprintf (out, "%*s", (int)(p-buf), " ");
     fputs (p, out);
   }
   if (out != stdout)
