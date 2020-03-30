@@ -49,7 +49,7 @@ char buffer[513];
 
 long localdiskspace (void)
 {
-#ifdef _WIN32
+#if defined(_WIN32) || defined(__CYGWIN__)
   ULARGE_INTEGER free;
   GetDiskFreeSpaceEx ("\\", &free, NULL, NULL);
   return (long) free.LowPart;  /* very crude */
