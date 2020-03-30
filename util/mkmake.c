@@ -94,7 +94,7 @@ void process_makefile (const char *infname, const char *outfname)
     {
       unsigned int len = strlen (p);
 
-      while (len > 0 && isspace(p[len-1]))
+      while (len > 0 && (p[len-1] == '\n' || p[len-1] == '\r'))
          len--;
       if (len > 0 && p[len-1] == '\\')
          p[len-1] = '&';
