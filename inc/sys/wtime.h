@@ -82,6 +82,8 @@
 
   #if !defined(__MINGW32__)   /* Added in MinGW 3.1 */
     W32_FUNC int W32_CALL gettimeofday (struct timeval *, struct timezone *);
+  #else
+    W32_FUNC int W32_CALL _w32_gettimeofday (struct timeval *, struct timezone *);
   #endif
 
   __END_DECLS
