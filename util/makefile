@@ -5,6 +5,11 @@
 #  DOS versions:   Requires djgpp2 + SLang 1.3+ library installed.
 #  Win32 versions: Requires MinGW + Slang 1.3+ installed.
 #  Linux versions: Requires gcc + Slang 1.3+ installed.
+#
+#  Setup notes:
+#    Review and setup SLANG_ROOT_.... to point to location
+#    where your Slang version is installed
+#
 
 .SUFFIXES: .exe .l .y
 
@@ -18,10 +23,6 @@ SLANG_ROOT_WIN   ?= $(realpath $(MINGW32))/src/TUI/Slang
 SLANG_LIB_WIN    ?= $(SLANG_ROOT_WIN)/src/gw32objs/libslang.a
 SLANG_LIB_WIN_CL ?= $(SLANG_ROOT_WIN)/src/mw32objs/wslang32.lib
 
-#
-# Cross-compiling Watt-32 on Linux using '../src/configur.sh'.
-# We assume S-Lang for Linux is installed in the correct place.
-#
 SLANG_ROOT_LINUX ?=
 SLANG_LIB_LINUX  ?= $(SLANG_ROOT_LINUX)/src/objs/libslang.a
 
