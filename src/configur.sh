@@ -113,7 +113,7 @@ gen_mingw32 ()
 
 gen_mingw64 ()
 {
-  echo "Generating MinGW64-w64 makefile, directory, errnos and dependencies"
+  echo "Generating MinGW64-w64 makefiles, directory, errnos and dependencies"
   ../util/linux/mkmake -o MinGW64_32.mak -d build/MinGW64/32bit makefile.all MINGW64 WIN32
   ../util/linux/mkmake -o MinGW64_64.mak -d build/MinGW64/64bit makefile.all MINGW64 WIN64
   ../util/linux/mkdep -s.o -p\$\(OBJDIR\)32bit/ *.c *.h > build/MinGW64/32bit/watt32.dep

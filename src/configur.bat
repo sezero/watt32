@@ -209,7 +209,7 @@ goto next
 ::--------------------------------------------------------------------------
 :mingw64
 ::
-echo Generating MinGW64-w64 makefile, directory, errnos and dependencies
+echo Generating MinGW64-w64 makefiles, directory, errnos and dependencies
 %MKMAKE% -o MinGW64_32.mak             -d build\MinGW64\32bit makefile.all MINGW64 WIN32
 %MKMAKE% -o MinGW64_64.mak             -d build\MinGW64\64bit makefile.all MINGW64 WIN64
 %MKDEP%  -s.o -p$(OBJDIR)/32bit/ *.c *.h > build\MinGW64\32bit\watt32.dep
@@ -255,7 +255,7 @@ goto next
 ::--------------------------------------------------------------------------
 :pellesc
 ::
-echo Generating PellesC makefile, directory, errnos and dependencies
+echo Generating PellesC makefiles, directory, errnos and dependencies
 %MKMAKE% -o pellesc_32.mak -d build\pellesc\32bit makefile.all PELLESC WIN32
 %MKMAKE% -o pellesc_64.mak -d build\pellesc\64bit makefile.all PELLESC WIN64
 %MKDEP%  -s.obj -p$(OBJDIR)\ *.c *.h   > build\pellesc\watt32.dep
@@ -288,7 +288,7 @@ goto next
 ::--------------------------------------------------------------------------
 :clang
 ::
-echo Generating CLang-Win32 makefile, directory, errnos and dependencies
+echo Generating CLang-Win32 makefiles, directory, errnos and dependencies
 %MKMAKE% -o clang-release_32.mak -d build\clang\32bit\release makefile.all CLANG WIN32 RELEASE
 %MKMAKE% -o clang-release_64.mak -d build\clang\64bit\release makefile.all CLANG WIN64 RELEASE
 %MKMAKE% -o clang-debug_32.mak   -d build\clang\32bit\debug   makefile.all CLANG WIN32 DEBUG
