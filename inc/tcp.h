@@ -1,5 +1,6 @@
-/*!\file inc/tcp.h
- * Watt-32 public API.
+/**\file inc/tcp.h
+ *
+ * \brief Watt-32 public API.
  */
 
 /*
@@ -423,9 +424,9 @@ W32_FUNC int W32_CALL _ip_delay2 (sock_type *s, int sec, UserHandler fn, int *st
            }                                          \
         } while (0)
 
-#define sock_wait_closed(s,seconds,fn,statusptr)      \
+#define sock_wait_closed(s, seconds, fn, statusptr)   \
         do {                                          \
-           if (_ip_delay2(s,seconds,fn,statusptr))    \
+           if (_ip_delay2(s, seconds, fn, statusptr)) \
               goto sock_err;                          \
         } while (0)
 
@@ -435,7 +436,7 @@ W32_FUNC int W32_CALL _ip_delay2 (sock_type *s, int sec, UserHandler fn, int *st
 W32_DATA void (W32_CALL *usr_init) (const char *keyword, const char *value);
 W32_DATA void (W32_CALL *usr_post_init) (void);
 
-/*!
+/**
  * Convert 'arg_func' below to this type.
  */
 enum config_tab_types {
@@ -606,7 +607,7 @@ struct watt_sockaddr {     /* for _getpeername, _getsockname */
        BYTE   s_spares[6]; /* unused */
      };
 
-enum CHK_SOCKET_VAL {   /* ret-vals from _chk_socket() */
+enum CHK_SOCKET_VAL {      /* ret-vals from _chk_socket() */
      VALID_UDP = 1,
      VALID_TCP,
      VALID_IP4,
@@ -763,13 +764,13 @@ W32_FUNC int W32_CALL watt_getopt (int argc, char *const *argv, const char *opt_
   W32_FUNC int W32_CALL _w_watt_getopt (int argc, wchar_t *const *argv, const wchar_t *opt_str);
 
   #if (defined(UNICODE) || defined(_UNICODE)) && !defined(_tgetopt)
-    #define _toptarg          _w_watt_optarg
-    #define _toptswchar       _w_watt_optswchar
-    #define _tgetopt(c,a,o)   _w_watt_getopt (c,a,o)
+    #define _toptarg           _w_watt_optarg
+    #define _toptswchar        _w_watt_optswchar
+    #define _tgetopt(c, a, o)  _w_watt_getopt (c, a, o)
   #else
-    #define _toptarg          watt_optarg
-    #define _toptswchar       watt_optswchar
-    #define _tgetopt(c,a,o)   watt_getopt(c,a,o)
+    #define _toptarg           watt_optarg
+    #define _toptswchar        watt_optswchar
+    #define _tgetopt(c, a, o)  watt_getopt (c, a, o)
   #endif
 #endif
 
