@@ -1,4 +1,3 @@
-/* -*- Mode: C; indent-tabs-mode: t; c-basic-offset: 2; tab-width: 2 -*- */
 /* GeoIP.c
  *
  * Copyright (C) 2006 MaxMind LLC
@@ -1950,7 +1949,7 @@ static char *_get_name (GeoIP * gi, unsigned long ipnum)
     }
     else
     {
-      org_buf = strdup (buf_pointer);
+      org_buf = strdup (buf);
     }
   }
   else
@@ -1970,11 +1969,9 @@ static char *_get_name (GeoIP * gi, unsigned long ipnum)
 
 char *_get_name_v6 (GeoIP * gi, geoipv6_t ipnum)
 {
-  int seek_org;
-  char buf[MAX_ORG_RECORD_LENGTH];
+  int   seek_org, record_pointer;
+  char  buf [MAX_ORG_RECORD_LENGTH];
   char *org_buf, *buf_pointer;
-  int record_pointer;
-  size_t len;
 
   if (gi->databaseType != GEOIP_ORG_EDITION_V6 &&
       gi->databaseType != GEOIP_ISP_EDITION_V6 &&
@@ -2004,9 +2001,7 @@ char *_get_name_v6 (GeoIP * gi, geoipv6_t ipnum)
     }
     else
     {
-      len = strlen (buf) + 1;
-      org_buf = malloc (len);
-      strncpy (org_buf, buf, len);
+      org_buf = strdup (buf);
     }
   }
   else
@@ -2018,9 +2013,7 @@ char *_get_name_v6 (GeoIP * gi, geoipv6_t ipnum)
     }
     else
     {
-      len = strlen (buf_pointer) + 1;
-      org_buf = malloc (len);
-      strncpy (org_buf, buf_pointer, len);
+      org_buf = strdup (buf_pointer);
     }
   }
   return org_buf;
