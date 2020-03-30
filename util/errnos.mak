@@ -46,10 +46,10 @@ tcc_err.exe: errnos.c
 	tcc -I..\inc -ml -etcc_err.exe errnos.c
 
 wc_err.exe: errnos.c
-	wcl -I..\inc -ml -zq -fe=wc_err.exe -fr=nul errnos.c
+	wcl -bcl=dos -I"../inc" -I"$(%WATCOM)/h" -ml -zq -fe=wc_err.exe -fr=nul errnos.c
 
 win32/wc_err.exe: errnos.c
-	wcl386 -I..\inc -mf -zq -fe=win32/wc_err.exe -fr=nul errnos.c
+	wcl386 -bcl=nt -I"../inc" -I"$(%WATCOM)/h" -I"$(%WATCOM)/h/nt" -mf -zq -fe=win32/wc_err.exe -fr=nul errnos.c
 
 hc_err.exe: errnos.c
 	hc386 -I..\inc -Hldopt=-nomap -Hnocopyr -o hc_err.exe errnos.c
