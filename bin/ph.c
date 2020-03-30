@@ -67,7 +67,16 @@
 static tcp_Socket  phsock;
 static char        buffer[515];
 
-static int ph (char *cmd, DWORD host)
+const char *my_fgets (char *buf, size_t sz)
+{
+  const char *rc = fgets (buf, sz, stdin);
+
+  if (!rc || !*rc || *rc == '\n')
+     return (NULL);
+  return (rc);
+}
+
+static int ph (const char *cmd, DWORD host)
 {
   tcp_Socket *s;
   int status;
@@ -126,23 +135,25 @@ sock_err:
 
 int MS_CDECL main (int argc, char **argv)
 {
-  char *cmd, *server;
+  const char *cmd, *server;
   char  lcmd[255];
   DWORD host;
   int   status;
 
-  if ((argc < 2) || (argc > 3))
+  if (argc < 2 || argc > 3)
   {
-    puts("Usage: PH server [request]");
+    puts ("Usage: PH server [request]");
     return 3;
   }
 
+  dbug_init();
   sock_init();
-  server = cmd = NULL;
+  cmd = NULL;
   server = argv[1];
 
-  if ((host = resolve(server)) != 0)
-     printf(" Server  : `%s'\n\n", server);
+  host = resolve (server);
+  if (host != 0)
+     printf (" Server  : `%s'\n\n", server);
   else
   {
     printf ("Could not resolve host `%s'\n", server);
@@ -152,17 +163,17 @@ int MS_CDECL main (int argc, char **argv)
   if (argc == 3)
   {
     cmd = argv[2];
-    status = ph (cmd,host);
+    status = ph (cmd, host);
   }
   else
   {
     while (1)
     {
-      printf(" Request : ");
-      gets (cmd = lcmd);
-      if (!*cmd)
+      printf (" Request : ");
+      cmd = my_fgets (lcmd, sizeof(lcmd));
+      if (!cmd)
       {
-        puts(" No command given\n");
+        puts (" No command given\n");
         return 2;
       }
       if (*cmd == '?')
@@ -171,12 +182,12 @@ int MS_CDECL main (int argc, char **argv)
               " quit | stop | exit");
         continue;
       }
-      status = ph (cmd,host);
+      status = ph (cmd, host);
       if (!strnicmp(cmd,"quit",4) ||
           !strnicmp(cmd,"stop",4) ||
           !strnicmp(cmd,"exit",4))
          break;
     }
   }
-  return status;
+  return (status);
 }
