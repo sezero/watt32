@@ -24,6 +24,15 @@
  *         no response, etc.)
  *     3 - unable to reach it - local host or first router is down
  *
+ * This works as of March 2020:
+ *  e:\net\watt\bin> daytime.exe -d utcnist2.colorado.edu
+ *  Resolving utcnist2.colorado.edu...128.138.141.172
+ *  connected
+ *
+ * 58938 20-03-30 12:49:57 50 0 0   0.0 UTC(NIST) *
+ *
+ * A list of servers:
+ *   https://tf.nist.gov/tf-cgi/servers.cgi
  */
 
 #include <stdio.h>
@@ -33,8 +42,8 @@
 
 #define DAYTIME_PORT 13
 
-#if !defined(__SMALL__) || defined(DOS386) /* 32-bit dmc defines __SMALL__ */
-  #define TCP_DAYTIME  /* no choice; use UDP */
+#if !defined(__SMALL__) || defined(DOS386)  /* 32-bit dmc defines __SMALL__ */
+  #define TCP_DAYTIME                       /* no choice; use UDP */
 #endif
 
 #if defined(__GNUC__)
@@ -60,7 +69,7 @@ int daytime (DWORD host, int use_udp)
 #ifdef TCP_DAYTIME
   else
   {
-    if (!tcp_open(s,0,host,DAYTIME_PORT,NULL))
+    if (!tcp_open(s, 0, host, DAYTIME_PORT, NULL))
     {
       outs ("Sorry, unable to connect to that machine right now!\n");
       return (3);

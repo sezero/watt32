@@ -23,7 +23,7 @@ SLANG_LIB_WIN_CL ?= $(SLANG_ROOT_WIN)/src/mw32objs/wslang32.lib
 # We assume S-Lang for Linux is installed in the correct place.
 #
 SLANG_ROOT_LINUX ?=
-SLANG_LIB_LINUX  ?= -lslang
+SLANG_LIB_LINUX  ?= $(SLANG_ROOT_LINUX)/src/objs/libslang.a
 
 CC     = gcc
 CFLAGS = -Wall -g -save-temps # -s
@@ -80,7 +80,7 @@ msvc/mkmake.exe: mkmake.c
 # Linux binaries:
 #
 linux/mkmake: mkmake.c
-	$(CC) $(CFLAGS) -o $@ $^ $(SLANG_LIB_LINUX)
+	$(CC) $(CFLAGS) -I$(SLANG_ROOT_LINUX)/src -o $@ $^ $(SLANG_LIB_LINUX)
 
 linux/mkdep: mkdep.c
 	$(CC) $(CFLAGS) -o $@ $^
@@ -93,7 +93,7 @@ linux/bin2c: bin2c.c
 
 clean:
 	@rm -f *.o mk*.exe dxegen.exe bin2c.exe \
-               win32/mk*.exe win32/bin2.exe \
-               linux/mk*.exe linux/bin2.exe \
+               win32/mk*.exe win32/bin2c.exe \
+               linux/mk* linux/bin2c \
                mkimp.c mkimp_gr.c
 

@@ -63,7 +63,8 @@ int exec (const char *hostname, WORD port, const char *name, char *pass, const c
   srand ((unsigned int)time(NULL));
   lport = (rand() & 512) + 512;       /* return 511 < port < 1024 */
 
-  if ((host = lookup_host(hostname,NULL)) == 0)
+  host = lookup_host (hostname, NULL);
+  if (host == 0)
   {
     printf ("%s", dom_strerror(dom_errno));
     return (2);

@@ -1,35 +1,43 @@
 #
 #  GNU Makefile for some Waterloo TCP sample applications
-#  Gisle Vanem 2004
+#  Gisle Vanem 2004 - 2020.
 #
 #  Target:
-#    GNU C 3+ (CygWin, 32-bit)
+#    CygWin, 32-bit or 64-bit selectable by 'CPU=[x86|x64]'.
 #
+# If '$(CPU)=x64', build 64-bit programs. Otherwise 32-bit programs.
+#
+ifeq ($(CPU),)
+  CPU = x86
+endif
 
 #
-# Set to 1 to link using static ../lib/x86/libwatt32-cygwin.a
+# GNU-make is case-sensitive
+#
+ifeq ($(CPU),X64)
+  CPU = x64
+endif
+
+#
+# Set to 1 to link using static ../lib/$(CPU)/libwatt32-cygwin.a
 #
 STATIC_LIB = 0
 
-#
-# Define 'MAKE_MAP = 1' if you like a .map-file
-#
-MAKE_MAP = 0
-
 CC      = gcc
-CFLAGS  = -g -Wall -W -O2 -I../inc
-CFLAGS  += -DWATT32 -I../inc
+CFLAGS  = -g -Wall -W -O2 -I../inc -DWATT32 -I../inc
+
+ifeq ($(CPU),x64)
+  CFLAGS += -m64
+else
+  CFLAGS += -m32
+endif
 
 ifeq ($(STATIC_LIB),1)
   CFLAGS  += -DWATT32_STATIC
   LDFLAGS += -Wl,--enable-stdcall-fixup
-  WATT_LIB = ../lib/x86/libwatt32-cygwin.a
+  WATT_LIB = ../lib/$(CPU)/libwatt32-cygwin.a
 else
-  WATT_LIB = ../lib/x86/libwatt32-cygwin.dll.a
-endif
-
-ifeq ($(MAKE_MAP),1)
-  MAPFILE = -Wl,--print-map,--sort-common,--cref > $*.map
+  WATT_LIB = ../lib/$(CPU)/libwatt32-cygwin.dll.a
 endif
 
 PROGS = ping.exe     popdump.exe  rexec.exe   tcpinfo.exe  cookie.exe   \

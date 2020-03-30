@@ -35,6 +35,8 @@
  *
  */
 
+#define _SYS_SELECT_H        /* For CygWin's <sys/select.h> */
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <assert.h>
@@ -764,7 +766,7 @@ static void setup_info_get (void)
 
   for (num = 0; rc == ERROR_SUCCESS; num++)
   {
-    char  sub_key [512];  /* Full key name for this leaf */
+    char  sub_key [700];  /* Full key name for this leaf */
     char  new_key [512];  /* The current leaf we're at now */
     DWORD size = sizeof(new_key);
 
@@ -3657,6 +3659,12 @@ static void print_mib_ipnet_row2 (DWORD index, const MIB_IPNET_ROW2 *row)
 }
 
 /*
+ * Problem with pulling in 'struct hostent' on CygWin.
+ */
+#if defined(__CYGWIN__)
+  #define print_blob(blob)
+#else
+/*
  * Example rewritten from:
  *  https://www.winsocketdotnetworkprogramming.com/winsock2programming/winsock2advancednsrnr8d.html
  */
@@ -3707,6 +3715,7 @@ static void print_blob (const BLOB *blob)
   for (i = 0; hp->h_aliases[i] ;i++)
       (*_printf) ("  Alias: %s\n", hp->h_aliases[i]);
 }
+#endif  /* __CYGWIN__ */
 
 /*
  * From Windows' SDK <SvcGuid.h>:

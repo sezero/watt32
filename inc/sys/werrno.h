@@ -35,15 +35,24 @@
 #undef ELOOP
 #endif
 
-/*
- * Just a C preprocess test using TDM-gcc with djgpp headers.
- */
-#if defined(WATT32_DJGPP_MINGW)
+#if defined(__CYGWIN__)
+ /*
+  * Since CygWin's <sys/errno.h> provides all the errno-values
+  * we need, there is no need to use 'util/errnos.c' to create new
+  * ones for CygWin. Simply pull in '<sys/errno.h>'. Done by
+  * '#include_next <sys/errno.h>' in our '<sys/errno.h>'.
+  */
+
+#elif defined(WATT32_DJGPP_MINGW)
+  /*
+   * Just a C preprocess test using TDM-gcc with djgpp headers.
+   */
   #ifndef __DJGPP__
   #define __DJGPP__ 2
   #endif
   #include <sys/djgpp.err>
 
+#elif defined(__MINGW64_VERSION_MAJOR) || defined(__MINGW64__)
   /*
    * '__MINGW32__' is defined by BOTH mingw.org and by the MinGW-w64
    * projects [1,2], because both can target Win32.
@@ -57,7 +66,6 @@
    * Hopefully both Win32 and Win64 targets define the same range of
    * errnos. Hence we use the one generated for '__MINGW64__'.
    */
-#elif defined(__MINGW64_VERSION_MAJOR) || defined(__MINGW64__)
   #undef EDEADLOCK
   #undef ETXTBSY     /* gcc 7.2+ defines this */
   #include <sys/mingw64.err>
@@ -91,13 +99,6 @@
 #elif defined(__DMC__)                        /* Digital Mars Compiler */
   #include <sys/digmars.err>
 
-#elif defined(__CYGWIN__)
-  /*
-   * Since CygWin's <sys/errno.h> provides all the errno-values
-   * we need, there is no need to use 'util/errnos.c' to create new
-   * ones for CygWin. Simply pull in '<sys/errno.h>'. Done by
-   * '#include_next <sys/errno.h>' in our '<sys/errno.h>'.
-   */
 #elif defined(__clang__)
   /*
    * MUST be include before '_MSC_VER' section since 'clang-cl'
