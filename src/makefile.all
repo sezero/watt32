@@ -24,12 +24,12 @@
      PHARLAP, X32VM, DOS4GW    (otherwise all 32-bit DOS targets are FLAT)
 
   WATCOM wmake notes:
-     A few restriction for WATCOM wmake code exist if processed by mkmake utility
-        - to use '\' character literaly it must be followed by some character or space
-          if it is used as last character on the line then it is used as concatenation line character
-        - if wmake line start with '@' character then tab character must be used on line begining 
-          to differ it from mkmake directive line which start with '@' character too, but they can have
-          only leading spaces
+     A few restriction for WATCOM 'wmake' code exist if processed by 'mkmake utility':
+       - To use '\' character literaly it must be followed by some character or space.
+         If it is used as last character on the line then it is used as concatenation line character
+       - If 'wmake' line start with '@' character, then tab character must be used on start of line
+         to separate it from 'mkmake' directive line which start with '@' character too.
+         But they can have only leading spaces
 
 @else
 #
