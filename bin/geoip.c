@@ -25,6 +25,12 @@
 #include <string.h>
 #include <assert.h>
 
+#if defined(_MSC_VER) && defined(_DEBUG)
+  #define _CRTDBG_MAP_ALLOC
+  #include <malloc.h>
+  #include <crtdbg.h>
+#endif
+
 #if !defined(_MSC_VER)
   #include <unistd.h>
 #endif
