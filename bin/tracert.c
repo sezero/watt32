@@ -1309,10 +1309,15 @@ static int    geoip_city_db      = 0;
 
 void W32_CDECL exit_geoip (void)
 {
+  if (geoip_city_info)
+     free (geoip_city_info);
   if (geoip_country_info)
      free (geoip_country_info);
+  if (geoip_city_ctx)
+     GeoIP_delete (geoip_city_ctx);
   if (geoip_country_ctx)
      GeoIP_delete (geoip_country_ctx);
+
   GeoIP_cleanup();
   geoip_country_info     = NULL;
   geoip_country_ctx = NULL;
