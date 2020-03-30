@@ -10,6 +10,12 @@
   #define SAVE_SPACE
 #endif
 
+static int W32_CALL wait_handler (void *sock)
+{
+  (void) sock;
+  return kbhit();
+}
+
 int ident (DWORD host, WORD client_port, WORD server_port)
 {
   static tcp_Socket sock;
@@ -62,7 +68,7 @@ int ident (DWORD host, WORD client_port, WORD server_port)
   printf ("closing...");
   fflush (stdout);
   sock_close (&sock);
-  sock_wait_closed (&sock, 0, (UserHandler)kbhit, &status);
+  sock_wait_closed (&sock, 0, wait_handler, &status);
   return (0);
 
 sock_err:
