@@ -2,12 +2,12 @@
 
 """\
 Check if 'file' or 'wildcard' of files are binary or have LF or CRLF line ending.
-  options:
+%s [options] <file | wildcard>
     -h:  this help.
     -r:  recurse into sub-directories.
 
   e.g.: '%s -r foo\*.h' will check '*.h' files under ALL sub-directories of 'foo'
-    (similar to Posix's 'foo/**/*.h').
+  (similar to Posix's 'foo/**/*.h').
 """
 
 import sys, os, glob, string, fnmatch, argparse
@@ -37,7 +37,7 @@ def check_EOL (file):
     while 1:
       c0 = content[pos]
       c1 = content[pos+1]
-      if not c0 in string.printable:
+      if not str(c0) in string.printable:
         bin_chars += 1
       else:
         c_0A = (c0 == '\n')  # \n
@@ -70,7 +70,12 @@ def check_EOL (file):
 
 def process_dir (d):
   cwd = os.getcwd()
-  os.chdir (d)
+  try:
+    os.chdir(d)
+  except:
+    print ("No such directory: %s" % d)
+    return
+
   for in_file in glob.glob('*'):
       file = ("%s/%s" % (os.getcwd(), in_file)).replace ('\\','/')
       if os.path.isdir(file):
@@ -84,7 +89,7 @@ def process_dir (d):
 # main():
 #
 if opt.help or not opt.spec:
-  print ("%s:\n%s" % (__file__, __doc__))
+  print (__doc__ % (__file__, __file__))
   sys.exit (0)
 
 opt.spec = opt.spec.replace ('\\','/')
