@@ -255,11 +255,6 @@ case $1 in
 esac
 
 #
-# Generate host binaries
-#
-make -C ../util linux || { exit 3 ; }
-
-#
 # Process the cmdline args
 #
 for i in "$@"
