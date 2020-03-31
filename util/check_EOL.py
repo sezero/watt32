@@ -10,6 +10,11 @@ Check if 'file' or 'wildcard' of files are binary or have LF or CRLF line ending
   (similar to Posix's 'foo/**/*.h').
 """
 
+#
+# Mainly used to check text-files in the Watt-32 project.
+#
+# By G. Vanem <gvanem@yahoo.no> 2020
+
 import sys, os, glob, string, fnmatch, argparse
 
 parser = argparse.ArgumentParser (add_help=False)
@@ -24,7 +29,7 @@ total_binary = total_EOL_unix = total_EOL_dos = total_files = 0
 
 def check_EOL (file):
   EOL_dos = EOL_unix = bin_chars = 0
-  pos = flen = is_bin = 0
+  pos = flen = is_bin = ascii_chars = 0
 
   global total_files
   total_files += 1
@@ -40,17 +45,20 @@ def check_EOL (file):
       if not str(c0) in string.printable:
         bin_chars += 1
       else:
-        c_0A = (c0 == '\n')  # \n
-        c_0D = (c0 == '\r')  # \r
+        ascii_chars += 1
+        c0_0A = (c0 == '\n')
+        c0_0D = (c0 == '\r')
+        c1_0A = (c1 == '\n')
+        c1_0D = (c1 == '\r')
 
-        if c_0D and c1 == '\n':    # \r\n
+        if c0_0D and c1_0A:       # \r\n
           EOL_dos += 1
           pos     += 1
-        elif c_0A and c1 != '\r':  # \n
+        elif c0_0A and not c1_0D: # \n
           EOL_unix += 1
 
       pos += 1
-      if bin_chars > EOL_dos+EOL_unix:
+      if bin_chars > ascii_chars:
         is_bin = 1
       if is_bin or pos >= flen/10:
         break
@@ -98,6 +106,8 @@ if opt.spec.endswith('/'):
 
 opt.subdir = os.path.split(opt.spec)[0]
 opt.spec   = os.path.split(opt.spec)[1]
+if opt.subdir == '':
+  opt.subdir = '.'
 
 process_dir (opt.subdir)
 
