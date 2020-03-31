@@ -80,6 +80,7 @@ ertos
 faq
 Faq.tex
 inc/sys/*.err
+inc/check_hdr.c
 inet_ext
 notes
 open-vpn
