@@ -392,7 +392,8 @@ exit /b 0
 :: Download and install Borland/CBuilder
 ::
 :install_borland
-  if exist %BCCDIR%\bin\make.exe exit /b
+  rem if exist %BCCDIR%\bin\make.exe exit /b
+  rem set PATH=%PATH%;%BCCDIR%\bin
   %_ECHO% "\e[1;33mDownloading Borland:\e[0m"
   curl -# -o %CI_ROOT%\borland.zip %URL_BORLAND_ZIP%
   if not errorlevel == 0 (
