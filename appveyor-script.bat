@@ -10,6 +10,7 @@ prompt $P$G
 ::
 set URL_DJ_WIN_ZIP=http://www.watt-32.net/CI/dj-win.zip
 set URL_WATCOM_ZIP=http://www.watt-32.net/CI/watcom20.zip
+set URL_BORLAND_ZIP=http://www.watt-32.net/CI/borland.zip
 
 ::
 :: D/L from MS's OneDrive instead with the below cryptic 'URL_x' strings.
@@ -19,6 +20,7 @@ set URL_WATCOM_ZIP=http://www.watt-32.net/CI/watcom20.zip
 ::
 set URL_DJ_WIN_ZIP="https://public.am.files.1drv.com/y4mj1hIt_E5LjPPG9V7PywEz9lsuoYtMOEP1-jEcUkZ06M9ZK3kN7SXPw2AOgn9sf2_RbqhRQgvhMOgaJxyIL_O2GTjzp-u9LUB1RtLylxtr-URpATMJDPcPeUmd3gRhCrsXLWMxO8Hh5q7oR1_9V6gMZKB_VWTU6bPZkZ0rc8Tg9YjpzuzX180lWpc2E8w52hpkV0ApaxuVstkq_M6DwOEbssrymQaX30jYgpUw4YCmlA?access_token=EwAIA61DBAAUzl/nWKUlBg14ZGcybuC4/OHFdfEAAcjk8R21S0WRbnPh7yDX/bpeIL1WFpo1loXmt9HWcrm6dtt2uc8AFFghySuz840rgZYMCXSzwFO1lDjQCyFe1ub5GUO%2bvJnqYAbjOOExBSENan77aZ/Y%2bDqxbAU%2bIiSPebGpjrN5KMlszGXV1pJyOLQVRMk3JpQ8MeM5Cfm6bNLCzNCi2IKOrUN0S5MnLypsP0Y55Q728New95Tp6pId3201zbOoh%2byopzvoFWJeGZ1xRV0uqwzHHKw5PnuZrByFPzLI8/XiQ3IUOC/q/oU/L8BAZk2Y8GCg1S41O5Y7%2bQuQXabLxMN8d3QiJV2Ky/SodxpdipT0OfPBMTHDOadiagkDZgAACOiGp0v9%2bTQS2AFKY3E7XSCFUpNnkjnzUXof10is4AuzeF4Dbk0ruj3eM5fQA0JRzTXpbAp6Aojo/1N1SkNpsNNQzK/VClKSRwr7kT98SLgLFtCDxlEioac66eceN3KU6/CHVEWUPHOuiHSjg6OHHwN4/WWsTEDb3%2bRvg6cch2519pkwMveTzPzW5H3gZ5odyKtMhRRJH27B1gzt3jid4yHENEr66uFsx1m6SCsCDEXuZY6KI/M%2bi7xKni/alNjHYJqpi7rmM2fjQsuW5iSaHv39sEeoxPaWINHfAS189iXL67K7V%2br2avekXVz1C0dNoYWu46g27GWjLAMWHJr/K2r2DvTfWebw6F9Ul6JXGrT0atqKlPY4keV6tbltm2g5rlyNvErTaeCM/ZVmaOEZ7sOm8Q1RxnkwE8dkmFP5DVyTgJKMplNyo7U2W1ElwabCaG2NuMxp59avjuHDvewol8WqjLfL4R/cnJR5d3TomX1Llo2YES81cMJPwmj38RnS8jUE6uZ%2bXkziGxiKij%2b6cFBkNUtW9Nt13uSoiHntF5iF0tZ7xFAvJWwlHXSFVxwCNVyrIPDXExasidYdjdNO4Vdmxe4FUuElI7mEZ4BAWZidu2xY6AaAr0fgBS18gukvgzEyAwI%3d"
 set URL_WATCOM_ZIP="https://public.am.files.1drv.com/y4mBFFcbx7AwhTYCTXPW5j2kRm1_SHzk3g1SJB6uvHub9Y7xIcRVWgPWB1jN5Pbjw71_XgJX_5OVcWY6BTfq6II4PvbQl-5OPe_2sBoTWBK-wlhrucAIjHkBqToE57tuIVDeykEu8xaRBiD9il-XoxbppPrRb6HNXrh2VQU7fdWUx7LqliQU0zLTqIRHWbFHoPNtpfZTba6Yey0ck1RWJaC5oz5kdx1LeVPAOt_NXH11RE?access_token=EwAIA61DBAAUzl/nWKUlBg14ZGcybuC4/OHFdfEAAcjk8R21S0WRbnPh7yDX/bpeIL1WFpo1loXmt9HWcrm6dtt2uc8AFFghySuz840rgZYMCXSzwFO1lDjQCyFe1ub5GUO%2bvJnqYAbjOOExBSENan77aZ/Y%2bDqxbAU%2bIiSPebGpjrN5KMlszGXV1pJyOLQVRMk3JpQ8MeM5Cfm6bNLCzNCi2IKOrUN0S5MnLypsP0Y55Q728New95Tp6pId3201zbOoh%2byopzvoFWJeGZ1xRV0uqwzHHKw5PnuZrByFPzLI8/XiQ3IUOC/q/oU/L8BAZk2Y8GCg1S41O5Y7%2bQuQXabLxMN8d3QiJV2Ky/SodxpdipT0OfPBMTHDOadiagkDZgAACOiGp0v9%2bTQS2AFKY3E7XSCFUpNnkjnzUXof10is4AuzeF4Dbk0ruj3eM5fQA0JRzTXpbAp6Aojo/1N1SkNpsNNQzK/VClKSRwr7kT98SLgLFtCDxlEioac66eceN3KU6/CHVEWUPHOuiHSjg6OHHwN4/WWsTEDb3%2bRvg6cch2519pkwMveTzPzW5H3gZ5odyKtMhRRJH27B1gzt3jid4yHENEr66uFsx1m6SCsCDEXuZY6KI/M%2bi7xKni/alNjHYJqpi7rmM2fjQsuW5iSaHv39sEeoxPaWINHfAS189iXL67K7V%2br2avekXVz1C0dNoYWu46g27GWjLAMWHJr/K2r2DvTfWebw6F9Ul6JXGrT0atqKlPY4keV6tbltm2g5rlyNvErTaeCM/ZVmaOEZ7sOm8Q1RxnkwE8dkmFP5DVyTgJKMplNyo7U2W1ElwabCaG2NuMxp59avjuHDvewol8WqjLfL4R/cnJR5d3TomX1Llo2YES81cMJPwmj38RnS8jUE6uZ%2bXkziGxiKij%2b6cFBkNUtW9Nt13uSoiHntF5iF0tZ7xFAvJWwlHXSFVxwCNVyrIPDXExasidYdjdNO4Vdmxe4FUuElI7mEZ4BAWZidu2xY6AaAr0fgBS18gukvgzEyAwI%3d"
+set URL_BORLAND_ZIP="https://public.am.files.1drv.com/y4mtgUL21pxqUmKNqXMFqKfyF_Qcfub_7F9y9CW6qzJMK3J3Ty4yibM8PFh8ge1WbLX4GUtWaD2hcCMtBg6IHLG2gOoKUGVyZJsHnuYW453AzpLd4mxz4o5vfHXgbCSdzdzTRGAoRKWLVYKmVdHxkhJvvOnDp6fiM58rAYLsXsSKtN4HeCTrFV0hT6VSXd-6dmdURydrmKnupdDfSVC0iHNg67T7h_d_zQGLe0eoqk4VpU?access_token=EwAIA61DBAAUzl/nWKUlBg14ZGcybuC4/OHFdfEAAZqRQuZdI1RRk31IIQoiWyy8U3d/2GjhJaFhemMlSz0Q/aCpKh%2bE44B0grjZfdU1KIJDAX9hKoIrahYEsENwWQ3OTk8YhQS6JTo7AX5uez6DBYwErJEHiPMNDQEi4LQmeDNW9u5zFHYaxvlDrIHxEzw8qKYOcNV1C/S9Mm76vyZgXqfRbVSKWLP/GAfYhD%2b/H5qLtwf3M80LvwbtCw170ePm3T7qH9UZ35xg81h%2b8H5LnRPqEnTqW146ohFDEQi%2bqajpzfFCSkutXzE7GnaKOwJz0eI0L2E0cHUkO8FhZCvmQ7EjIv7HLD%2bNn9QiFJkl6rxivjMb/wl548ou8zdnv5MDZgAACMd9kYD2MIrm2AF5f1fTR1I0feNZIh9w63GgzyAN92DRw3orkR3NFzpzOCU07wDU6FzFYbwZ9ANFPlgXGoZLo7xPxV%2bo2ENrciUbYqsDe3tNqfcXZwV2wJ7sRbqEyRPglSLz7cEIXxNV7vW/jkNK%2b2VUiXgpZnZm0hFtN6TCa3PwiNj92GoUJKSnxKwiucKyOGFrg0YcoOfvAv4r4Ncq4%2bIADOWBhRHUcURB1hFmjAIJGBet%2beXdNwW/kOpctMSyROf0XO2%2b3W2yKlxS1utzy1aeIb19BzaD4DbLRChFe6u3MpphQDJq/Bcj5oU6iR79wr5Vmu13HR8HUj0RSJ1xamF74t9l84LPJKBnD10PoZ5k2BV7fJiusS7U5%2bqs8F626wNkTq%2b6Bk499Zg0hhgKsedrEq%2bAUvUCMLTl4cTfEBjWO3YlN5Z%2bd%2bpkLB1BV7SpS9A1Y9Cq%2b6HJ3LgRNgRVvdSQS7J7Iclhzq2gTngPZzsR/XlMCa6jIQ3wYKl5z4poMjnWl%2b6nt6VV1LdDMgIlNRvIBpbOgY9OxwomTJCGX9K7kwwZWLljmcn9K%2blgz5Js/6/2AEjrZ2uk6nJIudfhRXf1pba%2b2UrYfi8r5r5VkW/iTPNHYu7tEmQHblEgzHaiyd1NAwI%3d"
 
 ::
 :: 'APPVEYOR_PROJECT_NAME==Watt-32' unless testing this as:
@@ -92,6 +94,17 @@ set NT_INCLUDE=%WATCOM%\h;%WATCOM%\h\nt
 set DOS_INCLUDE=%WATCOM%\h
 
 ::
+:: Set env-var for building with Borland/CBuilder (Win32 only)
+::
+set BCCDIR=%CI_ROOT%
+
+rem set LIBDIR=%BCCDIR%\lib
+rem set MAKEDIR=%BCCDIR%\bin
+
+set INCLUDE=%BCCDIR%\include\windows;%BCCDIR%\include\windows\sdk;%INCLUDE%
+set CBUILDER_IS_LLVM_BASED=1
+
+::
 :: Shit for brains 'cmd' cannot have this inside a 'if x (' block since
 :: on a AppVeyor build several "c:\Program Files (x86)\Microsoft xxx" strings
 :: are in the 'PATH'.
@@ -105,6 +118,11 @@ set PATH=%PATH%;c:\Program Files\LLVM\bin
 :: which we do not want to use for 'BUILDER=visualc'.
 ::
 set PATH=%PATH%;%WATCOM%\binnt
+
+::
+:: And append the '%BCCDIR%\bin' to the 'PATH' too.
+::
+set PATH=%PATH%;%BCCDIR%\bin
 
 ::
 :: In case my curl was built with Wsock-Trace
@@ -130,15 +148,6 @@ exit /b 1
 cd src
 
 ::
-:: Generate a 'src/oui-generated.c' file from 'src/oui.txt (do not download it every time).
-:: For VisualC / clang-cl only since only those uses '%CL%'.
-::
-set USES_CL=0
-set CL=
-if %BUILDER%. == visualc. set USES_CL=1
-if %BUILDER%. == clang.   set USES_CL=1
-
-::
 :: Assume 'CPU=x86'
 ::
 set BITS=32
@@ -156,14 +165,16 @@ if %LOCAL_TEST% == 1 (
   if not exist "%APPVEYOR_BUILD_FOLDER_UNIX%" (echo No '%APPVEYOR_BUILD_FOLDER_UNIX%'. Edit this .bat-file & exit /b 1)
 )
 
-%_ECHO% "\e[1;33m[%CPU%]: call configur.bat %BUILDER%:\e[0m"
-
-if %USES_CL%. == 1. (
-  %_ECHO% "\e[1;33mGenerating 'src/oui-generated.c'.\e[0m"
-  python.exe make-oui.py > oui-generated.c
-  if errorlevel 0 set CL=-DHAVE_OUI_GENERATATED_C
-  %_ECHO% "\e[1;33m--------------------------------------------------------------------------------------------------\e[0m"
-)
+::
+:: Generate a 'src/oui-generated.c' file from 'src/oui.txt (do not download it every time).
+:: This is needed for many Win32 targets since it's mentioned in the 'build/*/watt32.dep' file.
+:: Otherwise some Make programs (Cbuilder make) exits.
+::
+set CL=
+%_ECHO% "\e[1;33mGenerating 'src/oui-generated.c'.\e[0m"
+python.exe make-oui.py > oui-generated.c
+if errorlevel 0 set CL=-DHAVE_OUI_GENERATATED_C
+%_ECHO% "\e[1;33m--------------------------------------------------------------------------------------------------\e[0m"
 
 if %BUILDER%. == visualc. (
   call configur.bat visualc
@@ -171,6 +182,8 @@ if %BUILDER%. == visualc. (
   nmake -nologo -f visualc-release_%BITS%.mak
   exit /b
 )
+
+%_ECHO% "\e[1;33m[%CPU%]: call configur.bat %BUILDER%:\e[0m"
 
 ::
 :: Need to do 'call :install_LLVM' here to set the PATH for 'clang-cl.exe'!
@@ -202,6 +215,14 @@ if %BUILDER%. == djgpp. (
   call configur.bat djgpp
   %_ECHO% "\e[1;33m[%CPU%]: Building:\e[0m"
   make -f djgpp.mak
+  exit /b
+)
+
+if %BUILDER%. == borland. (
+  call :install_borland
+  call configur.bat borland
+  %_ECHO% "\e[1;33m[%CPU%]: Building:\e[0m"
+  %BCCDIR%\bin\make -f bcc_w.mak
   exit /b
 )
 
@@ -240,6 +261,7 @@ exit /b 1
 ::
 :build_bin
 
+set PROGS_BC_WIN=ping.exe ident.exe htget.exe finger.exe tcpinfo.exe tracert.exe
 set PROGS_DJ=bping.exe ping.exe finger.exe ident.exe htget.exe tcpinfo.exe tracert.exe country.exe
 set PROGS_VC=ping.exe finger.exe tcpinfo.exe host.exe htget.exe tracert.exe con-test.exe gui-test.exe lpq.exe lpr.exe ntime.exe whois.exe ident.exe country.exe
 set PROGS_MW=%PROGS_VC%
@@ -276,6 +298,12 @@ if %BUILDER%. == clang. (
   call :install_LLVM
   %_ECHO% "\e[1;33m[%CPU%]: Building PROGS_CL=%PROGS_CL%:\e[0m"
   make -f clang.mak check_CPU %PROGS_CL%
+  exit /b
+)
+
+if %BUILDER%. == borland. (
+  %_ECHO% "\e[1;33m[%CPU%]: Building PROGS_BC_WIN=%PROGS_BC_WIN%:\e[0m"
+  %BCCDIR%\bin\make -f bcc_win.mak %PROGS_BC_WIN%
   exit /b
 )
 
@@ -361,6 +389,20 @@ exit /b 0
     %_ECHO% "\e[1;31mThe curl download failed!\e[0m"
     exit /b 1
   )
+  exit /b
+
+::
+:: Download and install Borland/CBuilder
+::
+:install_borland
+  if exist %BCCDIR%\bin\make.exe exit /b
+  %_ECHO% "\e[1;33mDownloading Borland:\e[0m"
+  curl -# -o %CI_ROOT%\borland.zip %URL_BORLAND_ZIP%
+  if not errorlevel == 0 (
+    %_ECHO% "\e[1;31mThe curl download failed!\e[0m"
+    exit /b
+  )
+  7z x -y -o%BCCDIR% %CI_ROOT%\borland.zip > NUL
   exit /b
 
 ::
