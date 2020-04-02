@@ -97,8 +97,11 @@ set DOS_INCLUDE=%WATCOM%\h
 :: Set env-var for building with Borland/CBuilder (Win32 only)
 ::
 set BCCDIR=%CI_ROOT%
-set LIBDIR=%BCCDIR%\lib
-set MAKEDIR=%BCCDIR%\bin
+
+rem set LIBDIR=%BCCDIR%\lib
+rem set MAKEDIR=%BCCDIR%\bin
+
+set INCLUDE=%BCCDIR%\include\windows;%BCCDIR%\include\windows\sdk;%INCLUDE%
 set CBUILDER_IS_LLVM_BASED=1
 
 ::
