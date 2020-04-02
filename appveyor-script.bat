@@ -117,6 +117,11 @@ set PATH=%PATH%;c:\Program Files\LLVM\bin
 set PATH=%PATH%;%WATCOM%\binnt
 
 ::
+:: And append the '%BCCDIR%\bin' to the 'PATH' too.
+::
+set PATH=%PATH%;%BCCDIR%\bin
+
+::
 :: In case my curl was built with Wsock-Trace
 ::
 set WSOCK_TRACE_LEVEL=0
@@ -392,8 +397,7 @@ exit /b 0
 :: Download and install Borland/CBuilder
 ::
 :install_borland
-  rem if exist %BCCDIR%\bin\make.exe exit /b
-  rem set PATH=%PATH%;%BCCDIR%\bin
+  if exist %BCCDIR%\bin\make.exe exit /b
   %_ECHO% "\e[1;33mDownloading Borland:\e[0m"
   curl -# -o %CI_ROOT%\borland.zip %URL_BORLAND_ZIP%
   if not errorlevel == 0 (
