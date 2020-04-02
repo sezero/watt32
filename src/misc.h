@@ -357,7 +357,7 @@ extern const char *qword_str (uint64 val);
  * Note: we don't build with -D_UNICODE. Hence Ascii formats sometimes
  *       need to print wide-chars using this format.
  */
-#if defined(__GNUC__)
+#if defined(__GNUC__) || defined(__BORLANDC__)
   #define WIDESTR_FMT  "S"
 #elif defined(__POCC__)
   #define WIDESTR_FMT  "ls"
