@@ -155,8 +155,12 @@
 #endif
 
 #if defined(_WIN32) && !defined(_WIN64)
-  #if defined(__clang__)
-    #define USE_STACKWALKER   /* Test the C++ code in stkwalk.cpp with clang-cl */
+  /*
+   * Test the C++ code in stkwalk.cpp with a true clang-cl.
+   * That does NOT include a CBuilder that is possibly LLVM based.
+   */
+  #if defined(__clang__) && !defined(__BORLANDC__)
+    #define USE_STACKWALKER
 
   #elif defined(_MSC_VER) && !defined(__clang__)
    /*
