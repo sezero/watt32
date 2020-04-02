@@ -450,12 +450,6 @@ AS = tasm32
 
 LDFLAGS = -tWD -M -q -lr -lq -laa
 
-#
-# In case there is another implib.exe ahead of Borland's implib.exe.
-# $(BCCDIR) -> root of Borland's (or CBuilder's) install root.
-#
-IMPLIB = $(BCCDIR)\bin\implib
-
 .SWAP
 
 @ifdef WIN32
