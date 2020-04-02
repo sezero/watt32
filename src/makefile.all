@@ -1539,7 +1539,7 @@ build\watcom\win32\watt-32.res: watt-32.rc
 # PS. 'cflagsbf.h' was previously named 'cflags_buf.h'. But that may cause troubles
 #     on plain DOS with only 8+3 files.
 #
-build\build\borland\small\cflagsbf.h: $(C_ARGS)
+build\borland\small\cflagsbf.h: $(C_ARGS)
 	$(W32_BIN2C) $(C_ARGS)                     > build\borland\small\cflagsbf.h
 
 build\borland\large\cflagsbf.h: $(C_ARGS)
