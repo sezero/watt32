@@ -145,15 +145,6 @@ exit /b 1
 cd src
 
 ::
-:: Generate a 'src/oui-generated.c' file from 'src/oui.txt (do not download it every time).
-:: For VisualC / clang-cl only since only those uses '%CL%'.
-::
-set USES_CL=0
-set CL=
-if %BUILDER%. == visualc. set USES_CL=1
-if %BUILDER%. == clang.   set USES_CL=1
-
-::
 :: Assume 'CPU=x86'
 ::
 set BITS=32
@@ -171,14 +162,16 @@ if %LOCAL_TEST% == 1 (
   if not exist "%APPVEYOR_BUILD_FOLDER_UNIX%" (echo No '%APPVEYOR_BUILD_FOLDER_UNIX%'. Edit this .bat-file & exit /b 1)
 )
 
-%_ECHO% "\e[1;33m[%CPU%]: call configur.bat %BUILDER%:\e[0m"
-
-if %USES_CL%. == 1. (
-  %_ECHO% "\e[1;33mGenerating 'src/oui-generated.c'.\e[0m"
-  python.exe make-oui.py > oui-generated.c
-  if errorlevel 0 set CL=-DHAVE_OUI_GENERATATED_C
-  %_ECHO% "\e[1;33m--------------------------------------------------------------------------------------------------\e[0m"
-)
+::
+:: Generate a 'src/oui-generated.c' file from 'src/oui.txt (do not download it every time).
+:: This is needed for many Win32 targets since it's mentioned in the 'build/*/watt32.dep' file.
+:: Otherwise some Make programs (Cbuilder make) exits.
+::
+set CL=
+%_ECHO% "\e[1;33mGenerating 'src/oui-generated.c'.\e[0m"
+python.exe make-oui.py > oui-generated.c
+if errorlevel 0 set CL=-DHAVE_OUI_GENERATATED_C
+%_ECHO% "\e[1;33m--------------------------------------------------------------------------------------------------\e[0m"
 
 if %BUILDER%. == visualc. (
   call configur.bat visualc
@@ -186,6 +179,8 @@ if %BUILDER%. == visualc. (
   nmake -nologo -f visualc-release_%BITS%.mak
   exit /b
 )
+
+%_ECHO% "\e[1;33m[%CPU%]: call configur.bat %BUILDER%:\e[0m"
 
 ::
 :: Need to do 'call :install_LLVM' here to set the PATH for 'clang-cl.exe'!
