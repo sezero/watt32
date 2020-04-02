@@ -10,6 +10,7 @@ prompt $P$G
 ::
 set URL_DJ_WIN_ZIP=http://www.watt-32.net/CI/dj-win.zip
 set URL_WATCOM_ZIP=http://www.watt-32.net/CI/watcom20.zip
+set URL_BORLAND_ZIP=http://www.watt-32.net/CI/borland.zip
 
 ::
 :: D/L from MS's OneDrive instead with the below cryptic 'URL_x' strings.
@@ -19,6 +20,7 @@ set URL_WATCOM_ZIP=http://www.watt-32.net/CI/watcom20.zip
 ::
 set URL_DJ_WIN_ZIP="https://public.am.files.1drv.com/y4mj1hIt_E5LjPPG9V7PywEz9lsuoYtMOEP1-jEcUkZ06M9ZK3kN7SXPw2AOgn9sf2_RbqhRQgvhMOgaJxyIL_O2GTjzp-u9LUB1RtLylxtr-URpATMJDPcPeUmd3gRhCrsXLWMxO8Hh5q7oR1_9V6gMZKB_VWTU6bPZkZ0rc8Tg9YjpzuzX180lWpc2E8w52hpkV0ApaxuVstkq_M6DwOEbssrymQaX30jYgpUw4YCmlA?access_token=EwAIA61DBAAUzl/nWKUlBg14ZGcybuC4/OHFdfEAAcjk8R21S0WRbnPh7yDX/bpeIL1WFpo1loXmt9HWcrm6dtt2uc8AFFghySuz840rgZYMCXSzwFO1lDjQCyFe1ub5GUO%2bvJnqYAbjOOExBSENan77aZ/Y%2bDqxbAU%2bIiSPebGpjrN5KMlszGXV1pJyOLQVRMk3JpQ8MeM5Cfm6bNLCzNCi2IKOrUN0S5MnLypsP0Y55Q728New95Tp6pId3201zbOoh%2byopzvoFWJeGZ1xRV0uqwzHHKw5PnuZrByFPzLI8/XiQ3IUOC/q/oU/L8BAZk2Y8GCg1S41O5Y7%2bQuQXabLxMN8d3QiJV2Ky/SodxpdipT0OfPBMTHDOadiagkDZgAACOiGp0v9%2bTQS2AFKY3E7XSCFUpNnkjnzUXof10is4AuzeF4Dbk0ruj3eM5fQA0JRzTXpbAp6Aojo/1N1SkNpsNNQzK/VClKSRwr7kT98SLgLFtCDxlEioac66eceN3KU6/CHVEWUPHOuiHSjg6OHHwN4/WWsTEDb3%2bRvg6cch2519pkwMveTzPzW5H3gZ5odyKtMhRRJH27B1gzt3jid4yHENEr66uFsx1m6SCsCDEXuZY6KI/M%2bi7xKni/alNjHYJqpi7rmM2fjQsuW5iSaHv39sEeoxPaWINHfAS189iXL67K7V%2br2avekXVz1C0dNoYWu46g27GWjLAMWHJr/K2r2DvTfWebw6F9Ul6JXGrT0atqKlPY4keV6tbltm2g5rlyNvErTaeCM/ZVmaOEZ7sOm8Q1RxnkwE8dkmFP5DVyTgJKMplNyo7U2W1ElwabCaG2NuMxp59avjuHDvewol8WqjLfL4R/cnJR5d3TomX1Llo2YES81cMJPwmj38RnS8jUE6uZ%2bXkziGxiKij%2b6cFBkNUtW9Nt13uSoiHntF5iF0tZ7xFAvJWwlHXSFVxwCNVyrIPDXExasidYdjdNO4Vdmxe4FUuElI7mEZ4BAWZidu2xY6AaAr0fgBS18gukvgzEyAwI%3d"
 set URL_WATCOM_ZIP="https://public.am.files.1drv.com/y4mBFFcbx7AwhTYCTXPW5j2kRm1_SHzk3g1SJB6uvHub9Y7xIcRVWgPWB1jN5Pbjw71_XgJX_5OVcWY6BTfq6II4PvbQl-5OPe_2sBoTWBK-wlhrucAIjHkBqToE57tuIVDeykEu8xaRBiD9il-XoxbppPrRb6HNXrh2VQU7fdWUx7LqliQU0zLTqIRHWbFHoPNtpfZTba6Yey0ck1RWJaC5oz5kdx1LeVPAOt_NXH11RE?access_token=EwAIA61DBAAUzl/nWKUlBg14ZGcybuC4/OHFdfEAAcjk8R21S0WRbnPh7yDX/bpeIL1WFpo1loXmt9HWcrm6dtt2uc8AFFghySuz840rgZYMCXSzwFO1lDjQCyFe1ub5GUO%2bvJnqYAbjOOExBSENan77aZ/Y%2bDqxbAU%2bIiSPebGpjrN5KMlszGXV1pJyOLQVRMk3JpQ8MeM5Cfm6bNLCzNCi2IKOrUN0S5MnLypsP0Y55Q728New95Tp6pId3201zbOoh%2byopzvoFWJeGZ1xRV0uqwzHHKw5PnuZrByFPzLI8/XiQ3IUOC/q/oU/L8BAZk2Y8GCg1S41O5Y7%2bQuQXabLxMN8d3QiJV2Ky/SodxpdipT0OfPBMTHDOadiagkDZgAACOiGp0v9%2bTQS2AFKY3E7XSCFUpNnkjnzUXof10is4AuzeF4Dbk0ruj3eM5fQA0JRzTXpbAp6Aojo/1N1SkNpsNNQzK/VClKSRwr7kT98SLgLFtCDxlEioac66eceN3KU6/CHVEWUPHOuiHSjg6OHHwN4/WWsTEDb3%2bRvg6cch2519pkwMveTzPzW5H3gZ5odyKtMhRRJH27B1gzt3jid4yHENEr66uFsx1m6SCsCDEXuZY6KI/M%2bi7xKni/alNjHYJqpi7rmM2fjQsuW5iSaHv39sEeoxPaWINHfAS189iXL67K7V%2br2avekXVz1C0dNoYWu46g27GWjLAMWHJr/K2r2DvTfWebw6F9Ul6JXGrT0atqKlPY4keV6tbltm2g5rlyNvErTaeCM/ZVmaOEZ7sOm8Q1RxnkwE8dkmFP5DVyTgJKMplNyo7U2W1ElwabCaG2NuMxp59avjuHDvewol8WqjLfL4R/cnJR5d3TomX1Llo2YES81cMJPwmj38RnS8jUE6uZ%2bXkziGxiKij%2b6cFBkNUtW9Nt13uSoiHntF5iF0tZ7xFAvJWwlHXSFVxwCNVyrIPDXExasidYdjdNO4Vdmxe4FUuElI7mEZ4BAWZidu2xY6AaAr0fgBS18gukvgzEyAwI%3d"
+set URL_BORLAND_ZIP="https://public.am.files.1drv.com/y4mnJTBulvAogxgzk-Ml9XMm7d43Agamc-X2UH0m6Ja_v4C3t331Q0n2Vd1mn2bax_DU4YIZUJeavzNZqQomOu8R3YAophKnoYXKmwMRIipcWXz1H0EQNFSuvfuDeplT828IQjGzZ7pX1HEMOzCThndQgru60zCj_FD41mDu3lCxJCwA5mi54lQHZtu0AKR3nX7NlDi7mpstcKx0mXjXpyvO-5X-MNri77U996jAUDW6uw?access_token=EwAIA61DBAAUzl/nWKUlBg14ZGcybuC4/OHFdfEAAQLVI7XXjcGWhj9YoWW%2bIRmHGOgHHxYTd0GUVqEZQMJlvuPPECwUjHF3nNy8iOwmtmjvzen%2bsz09JBusvO/mUDGsqfqe8HMgxBs/H6w0Bs3OzPaEVsZXujY4KuPbRvgaMrpjVSLVt9%2bx/JxuNAETgJKM1QvCZ9My16dSSrKjQfSzpNKlLu0sdmRUO9LrWA5VqaNh5o7ZanyCC4B61n2Ad6zUJResVGHvDV4M3FLf1JYdN6x5x2YkPORonnTqWD6wFLjD5NwvRGzW%2bmirU67Zg3YneLWYyWBIg0TEldJuGh0Ee9WDLTwcU2JkZislclVVuHDMBp2Vb3yEpkZA17D4k2IDZgAACO4%2b/pyjBNuo2AG44dw5sfVW0EgYWARrmdkp6G5F5cgECMjsvYGryrqlSF9E9PUuDrnFdEWgMdmeBnNiTfRcoUxsguGPzVRa7YmhikvwHv5aouyMjpwtv9RW9B60Mq%2bhq8Qkwe14Gxu2h52VFXIeEjhf%2badW9up2UdiNmEmJ9XxgZbR/1QwfL04pDi%2b2N3esUQB%2bndIf%2bs2ZEJv0aBJiaQHLN0BC9l3Epaj1ekEJZ/HmbBK9//1p8vp/iHCs7u9adKjN%2bH0M5a0894zyLZdnTn5GlGxUn1FqqMWv%2bQHnWdAfoeYKNZCjjAFzuS1Hi1vDvRdCRt5L36EuB8qlWlos2GlqAdheRPQzZj/Vsnf/WdoCHe97W0TabnJHUfVXQt5sJKCjFvP7ZbXZseg7PMegLJh9%2bBucR4SWdKc3rCMjcrgRQWr6L7HwDqHY9J6XzR7VOEG/KVDdoIZ5iUdN4swcNWEmK/aZGqvX/aIovcipvS%2b/r0Imo2bFxo8EzxDvQESCnUyiTuJLyG4O83YILdzx3T44Osh8cRW8YlenbDw7WElNW9iQQ5/8a9Ikl7746t77bNj6PKoA/eywyCu%2bODyrx4ssF8RAOfBqvWERa3yGrgcgjO13Q27rFlW1dLJcf9EdXP0fAwI%3d"
 
 ::
 :: 'APPVEYOR_PROJECT_NAME==Watt-32' unless testing this as:
@@ -90,6 +92,14 @@ set DJ_PREFIX=%DJGPP%/bin/i586-pc-msdosdjgpp-
 set WATCOM=%CI_ROOT%
 set NT_INCLUDE=%WATCOM%\h;%WATCOM%\h\nt
 set DOS_INCLUDE=%WATCOM%\h
+
+::
+:: Set env-var for building with Borland/CBuilder (Win32 only)
+::
+set BCCDIR=%CI_ROOT%
+set LIBDIR=%BCCDIR%\lib
+set MAKEDIR=%BCCDIR%\bin
+set CBUILDER_IS_LLVM_BASED=1
 
 ::
 :: Shit for brains 'cmd' cannot have this inside a 'if x (' block since
@@ -205,6 +215,14 @@ if %BUILDER%. == djgpp. (
   exit /b
 )
 
+if %BUILDER%. == borland. (
+  call :install_borland
+  call configur.bat borland
+  %_ECHO% "\e[1;33m[%CPU%]: Building:\e[0m"
+  %BCCDIR%\bin\make -f bcc_w.mak
+  exit /b
+)
+
 if %BUILDER%. == watcom. (
   call :install_watcom
   call configur.bat watcom
@@ -240,6 +258,7 @@ exit /b 1
 ::
 :build_bin
 
+set PROGS_BC_WIN=ping.exe ident.exe htget.exe finger.exe tcpinfo.exe tracert.exe
 set PROGS_DJ=bping.exe ping.exe finger.exe ident.exe htget.exe tcpinfo.exe tracert.exe country.exe
 set PROGS_VC=ping.exe finger.exe tcpinfo.exe host.exe htget.exe tracert.exe con-test.exe gui-test.exe lpq.exe lpr.exe ntime.exe whois.exe ident.exe country.exe
 set PROGS_MW=%PROGS_VC%
@@ -276,6 +295,12 @@ if %BUILDER%. == clang. (
   call :install_LLVM
   %_ECHO% "\e[1;33m[%CPU%]: Building PROGS_CL=%PROGS_CL%:\e[0m"
   make -f clang.mak check_CPU %PROGS_CL%
+  exit /b
+)
+
+if %BUILDER%. == borland. (
+  %_ECHO% "\e[1;33m[%CPU%]: Building PROGS_BC_WIN=%PROGS_BC_WIN%:\e[0m"
+  %BCCDIR%\bin\make -f bcc_win.mak %PROGS_BC_WIN%
   exit /b
 )
 
@@ -361,6 +386,20 @@ exit /b 0
     %_ECHO% "\e[1;31mThe curl download failed!\e[0m"
     exit /b 1
   )
+  exit /b
+
+::
+:: Download and install Borland/CBuilder
+::
+:install_borland
+  if exist %BCCDIR%\bin\make.exe exit /b
+  %_ECHO% "\e[1;33mDownloading Borland:\e[0m"
+  curl -# -o %CI_ROOT%\borland.zip %URL_BORLAND_ZIP%
+  if not errorlevel == 0 (
+    %_ECHO% "\e[1;31mThe curl download failed!\e[0m"
+    exit /b
+  )
+  7z x -y -o%BCCDIR% %CI_ROOT%\borland.zip > NUL
   exit /b
 
 ::
