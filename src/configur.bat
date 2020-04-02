@@ -93,8 +93,11 @@ echo neterr.c:  build\borland\syserr.c  >> build\borland\watt32.dep
 %BCC_ERR% -s > build\borland\syserr.c
 %BCC_ERR% -e > ..\inc\sys\borlandc.err
 
-echo Run Borland or CBuilder's make to make target(s):
-echo   E.g. "%%BCCDIR%%\bin\make -f bcc_l.mak" for large model
+echo Run Borland or CBuilder's "%%BCCDIR%%\bin\make" for target(s):
+echo   E.g. "make -f bcc_s.mak" for small model
+echo        "make -f bcc_l.mak" for large model
+echo        "make -f bcc_f.mak" for flat model
+echo        "make -f bcc_w.mak" for Win32
 goto next
 
 ::--------------------------------------------------------------------------
