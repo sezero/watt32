@@ -216,6 +216,7 @@
   #define HAVE_NETIOAPI_H
   #define HAVE_WINDOT11_H
   #define HAVE_WLANAPI_H
+  #define HAVE_WSAQuerySetA
   #define COMPILE_WINADINF_C
 
 #elif defined(__MINGW64_VERSION_MAJOR)  /* MinGW64 / TDM-gcc */
