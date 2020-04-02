@@ -400,7 +400,7 @@ MAKEFIL = bcc_f.mak
   CPP    = $(BCCDIR)\bin\cpp32c
   C_ARGS = $(OBJDIR)\bcc32c.arg
   CFLAGS = # -fcolor-diagnostics-
-  BRC32  = $(BCCDIR)\bin\rc -nologo
+  BRC32  = $(BCCDIR)\bin\rc
 !endif
 
 #
@@ -414,7 +414,7 @@ CFLAGS = $(CFLAGS) -RT-
 #  if 'FLEXINT_H' is not defined and '__STDC_VERSION__' is '>= 199901L'.
 #  But no Borland version I have seen do have '<inttypes.h>'.
 #
-CFLAGS  = $(CFLAGS) -DFLEXINT_H -Dflex_int32_t=int -Dflex_int16_t=short
+CFLAGS  = $(CFLAGS) -DFLEXINT_H -Dflex_int32_t=int -Dflex_int16_t=short -DBUILD_WINDOWS
 
 AFLAGS  = -mx -m2 -t -l -DDOSX
 TARGETS = ..\lib\wattcpbw.lib ..\lib\wattcpbw_imp.lib ..\bin\watt-32.dll
