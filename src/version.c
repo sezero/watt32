@@ -319,75 +319,75 @@ const char * W32_CALL wattcpVersion (void)
  * were renamed to 'cflagsbf.h'.
  */
 #if defined(__DJGPP__)
-  #define CC_DEFINE      "__DJGPP__"
-  #define CC_PROG        "gcc"
-  #define CFLAGS         "build/djgpp/cflags.h"
+  #define CC_DEFINE        "__DJGPP__"
+  #define CC_PROG          "gcc"
+  #define CFLAGS           "build/djgpp/cflags.h"
 
 #elif defined(__BORLANDC__) || defined(__CODEGEARC_VERSION__)
-  #define CC_DEFINE      "__BORLANDC__"
+  #define CC_DEFINE        "__BORLANDC__"
 
   #if defined(WIN32)
-    #define CFLAGS       "build/borland/win32/cflags.h"
-    #define CFLAGS_BUF   "build/borland/win32/cflagsbf.h"
-    #define CC_PROG      "bcc32"
+    #define CFLAGS         "build/borland/win32/cflags.h"
+    #define CFLAGS_BUF     "build/borland/win32/cflagsbf.h"
+    #define CC_PROG        "bcc32"
 
   #elif defined(__FLAT__)
-    #define CFLAGS       "build/borland/flat/cflags.h"
-    #define CFLAGS_BUF   "build/borland/flat/cflagsbf.h"
-    #define CC_PROG      "bcc32"
+    #define CFLAGS         "build/borland/flat/cflags.h"
+    #define CFLAGS_BUF     "build/borland/flat/cflagsbf.h"
+    #define CC_PROG        "bcc32"
 
   #elif defined(__LARGE__)
-    #define CFLAGS       "build/borland/large/cflags.h"
-    #define CFLAGS_BUF   "build/borland/large/cflagsbf.h"
-    #define CC_PROG      "bcc"
+    #define CFLAGS         "build/borland/large/cflags.h"
+    #define CFLAGS_BUF     "build/borland/large/cflagsbf.h"
+    #define CC_PROG        "bcc"
 
   #elif defined(__SMALL__)
-    #define CFLAGS       "build/borland/small/cflags.h"
-    #define CFLAGS_BUF   "build/borland/small/cflagsbf.h"
-    #define CC_PROG      "bcc"
+    #define CFLAGS         "build/borland/small/cflags.h"
+    #define CFLAGS_BUF     "build/borland/small/cflagsbf.h"
+    #define CC_PROG        "bcc"
   #endif
 
-#elif defined(__TURBOC__)   /* No longer supported */
-  #define CC_DEFINE      "__TURBOC__"
-  #define CC_PROG        "tcc"
+#elif defined(__TURBOC__)  /* No longer supported */
+  #define CC_DEFINE        "__TURBOC__"
+  #define CC_PROG          "tcc"
 
   #if defined(__SMALL__)
-    #define CFLAGS       "build/turboc/small/cflags.h"
+    #define CFLAGS         "build/turboc/small/cflags.h"
   #elif defined(__LARGE__)
-    #define CFLAGS       "build/turboc/large/cflags.h"
+    #define CFLAGS         "build/turboc/large/cflags.h"
   #endif
 
 #elif defined(__DMC__)
-  #define CC_DEFINE      "__DMC__"
-  #define CC_PROG        "dmc"
+  #define CC_DEFINE        "__DMC__"
+  #define CC_PROG          "dmc"
 
   #if defined(__SMALL__)
-    #define CFLAGS       "build/digmars/small/cflags.h"
-    #define CFLAGS_BUF   "build/digmars/small/cflags.h"
+    #define CFLAGS         "build/digmars/small/cflags.h"
+    #define CFLAGS_BUF     "build/digmars/small/cflags.h"
 
   #elif defined(__LARGE__)
-    #define CFLAGS       "build/digmars/large/cflags.h"
-    #define CFLAGS_BUF   "build/digmars/large/cflagsbf.h"
+    #define CFLAGS         "build/digmars/large/cflags.h"
+    #define CFLAGS_BUF     "build/digmars/large/cflagsbf.h"
 
   #elif defined(WIN32)
-    #define CFLAGS       "build/digmars/win32/cflags.h"
-    #define CFLAGS_BUF   "build/digmars/win32/cflagsbf.h"
+    #define CFLAGS         "build/digmars/win32/cflags.h"
+    #define CFLAGS_BUF     "build/digmars/win32/cflagsbf.h"
 
   #elif (DOSX == PHARLAP)
-    #define CFLAGS       "build/digmars/phar/cflags.h"
-    #define CFLAGS_BUF   "build/digmars/phar/cflagsbf.h"
+    #define CFLAGS         "build/digmars/phar/cflags.h"
+    #define CFLAGS_BUF     "build/digmars/phar/cflagsbf.h"
 
   #elif (DOSX == X32VM)
-    #define CFLAGS       "build/digmars/x32vm/cflags.h"
-    #define CFLAGS_BUF   "build/digmars/x32vm/cflagsbf.h"
+    #define CFLAGS         "build/digmars/x32vm/cflags.h"
+    #define CFLAGS_BUF     "build/digmars/x32vm/cflagsbf.h"
 
   #else
     #error What!?
   #endif
 
-#elif defined(__POCC__)  /* Win32 only */
-  #define CC_DEFINE      "__POCC__"
-  #define CC_PROG        "pocc"
+#elif defined(__POCC__)    /* Win32 only */
+  #define CC_DEFINE        "__POCC__"
+  #define CC_PROG          "pocc"
 
   #if defined(WIN64) || defined(_M_X64)
     #define CFLAGS         "build/pellesc/64bit/cflags.h"
@@ -397,26 +397,26 @@ const char * W32_CALL wattcpVersion (void)
     #define CFLAGS_BUF     "build/pellesc/32bit/cflagsbf.h"
   #endif
 
-#elif defined(__LCC__)   /* Win32 only */
-  #define CC_DEFINE      "__LCC__"
-  #define CC_PROG        "lcc"
-  #define CFLAGS         "build/lcc/cflags.h"
-  #define CFLAGS_BUF     "build/lcc/cflagsbf.h"
+#elif defined(__LCC__)     /* Win32 only */
+  #define CC_DEFINE        "__LCC__"
+  #define CC_PROG          "lcc"
+  #define CFLAGS           "build/lcc/cflags.h"
+  #define CFLAGS_BUF       "build/lcc/cflagsbf.h"
 
-#elif defined(__CCDL__)  /* DOS4GW only */
-  #define CC_DEFINE      "__CCDL__"
-  #define CC_PROG        "cc386"
-  #define CFLAGS         "build/ladsoft/cflags.h"
-  #define CFLAGS_BUF     "build/ladsoft/cflagsbf.h"
+#elif defined(__CCDL__)    /* DOS4GW only */
+  #define CC_DEFINE        "__CCDL__"
+  #define CC_PROG          "cc386"
+  #define CFLAGS           "build/ladsoft/cflags.h"
+  #define CFLAGS_BUF       "build/ladsoft/cflagsbf.h"
 
-#elif defined(__ICC__)   /* Not yet */
-  #define CC_DEFINE      "__ICC__"
-  #define CC_PROG        "icc"
-  #define CFLAGS         "build/intel/cflags.h"
+#elif defined(__ICC__)     /* Not yet */
+  #define CC_DEFINE        "__ICC__"
+  #define CC_PROG          "icc"
+  #define CFLAGS           "build/intel/cflags.h"
 
 #elif defined(__clang__)
-  #define CC_DEFINE      "__clang__"
-  #define CC_PROG        "clang-cl"
+  #define CC_DEFINE        "__clang__"
+  #define CC_PROG          "clang-cl"
 
   #if defined(_DEBUG)
     #if defined(_WIN64)
@@ -436,15 +436,16 @@ const char * W32_CALL wattcpVersion (void)
     #endif
   #endif
 
-#elif defined(__HIGHC__) /* Pharlap only */
-  #define CC_DEFINE      "__HIGHC__"
-  #define CC_PROG        "hc386"
-  #define CFLAGS         "build/HighC/cflags.h"
+#elif defined(__HIGHC__)   /* Pharlap only */
+  #define CC_DEFINE        "__HIGHC__"
+  #define CC_PROG          "hc386"
+  #define CFLAGS           "build/HighC/cflags.h"
 
 #elif defined(__WATCOMC__)
-  #define CC_DEFINE      "__WATCOMC__"
+  #define CC_DEFINE        "__WATCOMC__"
+
   #if defined(__I86__)
-    #define CC_PROG      "wcc"
+    #define CC_PROG        "wcc"
     #if defined(__SMALL__)
       #define CFLAGS       "build/watcom/small/cflags.h"
       #define CFLAGS_BUF   "build/watcom/small/cflagsbf.h"
@@ -452,8 +453,9 @@ const char * W32_CALL wattcpVersion (void)
       #define CFLAGS       "build/watcom/large/cflags.h"
       #define CFLAGS_BUF   "build/watcom/large/cflagsbf.h"
     #endif
+
   #elif defined(__386__)
-    #define CC_PROG      "wcc386"
+    #define CC_PROG        "wcc386"
     #if defined(WIN32)
       #define CFLAGS       "build/watcom/win32/cflags.h"
       #define CFLAGS_BUF   "build/watcom/win32/cflagsbf.h"
@@ -479,36 +481,36 @@ const char * W32_CALL wattcpVersion (void)
    * and this sets '__MINGW64__' and 'WIN64'.
    */
 #elif defined(__MINGW64__) && defined(__MINGW64_VERSION_MAJOR)
-  #define CC_DEFINE      "__MINGW64__"
-  #define CC_PROG        "gcc"
-  #define CFLAGS         "build/MinGW64/64bit/cflags.h"
-  #define CFLAGS_BUF     "build/MinGW64/64bit/cflagsbf.h"
+  #define CC_DEFINE        "__MINGW64__"
+  #define CC_PROG          "gcc"
+  #define CFLAGS           "build/MinGW64/64bit/cflags.h"
+  #define CFLAGS_BUF       "build/MinGW64/64bit/cflagsbf.h"
 
 #elif defined(__MINGW32__) && defined(__MINGW64_VERSION_MAJOR)
-  #define CC_DEFINE      "__MINGW32__"
-  #define CC_PROG        "gcc"
-  #define CFLAGS         "build/MinGW64/32bit/cflags.h"
-  #define CFLAGS_BUF     "build/MinGW64/32bit/cflagsbf.h"
+  #define CC_DEFINE        "__MINGW32__"
+  #define CC_PROG          "gcc"
+  #define CFLAGS           "build/MinGW64/32bit/cflags.h"
+  #define CFLAGS_BUF       "build/MinGW64/32bit/cflagsbf.h"
 
-#elif defined(__MINGW32__)    /* The old-school MinGW from <mingw.org> */
-  #define CC_DEFINE      "__MINGW32__"
-  #define CC_PROG        "gcc"
-  #define CFLAGS         "build/MinGW32/cflags.h"
-  #define CFLAGS_BUF     "build/MinGW32/cflagsbf.h"
+#elif defined(__MINGW32__) /* The old-school MinGW from <mingw.org> */
+  #define CC_DEFINE        "__MINGW32__"
+  #define CC_PROG          "gcc"
+  #define CFLAGS           "build/MinGW32/cflags.h"
+  #define CFLAGS_BUF       "build/MinGW32/cflagsbf.h"
 
 #elif defined(__CYGWIN__)
-  #define CC_DEFINE      "__CYGWIN__"
-  #define CC_PROG        "gcc"
+  #define CC_DEFINE        "__CYGWIN__"
+  #define CC_PROG          "gcc"
 
   #if defined(__x86_64__)
-    #define CFLAGS       "build/CygWin/64bit/cflags.h"
+    #define CFLAGS         "build/CygWin/64bit/cflags.h"
   #else
-    #define CFLAGS       "build/CygWin/32bit/cflags.h"
+    #define CFLAGS         "build/CygWin/32bit/cflags.h"
   #endif
 
 #elif defined(_MSC_VER)
-  #define CC_DEFINE      "_MSC_VER"
-  #define CC_PROG        "cl"
+  #define CC_DEFINE        "_MSC_VER"
+  #define CC_PROG          "cl"
 
   #if defined(__SMALL__) || defined(__LARGE__)
     #error "Quick-C small/large model no longer supported."
