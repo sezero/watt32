@@ -565,9 +565,9 @@ I_CFLAGS = -I"$(%WATCOM)/h" # -I"$(%PHARLAP)/include"
 
 @elifdef WIN32
 CC       = *wcc386
-CFLAGS   = -bt=nt -mf -3r -fp6 -zm -bd -bm -d3 -zlf -oilrtfm -zri
+CFLAGS   = -bt=nt -mf -3r -fp6 -zm -bm -d3 -zlf -oilrtfm -zri
 AFLAGS   = -bt=nt -3s -dDOSX
-LDFLAGS  = system nt dll
+LDFLAGS  = system nt_dll
 STAT_LIB = $(LIBPATH)wattcpww.lib
 IMP_LIB  = $(LIBPATH)wattcpww_imp.lib
 WATT_DLL = $(DLLPATH)watt-32.dll
@@ -672,8 +672,11 @@ $(LIBARG): $(__MAKEFILES__)
 @ifdef WIN32
 $(LINKARG): $(__MAKEFILES__)
 	%create $^@
-	@%append $^@ option implib=$(IMP_LIB), quiet, map, verbose,
-	@%append $^@ caseexact, map=$(WATT_DLL:.dll=.map), res=$(RESOURCE)
+	@%append $^@ option quiet, verbose
+	@%append $^@ debug all
+	@%append $^@ opt map=$(WATT_DLL:.dll=.map)
+	@%append $^@ opt implib=$(IMP_LIB), res=$(RESOURCE)
+	@%append $^@ reference __DLLstart_
 	@for %f in ($(OBJS)) do @%append $^@ file %f
 @endif
 
