@@ -522,76 +522,90 @@ clean:
 
 .EXTENSIONS: .l
 
+!ifdef __UNIX__
+LIBPATH = ../lib/
+DLLPATH = ../bin/
+OBJROOT = build/watcom/
+OBJPATH = $(OBJDIR)/
+RM = rm -f
+!else
+LIBPATH = ..\lib\ #
+DLLPATH = ..\bin\ #
+OBJROOT = build\watcom\ #
+OBJPATH = $(OBJDIR)\ #
+RM = del
+!endif
+
+AS = *wasm
+AR = *wlib
+
 @ifdef SMALL
 CC       = *wcc
-CFLAGS   = -ms -0 -os -zc -s -zlf -bt=dos
+CFLAGS   = -bt=dos -ms -0 -os -zc -s -zlf
 AFLAGS   = -bt=dos
-STAT_LIB = ..\lib\wattcpws.lib
-OBJDIR   = build\watcom\small
+STAT_LIB = $(LIBPATH)wattcpws.lib
+OBJDIR   = $(OBJROOT)small
+I_CFLAGS = -I"$(%WATCOM)/h"
 
 @elifdef LARGE
 CC       = *wcc
-CFLAGS   = -ml -0 -os -zc -s -zlf -bt=dos
+CFLAGS   = -bt=dos -ml -0 -os -zc -s -zlf
 AFLAGS   = -bt=dos
-STAT_LIB = ..\lib\wattcpwl.lib
-OBJDIR   = build\watcom\large
+STAT_LIB = $(LIBPATH)wattcpwl.lib
+OBJDIR   = $(OBJROOT)large
+I_CFLAGS = -I"$(%WATCOM)/h"
 
 @elifdef FLAT
 CC       = *wcc386
-CFLAGS   = -mf -3r -zff -zgf -zm -s -zlf -bt=dos -oilrtfm # -I$(%PHARLAP)\include
+CFLAGS   = -bt=dos -mf -3r -zff -zgf -zm -s -zlf -oilrtfm
 AFLAGS   = -bt=dos -3r -dDOSX -dDOS4GW
-STAT_LIB = ..\lib\wattcpwf.lib
-OBJDIR   = build\watcom\flat
+STAT_LIB = $(LIBPATH)wattcpwf.lib
+OBJDIR   = $(OBJROOT)flat
+I_CFLAGS = -I"$(%WATCOM)/h" # -I"$(%PHARLAP)/include"
 
 @elifdef WIN32
 CC       = *wcc386
-CFLAGS   = -mf -3r -zm -bd -bm -d3 -zlf -bt=nt -fp6 -oilrtfm -zri
+CFLAGS   = -bt=nt -mf -3r -fp6 -zm -bd -bm -d3 -zlf -oilrtfm -zri
 AFLAGS   = -bt=nt -3s -dDOSX
 LDFLAGS  = system nt dll
-STAT_LIB = ..\lib\wattcpww.lib
-IMP_LIB  = ..\lib\wattcpww_imp.lib
-WATT_DLL = ..\bin\watt-32.dll
-OBJDIR   = build\watcom\win32
+STAT_LIB = $(LIBPATH)wattcpww.lib
+IMP_LIB  = $(LIBPATH)wattcpww_imp.lib
+WATT_DLL = $(DLLPATH)watt-32.dll
+OBJDIR   = $(OBJROOT)win32
 RESOURCE = $(OBJPATH)watt-32.res
+I_CFLAGS = -I"$(%WATCOM)/h" -I"$(%WATCOM)/h/nt"
 
 @elifdef SMALL32
 CC       = *wcc386
-CFLAGS   = -ms -oaxt -s -zlf -bt=dos
-AFLAGS   = -3 -bt=dos -dDOSX
-STAT_LIB = ..\lib\wattcpw3.lib
-OBJDIR   = build\watcom\small32
+CFLAGS   = -bt=dos -ms -3r -oaxt -s -zlf
+AFLAGS   = -bt=dos -3s -dDOSX -dDOS4GW
+STAT_LIB = $(LIBPATH)wattcpw3.lib
+OBJDIR   = $(OBJROOT)small32
+I_CFLAGS = -I"$(%WATCOM)/h"
 
 @else
 !error Unknown WATCOM model
 @endif
 
-OBJPATH = $(OBJDIR)\ #
-
 LIBARG  = $(OBJPATH)wlib.arg
 LINKARG = $(OBJPATH)wlink.arg
 C_ARGS  = $(OBJPATH)wcc.arg
 
-AFLAGS += -zq -fr=nul -w3 -d1
-CFLAGS += -zq -fr=nul -wx -fpi
-
-#
-# Since Watcom's internal (?) 'echo' sometimes fails to handle so many arguments in
-# the 'cflags.h' rule below.
-#
-EXTRA_CFLAGS = -DWATT32_BUILD -I. -I..\inc -I$(%WATCOM)\h
+AFLAGS += -zq -fr=nul -w3 -d1 -I"../inc"
+CFLAGS += -zq -fr=nul -wx -DWATT32_BUILD -I. -I"../inc"
 
 #
 # WCC386-flags used:
-#   -m{s,l,f} memory model; small, large or flat
+#   -bt=dos   target system - DOS
+#   -bt=nt    target system - Win-NT
+#   -m{s,f}   memory model; small or flat
 #   -3s       optimise for 386, stack call convention
-#   -3r       optimise for 386, register calls
+#   -3r       optimise for 386, register call convention
 #   -s        no stack checking
 #   -zq       quiet compiling
 #   -d3       generate full debug info
 #   -fpi      inline math + emulation
 #   -fr       write errors to file (and stdout)
-#   -bt=dos   target system - DOS
-#   -bt=nt    target system - Win-NT
 #   -zlf      always generate default library information
 #   -zm       place each function in separate segment
 #   -oilrtfm  optimization flags
@@ -606,13 +620,15 @@ EXTRA_CFLAGS = -DWATT32_BUILD -I. -I..\inc -I$(%WATCOM)\h
 #    -oahkrs -s -em -zp1 -3r -fp3
 #
 #  WCC-flags for small/large model:
-#    -zc      place const data into the code segment
-#    -os      optimization flags
-#      s:     favour code size over execution time
+#   -bt=dos   target system - DOS
+#   -m{s,l}   memory model; small or large
+#   -0        optimise for 8086, register call convention
+#   -s        no stack checking
+#   -zq       quiet compiling
+#   -zc       place const data into the code segment
+#   -os       optimization flags
+#     s:      favour code size over execution time
 #
-
-AS = *wasm
-AR = *wlib -q -b -c
 
 @ifdef WIN32
 TARGETS = $(STAT_LIB) $(IMP_LIB) $(WATT_DLL)
@@ -623,28 +639,31 @@ TARGETS = $(STAT_LIB)
 all: $(PKT_STUB) $(C_ARGS) $(OBJPATH)cflags.h $(OBJPATH)cflagsbf.h $(TARGETS)
 
 @ifdef WIN32
-$(WATT_DLL) $(IMP_LIB): $(OBJS) $(RESOURCE) $(LINKARG)
-	*wlink $(LDFLAGS) name $(WATT_DLL) @$(LINKARG)
+$(IMP_LIB): $(WATT_DLL)
+	@%null
+
+$(WATT_DLL): $(OBJS) $(RESOURCE) $(LINKARG)
+	*wlink $(LDFLAGS) name $^@ @$(LINKARG)
 @endif
 
 $(STAT_LIB): $(OBJS) $(LIBARG)
-	$(AR) -pa $^@ @$(LIBARG)
+	$(AR) -q -b -c -pa $^@ @$(LIBARG)
 
--!include "build\watcom\watt32.dep"
+-!include "$(OBJROOT)watt32.dep"
 
 $(OBJPATH)asmpkt.obj:   asmpkt.asm
 $(OBJPATH)chksum0.obj:  chksum0.asm
 $(OBJPATH)cpumodel.obj: cpumodel.asm
 
 .c{$(OBJDIR)}.obj:
-	$(CC) $[@ @$(C_ARGS) -fo=$@
+	$(CC) $[@ @$(C_ARGS) -fo=$^@
 
 .asm{$(OBJDIR)}.obj:
-	$(AS) $[@ $(AFLAGS) -fo=$@
+	$(AS) $[@ $(AFLAGS) -fo=$^@
 
 $(C_ARGS): $(__MAKEFILES__)
 	%create $^@
-	@%append $^@ $(CFLAGS) $(EXTRA_CFLAGS)
+	@%append $^@ $(CFLAGS) $(I_CFLAGS)
 
 $(LIBARG): $(__MAKEFILES__)
 	%create $^@
@@ -659,18 +678,21 @@ $(LINKARG): $(__MAKEFILES__)
 @endif
 
 clean: .SYMBOLIC
-	- @del $(OBJPATH)*.obj
-	- @del $(OBJPATH)cflags.h
-	- @del $(OBJPATH)cflagsbf.h
-	- @del $(TARGETS)
-	- @del $(C_ARGS)
-	- @del $(LIBARG)
-	- @del $(PKT_STUB)
+	@if exist $(OBJPATH)*.obj $(RM) $(OBJPATH)*.obj
+	@if exist $(OBJPATH)cflags.h $(RM) $(OBJPATH)cflags.h
+	@if exist $(OBJPATH)cflagsbf.h $(RM) $(OBJPATH)cflagsbf.h
+	@if exist $(STAT_LIB) $(RM) $(STAT_LIB)
+	@if exist $(C_ARGS) $(RM) $(C_ARGS)
+	@if exist $(LIBARG) $(RM) $(LIBARG)
+!ifdef PKT_STUB
+	@if exist $(PKT_STUB) $(RM) $(PKT_STUB)
+!endif
 @ifdef WIN32
-	- @del $(LINKARG)
-	- @del $(WATT_DLL)
-	- @del $(RESOURCE)
-	- @del $(WATT_DLL:.dll=.map)
+	@if exist $(LINKARG) $(RM) $(LINKARG)
+	@if exist $(WATT_DLL) $(RM) $(WATT_DLL)
+	@if exist $(IMP_LIB) $(RM) $(IMP_LIB)
+	@if exist $(RESOURCE) $(RM) $(RESOURCE)
+	@if exist $(WATT_DLL:.dll=.map) $(RM) $(WATT_DLL:.dll=.map)
 @endif
 	@echo Cleaning done
 
@@ -1432,7 +1454,7 @@ $(LINK_ARGS): $(OBJS) $(RESOURCE)
 
 @endif
 
-@ifdef HIGHC DJGPP MINGW32 MINGW64 CLANG CYGWIN32 CYGWIN64 CLANG
+@ifdef HIGHC DJGPP MINGW32 MINGW64 CLANG CYGWIN32 CYGWIN64
   #
   # GNU-Make rules uses shell 'sh' commands:
   #
@@ -1526,7 +1548,7 @@ $(RESOURCE): watt-32.rc
 
 @elifdef WATCOM
 $(RESOURCE): watt-32.rc
-	*wrc -dDEBUG=0 -D__WATCOMC__ -q -r -zm -fo=$@ $<
+	*wrc -dDEBUG=0 -D__WATCOMC__ -q -r -zm -fo=$^@ $<
 
 @endif
 @endif  # WIN32 WIN64
@@ -1567,7 +1589,7 @@ $(OBJPATH)cflagsbf.h:
 
 @elifdef WATCOM
 $(OBJPATH)cflagsbf.h: $(C_ARGS)
-	$(W32_BIN2C) $(C_ARGS) > $@
+	$(W32_BIN2C) $(C_ARGS) > $^@
 
 @elifdef CLANG
 $(OBJPATH)cflagsbf.h: $(C_ARGS)
