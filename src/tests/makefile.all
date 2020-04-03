@@ -233,8 +233,7 @@ CFLAGS = -DTEST_PROG -DWATT32 -DWATT32_STATIC -I.. -I../../inc
     $(CC) -c $(CFLAGS) $(2) -Fo.\\
     link -out:$(strip $(1)) $(LDFLAGS) $(notdir $(2:.c=.obj)) $(WATT_LIB) user32.lib advapi32.lib > link.tmp
     cat link.tmp >> $(1:.exe=.map)
-    rm -f link.tmp $(1:.exe=.obj) $(1:.exe=.lib) $(1:.exe=.exp) ; echo
-    echo
+    rm -f link.tmp $(1:.exe=.lib) $(1:.exe=.exp) ; echo
   endef
 
 @elifdef HIGHC
@@ -319,11 +318,11 @@ CFLAGS = -DTEST_PROG -DWATT32 -DWATT32_STATIC -I.. -I../../inc
   # 'wlink' generates this:
   #   Error! E2030: file clib3s.lib(dstrt386): multiple starting addresses found, already defined in clib3s.lib(cstrtwnt)
   #
-  # But the .exe-file seems to run fine.
+  # But the .exe-file seems to run fine. Redirect 'stderr' to NUL in any case
   #
   define compile_and_link
     $(CC) $(subst /,\,$(CFLAGS)) $(subst /,\,$(2))
-    wlink $(LDFLAGS) library $(WATT_LIB) name $(1) file $(notdir $(2:.c=.obj))
+    wlink $(LDFLAGS) library $(WATT_LIB) name $(1) file $(notdir $(2:.c=.obj)) 2> NUL
     echo
   endef
 
