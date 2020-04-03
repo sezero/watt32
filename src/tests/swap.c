@@ -6,7 +6,9 @@
 #include <limits.h>
 
 #if defined(_MSC_VER)
+  #define INVD_CACHE
   #include <intrin.h>
+
 #elif defined(__MINGW32__) || defined(__CYGWIN__)
   #include <x86intrin.h>
 #endif
