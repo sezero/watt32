@@ -1548,7 +1548,7 @@ $(RESOURCE): watt-32.rc
 
 @elifdef WATCOM
 $(RESOURCE): watt-32.rc
-	*wrc -dDEBUG=0 -D__WATCOMC__ -q -r -zm -fo=$^@ $<
+	*wrc -q -bt=nt -dDEBUG=0 -D__WATCOMC__ -r -zm -fo=$^@ $<
 
 @endif
 @endif  # WIN32 WIN64
