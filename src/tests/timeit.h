@@ -9,7 +9,7 @@
 /*
  * Do not assume <wattcp.h> was included to define 'uint64'.
  */
-#if defined(__GNUC__)
+#if defined(__GNUC__) || defined(__clang__)
   #define uint64 unsigned long long
   #define GCC_INLINE extern __inline__ __attribute__ ((__gnu_inline__))
 
@@ -82,7 +82,9 @@
 
   static __inline void _invd_cache (void)
   {
+   #if !defined(__clang__)  /* where is this in clang-cl? */
     __wbinvd();
+   #endif
   }
 
 #elif defined(__WATCOMC__) && defined(__386__)

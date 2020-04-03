@@ -132,12 +132,18 @@ CFLAGS = -DTEST_PROG -DWATT32 -DWATT32_STATIC -I.. -I../../inc
   endef
 
 @elifdef VISUALC CLANG
-  CFLAGS += -nologo -W3 -MDd           \
+  CFLAGS += -nologo -W3 -MD            \
             -D_CRT_SECURE_NO_WARNINGS  \
             -D_CRT_NONSTDC_NO_WARNINGS \
             -D_CRT_OBSOLETE_NO_WARNINGS
 
-  LDFLAGS = -nologo -map -debug -debugtype:cv -verbose -incremental:no
+  LDFLAGS = -nologo -map -debug -debugtype:cv -incremental:no
+
+  #
+  # Ignore this:
+  #  LINK : warning LNK4098: defaultlib 'msvcrt.lib' conflicts with ...
+  #
+  LDFLAGS += -ignore:4098
 @endif
 
 @ifdef MINGW64 VISUALC CLANG CYGWIN64
@@ -146,6 +152,7 @@ CFLAGS = -DTEST_PROG -DWATT32 -DWATT32_STATIC -I.. -I../../inc
     # WIN32 -> 32-bit programs.
     #
     LIB_DIR = ../../lib/x86
+    BITS    = 32
     @ifdef MINGW64
       CFLAGS += -m32
     @elifdef VISUALC CLANG
@@ -157,6 +164,7 @@ CFLAGS = -DTEST_PROG -DWATT32 -DWATT32_STATIC -I.. -I../../inc
     # WIN64 -> 64-bit programs.
     #
     LIB_DIR = ../../lib/x64
+    BITS    = 64
     @ifdef MINGW64 CYGWIN64
       CFLAGS += -m64
     @elifdef VISUALC CLANG
@@ -231,8 +239,7 @@ CFLAGS = -DTEST_PROG -DWATT32 -DWATT32_STATIC -I.. -I../../inc
 @elifdef VISUALC CLANG
   define compile_and_link
     $(CC) -c $(CFLAGS) $(2) -Fo.\\
-    link -out:$(strip $(1)) $(LDFLAGS) $(notdir $(2:.c=.obj)) $(WATT_LIB) user32.lib advapi32.lib > link.tmp
-    cat link.tmp >> $(1:.exe=.map)
+    link -out:$(strip $(1)) $(LDFLAGS) $(notdir $(2:.c=.obj)) $(WATT_LIB) user32.lib advapi32.lib
     rm -f link.tmp $(1:.exe=.lib) $(1:.exe=.exp) ; echo
   endef
 

@@ -485,7 +485,7 @@ int W32_CALL gettimeofday2 (struct timeval *tv, struct timezone *tz)
 #if STEVES_PATCHES
     tv->tv_sec = (time_t) secs;
 #else
-    tv->tv_sec  = (time_t) ((usecs - tv->tv_usec) / U64_SUFFIX(1000000) + (uint64)secs);
+    tv->tv_sec = (time_t) ((usecs - tv->tv_usec) / U64_SUFFIX(1000000) + (uint64)secs);
 #endif
     tv->tv_sec += utc_offset;
 
