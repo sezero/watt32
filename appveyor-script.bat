@@ -345,8 +345,24 @@ exit /b 0
 ::
 :build_tests
   cd src\tests
-  %_ECHO% "\e[1;33m[%CPU%]: Simply doing 'call tests/configur.bat %BUILDER%' now.\e[0m"
-  call configur.bat %BUILDER%
+
+  if %BUILDER%. == borland. (
+    call configur.bat %BUILDER%
+    %_ECHO% "\e[1;33m[%CPU%]: But testing %BUILDER%' anyway.\e[0m"
+    %BCCDIR%\bin\make -f bcc_win.mak
+
+    %_ECHO% "\e[1;33m ---------------------------------------------------------------------------\e[0m"
+    %_ECHO% "\e[1;33m Running some test programs:.\e[0m"
+    cpu.exe
+    %_ECHO% "\e[1;33m ---------------------------------------------------------------------------\e[0m"
+    cpuspeed.exe
+    %_ECHO% "\e[1;33m ---------------------------------------------------------------------------\e[0m"
+
+  ) else (
+    %_ECHO% "\e[1;33m[%CPU%]: Simply doing 'call tests/configur.bat %BUILDER%' now.\e[0m"
+    call configur.bat %BUILDER%
+  )
+
   exit /b 0
 
 ::

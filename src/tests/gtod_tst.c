@@ -12,6 +12,8 @@
 
 int main (int argc, char **argv)
 {
+  int i;
+
 #ifdef __MSDOS__
   if (argc > 1 && !strcmp(argv[1],"-t"))
      init_timer_isr();
@@ -20,7 +22,9 @@ int main (int argc, char **argv)
   (void) argv;
 #endif
 
-  while (!watt_kbhit())
+  puts ("Running 30 times or until a keypress.");
+
+  for (i = 0; i < 30 && !watt_kbhit(); i++)
   {
     struct timeval tv;
     const char *tstr;
