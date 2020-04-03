@@ -276,7 +276,7 @@ CFLAGS = -DTEST_PROG -DWATT32 -DWATT32_STATIC -I.. -I../../inc
   LDFLAGS += -pack                       # pack BSS segment
 
   define compile_and_link
-    echo '$(CFLAGS)' > highc.arg
+    echo '$(CFLAGS)'  > highc.arg
     echo '$(LDFLAGS)' > 386link.arg
     $(CC) -c @highc.arg -o $(1:.c=.obj) $(1)
     386link @386link.arg $(1:.c=.obj) -exe $(2)
@@ -334,17 +334,11 @@ CFLAGS = -DTEST_PROG -DWATT32 -DWATT32_STATIC -I.. -I../../inc
   endef
 
 @elifdef BORLAND
-  CC      = bcc32
-  CFLAGS += -j5 -a-
-
-  #
-  # The same hacks for '../lang.c' as in '../makefile.all':
-  #
-  CFLAGS += -DFLEXINT_H -Dflex_int32_t=int -Dflex_int16_t=short -DBUILD_WINDOWS
-
   ifeq ($(CBUILDER_IS_LLVM_BASED),1)
+    CC      = bcc32
     LDFLAGS = -q -lq -Xdriver -Wno-format-security
   else
+    CC      = bcc32c
     LDFLAGS = -r
   endif
 
@@ -357,6 +351,16 @@ CFLAGS = -DTEST_PROG -DWATT32 -DWATT32_STATIC -I.. -I../../inc
   @else
     $(error Unknown BORLAND model. Currently only 'FLAT' and 'WIN32'.)
   @endif
+
+  #
+  # The same hacks for '../lang.c' as in '../makefile.all'.
+  #
+  CFLAGS += -DFLEXINT_H -Dflex_int32_t=int -Dflex_int16_t=short
+
+  #
+  # Turn off some warnings.
+  #
+  CFLAGS += -j5 -a- -DBUILD_WINDOWS
 
   define compile_and_link
     $(CC) $(CFLAGS) -o $(1) $(2) $(LDFLAGS) -l $(WATT_LIB)
