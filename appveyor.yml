@@ -7,22 +7,20 @@ skip_commits:
 
 environment:
   matrix:
+    - BUILDER: visualc
+      CPU:     x86
+    - BUILDER: visualc
+      CPU:     x64
+    - BUILDER: clang
+      CPU:     x86
+    - BUILDER: clang
+      CPU:     x64
+    - BUILDER: mingw64
+      CPU:     x86
+    - BUILDER: mingw64
+      CPU:     x64
     - BUILDER: borland
       CPU:     x86
-    - BUILDER: visualc
-      CPU:     x86
-    - BUILDER: visualc
-      CPU:     x64
-    - BUILDER: clang
-      CPU:     x86
-    - BUILDER: clang
-      CPU:     x64
-    - BUILDER: mingw64
-      CPU:     x86
-    - BUILDER: mingw64
-      CPU:     x64
-#   - BUILDER: borland
-#     CPU:     x86
     - BUILDER: djgpp
       CPU:     x86
     - BUILDER: watcom
