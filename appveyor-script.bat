@@ -350,6 +350,8 @@ exit /b 0
 :build_tests
   cd src\tests
 
+  if %CPU%. == x86. set PATH=c:\Program Files (x86)\LLVM\bin;%PATH%
+
   if %MODEL%. == flat.    goto :no_tests
   if %MODEL%. == small.   goto :no_tests
   if %MODEL%. == small32. goto :no_tests
@@ -364,14 +366,13 @@ exit /b 0
   if %BUILDER%. == watcom.   make -f watcom_w.mak
   if %BUILDER%. == djgpp.    goto :no_tests
 
-  %_ECHO% "\e[1;33m ---------------------------------------------------------------------------\e[0m"
-  %_ECHO% "\e[1;33m Running some test programs:.\e[0m"
+  %_ECHO% "\e[1;33mRunning test 'cpu.exe' ----------------------------------------------------\e[0m"
   cpu.exe
-  %_ECHO% "\e[1;33m ---------------------------------------------------------------------------\e[0m"
+  %_ECHO% "\e[1;33mRunning test 'cpuspeed.exe 1 1' -------------------------------------------\e[0m"
   cpuspeed.exe 1 1
-  %_ECHO% "\e[1;33m ---------------------------------------------------------------------------\e[0m"
+  %_ECHO% "\e[1;33mRunning test 'swap.exe' ---------------------------------------------------\e[0m"
   swap.exe
-  %_ECHO% "\e[1;33m ---------------------------------------------------------------------------\e[0m"
+  %_ECHO% "\e[1;33mRunning test 'chksum.exe -s' ----------------------------------------------\e[0m"
   chksum.exe -s
 
 :no_tests
