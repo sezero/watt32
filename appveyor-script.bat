@@ -360,7 +360,7 @@ exit /b 0
   if %BUILDER%. == mingw64.  make -f MinG32_%BITS%.mak
   if %BUILDER%. == visualc.  make -f visualc_%BITS%.mak
   if %BUILDER%. == watcom.   make -f watcom_w.mak
-  if %BUILDER%. == djgpp. exit /b
+  if %BUILDER%. == djgpp.    goto :no_tests
 
   %_ECHO% "\e[1;33m ---------------------------------------------------------------------------\e[0m"
   %_ECHO% "\e[1;33m Running some test programs:.\e[0m"
@@ -369,7 +369,7 @@ exit /b 0
   cpuspeed.exe 1 1
   %_ECHO% "\e[1;33m ---------------------------------------------------------------------------\e[0m"
 
-no_tests:
+:no_tests
   exit /b 0
 
 ::
