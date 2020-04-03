@@ -650,7 +650,7 @@ static int exc_select (int s, Socket *socket)
 #include <conio.h>
 #endif
 
-#ifndef _MSC_VER
+#if !defined(_MSC_VER) && !defined(__BORLANDC__)
 #include <unistd.h>
 #endif
 

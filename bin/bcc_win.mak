@@ -18,7 +18,7 @@ STATIC_LIB = 0
   CFLAGS = -WC -v
 !else
   CC     = $(BCCDIR)\bin\bcc32c
-  CFLAGS = -q -lr -lq -Xdriver -Wno-format-security
+  CFLAGS = -q -lq -Xdriver -Wno-format-security
 !endif
 
 !if "$(STATIC_LIB)" == "1"

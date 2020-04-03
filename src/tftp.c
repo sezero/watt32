@@ -579,7 +579,7 @@ int tftp_init (void)
  */
 #if defined(TEST_PROG)
 
-#ifndef _MSC_VER
+#if !defined(_MSC_VER) && !defined(__BORLANDC__)
 #include <unistd.h>
 #endif
 

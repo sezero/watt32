@@ -134,6 +134,8 @@ int main (int argc, char **argv)
   signal (SIGILL, sigill);
 #endif
 
+  puts ("Running 30 times or until a keypress.");
+
   for (i = 0; i < 30 && !kbhit(); i++)
   {
     Hz = _get_cpu_speed();

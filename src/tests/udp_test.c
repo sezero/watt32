@@ -6,6 +6,10 @@
 #include <stdlib.h>
 #include <string.h>
 
+#ifdef WATT32
+#undef _Windows  /* '__BORLANDC__' for Win32 seems to have this as a built-in */
+#endif
+
 #ifdef _Windows  /* not Watt-32. Only Win32 using Winsock */
   #define WIN32_LEAN_AND_MEAN
   #include <winsock.h>
@@ -17,15 +21,17 @@
   {
     WSACleanup();
   }
-  #define sleep(s) Sleep((s)*1000)
-  #define close(s) closesocket(s)
+  #define sleep(s) Sleep ((s)*1000)
+  #define close(s) closesocket (s)
 #else
-  #ifndef __CYGWIN__
+  #if !defined(__CYGWIN__)
   #include <dos.h>
   #endif
-  #ifndef _MSC_VER
+
+  #if !defined(_MSC_VER) && !defined(__BORLANDC__)
   #include <unistd.h>
   #endif
+
   #include <netdb.h>
   #include <sys/socket.h>
   #include <arpa/inet.h>
