@@ -361,7 +361,7 @@ exit /b 0
   if %BUILDER%. == borland.  make -f bcc_w.mak
   if %BUILDER%. == clang.    make -f clang_%BITS%.mak
   if %BUILDER%. == djgpp.    make -f djgpp.mak
-  if %BUILDER%. == mingw64.  make -f MinGW32_%BITS%.mak
+  if %BUILDER%. == mingw64.  make -f MinGW64_%BITS%.mak
   if %BUILDER%. == visualc.  make -f visualc_%BITS%.mak
   if %BUILDER%. == watcom.   make -f watcom_w.mak
   if %BUILDER%. == djgpp.    goto :no_tests
