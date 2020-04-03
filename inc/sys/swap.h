@@ -178,7 +178,7 @@ W32_FUNC unsigned short cdecl _w32_intel16 (unsigned short x);
               __parm   [__ax] \
               __modify [__ax];
 
-#elif defined(__WATCOMC__) && !defined(__I86__)  /* Watcom 16-bit */
+#elif defined(__WATCOMC__) && defined(__I86__)  /* Watcom 16-bit */
   #define intel(x)   __NtoHL(x)
   #define intel16(x) __NtoHS(x)
 
