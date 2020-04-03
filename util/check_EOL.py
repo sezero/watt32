@@ -13,14 +13,14 @@ Check if 'file' or 'wildcard' of files are binary or have LF or CRLF line ending
 #
 # Mainly used to check text-files in the Watt-32 project.
 #
-# By G. Vanem <gvanem@yahoo.no> 2020
+# By G. Vanem <gvanem@yahoo.no> 2020.
 
 import sys, os, glob, string, fnmatch, argparse
 
 parser = argparse.ArgumentParser (add_help=False)
 parser.add_argument ("-h", dest="help", action="store_true")
 parser.add_argument ("-r", dest="recursive", action="store_true")
-parser.add_argument ("-v", dest="verbose", action="count")
+parser.add_argument ("-v", dest="verbose", default=0, action="count")
 parser.add_argument ("spec", nargs='?')
 parser.add_argument ("subdir", nargs='?')
 
@@ -33,12 +33,14 @@ def trace (level, s):
 def check_file (file, tot):
   EOL_dos = EOL_unix = bin_chars = 0
   pos = flen = is_bin = ascii_chars = 0
+  c_last = 0
 
   with open(file, 'rb') as infile:
-    content = infile.read()
+    content = infile.read (1000)
     flen = len(content)
-    if flen <= 1:
-      tot ['unknown'] += 1
+    if flen == 0:
+      print ("Zero:     %s" % file)
+      tot ['zero'] += 1
       return
 
     while 1:
@@ -60,11 +62,16 @@ def check_file (file, tot):
           EOL_unix += 1
 
       pos += 1
+
       if bin_chars > ascii_chars:
         is_bin = 1
 
-      if is_bin or pos >= flen or pos >= max(100,flen/10):
+      if is_bin or pos >= flen-1:
+        c_last = content [flen-1]
         break
+
+  if EOL_unix + EOL_dos == 0 and c_last == '\n':  # last char was '\n'
+    EOL_unix += 1
 
   if is_bin:
     print ("Binary:   %s" % file)
@@ -93,6 +100,7 @@ def process_dir (d, tot):
   for in_file in glob.glob('*'):
       file = ("%s/%s" % (os.getcwd(), in_file)).replace ('\\','/')
       if os.path.isdir(file):
+        tot ['dirs'] += 1
         if opt.recursive:
           process_dir (file, tot)
       elif fnmatch.fnmatch(in_file, opt.spec):
@@ -116,12 +124,15 @@ if opt.spec.endswith('/'):
 
 opt.subdir = os.path.split (opt.spec)[0]
 opt.spec   = os.path.split (opt.spec)[1]
+
 if opt.subdir == '':
   opt.subdir = '.'
 
 totals = { 'files'    : 0,
+           'dirs'     : 0,
            'binary'   : 0,
            'unknown'  : 0,
+           'zero'     : 0,
            'EOL_dos'  : 0,
            'EOL_unix' : 0 }
 
@@ -129,8 +140,11 @@ trace (1, "Searching, opt.subdir: '%s', opt.spec: '%s'" % (opt.subdir, opt.spec)
 
 process_dir (opt.subdir, totals)
 
-print ("total_binary:   %3d" % totals['binary'])
-print ("total_EOL_unix: %3d" % totals['EOL_unix'])
-print ("total_EOL_dos:  %3d" % totals['EOL_dos'])
-print ("total_unknown:  %3d" % totals['unknown'])
-print ("total_files:    %3d" % totals['files'])
+print ("totals:")
+print ("  binary:   %3d" % totals['binary'])
+print ("  EOL_unix: %3d" % totals['EOL_unix'])
+print ("  EOL_dos:  %3d" % totals['EOL_dos'])
+print ("  unknown:  %3d" % totals['unknown'])
+print ("  zero:     %3d" % totals['zero'])
+print ("  files:    %3d" % totals['files'])
+print ("  dirs:     %3d" % totals['dirs'])
