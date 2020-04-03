@@ -196,11 +196,10 @@ gen_watcom ()
   ../util/linux/mkmake -w -o watcom_3.mak -d build/watcom/small32 makefile.all WATCOM SMALL32
 
   ../util/linux/mkdep -s.obj -p\$\(OBJDIR\)/ *.[ch] > build/watcom/watt32.dep
-
   echo "neterr.c: build/watcom/syserr.c" >> build/watcom/watt32.dep
-# these hacks won't work because errnos.c relies on being compiled as a target-exe.
-# ../util/wc_err -s > build/watcom/syserr.c
-# ../util/wc_err -e > ../inc/sys/watcom.err
+
+  # these require dosemu be install
+  dosemu -dumb -c "../dosemu.bat"
 
   echo "Run wmake to make target(s):"
   echo "  E.g. 'wmake -h -f watcom_l.mak' for large model (16-bit)"

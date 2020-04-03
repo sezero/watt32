@@ -46,8 +46,9 @@
   char __syserr000[] = "No Error";
 #endif
 
-#if defined(__WATCOMC__)   /* data-modifier; near/far depending on model */
-  #define DATA_MOD _WCNEAR
+#if defined(__WATCOMC__) && (__WATCOMC__ > 1290)
+  /* data-modifier; near/far depending on model */
+  #define DATA_MOD    _WCDATA
 #else
   #define DATA_MOD
 #endif
