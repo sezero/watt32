@@ -35,7 +35,7 @@ long ip_size = 10000;
     if (!has_rdtsc)
        return ("");
 
-    sprintf (buf, "(%" U64_FMT " clk/call, ", delta64/loops);
+    snprintf (buf, sizeof(buf), "(%" U64_FMT " clk/call, ", delta64/loops);
     return (buf);
   }
 

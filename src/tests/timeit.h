@@ -16,7 +16,10 @@
 #elif defined(_MSC_VER)
   #define uint64 unsigned __int64
 
-#elif defined(__WATCOMC__) && defined(__WATCOM_INT64__) && !(defined(__SMALL__) || defined(__LARGE__))
+#elif defined(__WATCOMC__) && defined(__WATCOM_INT64__)
+  #define uint64 unsigned __int64
+
+#elif defined(__BORLANDC__) && defined(WIN32)
   #define uint64 unsigned __int64
 
 #else
@@ -98,18 +101,35 @@
   #pragma aux _invd_cache = \
             "db 0Fh, 08h";
 
-#elif defined(__BORLANDC__) && defined(__FLAT__) /* bcc32 */
-  static __inline uint64 _get_rdtsc (void)
-  {
-    __asm rdtsc
-    __asm ret
-  }
+#elif defined(__BORLANDC__) && defined(__FLAT__) /* bcc32 / bcc32c */
+  #if (__BORLANDC__ >= 0x0700)
+    static __inline uint64 _get_rdtsc (void)
+    {
+      register uint64 tsc;
+      __asm__ __volatile__ (
+                ".byte 0x0F, 0x31;"   /* rdtsc opcode */
+              : "=A" (tsc) );
+      return (tsc);
+    }
+    static __inline void _invd_cache (void)
+    {
+      __asm__ __volatile__ (
+                ".byte 0x0F, 0x08;");   /* INVD opcode */
+    }
+  #else
+    static __inline uint64 _get_rdtsc (void)
+    {
+      __asm rdtsc
+      __asm ret
+    }
 
-  static __inline void _invd_cache (void)
-  {
-    __asm db 0Fh, 08h
-    __asm ret
-  }
+    static __inline void _invd_cache (void)
+    {
+      __asm db 0Fh
+      __asm db 08h
+      __asm ret
+    }
+  #endif
 
 #elif defined(__LCC__)
   #include <intrinsics.h>
@@ -174,6 +194,9 @@
     #elif defined(__MINGW32__) || defined(__MINGW64__)
       #define S64_FMT   "I64d"
     #endif
+
+  #elif defined(__BORLANDC__) && (__BORLANDC__ >= 0x0700)
+    #define S64_FMT     "lld"
 
   #elif defined(_MSC_VER) || defined(_MSC_EXTENSIONS) || \
         defined(__WATCOMC__) || defined(__LCC__) || defined(__BORLANDC__)

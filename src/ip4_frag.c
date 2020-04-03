@@ -747,11 +747,11 @@ void ip4_frag_init (void)
 #undef enable
 #undef disable
 
-#ifndef _MSC_VER
+#if !defined(_MSC_VER) && !defined(__BORLANDC__)
 #include <unistd.h>
 #endif
 
-#ifdef WIN32
+#ifdef _WIN32
 #define sleep(sec)  Sleep (1000*(sec))
 #endif
 

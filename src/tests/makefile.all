@@ -75,7 +75,10 @@ endif
   PROGRAMS += swap.$(EXE) timeit_test.$(EXE)
 @endif
 
-@ifdef DJGPP HIGHC BORLAND
+@ifndef WIN32 WIN64
+  #
+  # For MSDOS only
+  #
   PROGRAMS += oldstuff.$(EXE) ttime2.$(EXE)
 @endif
 
@@ -231,6 +234,7 @@ CFLAGS = -DTEST_PROG -DWATT32 -DWATT32_STATIC -I.. -I../../inc
     link -out:$(strip $(1)) $(LDFLAGS) $(notdir $(2:.c=.obj)) $(WATT_LIB) user32.lib advapi32.lib > link.tmp
     cat link.tmp >> $(1:.exe=.map)
     rm -f link.tmp $(1:.exe=.obj) $(1:.exe=.lib) $(1:.exe=.exp) ; echo
+    echo
   endef
 
 @elifdef HIGHC
@@ -271,6 +275,7 @@ CFLAGS = -DTEST_PROG -DWATT32 -DWATT32_STATIC -I.. -I../../inc
     $(CC) -c @highc.arg -o $(1:.c=.obj) $(1)
     386link @386link.arg $(1:.c=.obj) -exe $(2)
     rm -f highc.arg 386link.arg
+    echo
   endef
 
 @elifdef WATCOM
@@ -323,21 +328,34 @@ CFLAGS = -DTEST_PROG -DWATT32 -DWATT32_STATIC -I.. -I../../inc
   endef
 
 @elifdef BORLAND
-  CC = bcc32
+  CC      = bcc32
+  CFLAGS += -j5 -a-
+
+  #
+  # The same hacks for '../lang.c' as in '../makefile.all':
+  #
+  CFLAGS += -DFLEXINT_H -Dflex_int32_t=int -Dflex_int16_t=short -DBUILD_WINDOWS
+
+  ifeq ($(CBUILDER_IS_LLVM_BASED),1)
+    LDFLAGS = -q -lq -Xdriver -Wno-format-security
+  else
+    LDFLAGS = -r
+  endif
 
   @ifdef FLAT
-    CFLAGS += -mx
+    CFLAGS += -mx -v4 -y
 
   @elifdef WIN32
-    CFLAGS += -WC
+    CC      = bcc32c
 
   @else
     $(error Unknown BORLAND model. Currently only 'FLAT' and 'WIN32'.)
   @endif
 
   define compile_and_link
-    $(CC) -q -v4 -y $(CFLAGS) -e$(strip $(1)) $(2) -v -ls -q -r -L $(WATT_LIB)
+    $(CC) $(CFLAGS) -o $(1) $(2) $(LDFLAGS) -l $(WATT_LIB)
     rm -f $(1:.exe=.tds)
+    echo
   endef
 @endif
 
@@ -365,7 +383,7 @@ clean realclean vclean:
 #
 # Hand-made dependencies:
 #
-../pcdbug.h: ../strings.h
+../pcdbug.h: ../misc_str.h
 
 ../misc.h: $(addprefix ../../inc/, \
              sys/pack_on.h         \
@@ -376,7 +394,7 @@ clean realclean vclean:
              sys/wtime.h)
 
 ../socket.h: $(addprefix ../, \
-               wattcp.h chksum.h wdpmi.h misc.h run.h timer.h strings.h \
+               wattcp.h chksum.h wdpmi.h misc.h run.h timer.h misc_str.h \
                sock_ini.h language.h pcconfig.h pcqueue.h pcdbug.h pcsed.h \
                pcpkt.h pcstat.h pcigmp.h pctcp.h pcbuf.h pcicmp.h pcarp.h \
                pcrecv.h printk.h netaddr.h ip4_in.h ip4_out.h ip6_in.h \
@@ -422,7 +440,7 @@ clean realclean vclean:
 ../lang.c: ../lang.l
 	flex -8 -t $< > $@
 
-btree.$(EXE): ../btree.c ../wattcp.h ../strings.h ../misc.h ../btree.h
+btree.$(EXE): ../btree.c ../wattcp.h ../misc_str.h ../misc.h ../btree.h
 
 bind.$(EXE): ../bind.c ../socket.h ../pcdbug.h
 
@@ -439,22 +457,22 @@ fingerd.$(EXE): ../listen.c ../socket.h $(WATT_LIB)
 
 geteth.$(EXE): $(addprefix ../, \
                  geteth.c wattcp.h misc.h run.h pcarp.h pcconfig.h pcdns.h \
-                 pcdbug.h strings.h netaddr.h bsddbug.h get_xby.h pcdbug.h \
+                 pcdbug.h misc_str.h netaddr.h bsddbug.h get_xby.h pcdbug.h \
                  sock_ini.h)
 
 gethost.$(EXE): $(addprefix ../, \
-                  gethost.c wattcp.h strings.h misc.h run.h timer.h language.h \
+                  gethost.c wattcp.h misc_str.h misc.h run.h timer.h language.h \
                   pcconfig.h netaddr.h pctcp.h bsdname.h bsddbug.h pcdns.h \
                   get_xby.h pcdbug.h sock_ini.h)
 
 getserv.$(EXE): $(addprefix ../, \
-                  getserv.c wattcp.h strings.h misc.h run.h language.h \
+                  getserv.c wattcp.h misc_str.h misc.h run.h language.h \
                   netaddr.h pcconfig.h get_xby.h pcdbug.h sock_ini.h)
 
 gtod_tst.$(EXE): gtod_tst.c ../../inc/tcp.h
 
 idna.$(EXE): $(addprefix ../, \
-               idna.c wattcp.h misc.h strings.h pcdbug.h punycode.h idna.h \
+               idna.c wattcp.h misc.h misc_str.h pcdbug.h punycode.h idna.h \
                sock_ini.h pcdns.h pcdbug.h) \
              $(addprefix ../iconv/, \
                ascii.h jisx0201.h jisx0208.h cp437.h cp737.h cp775.h cp850.h \
@@ -468,13 +486,13 @@ idna.$(EXE): $(addprefix ../, \
 ioctl.$(EXE): ../ioctl.c ../socket.h
 
 ip4_frag.$(EXE): $(addprefix ../, \
-                   ip4_frag.c wattcp.h strings.h language.h misc.h timer.h \
+                   ip4_frag.c wattcp.h misc_str.h language.h misc.h timer.h \
                    chksum.h pcconfig.h pcqueue.h pcstat.h pcpkt.h pcicmp.h \
                    pctcp.h pcdbug.h netaddr.h run.h ip4_in.h ip4_out.h \
                    ip4_frag.h sock_ini.h loopback.h pcarp.h)
 
 language.$(EXE): $(addprefix ../, \
-                   language.c wattcp.h strings.h sock_ini.h pcconfig.h run.h \
+                   language.c wattcp.h misc_str.h sock_ini.h pcconfig.h run.h \
                    misc.h language.h lang.c)
 
 mcast.$(EXE): mcast.c \
@@ -486,7 +504,7 @@ mcast.$(EXE): mcast.c \
                 tcp.h)
 
 misc.$(EXE): $(addprefix ../, \
-               misc.c wattcp.h wdpmi.h x32vm.h powerpak.h strings.h cpumodel.h \
+               misc.c wattcp.h wdpmi.h x32vm.h powerpak.h misc_str.h cpumodel.h \
                sock_ini.h pcsed.h pcpkt.h pcconfig.h pcdbug.h bsddbug.h \
                ioport.h timer.h run.h stkwalk.h nochkstk.h misc.h) \
                $(addprefix ../../inc/, \
@@ -504,16 +522,16 @@ packet.$(EXE): packet.c                \
 
 pc_cbrk.$(EXE): $(addprefix ../, \
                   pc_cbrk.c copyrigh.h wattcp.h sock_ini.h wdpmi.h x32vm.h \
-                  misc.h printk.h bsddbug.h language.h strings.h nochkstk.h)
+                  misc.h printk.h bsddbug.h language.h misc_str.h nochkstk.h)
 
 pcarp.$(EXE): $(addprefix ../, \
-                pcarp.c copyrigh.h wattcp.h strings.h language.h netaddr.h \
+                pcarp.c copyrigh.h wattcp.h misc_str.h language.h netaddr.h \
                 misc.h run.h timer.h rs232.h ip4_in.h ip4_out.h sock_ini.h \
                 chksum.h pcdbug.h pctcp.h pcsed.h pcconfig.h pcqueue.h \
                 pcstat.h pcicmp.h pcdhcp.h pcpkt.h pcarp.h pcdns.h pcbuf.h)
 
 pcconfig.$(EXE): $(addprefix ../, \
-                   pcconfig.c copyrigh.h wattcp.h strings.h misc.h timer.h \
+                   pcconfig.c copyrigh.h wattcp.h misc_str.h misc.h timer.h \
                    language.h pcdns.h netaddr.h bsdname.h pcqueue.h pcdbug.h \
                    pcsed.h pcpkt.h pctcp.h pcarp.h pcrarp.h pcdhcp.h pcbootp.h \
                    pcicmp.h sock_ini.h ip4_frag.h ip4_out.h ip6_out.h \
@@ -521,7 +539,7 @@ pcconfig.$(EXE): $(addprefix ../, \
                    pcicmp6.h teredo64.h)
 
 punycode.$(EXE): $(addprefix ../, \
-                   punycode.c wattcp.h misc.h strings.h punycode.h)
+                   punycode.c wattcp.h misc.h misc_str.h punycode.h)
 
 select.$(EXE): ../select.c ../socket.h
 
@@ -533,7 +551,7 @@ swap.$(EXE): swap.c ../wattcp.h ../misc.h ../timer.h ../sock_ini.h \
 syslog.$(EXE): $(addprefix ../, \
                  syslog.c wattcp.h misc.h run.h printk.h pctcp.h pcsed.h \
                  pcstat.h pcbuf.h pcdbug.h pcconfig.h netaddr.h sock_ini.h \
-                 strings.h syslog2.h nochkstk.h sock_ini.h pcdbug.h)
+                 misc_str.h syslog2.h nochkstk.h sock_ini.h pcdbug.h)
 
 tftp.$(EXE): $(addprefix ../, \
                tftp.c socket.h pcdns.h run.h tftp.h netaddr.h pcdbug.h pcarp.h)
@@ -559,7 +577,5 @@ udp_test.$(EXE):  $(addprefix ../../inc/, \
                     arpa/inet.h)
 
 wecho.$(EXE): $(addprefix ../, \
-                echo.c wattcp.h strings.h pcconfig.h pctcp.h pcdbug.h misc.h \
+                echo.c wattcp.h misc_str.h pcconfig.h pctcp.h pcdbug.h misc.h \
                 run.h netaddr.h echo.h) $(WATT_LIB)
-
-

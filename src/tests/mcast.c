@@ -17,7 +17,7 @@
 #include <arpa/inet.h>
 #include <tcp.h>
 
-#ifndef _MSC_VER
+#if !defined(_MSC_VER) && !defined(__BORLANDC__)
 #include <unistd.h>
 #endif
 

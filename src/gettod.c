@@ -543,9 +543,10 @@ int main (int argc, char **argv)
   DWORD loops   = 0;
   BOOL  do_cmp  = FALSE;
   BOOL  use_isr = FALSE;
-  int   ch;
+  int   ch, i;
 
   putenv ("USE_RDTSC=0");
+  use_rdtsc = has_rdtsc = 0;
 
   init_misc();
 
@@ -568,6 +569,7 @@ int main (int argc, char **argv)
                  puts ("Cannot use both `-i' and `-r'");
                  return (-1);
                }
+               use_rdtsc = has_rdtsc = 1;
                putenv ("USE_RDTSC=1");
                break;
           case '?':
@@ -583,12 +585,13 @@ int main (int argc, char **argv)
         }
 
   if (do_cmp)
-       puts ("gettimeofday2(),   gettimeofday(),    tv2-tv        ctime     rollover");
+       puts ("gettimeofday2(),   gettimeofday(),        tv2-tv    ctime     rollover");
   else puts ("gettimeofday2(),   sleep,    (ctime)");
 
   puts ("------------------------------------------------------------------------");
+  puts ("Running 30 times or until a keypress.");
 
-  while (!kbhit())
+  for (i = 0; i < 30 && !kbhit(); i++)
   {
     struct timeval tv, tv2;
     struct timeval last;
