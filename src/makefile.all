@@ -385,7 +385,6 @@ MAKE_FILE = bcc_f.mak
 #
 !if "$(CBUILDER_IS_LLVM_BASED)" == ""
   CC     = $(BCCDIR)\bin\bcc32
-  CPP    = $(BCCDIR)\bin\cpp32
   C_ARGS = $(OBJPATH)bcc32.arg
 
   #
@@ -402,7 +401,6 @@ MAKE_FILE = bcc_f.mak
   BRC32 = $(BCCDIR)\bin\brc32
 !else
   CC     = $(BCCDIR)\bin\bcc32c
-  CPP    = $(BCCDIR)\bin\cpp32c
   C_ARGS = $(OBJPATH)bcc32c.arg
   CFLAGS = # -fcolor-diagnostics-
   BRC32  = $(BCCDIR)\bin\rc
@@ -490,9 +488,6 @@ $(OBJPATH)cpumodel.obj: cpumodel.asm
 
 .c.obj:
 	$(CC) -q @$(C_ARGS) $*.c
-
-.c.i:
-	$(CPP) -q @$(C_ARGS) $*.c
 
 .asm.obj:
 	$(AS) $(AFLAGS) $*.asm, $(OBJPATH)$*.obj
