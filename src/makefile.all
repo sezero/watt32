@@ -439,7 +439,7 @@ OBJPATH = $(OBJDIR)\ #
 !endif
 
 CFLAGS  = $(CFLAGS) -c -O -v -vi- -d -Tt -w  -I. -I..\inc -n$(OBJDIR) -DWATT32_BUILD
-LDFLAGS = -tWD -M -q -lr -lq -laa
+LDFLAGS = -tWD -lM -lm -q -lq -laa -lc
 
 AS = tasm32
 
