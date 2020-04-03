@@ -137,6 +137,12 @@ if %BUILDER%. == . (
   exit /b 1
 )
 
+::
+:: Assume 'CPU=x86'
+::
+set BITS=32
+if %CPU%. == x64. set BITS=64
+
 if %1. == build_src.   goto :build_src
 if %1. == build_bin.   goto :build_bin
 if %1. == build_tests. goto :build_tests
@@ -146,12 +152,6 @@ exit /b 1
 
 :build_src
 cd src
-
-::
-:: Assume 'CPU=x86'
-::
-set BITS=32
-if %CPU%. == x64. set BITS=64
 
 ::
 :: Local 'cmd' test for '(' in env-vars:
@@ -342,8 +342,10 @@ exit /b 0
 
 ::
 :: Build and run some test programs in './src/tests'.
-:: Except for 'watcom' MODELS 'small', 'small32', 'flat' and 'large' (DOS).
-:: All these generated makefiles requires GNU-make (a 'make' should be on PATH).
+:: (But djgpp programs cannot run on AppVeyor).
+::
+:: Build all except for the 'watcom' MODELS 'small', 'small32', 'flat' and 'large' (DOS).
+:: All these generated makefiles requires GNU-make (a 'make' should already be on 'PATH').
 ::
 :build_tests
   cd src\tests
@@ -368,6 +370,9 @@ exit /b 0
   %_ECHO% "\e[1;33m ---------------------------------------------------------------------------\e[0m"
   cpuspeed.exe 1 1
   %_ECHO% "\e[1;33m ---------------------------------------------------------------------------\e[0m"
+  swap.exe
+  %_ECHO% "\e[1;33m ---------------------------------------------------------------------------\e[0m"
+  chksum.exe -s
 
 :no_tests
   exit /b 0
