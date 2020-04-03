@@ -259,6 +259,7 @@ int main (int argc, char **argv)
            break;
     }
 
+  survive_eth = 1; /* Mainly to let AppVeyor do this test */
   sock_init();
 
   printf ("has_rdtsc %d, use_rdtsc %d\n", has_rdtsc, use_rdtsc);
