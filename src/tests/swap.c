@@ -35,7 +35,7 @@ long   swap_size = 10000;
 
 const char *get_clk_calls (uint64 delta)
 {
-  static char buf[30];
+  static char buf[50];
 
   snprintf (buf, sizeof(buf), "(%" U64_FMT " clocks per 1000 calls)", 4000*delta/(loops*swap_size));
   return (buf);
