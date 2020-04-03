@@ -257,15 +257,19 @@ if %BUILDER%. == watcom. (
 exit /b 1
 
 ::
-:: './bin/' programs to build for djgpp, Visual-C, MinGW-w64, clang-cl and Watcom (Win32 + large + flat):
+:: './bin/' programs to build for djgpp, Visual-C, MinGW-w64, clang-cl, Borland:
 ::
 :build_bin
 
-set PROGS_BC_WIN=ping.exe ident.exe htget.exe finger.exe tcpinfo.exe tracert.exe
 set PROGS_DJ=bping.exe ping.exe finger.exe ident.exe htget.exe tcpinfo.exe tracert.exe country.exe
 set PROGS_VC=ping.exe finger.exe tcpinfo.exe host.exe htget.exe tracert.exe con-test.exe gui-test.exe lpq.exe lpr.exe ntime.exe whois.exe ident.exe country.exe
 set PROGS_MW=%PROGS_VC%
 set PROGS_CL=%PROGS_VC%
+set PROGS_BC=%PROGS_VC%
+
+::
+:: './bin/' programs to build for Watcom (Win32 + large + flat):
+::
 set PROGS_WC_WIN=ping.exe htget.exe finger.exe tcpinfo.exe con-test.exe gui-test.exe htget.exe tracert.exe whois.exe
 set PROGS_WC_LARGE=ping.exe htget.exe finger.exe tcpinfo.exe htget.exe whois.exe
 set PROGS_WC_FLAT=%PROGS_WC_LARGE%
@@ -302,8 +306,8 @@ if %BUILDER%. == clang. (
 )
 
 if %BUILDER%. == borland. (
-  %_ECHO% "\e[1;33m[%CPU%]: Building PROGS_BC_WIN=%PROGS_BC_WIN%:\e[0m"
-  %BCCDIR%\bin\make -f bcc_win.mak %PROGS_BC_WIN%
+  %_ECHO% "\e[1;33m[%CPU%]: Building PROGS_BC=%PROGS_BC%:\e[0m"
+  %BCCDIR%\bin\make -f bcc_win.mak %PROGS_BC%
   exit /b
 )
 
