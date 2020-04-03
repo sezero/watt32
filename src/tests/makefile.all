@@ -294,7 +294,7 @@ CFLAGS = -DTEST_PROG -DWATT32 -DWATT32_STATIC -I.. -I../../inc
     #
     # The '-3x' MUST match what 'wattcpwf.lib' was built with.
     #
-    CC       = wcc
+    CC       = wcc386
     CFLAGS  += -mf -3r -zff -zgf -zm -s -bt=dos -oilrtfm
     LDFLAGS += system dos
 
@@ -303,7 +303,7 @@ CFLAGS = -DTEST_PROG -DWATT32 -DWATT32_STATIC -I.. -I../../inc
     # The '-3r/-3s' MUST match what '$(WATT_LIB)' was built with.
     #
     CC       = wcc386
-    CFLAGS  += -bt=nt -3r -w6 -d2 -zq -zc -zm -fr=nul -DWIN32
+    CFLAGS  += -bt=nt -3r -w6 -d2 -zc -zm -fr=nul -DWIN32
     LDFLAGS += system nt
 
   @else
@@ -311,7 +311,7 @@ CFLAGS = -DTEST_PROG -DWATT32 -DWATT32_STATIC -I.. -I../../inc
   @endif
 
   LDFLAGS += debug all sort global
-  CFLAGS  += -I..\..\inc -I$(WATCOM)\h
+  CFLAGS  += -zq -I..\..\inc -I$(WATCOM)\h
 
   #
   # Watcom does not like '/' in it's arguments.
@@ -345,7 +345,7 @@ CFLAGS = -DTEST_PROG -DWATT32 -DWATT32_STATIC -I.. -I../../inc
     CFLAGS += -mx -v4 -y
 
   @elifdef WIN32
-    CC      = bcc32c
+    CC = bcc32c
 
   @else
     $(error Unknown BORLAND model. Currently only 'FLAT' and 'WIN32'.)
