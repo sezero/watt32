@@ -342,6 +342,7 @@ exit /b 0
 
 ::
 :: Build (and run?) some test programs in './src/tests'
+:: All these generated makefiles requires GNU-make (a 'make' should be on PATH).
 ::
 :build_tests
   cd src\tests
@@ -349,7 +350,7 @@ exit /b 0
   if %BUILDER%. == borland. (
     call configur.bat %BUILDER%
     %_ECHO% "\e[1;33m[%CPU%]: But testing %BUILDER%' anyway.\e[0m"
-    %BCCDIR%\bin\make -f bcc_win.mak
+    make -f bcc_w.mak
 
     %_ECHO% "\e[1;33m ---------------------------------------------------------------------------\e[0m"
     %_ECHO% "\e[1;33m Running some test programs:.\e[0m"
