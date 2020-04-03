@@ -116,18 +116,21 @@ int Qsort (void *_base, size_t num, size_t size,
   return (1);
 }
 
-#if defined(_MSC_VER) && (_MSC_VER >= 1200) && defined(_M_IX86) /* MSVC 6+ */
-  _declspec(naked) static unsigned long echo_arg (unsigned long arg)
+#if defined(_MSC_VER) && (_MSC_VER >= 1200) && defined(_M_IX86)
+  /*
+   * MSVC 6+: If compiled as fastcall (-Gr), the 1st argument is in ECX.
+   */
+  _declspec(naked) static unsigned long echo_1st_arg_Gr (unsigned long arg)
   {
-    __asm mov eax, [esp]
+    __asm mov eax, ecx
     __asm ret
   }
 
   static void is_fastcall_compiled (void)
   {
-    if (echo_arg(0xDEADBEEF) == 0xDEADBEEF)
-         printf ("-Gr not in effect.\n");
-    else printf ("-Gr in effect.\n");
+    if (echo_1st_arg_Gr(0xDEADBEEF) == 0xDEADBEEF)
+         printf ("-Gr in effect.\n");
+    else printf ("-Gr not in effect.\n");
   }
 #else
   #define is_fastcall_compiled() ((void)0)

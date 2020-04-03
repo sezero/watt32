@@ -31,7 +31,7 @@
   #undef SIGBREAK
 #endif
 
-#if defined(TEST_PROG) && !defined(__CYGWIN__) &&\
+#if defined(TEST_PROG) && !defined(__CYGWIN__) && \
     !(defined(__MINGW32__) || defined(__x86_64__))  /* MinGW64 has no cputs()! */
   #include <conio.h>
   #undef  outsnl

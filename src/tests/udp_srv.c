@@ -16,8 +16,9 @@
 
 #ifdef WATT32
   #include <tcp.h>
-  #define close  close_s
-  #define select select_s
+  #define close    close_s
+  #define select   select_s
+  #undef _Windows  /* '__BORLANDC__' for Win32 seems to have this as a built-in */
 #endif
 
 #ifdef _Windows   /* Not Watt-32 on Windows! */
@@ -32,9 +33,10 @@
     WSACleanup();
   }
 #else
-  #ifndef _MSC_VER
+  #if !defined(_MSC_VER) && !defined(__BORLANDC__)
   #include <unistd.h>
   #endif
+
   #include <netinet/in.h>
   #include <sys/socket.h>
   #include <sys/ioctl.h>

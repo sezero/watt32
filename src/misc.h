@@ -62,6 +62,7 @@ extern "C" {
   #define __CONIO_H
   int _RTLENTRY _EXPFUNC kbhit (void);
   int _RTLENTRY _EXPFUNC getch (void);
+  int _RTLENTRY _EXPFUNC cputs (const char *str);
 
 #elif defined(__CYGWIN__)
   /*
@@ -335,12 +336,22 @@ extern const char *qword_str (uint64 val);
     #endif
 
   #elif defined(_MSC_VER) || defined(_MSC_EXTENSIONS) || \
-        defined(__WATCOMC__) || defined(__LCC__) || defined(__BORLANDC__)
+        defined(__WATCOMC__) || defined(__LCC__) || (defined(__BORLANDC__) && __BORLANDC__ < 0x0700)
     #define S64_FMT          "I64d"
     #define U64_FMT          "I64u"
     #define X64_FMT          "I64X"
     #define S64_SUFFIX(x)    (x##i64)
     #define U64_SUFFIX(x)    (x##Ui64)
+
+  #elif defined(__BORLANDC__)
+    /*
+     * __BORLANDC__ >= 0x0700 is similar to 'gcc'
+     */
+    #define S64_FMT          "lld"
+    #define U64_FMT          "llu"
+    #define X64_FMT          "llX"
+    #define S64_SUFFIX(x)    (x##LL)
+    #define U64_SUFFIX(x)    (x##ULL)
 
   #else
     #define S64_FMT          "Ld"

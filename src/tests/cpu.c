@@ -405,6 +405,27 @@ void print_cpuid_info (void)
   {
     return _rdrand32_step (rand);
   }
+
+#elif defined(__WATCOMC__) && defined(__386__)
+ /*
+  * Disassembly for the above should be:
+  *   rdrand  ecx                    ; 0F C7 F1
+  *   mov     DWORD PTR [eax], ecx   ; 89 08
+  *   mov     eax, 0                 ; B8 00000000
+  *   mov     edx, 1                 ; BA 00000001
+  *   cmovb   eax, edx               ; 0F 42 C2
+  */
+  extern int get_rdrand32 (DWORD *rand);
+  #pragma aux get_rdrand32 =     \
+          ".586"                 \
+          "db   0Fh, 0C7h, 0F1h" \
+          "mov  [eax], ecx"      \
+          "mov  eax, 0"          \
+          "mov  edx, 1"          \
+          "db   0Fh, 42h, 0C2h"  \
+          __parm   [__eax]       \
+          __modify [__eax __edx];
+
 #else
   #define get_rdrand32(val_p) FALSE
 #endif

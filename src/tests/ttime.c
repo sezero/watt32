@@ -2,7 +2,8 @@
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
-#ifndef __CYGWIN__
+
+#if !defined(__CYGWIN__) && !defined(__BORLANDC__)
 #include <dos.h>
 #endif
 

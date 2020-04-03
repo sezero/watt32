@@ -73,12 +73,12 @@ LIBS    = $(WATTLIB)
 CFLAGS = $(CFLAGS) -wd4244 -wd4267
 !endif
 
-PROGRAMS = popdump.exe  rexec.exe   tcpinfo.exe cookie.exe  \
-           daytime.exe  dayserv.exe finger.exe  host.exe    \
-           lpq.exe      lpr.exe     ntime.exe   ph.exe      \
-           stat.exe     htget.exe   revip.exe   vlsm.exe    \
-           whois.exe    ping.exe    ident.exe   country.exe \
-           tracert.exe con-test.exe gui-test.exe
+PROGRAMS = popdump.exe  rexec.exe    tcpinfo.exe cookie.exe  \
+           daytime.exe  dayserv.exe  finger.exe  host.exe    \
+           lpq.exe      lpr.exe      ntime.exe   ph.exe      \
+           stat.exe     htget.exe    revip.exe   vlsm.exe    \
+           whois.exe    ping.exe     ident.exe   country.exe \
+           tracert.exe  con-test.exe gui-test.exe
 
 all:  $(PROGRAMS)
 !if $(DEBUG_MODE) == 1

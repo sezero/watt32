@@ -18,7 +18,7 @@ STATIC_LIB = 0
   CFLAGS = -WC -v
 !else
   CC     = $(BCCDIR)\bin\bcc32c
-  CFLAGS = -q -lr -lq -Xdriver -Wno-format-security
+  CFLAGS = -q -lq -Xdriver -Wno-format-security
 !endif
 
 !if "$(STATIC_LIB)" == "1"
@@ -30,14 +30,22 @@ STATIC_LIB = 0
 
 CFLAGS = $(CFLAGS) -a- -I..\inc -I..\src
 
-PROGS  = ping.exe    popdump.exe rexec.exe   tcpinfo.exe cookie.exe  \
-         daytime.exe dayserv.exe finger.exe  host.exe    lpq.exe     \
-         lpr.exe     ntime.exe   ph.exe      stat.exe    htget.exe   \
-         tcptalk.exe uname.exe   whois.exe   blather.exe lister.exe  \
-         tracert.exe vlsm.exe    revip.exe
+PROGRAMS = ping.exe    popdump.exe rexec.exe   tcpinfo.exe  cookie.exe  \
+           daytime.exe dayserv.exe finger.exe  host.exe     lpq.exe     \
+           lpr.exe     ntime.exe   ph.exe      stat.exe     htget.exe   \
+           tcptalk.exe uname.exe   whois.exe   blather.exe  lister.exe  \
+           tracert.exe vlsm.exe    revip.exe   con-test.exe gui-test.exe
 
-all: $(PROGS)
+all: $(PROGRAMS)
      @echo Borland/Win32 binaries done
+
+$(PROGRAMS): $(WATT_LIB) bcc_win.mak
+
+gui-test.exe: w32-test.c
+      $(CC) -o gui-test.exe $(CFLAGS) -DIS_GUI=1 w32-test.c -lsubsystem:windows -l $(WATT_LIB)
+
+con-test.exe: w32-test.c
+      $(CC) -o con-test.exe $(CFLAGS) w32-test.c -l $(WATT_LIB)
 
 .c.exe:
      $(CC) -o $*.exe $(CFLAGS) $*.c -l $(WATT_LIB)

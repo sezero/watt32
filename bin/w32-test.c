@@ -45,8 +45,10 @@ int MS_CDECL _tmain (int argc, TCHAR **argv)
 {
   int ch;
 
-  if (!strstr(wattcpBuildCC(),"_MSC_VER") && !strstr(wattcpBuildCC(),"__clang__"))
-     printf ("This program is more useful with Visual-C and Clang.\n");
+  if (!strstr(wattcpBuildCC(),"_MSC_VER")  &&
+      !strstr(wattcpBuildCC(),"__clang__") &&
+      !strstr(wattcpBuildCC(),"__BORLANDC__"))
+     printf ("This program is more useful with Visual-C, Clang or CBuilder.\n");
 
   while ((ch = getopt(argc, argv, "abdfeh?lsv")) != EOF)
         switch (ch)

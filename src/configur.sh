@@ -31,7 +31,8 @@ MINGW64_PREFIX="x86_64-w64-mingw32"
 #
 # target triplet for cross-win32 toolchain, MinGW-xxx
 # for MinGW x86 targets, one can use either MinGW-w64:
-#MINGW_PREFIX="i686-w64-mingw32"
+# MINGW_PREFIX="i686-w64-mingw32"
+#
 # ... or the plain old MinGW.org:
 #
 MINGW_PREFIX="i686-pc-mingw32"
@@ -80,13 +81,14 @@ gen_djgpp ()
   ../util/linux/mkdep -s.o -p\$\(OBJDIR\)/ *.[ch] > build/djgpp/watt32.dep
 
   echo "neterr.c: build/djgpp/syserr.c" >> build/djgpp/watt32.dep
-# these hacks won't work because errnos.c relies on being compiled as a target-exe.
-# echo "#include <errno.h>" | $DJGPP_PREFIX-gcc -E -dD - | grep "#define E" > ../util/generrno.h
-# echo "#include <sys/version.h>" | $DJGPP_PREFIX-gcc -E -dD - | grep "#define __DJGPP" >> ../util/generrno.h
-# make -C ../util -f errnox.mak dj_err
-# ../util/dj_err -s > build/djgpp/syserr.c
-# ../util/dj_err -e > ../inc/sys/djgpp.err
-
+  #
+  # these hacks won't work because errnos.c relies on being compiled as a target-exe.
+  # echo "#include <errno.h>" | $DJGPP_PREFIX-gcc -E -dD - | grep "#define E" > ../util/generrno.h
+  # echo "#include <sys/version.h>" | $DJGPP_PREFIX-gcc -E -dD - | grep "#define __DJGPP" >> ../util/generrno.h
+  # make -C ../util -f errnox.mak dj_err
+  # ../util/dj_err -s > build/djgpp/syserr.c
+  # ../util/dj_err -e > ../inc/sys/djgpp.err
+  #
   echo "Run GNU make to make target:"
   echo "  'make -f djgpp.mak'"
 }
@@ -98,14 +100,15 @@ gen_mingw32 ()
   ../util/linux/mkdep -s.o -p\$\(OBJDIR\)/ *.c *.h > build/MinGW32/watt32.dep
 
   echo "neterr.c: build/MinGW32/syserr.c" >> build/MinGW32/watt32.dep
-# these hacks won't work because errnos.c relies on being compiled as a target-exe.
-# echo "#include <errno.h>" | $MINGW_PREFIX-gcc -E -dD - | grep "#define E" > ../util/generrno.h
-# echo "#define __MINGW32__" >> ../util/generrno.h
-# echo "#include <_mingw.h>" | $MINGW_PREFIX-gcc -E -dD - | grep "#define __MINGW32_M" >> ../util/generrno.h
-# make -C ../util -f errnox.mak mw_err
-# ../util/mw_err -s > build/MinGW32/syserr.c
-# ../util/mw_err -e > ../inc/sys/mingw32.err
-
+  #
+  # these hacks won't work because errnos.c relies on being compiled as a target-exe.
+  # echo "#include <errno.h>" | $MINGW_PREFIX-gcc -E -dD - | grep "#define E" > ../util/generrno.h
+  # echo "#define __MINGW32__" >> ../util/generrno.h
+  # echo "#include <_mingw.h>" | $MINGW_PREFIX-gcc -E -dD - | grep "#define __MINGW32_M" >> ../util/generrno.h
+  # make -C ../util -f errnox.mak mw_err
+  # ../util/mw_err -s > build/MinGW32/syserr.c
+  # ../util/mw_err -e > ../inc/sys/mingw32.err
+  #
   echo "Run GNU make to make target:"
   echo "  'make -f MinGW32.mak'"
   make -s -f ../util/pkg-conf.mak mingw32_pkg MINGW32_DIR=../lib
@@ -121,16 +124,16 @@ gen_mingw64 ()
 
   echo "neterr.c: build/MinGW64/syserr.c" >> build/MinGW64/32bit/watt32.dep
   echo "neterr.c: build/MinGW64/syserr.c" >> build/MinGW64/64bit/watt32.dep
-
-# these hacks won't work because errnos.c relies on being compiled as a target-exe.
-# echo "#include <errno.h>" | $MINGW64_PREFIX-gcc -E -dD - | grep "#define E" > ../util/generrno.h
-# echo "#define __MINGW32__" >> ../util/generrno.h
-##echo "#define __MINGW64__" >> ../util/generrno.h
-# echo "#include <_mingw.h>" | $MINGW64_PREFIX-gcc -E -dD - | grep "#define __MINGW64_VERSION_M" >> ../util/generrno.h
-# make -C ../util -f errnox.mak mw64_err
-# ../util/mw64_err -s > build/MinGW64/syserr.c
-# ../util/mw64_err -e > ../inc/sys/mingw64.err
-
+  #
+  # these hacks won't work because errnos.c relies on being compiled as a target-exe.
+  # echo "#include <errno.h>" | $MINGW64_PREFIX-gcc -E -dD - | grep "#define E" > ../util/generrno.h
+  # echo "#define __MINGW32__" >> ../util/generrno.h
+  ##echo "#define __MINGW64__" >> ../util/generrno.h
+  # echo "#include <_mingw.h>" | $MINGW64_PREFIX-gcc -E -dD - | grep "#define __MINGW64_VERSION_M" >> ../util/generrno.h
+  # make -C ../util -f errnox.mak mw64_err
+  # ../util/mw64_err -s > build/MinGW64/syserr.c
+  # ../util/mw64_err -e > ../inc/sys/mingw64.err
+  #
   echo "Run GNU make to make target:"
   echo "  'make -f MinGW64_32.mak'"
   echo "or"
@@ -141,22 +144,22 @@ gen_mingw64 ()
 gen_cygwin32 ()
 {
   echo "Generating CygWin32 makefile, directory and dependencies"
-  ../util/linux/mkmake -o CygWin.mak -d build/CygWin/32bit makefile.all CYGWIN WIN32
+  ../util/linux/mkmake -o CygWin32.mak -d build/CygWin/32bit makefile.all CYGWIN WIN32
   ../util/linux/mkdep -s.o -p\$\(OBJDIR\)/ *.c *.h > build/CygWin/watt32.dep
 
   echo "Run GNU make to make target:"
-  echo "  'make -f CygWin.mak'"
+  echo "  'make -f CygWin32.mak'"
   make -s -f ../util/pkg-conf.mak cygwin_pkg CYGWIN_DIR=../lib
 }
 
 gen_cygwin64 ()
 {
   echo "Generating CygWin64 makefile, directory and dependencies"
-  ../util/linux/mkmake -o CygWin_64.mak -d build/CygWin/64bit makefile.all CYGWIN WIN64
+  ../util/linux/mkmake -o CygWin64.mak -d build/CygWin/64bit makefile.all CYGWIN WIN64
   ../util/linux/mkdep -s.o -p\$\(OBJDIR\)/ *.c *.h > build/CygWin/watt32.dep
 
   echo "Run GNU make to make target:"
-  echo "  'make -f CygWin_64.mak'"
+  echo "  'make -f CygWin64.mak'"
   make -s -f ../util/pkg-conf.mak cygwin64_pkg CYGWIN_DIR=../lib
 }
 
@@ -175,7 +178,9 @@ gen_clang ()
   ../util/linux/mkdep -s.obj -p\$\(OBJDIR\)/ *.[ch] > build/clang/watt32.dep
   echo "neterr.c: build/clang/syserr.c"             >> build/clang/watt32.dep
 
- # Not sure these will work (under Linux/Wine)?
+  #
+  # Not sure these will work (under Linux/Wine)?
+  #
   wine ../util/win32/clang_err -s > build/clang/syserr.c
   wine ../util/win32/clang_err -e > ../inc/sys/clang.err
 
@@ -196,11 +201,12 @@ gen_watcom ()
   ../util/linux/mkmake -w -o watcom_3.mak -d build/watcom/small32 makefile.all WATCOM SMALL32
 
   ../util/linux/mkdep -s.obj -p\$\(OBJDIR\)/ *.[ch] > build/watcom/watt32.dep
-
   echo "neterr.c: build/watcom/syserr.c" >> build/watcom/watt32.dep
-# these hacks won't work because errnos.c relies on being compiled as a target-exe.
-# ../util/wc_err -s > build/watcom/syserr.c
-# ../util/wc_err -e > ../inc/sys/watcom.err
+
+  #
+  # This require dosemu be installed
+  #
+  dosemu -dumb -c "../dosemu.bat"
 
   echo "Run wmake to make target(s):"
   echo "  E.g. 'wmake -h -f watcom_l.mak' for large model (16-bit)"
@@ -218,7 +224,7 @@ gen_all ()
 
 do_clean ()
 {
-  rm -f djgpp.mak watcom_{f,l,s,w,x,3}.mak MinGW32.mak MinGW64.mak CygWin.mak CygWin_64.mak clang-release_{32,64}.mak clang-debug_{32,64}.mak
+  rm -f djgpp.mak watcom_{f,l,s,w,x,3}.mak MinGW{32,64}.mak CygWin{32,64}.mak clang-release_{32,64}.mak clang-debug_{32,64}.mak
   rm -f build/djgpp/watt32.dep build/MinGW32/watt32.dep build/MinGW64/32bit/watt32.dep build/MinGW64/64bit/watt32.dep
   rm -f build/CygWin/watt32.dep build/watcom/watt32.dep build/clang/watt32.dep
   rm -f build/djgpp/syserr.c build/watcom/syserr.c build/MinGW32/syserr.c build/MinGW64/syserr.c build/clang/syserr.c

@@ -341,12 +341,35 @@ if %BUILDER%. == watcom. (
 exit /b 0
 
 ::
-:: Build (and run?) some test programs in './src/tests'
+:: Build and run some test programs in './src/tests'.
+:: Except for 'watcom' MODELS 'small', 'small32', 'flat' and 'large' (DOS).
+:: All these generated makefiles requires GNU-make (a 'make' should be on PATH).
 ::
 :build_tests
   cd src\tests
-  %_ECHO% "\e[1;33m[%CPU%]: Simply doing 'call tests/configur.bat %BUILDER%' now.\e[0m"
+
+  if %MODEL%. == flat.    goto :no_tests
+  if %MODEL%. == small.   goto :no_tests
+  if %MODEL%. == small32. goto :no_tests
+  if %MODEL%. == large.   goto :no_tests
+
   call configur.bat %BUILDER%
+  if %BUILDER%. == borland.  make -f bcc_w.mak
+  if %BUILDER%. == clang.    make -f clang_%BITS%.mak
+  if %BUILDER%. == djgpp.    make -f djgpp.mak
+  if %BUILDER%. == mingw64.  make -f MinG32_%BITS%.mak
+  if %BUILDER%. == visualc.  make -f visualc_%BITS%.mak
+  if %BUILDER%. == watcom.   make -f watcom_w.mak
+  if %BUILDER%. == djgpp.    goto :no_tests
+
+  %_ECHO% "\e[1;33m ---------------------------------------------------------------------------\e[0m"
+  %_ECHO% "\e[1;33m Running some test programs:.\e[0m"
+  cpu.exe
+  %_ECHO% "\e[1;33m ---------------------------------------------------------------------------\e[0m"
+  cpuspeed.exe 1 1
+  %_ECHO% "\e[1;33m ---------------------------------------------------------------------------\e[0m"
+
+:no_tests
   exit /b 0
 
 ::

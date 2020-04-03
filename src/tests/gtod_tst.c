@@ -12,6 +12,8 @@
 
 int main (int argc, char **argv)
 {
+  int i;
+
 #ifdef __MSDOS__
   if (argc > 1 && !strcmp(argv[1],"-t"))
      init_timer_isr();
@@ -20,7 +22,9 @@ int main (int argc, char **argv)
   (void) argv;
 #endif
 
-  while (!watt_kbhit())
+  puts ("Running 30 times or until a keypress.");
+
+  for (i = 0; i < 30 && !watt_kbhit(); i++)
   {
     struct timeval tv;
     const char *tstr;
@@ -28,7 +32,8 @@ int main (int argc, char **argv)
     gettimeofday2 (&tv, NULL);
     tstr = ctime ((const time_t*)&tv.tv_sec);
     printf ("%10lu.%06lu, %s",
-            tv.tv_sec, tv.tv_usec, tstr ? tstr : "illegal\n");
+            (long unsigned int)tv.tv_sec,    /* shut-up djgpp */
+            tv.tv_usec, tstr ? tstr : "illegal\n");
     usleep (500000);
   }
   return (0);

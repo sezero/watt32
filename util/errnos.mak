@@ -5,7 +5,7 @@
 #        targets due to DPMI/DOS-extender conflicts etc.
 #        Use your native make tool to make only the target
 #        you need.
-#          E.g. say: 'wmake -h -f errnos.mak wc_err.exe' for Watcom
+#          E.g. say: 'wmake -u -h -f errnos.mak wc_err.exe' for Watcom
 #                or: 'maker -h -f errnos.mak hc_err.exe' for High-C
 #
 # Therefore, do not use any GNU-make specific syntax here.
@@ -46,10 +46,10 @@ tcc_err.exe: errnos.c
 	tcc -I..\inc -ml -etcc_err.exe errnos.c
 
 wc_err.exe: errnos.c
-	wcl -bcl=dos -I"../inc" -I"$(%WATCOM)/h" -ml -zq -fe=wc_err.exe -fr=nul errnos.c
+	wcl -zq -bcl=dos -ml -wx -I"../inc" -I"$(%WATCOM)/h" -fe=wc_err.exe errnos.c
 
 win32/wc_err.exe: errnos.c
-	wcl386 -bcl=nt -I"../inc" -I"$(%WATCOM)/h" -I"$(%WATCOM)/h/nt" -mf -zq -fe=win32/wc_err.exe -fr=nul errnos.c
+	wcl386 -zq -bcl=nt -mf -wx -I"../inc" -I"$(%WATCOM)/h" -I"$(%WATCOM)/h/nt" -fe=win32/wc_err.exe errnos.c
 
 hc_err.exe: errnos.c
 	hc386 -I..\inc -Hldopt=-nomap -Hnocopyr -o hc_err.exe errnos.c
