@@ -644,16 +644,16 @@ $(WATT_DLL): $(OBJS) $(RESOURCE) $(LINKARG)
 $(STAT_LIB): $(OBJS) $(LIBARG)
 	$(AR) -q -b -c -pa $^@ @$(LIBARG)
 
--!include "$(OBJROOT)watt32.dep"
+$(OBJPATH)language.obj : language.c lang.c .AUTODEPEND
 
 $(OBJPATH)asmpkt.obj:   asmpkt.asm
 $(OBJPATH)chksum0.obj:  chksum0.asm
 $(OBJPATH)cpumodel.obj: cpumodel.asm
 
-.c{$(OBJDIR)}.obj:
+.c{$(OBJDIR)}.obj: .AUTODEPEND
 	$(CC) $[@ @$(C_ARGS) -fo=$^@
 
-.asm{$(OBJDIR)}.obj:
+.asm{$(OBJDIR)}.obj: .AUTODEPEND
 	$(AS) $[@ $(AFLAGS) -fo=$^@
 
 $(C_ARGS): $(__MAKEFILES__)
