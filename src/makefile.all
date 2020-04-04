@@ -1297,7 +1297,7 @@ clean:
 
 CC       = gcc
 CFLAGS   = -m$(BITS) -O2 -g -Wall -mthreads -fno-strict-aliasing -static-libgcc -I. -I../inc -DWATT32_BUILD
-LDFLAGS  = -m$(BITS) -shared -static-libgcc
+LDFLAGS  = -m$(BITS) -shared -static-libgcc -Wl,--print-map
 AS       = as
 AFLAGS   = --$(BITS) -ahls
 
@@ -1330,7 +1330,7 @@ $(STAT_LIB): $(OBJS) $(LIB_ARGS)
 $(IMP_LIB): $(WATT_DLL)
 
 $(WATT_DLL): $(OBJS) $(RESOURCE) $(LINK_ARGS)
-	$(CC) $(LDFLAGS) -Wl,--out-implib,$(IMP_LIB) -o $@ @$(LINK_ARGS)
+	$(CC) $(LDFLAGS) -Wl,--out-implib,$(IMP_LIB) -o $@ @$(LINK_ARGS) > $(@:.dll=.map)
 
 $(OBJPATH)chksum0.o:  chksum0.S
 $(OBJPATH)cpumodel.o: cpumodel.S
