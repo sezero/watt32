@@ -276,7 +276,7 @@ CFLAGS = -DTEST_PROG -DWATT32 -DWATT32_STATIC -I.. -I../../inc
   LDFLAGS += -pack                       # pack BSS segment
 
   define compile_and_link
-    echo '$(CFLAGS)' > highc.arg
+    echo '$(CFLAGS)'  > highc.arg
     echo '$(LDFLAGS)' > 386link.arg
     $(CC) -c @highc.arg -o $(1:.c=.obj) $(1)
     386link @386link.arg $(1:.c=.obj) -exe $(2)
@@ -299,7 +299,7 @@ CFLAGS = -DTEST_PROG -DWATT32 -DWATT32_STATIC -I.. -I../../inc
 
   @elifdef FLAT
     #
-    # The '-3x' MUST match what 'wattcpwf.lib' was built with.
+    # The '-3r/-3s' MUST match what 'wattcpwf.lib' was built with.
     #
     CC       = wcc386
     CFLAGS  += -mf -3r -zff -zgf -zm -s -bt=dos -oilrtfm
@@ -310,7 +310,7 @@ CFLAGS = -DTEST_PROG -DWATT32 -DWATT32_STATIC -I.. -I../../inc
     # The '-3r/-3s' MUST match what '$(WATT_LIB)' was built with.
     #
     CC       = wcc386
-    CFLAGS  += -bt=nt -3r -w6 -d2 -zc -zm -fr=nul -DWIN32
+    CFLAGS  += -bt=nt -mf -3r -w6 -d2 -zc -zm -zlf -bm -DWIN32 -I$(WATCOM)\h\nt
     LDFLAGS += system nt
 
   @else
@@ -318,7 +318,7 @@ CFLAGS = -DTEST_PROG -DWATT32 -DWATT32_STATIC -I.. -I../../inc
   @endif
 
   LDFLAGS += debug all sort global
-  CFLAGS  += -zq -I..\..\inc -I$(WATCOM)\h
+  CFLAGS  += -fr=nul -zq -I$(WATCOM)\h
 
   #
   # Watcom does not like '/' in it's arguments.
@@ -334,17 +334,11 @@ CFLAGS = -DTEST_PROG -DWATT32 -DWATT32_STATIC -I.. -I../../inc
   endef
 
 @elifdef BORLAND
-  CC      = bcc32
-  CFLAGS += -j5 -a-
-
-  #
-  # The same hacks for '../lang.c' as in '../makefile.all':
-  #
-  CFLAGS += -DFLEXINT_H -Dflex_int32_t=int -Dflex_int16_t=short -DBUILD_WINDOWS
-
   ifeq ($(CBUILDER_IS_LLVM_BASED),1)
+    CC      = bcc32
     LDFLAGS = -q -lq -Xdriver -Wno-format-security
   else
+    CC      = bcc32c
     LDFLAGS = -r
   endif
 
@@ -357,6 +351,16 @@ CFLAGS = -DTEST_PROG -DWATT32 -DWATT32_STATIC -I.. -I../../inc
   @else
     $(error Unknown BORLAND model. Currently only 'FLAT' and 'WIN32'.)
   @endif
+
+  #
+  # The same hacks for '../lang.c' as in '../makefile.all'.
+  #
+  CFLAGS += -DFLEXINT_H -Dflex_int32_t=int -Dflex_int16_t=short
+
+  #
+  # Turn off some warnings.
+  #
+  CFLAGS += -j5 -a- -DBUILD_WINDOWS
 
   define compile_and_link
     $(CC) $(CFLAGS) -o $(1) $(2) $(LDFLAGS) -l $(WATT_LIB)
