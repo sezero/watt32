@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include "cpumodel.h"
 
 #ifdef __WATCOMC__
 
@@ -18,8 +19,12 @@ CPUID_DATA cpuid (int);
             "mov [esi+4],ebx"  \
             "mov [esi+8],ecx"  \
             "mov [esi+12],edx" \
-            __modify [eax ebx ecx edx] __parm [eax];
+            __modify [__eax __ebx __ecx __edx] __parm [__eax];
 
+
+extern unsigned long cdecl Get_CR4 (void);
+#pragma aux (__cdecl) _w32_Get_CR4   "*"
+#define Get_CR4       _w32_Get_CR4
 
 int main (void)
 {
@@ -38,8 +43,11 @@ int main (void)
   if (data.edx & 0x800000)
      puts ("MMX is available");
 
+  printf ("CR4 = %08lX\n", Get_CR4());
   return (0);
 }
+
 #else
 #error For Watcom only
 #endif
+
