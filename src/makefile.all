@@ -1340,7 +1340,7 @@ $(OBJPATH)%.o: %.c
 
 $(OBJPATH)%.o: %.S
 	$(CC) -E @$(C_ARGS) $< > $(OBJPATH)$*.iS
-	$(AS) $(AFLAGS) $(OBJPATH)$*.iS -o $@
+	$(AS) $(AFLAGS) $(OBJPATH)$*.iS -o $@ > $(OBJPATH)$*.lst
 
 -include $(OBJPATH)watt32.dep
 
@@ -1444,12 +1444,12 @@ $(LIB_ARGS): $(OBJS) $(MAKEFILE_LIST)
 	$(call create_response_file, $@, $(OBJS))
 
 @ifdef HIGHC DJGPP
-$(LINK_ARGS): $(OBJS)
+$(LINK_ARGS): $(OBJS) $(MAKEFILE_LIST)
+	$(call create_response_file, $@, $(OBJS))
 @else
-$(LINK_ARGS): $(OBJS) $(RESOURCE)
+$(LINK_ARGS): $(OBJS) $(RESOURCE) $(MAKEFILE_LIST)
+	$(call create_response_file, $@, $(OBJS) $(RESOURCE) $(EX_LIBS))
 @endif
-	$(call create_response_file, $@, $^ $(EX_LIBS))
-
 @endif
 
 @ifdef HIGHC DJGPP MINGW32 MINGW64 CLANG CYGWIN32 CYGWIN64
