@@ -1302,7 +1302,7 @@ AS       = as
 AFLAGS   = --$(BITS) -ahls
 
 AR       = ar rs
-STAT_LIB = ../lib/(CPU)/libwatt32-cygwin.a
+STAT_LIB = ../lib/$(CPU)/libwatt32-cygwin.a
 IMP_LIB  = ../lib/$(CPU)/libwatt32-cygwin.dll.a
 WATT_DLL = ../bin/watt-32$(SUFFIX).dll
 OBJDIR   = ./build/CygWin/$(BITS)bit
