@@ -386,7 +386,8 @@ int main (int argc, char **argv)
 
   if (argv[1][1] == 'e')
   {
-    DWORD input [UNICODE_MAX_LENGTH], codept;
+    DWORD input [UNICODE_MAX_LENGTH];
+    unsigned long codept;
     char  output [ACE_MAX_LENGTH+1], uplus[3];
     int   c;
 
@@ -402,7 +403,7 @@ int main (int argc, char **argv)
       if (r == EOF || r == 0)
          break;
 
-      if (r != 2 || uplus[1] != '+' || codept > (DWORD) - 1)
+      if (r != 2 || uplus[1] != '+')
          fail (invalid_input);
 
       if (input_length == UNICODE_MAX_LENGTH)

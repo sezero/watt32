@@ -57,7 +57,7 @@
    * Warning! W201: Unreachable code.
    * Due to 'SOCK_ERRNO (EINVAL)' after 'SOCK_FATAL()'.
    */
-  #pragma warning 201 5
+  #pragma disable_message (201)
 #endif
 
 static int  dup_bind   (Socket *socket, Socket **clone, int idx);

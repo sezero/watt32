@@ -2019,7 +2019,7 @@ int _UDP_open (Socket *socket, struct in_addr host, WORD loc_port, WORD rem_port
   /*
    * Warning! W201: Unreachable code. Due to SOCK_FATAL().
    */
-  #pragma warning 201 5
+  #pragma disable_message (201)
 #endif
 
 
