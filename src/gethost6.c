@@ -61,7 +61,7 @@
 #include "get_xby.h"
 
 /* \if USE_IPV6 */
-#if defined(USE_BSD_API) && defined(USE_IPV6) /* whole file */
+#if defined(USE_BSD_API) && defined(USE_IPV6)
 
 static char             *host6Fname = NULL;
 static FILE             *host6file  = NULL;
@@ -696,11 +696,18 @@ void W32_CALL DumpHosts6Cache (void)
   }
 }
 #endif  /* USE_DEBUG */
-
+#endif /* USE_BSD_API && USE_IPV6 */
 
 /*------------------------------------------------------------------*/
 
-#ifdef TEST_PROG
+#if defined(TEST_PROG)
+#if !defined(USE_BSD_API) || !defined(USE_IPV6)
+int main (void)
+{
+  puts ("This program needs '#define USE_BSD_API' and '#define USE_IPV6'");
+  return (1);
+}
+#else  /* rest of file */
 
 #include "pcdbug.h"
 #include "sock_ini.h"
@@ -731,7 +738,8 @@ int main (void)
   print_hosts();
   return (0);
 }
-#endif /* TEST_PROG */
 #endif /* USE_BSD_API && USE_IPV6 */
+#endif /* TEST_PROG */
+
 /* \endif */
 

@@ -75,7 +75,7 @@
 
 int h_errno = 0;
 
-#if defined(USE_BSD_API)   /* Rest of file */
+#if defined(USE_BSD_API)
 
 unsigned netdbCacheLife = MAX_CACHE_LIFE;
 
@@ -214,7 +214,7 @@ void W32_CALL ReopenHostFile (void)
  * Format is:
  *  ip-address host-name [alias..] {\n | # ..}
  */
-struct hostent * W32_CALL gethostent (void)
+struct hostent *W32_CALL gethostent (void)
 {
   struct _hostent h;
   char  *tok, *ip, *name, *alias, *tok_buf = NULL;
@@ -468,7 +468,6 @@ struct hostent * W32_CALL gethostbyaddr (const char *addr_name, int len, int typ
   return (NULL);
 }
 
-
 void W32_CALL sethostent (int stayopen)
 {
   hostClose = (stayopen == 0);
@@ -506,7 +505,6 @@ void W32_CALL endhostent (void)
   host0 = NULL;
   hostClose = TRUE;
 }
-
 
 static BOOL gethostbyaddr_internal (const char *addr_name, int len, int type,
                                     struct _hostent *ret)
@@ -615,7 +613,6 @@ expired:
   add_hostent (h, "*unknown*", NULL, NULL, addr, 0UL, FALSE);
   return (FALSE);
 }
-
 
 #if defined(NOT_USED)
 /*
@@ -832,11 +829,10 @@ void W32_CALL DumpHostsCache (void)
         SOCK_DEBUGF (("%52s %-15s\n", "", inet_ntoa(*(struct in_addr*)&h->h_address[i])));
   }
 }
-#endif
-
+#endif  /* TEST_PROG */
+#endif  /* USE_BSD_API */
 
 #if defined(TEST_PROG)
-
 #if !defined(__CYGWIN__)
 #include <conio.h>
 #endif
@@ -847,6 +843,14 @@ void W32_CALL DumpHostsCache (void)
 
 #include "pcdbug.h"
 #include "sock_ini.h"
+
+#if !defined(USE_BSD_API)
+int main (void)
+{
+  puts ("This program needs '#define USE_BSD_API' (and '#define USE_IPV6')");
+  return (1);
+}
+#else  /* rest of file */
 
 /*
  * Print list of hosts unsorted.
@@ -944,6 +948,6 @@ int main (void)
 
   return (0);
 }
-#endif /* TEST_PROG */
 #endif /* USE_BSD_API */
+#endif /* TEST_PROG */
 

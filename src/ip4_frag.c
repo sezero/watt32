@@ -739,10 +739,19 @@ void ip4_frag_init (void)
   DAEMON_ADD (chk_timeout_frags);
   RUNDOWN_ADD (free_frag_buckets, 260);
 }
+#endif  /* USE_FRAGMENTS */
 
 /*----------------------------------------------------------------------*/
 
 #if defined(TEST_PROG)  /* a small test program */
+#if !defined(USE_FRAGMENTS)
+int main (void)
+{
+  puts ("This program needs '#define USE_FRAGMENTS'");
+  return (1);
+}
+#else  /* rest of file */
+
 #undef FP_OFF
 #undef enable
 #undef disable
@@ -1011,6 +1020,6 @@ int main (int argc, char **argv)
   free (data);
   return (0);
 }
-#endif  /* TEST_PROG */
 #endif  /* USE_FRAGMENTS */
+#endif  /* TEST_PROG */
 

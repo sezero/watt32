@@ -573,11 +573,19 @@ int tftp_init (void)
   RUNDOWN_ADD (tftp_exit, 261);
   return (TRUE);
 }
+#endif  /* USE_TFTP */
 
 /*
  * A small test program, for djgpp/Watcom only
  */
 #if defined(TEST_PROG)
+#if !defined(USE_TFTP)
+int main (void)
+{
+  puts ("This program needs '#define USE_TFTP' (and '#define USE_BSD_API')");
+  return (1);
+}
+#else  /* rest of file */
 
 #if !defined(_MSC_VER) && !defined(__BORLANDC__)
 #include <unistd.h>
@@ -649,7 +657,6 @@ static int W32_CALL write_func (const void *buf, size_t length)
   block++;
   return (0);
 }
-
 
 void usage (char *argv0)
 {
@@ -764,5 +771,5 @@ int main (int argc, char **argv)
   tcp_tick (NULL);
   return (0);
 }
-#endif /* TEST_PROG */
 #endif /* USE_TFTP */
+#endif /* TEST_PROG */

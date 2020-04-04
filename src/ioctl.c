@@ -676,13 +676,20 @@ static const char *get_ioctl_cmd (long cmd)
   strcat (buf, list_lookup(cmd, commands, DIM(commands)));
   return (buf);
 }
-#endif
-
+#endif /* USE_DEBUG */
+#endif /* USE_BSD_API */
 
 /*
  * A small test program for above functions.
  */
 #if defined(TEST_PROG)
+#if !defined(USE_BSD_API)
+int main (void)
+{
+  puts ("This program needs '#define USE_BSD_API'");
+  return (1);
+}
+#else  /* rest of file */
 
 #undef  assert
 #define assert(x) ((x) ? (void)0 : __assert_fail(__LINE__))
@@ -795,6 +802,5 @@ int main (void)
   assert (close_s(sock) >= 0);
   return (0);
 }
-
-#endif  /* TEST_PROG */
 #endif  /* USE_BSD_API */
+#endif  /* TEST_PROG */

@@ -1007,8 +1007,17 @@ static const struct afd *find_afd (int af)
          return (afd);
   return (NULL);
 }
+#endif  /* USE_BSD_API */
 
 #if defined(TEST_PROG)
+#if !defined(USE_BSD_API)
+int main (void)
+{
+  puts ("This program needs '#define USE_BSD_API'");
+  return (1);
+}
+#else  /* rest of file */
+
 static void dump_addrinfo (const struct addrinfo *ai)
 {
   for (; ai; ai = ai->ai_next)
@@ -1058,6 +1067,6 @@ int main (void)
 
   return (0);
 }
-#endif /* TEST_PROG */
 #endif /* USE_BSD_API */
+#endif /* TEST_PROG */
 

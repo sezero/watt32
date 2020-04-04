@@ -48,4 +48,11 @@
   #define WATT32_COMPILE_LANG_C
   #include "language.h"
   #include "lang.c"
+
+#elif defined(TEST_PROG)
+int main (void)
+{
+  puts ("This program needs '#define USE_LANGUAGE'");
+  return (1);
+}
 #endif
