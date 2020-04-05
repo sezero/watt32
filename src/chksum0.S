@@ -271,7 +271,7 @@ loop_entries:
 .text
 
  /* Probably no speed to gain from the above. Just jump to the C-version
-  *  of in_checksum().
+  * of in_checksum().
   */
 ENTRY (_w32_in_checksum_fast)
 ENTRY (_w32_in_chksum_fast)       /* old name */

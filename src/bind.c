@@ -218,12 +218,19 @@ int W32_CALL bind (int s, const struct sockaddr *myaddr, socklen_t namelen)
   }
   return (0);
 }
-
+#endif  /* USE_BSD_API */
 
 /*
  * A small test djgpp program
  */
 #if defined(TEST_PROG)
+#if !defined(USE_BSD_API)
+int main (void)
+{
+  puts ("This program needs '#define USE_BSD_API'");
+  return (1);
+}
+#else  /* rest of file */
 
 #define MY_PORT_ID  6060
 #undef  close
@@ -314,7 +321,11 @@ int main (int argc, char **argv)
     tv.tv_usec = 0;
     tv.tv_sec  = 1;
 
+#if defined(__WATCOMC__) /* Why doesn't 'wcc386' see 'select()? */
+    num = select_s (sock+1, &fd_read, &fd_write, &fd_exc, &tv);
+#else
     num = select (sock+1, &fd_read, &fd_write, &fd_exc, &tv);
+#endif
 
     if (FD_ISSET(sock, &fd_read))  fputc ('r', stderr);
     if (FD_ISSET(sock, &fd_write)) fputc ('w', stderr);
@@ -345,7 +356,6 @@ int main (int argc, char **argv)
   close (sock);
   return (0);
 }
+#endif  /* USE_BSD_API */
 #endif  /* TEST_PROG */
-
-#endif /* USE_BSD_API */
 

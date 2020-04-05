@@ -409,6 +409,21 @@ extern const char *qword_str (uint64 val);
 #endif
 
 /*
+ * To fix the warnings for the use of "%lu" with a DWORD-arg.
+ * Or warnings with "%ld" and an 'int' argument.
+ * Especially noisy for 'x64' builds since CygWin is a LP64-platform:
+ *   https://en.wikipedia.org/wiki/64-bit_computing
+ */
+#if defined(__CYGWIN__)
+  #define DWORD_CAST(x)   ((unsigned long)(x))
+  #define LONG_CAST(x)    ((long int)(x))
+
+#else
+  #define DWORD_CAST(x)   x
+  #define LONG_CAST(x)    x
+#endif
+
+/*
  * Setting console colours. Windows only.
  */
 #if defined(WIN32) || defined(WIN64)
@@ -886,7 +901,10 @@ extern const char *short_strerror (int errnum);
  * Defines for real/pmode-mode interrupt handlers (crit.c, netback.c and pcintr.c)
  */
 #if !defined(INTR_PROTOTYPE)
-  #if (DOSX == 0)
+  #if defined(WIN32) || defined(WIN64)
+    /* No need for this on Windows */
+
+  #elif (DOSX == 0)
     #if (__WATCOMC__ >= 1200)   /* OpenWatcom 1.0+ */
       #define INTR_PROTOTYPE  void interrupt far
       typedef INTR_PROTOTYPE (*W32_IntrHandler)();
@@ -899,9 +917,6 @@ extern const char *short_strerror (int errnum);
       #define INTR_PROTOTYPE  void cdecl interrupt
       typedef void (cdecl interrupt *W32_IntrHandler)();
     #endif
-
-  #elif defined(WIN32) || defined(WIN64)
-    /* No need for this on Windows */
 
   #elif defined(WATCOM386)
     #define INTR_PROTOTYPE  void __interrupt __far

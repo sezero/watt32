@@ -6,11 +6,15 @@
 #include <stdio.h>
 #include <unistd.h>
 #include <string.h>
-#include <conio.h>
 #include <sys/param.h>
 #include <sys/socket.h>
 #include <arpa/inet.h>
-#include <tcp.h>
+
+#include "sysdep.h"
+
+#if !defined(__DJGPP__)
+#error "For '__DJGPP__' only."
+#endif
 
 int main (void)
 {

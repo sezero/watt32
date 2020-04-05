@@ -217,17 +217,20 @@ static void W32_CALL udp_handler (sock_type *s, void *data, int len,
   ARGSUSED (ph);
   ARGSUSED (udp);
 }
+#endif /* USE_ECHO_DISC */
 
 #if defined(TEST_PROG)
-
 int main (int argc, char **argv)
 {
   /** \todo Make a \b echo client/server test program */
 
+#if !defined(USE_ECHO_DISC)
+  puts ("This program needs '#define USE_ECHO_DISC'");
+#endif
   ARGSUSED (argc);
   ARGSUSED (argv);
   return (0);
 }
 #endif /* TEST_PROG */
-#endif /* USE_ECHO_DISC */
+
 

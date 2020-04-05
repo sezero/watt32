@@ -2137,6 +2137,11 @@ static const char *get_route_flags (WORD flg)
 
 
 #if defined(TEST_PROG)
+
+#if defined(__WATCOMC__)
+  #pragma disable_message (202)
+#endif
+
 /*
  * Find the best 'fitting' gateway for destination IP.
  * Return INADDR_ANY if 'ip' is directly reachable.
@@ -2176,6 +2181,9 @@ static DWORD _route_destin (DWORD ip)
 #include "pcbuf.h"
 
 #if !defined(__DJGPP__)
+  W32_GCC_PRAGMA (GCC diagnostic ignored "-Wunused-variable")
+  W32_GCC_PRAGMA (GCC diagnostic ignored "-Wunused-function")
+
   static int num_okay = 0;
   static int num_fail = 0;
 #endif

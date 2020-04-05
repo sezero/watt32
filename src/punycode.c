@@ -17,7 +17,7 @@
 #include "misc_str.h"
 #include "punycode.h"
 
-#if defined(USE_IDNA) || defined(TEST_PROG)
+#if defined(USE_IDNA)
 
 /*** Bootstring parameters for Punycode ***/
 
@@ -321,10 +321,16 @@ enum punycode_status punycode_decode (DWORD input_length,
   *output_length = out;
   return (punycode_success);
 }
-#endif  /* USE_IDNA || TEST_PROG */
-
+#endif  /* USE_IDNA */
 
 #if defined(TEST_PROG)
+#if !defined(USE_IDNA)
+int main (void)
+{
+  puts ("This program needs '#define USE_IDNA'");
+  return (1);
+}
+#else  /* rest of file */
 
 /* For testing, we'll just set some compile-time limits rather than
  * use malloc(), and set a compile-time option rather than using a
@@ -386,10 +392,10 @@ int main (int argc, char **argv)
 
   if (argv[1][1] == 'e')
   {
-    DWORD input [UNICODE_MAX_LENGTH];
-    unsigned long codept;
-    char  output [ACE_MAX_LENGTH+1], uplus[3];
-    int   c;
+    DWORD  input [UNICODE_MAX_LENGTH];
+    u_long codept;
+    char   output [ACE_MAX_LENGTH+1], uplus[3];
+    int    c;
 
     /* Read the input code points:
      */
@@ -403,7 +409,7 @@ int main (int argc, char **argv)
       if (r == EOF || r == 0)
          break;
 
-      if (r != 2 || uplus[1] != '+')
+      if (r != 2 || uplus[1] != '+' || codept > (DWORD)-1)
          fail (invalid_input);
 
       if (input_length == UNICODE_MAX_LENGTH)
@@ -415,7 +421,7 @@ int main (int argc, char **argv)
            case_flags[input_length] = 1;
       else fail (invalid_input);
 
-      input[input_length++] = codept;
+      input[input_length++] = (DWORD)codept;
     }
 
     /* Encode:
@@ -459,11 +465,14 @@ int main (int argc, char **argv)
     fgets (input, ACE_MAX_LENGTH+2, stdin);
     if (ferror (stdin))
        fail (io_error);
+
     if (feof (stdin))
        fail (invalid_input);
+
     input_length = strlen (input) - 1;
     if (input[input_length] != '\n')
        fail (too_big);
+
     input[input_length] = '\0';
 
     for (p = input; *p != 0; ++p)
@@ -490,10 +499,11 @@ int main (int argc, char **argv)
     /* Output the result:
      */
     for (j = 0; j < output_length; ++j)
-        printf ("%s+%04lX\n", case_flags[j] ? "U" : "u", output[j]);
+        printf ("%s+%04lX\n", case_flags[j] ? "U" : "u", DWORD_CAST(output[j]));
     return (EXIT_SUCCESS);
   }
   usage (argv);
   return (EXIT_SUCCESS);
 }
+#endif   /* USE_IDNA */
 #endif   /* TEST_PROG */

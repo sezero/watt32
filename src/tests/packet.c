@@ -1,26 +1,15 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <tcp.h>
+
+#define WATT32_BUILD  /* Since "sysdep.h" needs some internals */
 
 #include <sys/socket.h>
 #include <net/if.h>
 #include <net/if_ether.h>
 #include <net/if_packet.h>
 
-#ifdef __CYGWIN__
-  W32_FUNC int _w32_getch (void);
-  #define getch() _w32_getch()
-#else
-  #include <conio.h>
-#endif
-
-#define TRUE  1
-#define FALSE 0
-
-#ifndef STDIN_FILENO
-#define STDIN_FILENO 0
-#endif
+#include "sysdep.h"
 
 static const char *pkt_type (int type)
 {

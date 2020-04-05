@@ -3739,7 +3739,7 @@ static int write_pcap_packet (const void *pkt, BOOL out)
 #if defined(PRINT_CPU_INFO)
 
 #if 0 /* Use code in tests/cpu.c instead */
-static const char *i486_model (int model)
+const char *i486_model (int model)
 {
   static const char *models[] = {
                     "0", "DX", "SX", "DX/2", "4", "SX/2", "6",
@@ -3751,7 +3751,7 @@ static const char *i486_model (int model)
   return (NULL);
 }
 
-static const char *i586_model (int model)
+const char *i586_model (int model)
 {
   static const char *models[] = {
                     "0", "Pentium 60/66", "Pentium 75+", "OverDrive PODP5V83",
@@ -3763,7 +3763,7 @@ static const char *i586_model (int model)
   return (NULL);
 }
 
-static const char *Cx86_model (int type)
+const char *Cx86_model (int type)
 {
   int    model;
   static const char *models[] = {
@@ -3784,7 +3784,7 @@ static const char *Cx86_model (int type)
   return (models[model]);
 }
 
-static const char *i686_model (int model)
+const char *i686_model (int model)
 {
   static const char *models[] = {
                     "PPro A-step", "Pentium Pro"
@@ -3799,7 +3799,7 @@ struct model_info {
        const char *names[16];
      };
 
-static const char *AMD_model (int type, int model)
+const char *AMD_model (int type, int model)
 {
   static const struct model_info amd_models[] = {
     { 4,
@@ -3824,7 +3824,7 @@ static const char *AMD_model (int type, int model)
   return (NULL);
 }
 
-static const char *cpu_get_model (int type, int model)
+const char *cpu_get_model (int type, int model)
 {
   const  char *p = NULL;
   const  char *vendor = x86_vendor_id;
@@ -3878,7 +3878,7 @@ static const char *cpu_get_model (int type, int model)
 }
 #endif   /* 0 */
 
-static void print_cpu_info (void)
+void print_cpu_info (void)
 {
   uint64 Hz;
   char   speed [20];

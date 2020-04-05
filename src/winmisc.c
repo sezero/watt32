@@ -886,7 +886,6 @@ static int is_real_key (const INPUT_RECORD *k)
   return (0);
 }
 
-
 /*
  * CygWin doesn't even have <conio.h>. Let alone a simple kbhit()
  * and getch(). Hence we make them for all Win32 targets here
@@ -987,7 +986,6 @@ char *W32_NAMESPACE(itoa) (int value, char *buf, int radix)
   return strreverse (buf);
 }
 #endif  /* 0 */
-
 
 /*
  * Return FILETIME in seconds as a double.

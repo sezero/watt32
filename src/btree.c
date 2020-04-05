@@ -43,7 +43,7 @@ int tree_insert (TreeNode **root, const void *info, size_t info_size, CmpFunc cm
           node = node->left;
       else
       {
-        node->left = (struct TreeNode*) calloc (1, sizeof(*node));
+        node->left = calloc (1, sizeof(*node));
         if (node->left)
             node->left->parent = node;
         node = node->left;
@@ -56,7 +56,7 @@ int tree_insert (TreeNode **root, const void *info, size_t info_size, CmpFunc cm
           node = node->right;
       else
       {
-        node->right = (struct TreeNode*) calloc (1, sizeof(*node));
+        node->right = calloc (1, sizeof(*node));
         if (node->right)
             node->right->parent = node;
         node = node->right;
@@ -67,7 +67,7 @@ int tree_insert (TreeNode **root, const void *info, size_t info_size, CmpFunc cm
 
   /* only arrives here when instantiating root
    */
-  node  = (struct TreeNode*) calloc (1, sizeof(*node));
+  node  = calloc (1, sizeof(*node));
   *root = node;
 
 tree_load:
@@ -85,7 +85,6 @@ tree_load:
   node->info_size = info_size;
   return (1);
 }
-
 
 /*
  *  Non-recursive find, returns first matching entry or NULL
@@ -138,7 +137,7 @@ TreeNode *tree_delete (TreeNode *root, TreeNode *node)
   {
     temp = node->right;
     while (temp->left)
-      temp = temp->left;
+       temp = temp->left;
 
     temp->left = node->left;
     temp->left->parent = temp;
@@ -169,7 +168,7 @@ TreeNode *tree_delete (TreeNode *root, TreeNode *node)
              node->parent = temp->parent;
          free (temp->info);
          free (temp);
-         /* drop through to return */
+         /* fall-through */
   }
   return (root);
 }
@@ -220,15 +219,16 @@ void prompt (const char *verb)
 
 int MS_CDECL rec_cmp (const void *a, const void *b)
 {
-  const record *rec1 = (record*)a;
-  const record *rec2 = (record*)b;
+  const record *rec1 = (const record*) a;
+  const record *rec2 = (const record*) b;
   return strcmp (rec1->key, rec2->key);
 }
 
 void tree_print (const record *record)
 {
   if (record)
-     printf ("Key: %s\nRecord Number: %d\n", record->key, record->id);
+     printf ("Key:           %s\n"
+             "Record Number: %d\n", record->key, record->id);
 }
 
 /*
@@ -276,7 +276,7 @@ int main (void)
 
   prompt ("Insert");
 
-  while (fgets(buf,sizeof(buf),stdin))
+  while (fgets(buf, sizeof(buf), stdin))
   {
     _strlcpy (rec.key, buf, KEYSIZE);
     rec.id = ++record_num;
@@ -289,7 +289,7 @@ int main (void)
   }
 
   prompt ("Delete");
-  fgets(buf,sizeof(buf),stdin);
+  fgets (buf, sizeof(buf), stdin);
   rec.key[0] = '\0';
   _strlcpy (rec.key, buf, KEYSIZE);
 

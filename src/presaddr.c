@@ -384,10 +384,17 @@ static int inet_pton6 (const char *src, u_char *dst)
   memcpy (dst, tmp, IN6ADDRSZ);
   return (1);
 }
-#endif    /* USE_IPV6 */
-
+#endif   /* USE_IPV6 */
+#endif   /* USE_BSD_API */
 
 #if defined(TEST_PROG)
+#if !defined(USE_BSD_API)
+int main (void)
+{
+  puts ("This program needs '#define USE_BSD_API' (and '#define USE_IPV6')");
+  return (1);
+}
+#else  /* rest of file */
 
 int main (int argc, char **argv)
 {
@@ -412,7 +419,7 @@ int main (int argc, char **argv)
           ip6_str, _inet6_ntoa(&ip6_addr));
   return (0);
 }
-#endif  /* TEST_PROG */
 #endif  /* USE_BSD_API */
+#endif  /* TEST_PROG */
 
 

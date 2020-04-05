@@ -350,6 +350,8 @@ exit /b 0
 :build_tests
   cd src\tests
 
+  set USE_WSOCK_TRACE=0
+
   if %CPU%. == x86. set PATH=c:\Program Files (x86)\LLVM\bin;%PATH%
 
   if %MODEL%. == flat.    goto :no_tests
@@ -359,11 +361,11 @@ exit /b 0
 
   call configur.bat %BUILDER%
   if %BUILDER%. == borland.  make -f bcc_w.mak
-  if %BUILDER%. == clang.    make -f clang_%BITS%.mak
   if %BUILDER%. == djgpp.    make -f djgpp.mak
+  if %BUILDER%. == watcom.   make -f watcom_w.mak
+  if %BUILDER%. == clang.    make -f clang_%BITS%.mak
   if %BUILDER%. == mingw64.  make -f MinGW64_%BITS%.mak
   if %BUILDER%. == visualc.  make -f visualc_%BITS%.mak
-  if %BUILDER%. == watcom.   make -f watcom_w.mak
   if %BUILDER%. == djgpp.    goto :no_tests
 
   %_ECHO% "\e[1;33mRunning test 'cpu.exe' ----------------------------------------------------\e[0m"

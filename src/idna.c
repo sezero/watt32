@@ -476,6 +476,7 @@ BOOL IDNA_convert_from_ACE (
               in_name, dsize));
   return (TRUE);
 }
+#endif  /* USE_IDNA */
 
 #if defined(TEST_PROG)
 
@@ -485,6 +486,14 @@ BOOL IDNA_convert_from_ACE (
 #include "sock_ini.h"
 #include "pcdns.h"
 #include "pcdbug.h"
+
+#if !defined(USE_IDNA)
+int main (void)
+{
+  puts ("This program needs '#define USE_IDNA'");
+  return (1);
+}
+#else   /* rest of file */
 
 void dump_cp_list (void)
 {
@@ -571,7 +580,7 @@ int main (int argc, char **argv)
   debug_on = 0;
   return (0);
 }
-#endif  /* TEST_PROG */
 #endif  /* USE_IDNA */
+#endif  /* TEST_PROG */
 
 

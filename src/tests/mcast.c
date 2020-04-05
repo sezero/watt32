@@ -8,26 +8,11 @@
  *
  * Antony Courtney,     25/11/94
  */
+#include "sysdep.h"
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <sys/socket.h>
-#include <netinet/in.h>
-#include <arpa/inet.h>
-#include <tcp.h>
-
-#if !defined(_MSC_VER) && !defined(__BORLANDC__)
-#include <unistd.h>
-#endif
-
-#define HELLO_PORT  12345
-#define HELLO_GROUP "225.0.0.37"
-#define MSGBUFSIZE  256
-
-#if defined(__CYGWIN__)
-  #define strnicmp(s1, s2, len)  strncasecmp (s1, s2, len)
-#endif
+#define HELLO_PORT   12345
+#define HELLO_GROUP  "225.0.0.37"
+#define MSGBUFSIZE   256
 
 int sender_main (int argc, char **argv)
 {
@@ -66,11 +51,7 @@ int sender_main (int argc, char **argv)
       return (-1);
     }
     fputc ('.', stderr);
-#ifdef WIN32
-    Sleep (1000);
-#else
     sleep (1);
-#endif
 
 #if 0
     if (_watt_cbroke)

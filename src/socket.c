@@ -1385,45 +1385,68 @@ static void sock_fortify_exit (void)
 
 #if defined(USE_DEBUG) && defined(ERRNO_VENDOR_VERSION)
 /**
- * Return version string of current compiler.
+ * Return version string of current compiler
+ * and the '../inc/sys/xx.err' file.
+ *
+ * This is similar to the function 'VendorVersion()' in
+ * ../util/errnos.c
  */
-static const char *vendor_version (const char **vendor)
+static const char *vendor_version (const char **vendor, const char **err_file)
 {
   static char buf[10];
   const char *v = NULL;
+  const char *e = NULL;
 
 #if defined(__DJGPP__)
   sprintf (buf, "%d.%02d", __DJGPP__, __DJGPP_MINOR__);
   v = "__DJGPP__";
+  e = "djgpp.err";
 
 #elif defined(__DMC__)
   sprintf (buf, "%X.%X", __DMC__ >> 8, __DMC__ & 0xFF);
   v = "__DMC__";
+  e = "digmars.err";
+
+#elif defined(__HIGHC__)
+  buf[0] = '\0';   /* No way to get the version */
+  v = "__HIGHC__";
+  e = "highc.err";
+
+#elif defined(__POCC__)
+  sprintf (buf, "%d.%d", __POCC__/100, __POCC__ % 100);
+  v = "__PELLESC__";
+  e = "pellesc.err";
 
 #elif defined(__WATCOMC__)
   sprintf (buf, "%d.%d", __WATCOMC__/100, __WATCOMC__ % 100);
   v = "__WATCOMC__";
+  e = "watcom.err";
 
 #elif defined(__BORLANDC__)
   sprintf (buf, "%X.%X", __BORLANDC__ >> 8, __BORLANDC__ & 0xFF);
   v = "__BORLANDC__";
+  e = "borlandc.err";
 
 #elif defined(__TURBOC__)
   sprintf (buf, "%X.%X", (__TURBOC__ >> 8) - 1, __TURBOC__ & 0xFF);
   v = "__TURBOC__";
+  e = "turboc.err";
 
 #elif defined(__clang__)
   sprintf (buf, "%d.%d", __clang_major__, __clang_minor__);
   v = "__clang__";
+  e = "clang.err";
 
 #elif defined(_MSC_VER)
   sprintf (buf, "%d.%d", _MSC_VER/100, _MSC_VER % 100);
   v = "_MSC_VER";
+  e = "visualc.err";
 
 #elif defined(__MINGW32__) && defined(__MINGW64_VERSION_MAJOR)
   /* __MINGW64_VERSION_[MAJOR|MINOR] is defined through _mingw.h in MinGW-W64 */
   sprintf (buf, "%d.%d", __MINGW64_VERSION_MAJOR, __MINGW64_VERSION_MINOR);
   v = "__MINGW64__";
+  e = "mingw64.err";
 
 #elif defined(__MINGW32__)       /* mingw.org MinGW. MinGW-RT-4+ defines '__MINGW_MAJOR_VERSION' */
   #if defined(__MINGW_MAJOR_VERSION)
@@ -1432,14 +1455,17 @@ static const char *vendor_version (const char **vendor)
     sprintf (buf, "%d.%d", __MINGW32_MAJOR_VERSION, __MINGW32_MINOR_VERSION);
   #endif
   v = "__MINGW32__";
+  e = "mingw32.err";
 
 #elif defined(__CYGWIN__)   /* this should be dead code for CygWin */
   sprintf (buf, "%d.%d", CYGWIN_VERSION_DLL_MAJOR, CYGWIN_VERSION_DLL_MINOR);
   v = "__CYGWIN__";
+  e = "";
 
 #elif defined(__CCDL__)
   sprintf (buf, "%d.%d", __CCDL__/100, __CCDL__ % 100);
   v = "__CCDL__";
+  e = "ladsoft.err";
 
 #else
   buf[0] = '\0';
@@ -1447,24 +1473,34 @@ static const char *vendor_version (const char **vendor)
 
   if (vendor)
      *vendor = v;
+  if (err_file)
+     *err_file = e;
   return (buf);
 }
 
+#ifdef WIN32
+  #define ERR_PROG  "\\win32\\*_err.exe"
+#else
+  #define ERR_PROG  "*_err.exe"
+#endif
+
 /**
- * Check that ./util/xx_err.exe is built with same version
- * we're using here. Print a warning if there's a mismatch.
+ * Check that './util/xx_err.exe' or './util/win32/xx_err.exe' was
+ * built with same version we're using here.
+ * Print a warning if there's a mismatch.
  */
 static void check_errno_version (void)
 {
-  const char *ven, *ver = vendor_version (&ven);
+  const char *err_file;
+  const char *ven, *ver = vendor_version (&ven, &err_file);
 
   if (*ver && strcmp(ver,ERRNO_VENDOR_VERSION))
   {
-    (*_printf) ("\nWarning: %%WATT_ROOT%%\\inc\\sys\\*.err was created "
+    (*_printf) ("\nWarning: %%WATT_ROOT%%\\inc\\sys\\%s was created "
                 "with a different compiler\nversion (%s vs %s, %s). "
-                "Rebuilt %%WATT_ROOT%%\\util\\*_err.exe and "
+                "Rebuilt the corresponding %%WATT_ROOT%%\\util\\%s and "
                 "Watt-32 library to avoid subtle bugs.\n",
-                ERRNO_VENDOR_VERSION, ver, ven);
+                err_file, ERRNO_VENDOR_VERSION, ver, ven, ERR_PROG);
     BEEP();
   }
 }

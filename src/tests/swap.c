@@ -10,6 +10,7 @@
   #include <intrin.h>
 
 #elif defined(__MINGW32__) || defined(__CYGWIN__)
+  #define TEST_UNDEF_OPCODE
   #include <x86intrin.h>
 #endif
 
@@ -19,6 +20,10 @@
 
 #elif defined(_MSC_VER) && defined(_M_IX86)
   #define TEST_UNDEF_OPCODE
+
+#elif defined(__WATCOMC__) && defined(__386__)
+  #define INVD_CACHE
+  #define TEST_UNDEF_OPCODE
 #endif
 
 #include "wattcp.h"
@@ -27,7 +32,7 @@
 #include "sock_ini.h"
 #include "gettod.h"
 #include "cpumodel.h"
-#include "timeit.h"
+#include "sysdep.h"
 
 uint64 start64;
 long   loops     = 20000;
@@ -37,7 +42,8 @@ const char *get_clk_calls (uint64 delta)
 {
   static char buf[50];
 
-  snprintf (buf, sizeof(buf), "(%" U64_FMT " clocks per 1000 calls)", 4000*delta/(loops*swap_size));
+  snprintf (buf, sizeof(buf), "(%5" U64_FMT " clocks per 1000 calls)",
+            4000*delta/(loops*swap_size));
   return (buf);
 }
 
@@ -45,7 +51,8 @@ const char *Delta_ms (clock_t dt)
 {
   static char buf[10];
   double delta = 1000.0 * (double) dt / (double)CLOCKS_PER_SEC;
-  sprintf (buf, "%6.1f", delta);
+
+  snprintf (buf, sizeof(buf), "%6.1f", delta);
   return (buf);
 }
 
@@ -79,16 +86,16 @@ __declspec(naked) static unsigned long cdecl naked_fastcall_one (unsigned long x
 #elif defined(_MSC_VER) && defined(_M_X64)
 static W32_INLINE unsigned long cdecl naked_cdecl_one (unsigned long x)
 {
-  return ntohl(x);
+  return ntohl (x);
 }
 
 static W32_INLINE unsigned long cdecl naked_fastcall_one (unsigned long x)
 {
-  return ntohl(x);
+  return ntohl (x);
 }
 
 #elif defined(__GNUC__) && !defined(__x86_64__)
-W32_GCC_INLINE unsigned long cdecl naked_cdecl_one (unsigned long x)
+GCC_INLINE unsigned long cdecl naked_cdecl_one (unsigned long x)
 {
   __asm__ __volatile (
            "xchgb %b0, %h0\n\t"   /* swap lower bytes  */
@@ -99,7 +106,7 @@ W32_GCC_INLINE unsigned long cdecl naked_cdecl_one (unsigned long x)
 }
 
 #define __fastcall __attribute__((__fastcall__))
-W32_GCC_INLINE unsigned long __fastcall naked_fastcall_one (unsigned long x)
+GCC_INLINE unsigned long __fastcall naked_fastcall_one (unsigned long x)
 {
   __asm__ __volatile (
            "xchgb %b0, %h0\n\t"
@@ -110,38 +117,37 @@ W32_GCC_INLINE unsigned long __fastcall naked_fastcall_one (unsigned long x)
 }
 
 #elif defined(__GNUC__) && defined(__x86_64__)
-#warning Unsupported CPU.
-W32_GCC_INLINE unsigned long cdecl naked_cdecl_one (unsigned long x)
+GCC_INLINE unsigned long cdecl naked_cdecl_one (unsigned long x)
 {
-  return ntohl(x);
+  return ntohl (x);
 }
 
 #define __fastcall __attribute__((__fastcall__))
-W32_GCC_INLINE unsigned long __fastcall naked_fastcall_one (unsigned long x)
+GCC_INLINE unsigned long __fastcall naked_fastcall_one (unsigned long x)
 {
-  return ntohl(x);
+  return ntohl (x);
 }
 
 #elif defined(__BORLANDC__) && defined(__FLAT__)
 static __inline unsigned long cdecl naked_cdecl_one (unsigned long x)
 {
-  return ntohl(x);
+  return ntohl (x);
 }
 
 static __inline unsigned long cdecl naked_fastcall_one (unsigned long x)
 {
-  return ntohl(x);
+  return ntohl (x);
 }
 
-#elif defined(__WATCOMC__) && defined(__386__)
+#elif defined(__WATCOMC__) && (defined(__I86__) || defined(__386__))
 static W32_INLINE unsigned long cdecl naked_cdecl_one (unsigned long x)
 {
-  return ntohl(x);
+  return ntohl (x);
 }
 
 static W32_INLINE unsigned long cdecl naked_fastcall_one (unsigned long x)
 {
-  return ntohl(x);
+  return ntohl (x);
 }
 #endif
 
@@ -175,21 +181,27 @@ int naked_fastcall_ntohl (const void *buf, size_t max)
   return (1);
 }
 
+#if defined(__WATCOMC__)
+  #pragma disable_message (200)
+  #pragma disable_message (202)
+#endif
+
 int intrin_byteswap (const void *buf, size_t max)
 {
-  unsigned long *val = (unsigned long*)buf;
+  unsigned long *val = (unsigned long*) buf;
   size_t   i;
 
 #if defined(_MSC_VER)
   for (i = 0; i < max; i++)
-     _byteswap_ulong (*val++);
+      _byteswap_ulong (*val++);
   return (1);
 #elif defined(__MINGW32__) || defined(__CYGWIN__)
   for (i = 0; i < max; i++)
-     __bswapd (*val++);
+      __bswapd (*val++);
   return (1);
 #else
   printf ("%s() not available for %s.", __FUNCTION__, wattcpBuildCC());
+  fflush (stdout);
   (void) i;
   (void) max;
   return (0);
@@ -252,7 +264,7 @@ void test_swap_speed (const char *buf)
   start64 = get_rdtsc();
 
   for (i = 0; i < loops; i++)
-      if (!intrin_byteswap (buf, swap_size/4))
+      if (!intrin_byteswap(buf, swap_size/4))
          return;
 
   gettimeofday2 (&now, NULL);
@@ -270,7 +282,7 @@ void test_swap_speed2 (const char *buf)
   TIME_IT (intrin_byteswap,      (buf, swap_size/4), loops);
 }
 
-void cdecl sigill_handler2 (int sig)
+void __watcall sigill_handler2 (int sig)
 {
   printf ("SIGILL caught");
   signal (sig, SIG_IGN);
@@ -351,6 +363,7 @@ int cdecl main (int argc, char **argv)
 
   test_swap_speed (buf);
   test_swap_speed2 (buf);
+  fflush (stdout);
   return (0);
 }
 

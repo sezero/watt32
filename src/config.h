@@ -152,6 +152,7 @@
 
 #elif defined(__CYGWIN__) && !defined(NDEBUG)
 /* #define USE_FORTIFY */
+  #define USE_BUFFERED_IO
 #endif
 
 #if defined(_WIN32) && !defined(_WIN64)

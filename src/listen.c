@@ -96,8 +96,16 @@ int W32_CALL listen (int s, int backlog)
   SOCK_DEBUGF ((", backlog %d ", socket->backlog));
   return (0);
 }
+#endif /* USE_BSD_API */
 
 #if defined(TEST_PROG)  /* A simple finger server */
+#if !defined(USE_BSD_API)
+int main (void)
+{
+  puts ("This program needs '#define USE_BSD_API'");
+  return (1);
+}
+#else  /* rest of file */
 
 #ifndef __CYGWIN__
 #include <conio.h>

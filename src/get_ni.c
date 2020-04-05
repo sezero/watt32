@@ -297,9 +297,16 @@ found:
   ARGSUSED (a4);
   return GI_RESULT (NI_SUCCESS);
 }
-
+#endif  /* USE_BSD_API */
 
 #if defined(TEST_PROG)
+#if !defined(USE_BSD_API)
+int main (void)
+{
+  puts ("This program needs '#define USE_BSD_API'");
+  return (1);
+}
+#else  /* rest of file */
 
 #undef ni_flags  /* <netinet/icmp6.> */
 
@@ -371,6 +378,6 @@ usage:
   printf ("Usage: <AF_INET | AF_INET6>");
   return (1);
 }
+#endif /* USE_BSD_API */
 #endif /* TEST_PROG */
-#endif /* USE_BSD_API && USE_IP6 */
 
