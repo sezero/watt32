@@ -106,7 +106,6 @@ int _w32_errno = 0;
 
 #if (DOSX)
   static void setup_dos_xfer_buf (void);
-  static void is_in_stack_init   (void) W32_ATTR_NOINLINE();
 #endif
 
 #define STATIC        /* ease dis-assembly */
@@ -135,10 +134,6 @@ int _w32_errno = 0;
    * '_fatal_runtime_error()' function from .exe-image.
    */
   char *dummy_fatal_rte = (char*)&FATAL_HANDLER;
-
-#elif defined(_MSC_VER) && defined(__LARGE__) && defined(USE_DEBUG)
-  extern void (__cdecl *_aaltstkovr) (void);
-  static void stk_overflow (void _far *where);
 #endif
 
 /*
@@ -359,10 +354,6 @@ void W32_CALL init_misc (void)
 
   _watt_assert_buf[0] = '\0';
 
-#if (DOSX)
-  is_in_stack_init();
-#endif
-
 #if defined(WIN32)
   init_win_misc();
 
@@ -412,10 +403,7 @@ void W32_CALL init_misc (void)
     exit (-1);
   }
 
-  #if defined(_MSC_VER) && defined(__LARGE__)
-    (DWORD)_aaltstkovr = (DWORD)stk_overflow;
-
-  #elif defined(__BORLANDC__) && (defined(__SMALL__) || defined(__LARGE__))
+  #if defined(__BORLANDC__) && (defined(__SMALL__) || defined(__LARGE__))
     setup_stk_check();
   #endif
 #endif
@@ -1195,228 +1183,6 @@ DWORD get_ss_limit (void)
 }
 #endif /* BORLAND386 || DMC386 || MSC386 */
 
-#if defined(__DJGPP__) && 0   /* not needed */
-  extern unsigned dj_end asm ("end");
-  extern unsigned _stklen, __djgpp_stack_limit;
-  #define STK_START()  (DWORD)&dj_end
-#endif
-
-/*
- * The 'is_in_stack()' function is by
- * Jani Kajala (jani.kajala@helsinki.fi)
- * Feb 7, 2002.
- *
- * Swig (when creating _watt32.pyd) has a mysterious issue with
- * thread-storage data and MSVC. That's why 'THREAD_LOCAL' is
- * undefined when 'SWIG' is defined.
- *
- * The dis-assembly of '_get_frame_size()' and 'is_in_stack_init()'.
- * (they are inlined):
- *
- *   mov  edx, dword ptr _watt32!__tls_index
- *   lea  eax, 0x3[esp]
- *   lea  ecx, 0x3[esp]
- *   add  ecx, ecx
- *   lea  eax, [eax+eax*2]
- *   sub  eax, ecx
- *   mov  ecx, dword ptr fs:__tls_array  << FS points to Thread Info Block (TIB)
- *   mov  edx, dword ptr [ecx+edx*4]     << Crash here (ECX=EDX=0)
- */
-#if defined(_MSC_VER) && (_MSC_VER >= 1200)
-  #define THREAD_LOCAL __declspec(thread)
-
-#elif defined(__DMC__) && defined(_WIN32)
-  #define THREAD_LOCAL __declspec(thread)
-
-#elif defined(__CODEGEARC__thread_local)
-  #define THREAD_LOCAL  __declspec(thread)
-
-#elif defined(__BORLANDC__) && defined(WIN32)
-  #define THREAD_LOCAL __thread
-
-#else
-  #define THREAD_LOCAL
-#endif
-
-#if defined(SWIG)
-  #undef  THREAD_LOCAL
-  #define THREAD_LOCAL
-#endif
-
-#if !defined(_WIN32)
-#define UINT_PTR unsigned
-#endif
-
-#if (W32_GCC_VERSION >= 43000)
-  /*
-   * Suppress warning:
-   *   warning: 'stack_limit' defined but not used [-Wunused-variable]
-   */
-  #pragma GCC diagnostic ignored  "-Wunused-variable"
-#endif
-
-/*
- * Borland targeting Win32.
- */
-#if defined(__BORLANDC__) && defined(WIN32)
-  static THREAD_LOCAL UINT_PTR stack_bottom = 0;
-  static THREAD_LOCAL UINT_PTR stack_limit  = 0;
-
-  static void *_w32_GetCurrentFiber (void)
-  {
-  #if (__BORLANDC__ >= 0x0700)
-    /*
-     * Newer compilers like Embarcadero or CodeGearC (ver 0x0700?) do not have inline asm.
-     */
-    DWORD __readfsdword (DWORD ofs);
-    #pragma intrinsic(__readfsdword)
-
-    return (void*)__readfsdword (0x10);
-  #else
-    __asm mov eax, fs:[0x10]
-    return (void*) _EAX;
-  #endif
-  }
-
-  #define GetCurrentFiber() _w32_GetCurrentFiber()
-  #define GetFiberData()    (*(void**) (ULONG_PTR) _w32_GetCurrentFiber() )
-
-#else
-  #if defined(__WATCOMC__)
-    /*
-     * Warning! W202: Symbol 'stack_limit' has been defined, but not referenced
-     */
-    #pragma disable_message (202)
-  #endif
-
-  THREAD_LOCAL static UINT_PTR stack_bottom = 0;
-
-  #if !defined(__DJGPP__)
-  THREAD_LOCAL static UINT_PTR stack_limit  = 0;
-  #endif
-#endif
-
-/* More 'gcc -O0' hackery.
- */
-#if defined(__GNUC__) && defined(__NO_INLINE__)
-   /*
-    * This function in <winnt.h> is inlined in various ways.
-    */
-  #if defined(__x86_64) || defined(__ia64__)
-    static void *_w32_GetCurrentFiber (void)
-    {
-      return (void*)__readgsqword (FIELD_OFFSET(NT_TIB,FiberData));
-    }
-
-  #elif defined(__i386__)
-    #if defined(__DJGPP__)
-      /*
-       * DJGPP neither includes <winnt.h> nor provides '__readfsdword()'.
-       */
-      static DWORD __readfsdword (DWORD offset)
-      {
-        DWORD result;
-        __asm__ __volatile__ (
-                  "movl %%fs:%1, %0"
-                : "=r" (result) ,"=m" ((*(volatile long*) offset)) );
-        return (result);
-      }
-    #endif
-
-    static void *_w32_GetCurrentFiber (void)
-    {
-      return (void*)__readfsdword (0x10);
-    }
-  #else
-    #error Which CPU is this?
-  #endif
-
-  #undef  GetCurrentFiber
-  #define GetCurrentFiber() _w32_GetCurrentFiber()
-#endif
-
-unsigned _get_frame_size (const char *x)
-{
-  char y = 0;
-  return (unsigned)(x - &y);
-}
-
-/*
- * \todo
- *  must call this once for each thread that calls `is_in_stack()`.
- *  At the moment, there are no callers.
- *
- * Problem calling/defining 'GetCurrentFiber()' for Watcom or CBuilder.
- */
-#if defined(WIN32) && (defined(__WATCOMC__) || defined(W32_IS_CODEGEARC))
-static void is_in_stack_init (void)
-{
-}
-
-#else
-static void is_in_stack_init (void)
-{
-#ifdef WIN32
-  MEMORY_BASIC_INFORMATION minfo;
-  NT_TIB *tib      = GetCurrentFiber(); /* or GetFiberData()? */
-  NT_TIB *orig_tib = tib;
-
-#if 1
-  tib = NULL;
-#endif
-
-  if (!tib)
-  {
-    VirtualQuery ((void*)&minfo, &minfo, sizeof(minfo));
-    stack_bottom = (UINT_PTR) minfo.AllocationBase;
-    stack_limit  = 2*1024UL*1204UL;   /* 2 MB is just a guess */
-  }
-  else
-  {
-    stack_bottom = (UINT_PTR) tib->StackBase;
-    stack_limit  = (UINT_PTR) tib->StackLimit;
-  }
-
-  if (_watt_is_win9x)
-     stack_bottom += 64 * 1000UL;
-
-  CONSOLE_MSG (2, ("tib: 0x%" ADDR_FMT ", stack_bottom: 0x%" ADDR_FMT ", stack_limit:"
-                   " %" ABUS_VAL_FMT "\n",
-                   ADDR_CAST(orig_tib),
-                   ADDR_CAST(stack_bottom), /* Not an address, but cast anyway to shut-up gcc */
-                   stack_limit));
-
-  CONSOLE_MSG (2, ("is_in_stack(&minfo): %s \n",
-                   is_in_stack(&minfo) ? "TRUE" : "FALSE!!??"));
-
-#else
-  char x = 0;
-  stack_bottom = (unsigned) (&x + _get_frame_size(&x) * 2);
-#endif
-}
-#endif /* WIN32 && (__WATCOMC__ || W32_IS_CODEGEARC) */
-
-BOOL is_in_stack (const void *ptr)
-{
-  char     x;
-  UINT_PTR stack_top = (UINT_PTR) &x;
-  UINT_PTR p         = (UINT_PTR) ptr;
-
-  if (stack_top > stack_bottom)
-     return (p > stack_bottom && p < stack_top);  /* stack grows up */
-  return (p > stack_top && p < stack_bottom);     /* stack grows down */
-}
-
-unsigned used_stack (void)
-{
-  char     x;
-  UINT_PTR stack_top = (UINT_PTR) &x;
-
-  if (stack_top > stack_bottom)
-     return (unsigned) (stack_top - stack_bottom);
-  return (unsigned) (stack_bottom - stack_top);
-}
-
 /*
  * Test for valid read/write data address.
  * We assume linear address 'addr' is both readable and writable.
@@ -1482,7 +1248,6 @@ BOOL valid_addr (const void *addr, unsigned len)
   return (TRUE);
 }
 #endif  /* DOSX */
-
 
 /*
  * Pharlap/X32VM targets:   Get location of (or allocate a) transfer buffer.
@@ -1780,7 +1545,6 @@ void _w32_intr (int int_no, IREGS *reg)
 }
 #endif
 
-
 #if defined(__BORLANDC__) && defined(__LARGE__)
 /*
  * Large model with option '-N' generates code like:
@@ -1862,7 +1626,7 @@ STATIC int setup_stk_check (void)
  *   E8 00 00           call      N_OVERFLOW@
  *                    L$1:
  *
- * We need to find the address of N_OVERFLOW@ (it cannot be addressed
+ * We need to find the address of 'N_OVERFLOW@' (it cannot be addressed
  * from C). It should be the same code as in large model.
  */
 extern int __brklvl;
@@ -1941,16 +1705,7 @@ void FATAL_HANDLER (UINT stk)
   stk_overflow (MY_CS(), *(WORD*)(&stk+1));
 #endif
 }
-
-#elif defined(_MSC_VER) && defined(__LARGE__)
-static void stk_overflow (void _far *where)
-{
-  fprintf (stderr, "Stack overflow detected at %04X:%04Xh\n",
-           FP_SEG(where), FP_OFF(where));
-  _eth_release();
-  _exit (1);
-}
-#endif
+#endif  /* WATCOM386 && !WIN32 */
 #endif  /* USE_DEBUG */
 
 /*
@@ -2093,5 +1848,5 @@ int main (void)
   rundown_run();
   return (0);
 }
-#endif
+#endif /* TEST_PROG */
 
