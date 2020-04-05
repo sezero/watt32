@@ -242,10 +242,6 @@ if %BUILDER%. == watcom. (
     %_ECHO% "\e[1;33m[%CPU%]: Building for Watcom/large:\e[0m"
     wmake -h -f watcom_l.mak
 
-  ) else if %MODEL%. == small32. (
-    %_ECHO% "\e[1;33m[%CPU%]: Building for Watcom/small32:\e[0m"
-    wmake -h -f watcom_3.mak
-
   ) else (
     %_ECHO% "\e[1;31m[%CPU%]: BUILDER 'watcom' needs a 'MODEL'!\e[0m"
      exit /b 1
@@ -327,9 +323,6 @@ if %BUILDER%. == watcom. (
     rm -f %PROGS_WC_LARGE%
     wmake -h -f watcom.mak %PROGS_WC_LARGE%
 
-  ) else if %MODEL%. == small32. (
-    %_ECHO% "\e[1;33mwatcom/small32: Not yet.\e[0m"
-
   ) else (
     %_ECHO% "\e[1;31mThe 'watcom' needs a 'MODEL'!\e[0m"
      exit /b 1
@@ -342,7 +335,7 @@ exit /b 0
 
 ::
 :: Build and run some test programs in './src/tests'.
-:: (But djgpp programs cannot run on AppVeyor).
+:: (But djgpp, small, large and flat programs cannot run on AppVeyor).
 ::
 :: Build all except for the 'watcom' MODELS 'small' and 'small32' (DOS).
 :: All these generated makefiles requires GNU-make (a 'make' should already be on 'PATH').
@@ -354,19 +347,17 @@ exit /b 0
 
   if %CPU%. == x86. set PATH=c:\Program Files (x86)\LLVM\bin;%PATH%
 
-  if %MODEL%. == small.   goto :no_tests
-  if %MODEL%. == small32. goto :no_tests
-::if %MODEL%. == large.   goto :no_tests
-::if %MODEL%. == flat.    goto :no_tests
-
   call configur.bat %BUILDER%
   if %BUILDER%. == borland.  make -f bcc_w.mak
   if %BUILDER%. == djgpp.    make -f djgpp.mak
-  if %BUILDER%. == watcom.   make -f watcom_w.mak
   if %BUILDER%. == clang.    make -f clang_%BITS%.mak
   if %BUILDER%. == mingw64.  make -f MinGW64_%BITS%.mak
   if %BUILDER%. == visualc.  make -f visualc_%BITS%.mak
-  if %BUILDER%. == djgpp.    goto :no_tests
+  if %BUILDER%. == watcom. (
+    if %MODEL%. == large. make -f watcom_l.mak
+    if %MODEL%. == flat.  make -f watcom_f.mak
+    if %MODEL%. == win32. make -f watcom_w.mak
+  )
 
   %_ECHO% "\e[1;33mRunning test 'cpu.exe' ----------------------------------------------------\e[0m"
   cpu.exe
