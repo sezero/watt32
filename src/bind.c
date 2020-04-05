@@ -321,11 +321,7 @@ int main (int argc, char **argv)
     tv.tv_usec = 0;
     tv.tv_sec  = 1;
 
-#if defined(__WATCOMC__) /* Why doesn't 'wcc386' see 'select()? */
-    num = select_s (sock+1, &fd_read, &fd_write, &fd_exc, &tv);
-#else
     num = select (sock+1, &fd_read, &fd_write, &fd_exc, &tv);
-#endif
 
     if (FD_ISSET(sock, &fd_read))  fputc ('r', stderr);
     if (FD_ISSET(sock, &fd_write)) fputc ('w', stderr);

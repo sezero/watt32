@@ -181,12 +181,12 @@ NO_W32_CFLAGS = -D_Windows
   endef
 
 @elifdef VISUALC CLANG
-  COMMON_CFLAGS = -nologo -W3 -MD            \
+  COMMON_CFLAGS = -nologo -W3 -MD -Zi -Ot    \
                   -D_CRT_SECURE_NO_WARNINGS  \
                   -D_CRT_NONSTDC_NO_WARNINGS \
                   -D_CRT_OBSOLETE_NO_WARNINGS
 
-  LDFLAGS = -nologo -map -debug -debugtype:cv -incremental:no
+  LDFLAGS = -nologo -map -debug -incremental:no
 
   #
   # Ignore this:
@@ -419,7 +419,7 @@ NO_W32_CFLAGS = -D_Windows
   #
   # The same hacks for '../lang.c' as in '../makefile.all'.
   #
-  W32_CFLAGS += -DFLEXINT_H -Dflex_int32_t=int -Dflex_int16_t=short -Dflex_uint8_t=char
+  W32_CFLAGS += -DFLEXINT_H -Dflex_int32_t=int -Dflex_int16_t=short -Dflex_uint8_t=int
 
   #
   # Turn off some warnings.
@@ -551,7 +551,7 @@ sysdep.h: ../wattcp.h ../timer.h  \
                 sys/whide.h)
 
 ../lang.c: ../lang.l
-	flex -8 -t $< > $@
+	flex --8bit --stdout $< > $@
 	@echo
 
 bind.exe: ../bind.c ../socket.h ../pcdbug.h

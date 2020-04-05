@@ -422,7 +422,7 @@ CFLAGS = $(CFLAGS) -DBUILD_WINDOWS
 #  if 'FLEXINT_H' is not defined and '__STDC_VERSION__' is '>= 199901L'.
 #  But no Borland version I have seen do have '<inttypes.h>'.
 #
-CFLAGS = $(CFLAGS) -DFLEXINT_H -Dflex_int32_t=int -Dflex_int16_t=short -Dflex_uint8_t=char
+CFLAGS = $(CFLAGS) -DFLEXINT_H -Dflex_int32_t=int -Dflex_int16_t=short -Dflex_uint8_t=int
 
 AFLAGS = -mx -m2 -t -l -DDOSX
 
@@ -699,8 +699,6 @@ clean: .SYMBOLIC
 	@if exist $(WATT_DLL:.dll=.map) $(RM) $(WATT_DLL:.dll=.map)
 @endif
 	@echo Cleaning done
-
--!include "$(OBJROOT)watt32.dep"
 
 ########################################################################
 
@@ -1427,7 +1425,7 @@ doxygen:
 	doxygen doxyfile
 
 lang.c: lang.l
-	flex --8bit --lex-compat --stdout lang.l > lang.c
+	flex --8bit --stdout lang.l > lang.c
 
 @ifdef HIGHC DJGPP MINGW32 MINGW64 CLANG CYGWIN32 CYGWIN64
   #
