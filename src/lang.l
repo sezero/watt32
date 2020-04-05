@@ -86,8 +86,10 @@ static struct Language {
 #elif defined(__WATCOMC__)
   /*
    * Warning! W202:  Symbol 'yy_fatal_error' has been defined, but not referenced.
+   * Warning! W136: Comparison equivalent to 'unsigned == 0'
    */
-  #pragma warning 202 5
+  #pragma disable_message (202)
+  #pragma disable_message (136)
 #endif
 
 %}
@@ -510,7 +512,7 @@ void lang_init (const char *value)
 #if defined(TEST_PROG)
     printf ("file-name    = `%s'\n",   fname);
     printf ("lang.prefix  = `%s'\n",   lang.prefix);
-    printf ("lang.entries = %u\n",     lang.entries);
+    printf ("lang.entries = %u\n",     (unsigned int)lang.entries);
     printf ("lang.lines   = %u\n",     lang.line);
     printf ("lang.list    = %08lX\n",  (DWORD)lang.list);
     printf ("lang.array   = %08lX\n\n",(DWORD)lang.array);
@@ -520,7 +522,7 @@ void lang_init (const char *value)
       size_t i;
 
       for (i = 0, elem = lang.array; i < lang.entries; i++, elem++)
-          printf ("CRC = %08lX, <%s>\n", elem->crc, elem->string);
+          printf ("CRC = %08lX, <%s>\n", DWORD_CAST(elem->crc), elem->string);
     }
 #endif
   }
@@ -575,6 +577,7 @@ static void Error (const char *err)
 {
   (*_printf) ("%s at line %u\n", err, lang.line);
 }
+#endif
 
 #if defined(TEST_PROG)
 int main (void)
@@ -586,5 +589,5 @@ int main (void)
   sock_init();
   return (0);
 }
-#endif  /* TEST_PROG    */
-#endif  /* USE_LANGUAGE */
+#endif  /* TEST_PROG */
+

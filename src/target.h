@@ -45,8 +45,8 @@
  *
  */
 
-/* 
- * explicitly configure DOS Extender from make file 
+/*
+ * explicitly configure DOS Extender from make file
  * for compilers which support multiple DOS Extenders
  */
 #if defined(DOSX_DOS4GW)
@@ -560,10 +560,6 @@
   #endif
 
   #pragma intrinsic (strcmp, memset)
-  #pragma warning (disable:120)
-  #if (__WATCOMC__ >= 1220)  /* OW 1.2+ */
-  /* #pragma warning (disable:H3006 H3007) */
-  #endif
 
   #if defined(__MSDOS__)
     #define getvect(a)      _dos_getvect (a)
