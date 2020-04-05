@@ -66,6 +66,7 @@
 *.zip
 *._xe
 array-bounds.c
+watcom-arpa-test.*
 back.btm
 blkfile*
 CI
