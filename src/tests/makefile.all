@@ -181,12 +181,12 @@ NO_W32_CFLAGS = -D_Windows
   endef
 
 @elifdef VISUALC CLANG
-  COMMON_CFLAGS = -nologo -W3 -MD            \
+  COMMON_CFLAGS = -nologo -W3 -MD -Zi -Ot    \
                   -D_CRT_SECURE_NO_WARNINGS  \
                   -D_CRT_NONSTDC_NO_WARNINGS \
                   -D_CRT_OBSOLETE_NO_WARNINGS
 
-  LDFLAGS = -nologo -map -debug -debugtype:cv -incremental:no
+  LDFLAGS = -nologo -map -debug -incremental:no
 
   #
   # Ignore this:
@@ -551,7 +551,7 @@ sysdep.h: ../wattcp.h ../timer.h  \
                 sys/whide.h)
 
 ../lang.c: ../lang.l
-	flex -8 -t $< > $@
+	flex --8bit --stdout $< > $@
 	@echo
 
 bind.exe: ../bind.c ../socket.h ../pcdbug.h

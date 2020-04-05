@@ -1425,7 +1425,7 @@ doxygen:
 	doxygen doxyfile
 
 lang.c: lang.l
-	flex --8bit --lex-compat --stdout lang.l > lang.c
+	flex --8bit --stdout lang.l > lang.c
 
 @ifdef HIGHC DJGPP MINGW32 MINGW64 CLANG CYGWIN32 CYGWIN64
   #
