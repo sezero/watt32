@@ -335,7 +335,7 @@ exit /b 0
 
 ::
 :: Build and run some test programs in './src/tests'.
-:: (But djgpp programs cannot run on AppVeyor).
+:: (But djgpp, small, large and flat programs cannot run on AppVeyor).
 ::
 :: Build all except for the 'watcom' MODELS 'small' and 'small32' (DOS).
 :: All these generated makefiles requires GNU-make (a 'make' should already be on 'PATH').
@@ -353,7 +353,6 @@ exit /b 0
   if %BUILDER%. == clang.    make -f clang_%BITS%.mak
   if %BUILDER%. == mingw64.  make -f MinGW64_%BITS%.mak
   if %BUILDER%. == visualc.  make -f visualc_%BITS%.mak
-  if %BUILDER%. == djgpp.    goto :no_tests
   if %BUILDER%. == watcom. (
     if %MODEL%. == large. make -f watcom_l.mak
     if %MODEL%. == flat.  make -f watcom_f.mak
