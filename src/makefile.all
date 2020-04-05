@@ -582,9 +582,9 @@ I_CFLAGS = -I"$(%WATCOM)/h"
 !error Unknown WATCOM model
 @endif
 
-LIBARG  = $(OBJPATH)wlib.arg
-LINKARG = $(OBJPATH)wlink.arg
-C_ARGS  = $(OBJPATH)wcc.arg
+LIB_ARGS  = $(OBJPATH)wlib.arg
+LINK_ARGS = $(OBJPATH)wlink.arg
+C_ARGS    = $(OBJPATH)wcc.arg
 
 AFLAGS += -zq -fr=nul -w3 -d1 -I"../inc"
 CFLAGS += -zq -fr=nul -wx -DWATT32_BUILD -I. -I"../inc"
@@ -637,35 +637,35 @@ all: $(PKT_STUB) $(C_ARGS) $(OBJPATH)cflags.h $(OBJPATH)cflagsbf.h $(TARGETS)
 $(IMP_LIB): $(WATT_DLL)
 	@%null
 
-$(WATT_DLL): $(OBJS) $(RESOURCE) $(LINKARG)
-	*wlink $(LDFLAGS) name $^@ @$(LINKARG)
+$(WATT_DLL): $(OBJS) $(RESOURCE) $(LINK_ARGS)
+	*wlink $(LDFLAGS) name $^@ @$(LINK_ARGS)
 @endif
 
-$(STAT_LIB): $(OBJS) $(LIBARG)
-	$(AR) -q -b -c -pa $^@ @$(LIBARG)
+$(STAT_LIB): $(OBJS) $(LIB_ARGS)
+	$(AR) -q -b -c -pa $^@ @$(LIB_ARGS)
 
--!include "$(OBJROOT)watt32.dep"
+$(OBJPATH)language.obj: language.c lang.c .AUTODEPEND
 
 $(OBJPATH)asmpkt.obj:   asmpkt.asm
 $(OBJPATH)chksum0.obj:  chksum0.asm
 $(OBJPATH)cpumodel.obj: cpumodel.asm
 
-.c{$(OBJDIR)}.obj:
+.c{$(OBJDIR)}.obj:  .AUTODEPEND
 	$(CC) $[@ @$(C_ARGS) -fo=$^@
 
-.asm{$(OBJDIR)}.obj:
+.asm{$(OBJDIR)}.obj:  .AUTODEPEND
 	$(AS) $[@ $(AFLAGS) -fo=$^@
 
 $(C_ARGS): $(__MAKEFILES__)
 	%create $^@
 	@%append $^@ $(CFLAGS) $(I_CFLAGS)
 
-$(LIBARG): $(__MAKEFILES__)
+$(LIB_ARGS): $(__MAKEFILES__)
 	%create $^@
 	@for %f in ($(OBJS)) do @%append $^@ +- %f
 
 @ifdef WIN32
-$(LINKARG): $(__MAKEFILES__)
+$(LINK_ARGS): $(__MAKEFILES__)
 	%create $^@
 	@%append $^@ option quiet, verbose
 	@%append $^@ debug all
@@ -680,19 +680,21 @@ clean: .SYMBOLIC
 	@if exist $(OBJPATH)cflags.h $(RM) $(OBJPATH)cflags.h
 	@if exist $(OBJPATH)cflagsbf.h $(RM) $(OBJPATH)cflagsbf.h
 	@if exist $(STAT_LIB) $(RM) $(STAT_LIB)
-	@if exist $(C_ARGS) $(RM) $(C_ARGS)
-	@if exist $(LIBARG) $(RM) $(LIBARG)
+	@if exist $(C_ARGS)   $(RM) $(C_ARGS)
+	@if exist $(LIB_ARGS) $(RM) $(LIB_ARGS)
 !ifdef PKT_STUB
 	@if exist $(PKT_STUB) $(RM) $(PKT_STUB)
 !endif
 @ifdef WIN32
-	@if exist $(LINKARG) $(RM) $(LINKARG)
-	@if exist $(WATT_DLL) $(RM) $(WATT_DLL)
-	@if exist $(IMP_LIB) $(RM) $(IMP_LIB)
-	@if exist $(RESOURCE) $(RM) $(RESOURCE)
+	@if exist $(LINK_ARGS) $(RM) $(LINK_ARGS)
+	@if exist $(WATT_DLL)  $(RM) $(WATT_DLL)
+	@if exist $(IMP_LIB)   $(RM) $(IMP_LIB)
+	@if exist $(RESOURCE)  $(RM) $(RESOURCE)
 	@if exist $(WATT_DLL:.dll=.map) $(RM) $(WATT_DLL:.dll=.map)
 @endif
 	@echo Cleaning done
+
+-!include "$(OBJROOT)watt32.dep"
 
 ########################################################################
 
