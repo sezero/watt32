@@ -20,10 +20,6 @@
 
 #elif defined(_MSC_VER) && defined(_M_IX86)
   #define TEST_UNDEF_OPCODE
-
-#elif defined(__WATCOMC__) && defined(__386__)
-  #define INVD_CACHE
-  #define TEST_UNDEF_OPCODE
 #endif
 
 #include "wattcp.h"
