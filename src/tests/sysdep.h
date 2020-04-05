@@ -13,7 +13,7 @@
 #include <dos.h>
 #endif
 
-#if !defined(__CYGWIN__)
+#if !defined(__CYGWIN__) && !defined(__DJGPP__)
 #include <conio.h>
 #endif
 
@@ -101,6 +101,10 @@
 
 #if defined(__CYGWIN__)
   #define strnicmp(s1, s2, len)  strncasecmp (s1, s2, len)
+#endif
+
+#if defined(__DJGPP__)
+  int getch (void);  /* Since <conio.h> can not be included */
 #endif
 
 #if defined(__DMC__)

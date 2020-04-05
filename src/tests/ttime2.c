@@ -36,10 +36,12 @@ int main (void)
     if (kbhit())
        key = getch();
 
-    /* get BIOS timerticks through int 0x1A/0 */
-    _bios_timeofday (_TIME_GETCLOCK, &tick);
+    /* get BIOS timerticks through int 0x1A/0
+     */
+    _bios_timeofday (_TIME_GETCLOCK, (long unsigned int*)&tick);
 
-    /* get RTC time through int 0x1A/2 */
+    /* get RTC time through int 0x1A/2
+     */
     memset (&regs, 0, sizeof(union REGS));
     regs.w.ax = 0x0200;
     int386 (0x1A, &regs, &regs);
