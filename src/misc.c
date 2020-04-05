@@ -1268,7 +1268,9 @@ DWORD get_ss_limit (void)
     /*
      * Newer compilers like Embarcadero or CodeGearC (ver 0x0700?) do not have inline asm.
      */
+    DWORD __readfsdword (DWORD ofs);
     #pragma intrinsic(__readfsdword)
+
     return (void*)__readfsdword (0x10);
   #else
     __asm mov eax, fs:[0x10]
