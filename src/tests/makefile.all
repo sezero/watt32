@@ -419,7 +419,7 @@ NO_W32_CFLAGS = -D_Windows
   #
   # The same hacks for '../lang.c' as in '../makefile.all'.
   #
-  W32_CFLAGS += -DFLEXINT_H -Dflex_int32_t=int -Dflex_int16_t=short -Dflex_uint8_t=char
+  W32_CFLAGS += -DFLEXINT_H -Dflex_int32_t=int -Dflex_int16_t=short -Dflex_uint8_t=int
 
   #
   # Turn off some warnings.
