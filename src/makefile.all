@@ -442,6 +442,8 @@ OBJPATH = $(OBJDIR)\ #
 
 !if "$(CBUILDER_IS_LLVM_BASED)" == ""
   CFLAGS = $(CFLAGS) -w-aus- -w-pia- -w-csu-
+!else
+  CFLAGS = $(CFLAGS) -Wno-char-subscripts  # Turn off some warnings in 'lang.c'
 !endif
 
 CFLAGS  = $(CFLAGS) -c -O -v -vi- -d -Tt -w  -I. -I..\inc -n$(OBJDIR) -DWATT32_BUILD
