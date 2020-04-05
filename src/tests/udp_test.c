@@ -19,7 +19,7 @@
 #define DEFAULT_MSG   "This is only a test"
 #define MSGBUFSIZE    256
 
-int sendUdp (char *message, int len, struct sockaddr_in *addr)
+int send_udp (char *message, int len, struct sockaddr_in *addr)
 {
   int ret, fd = socket (AF_INET, SOCK_DGRAM, 0);
 
@@ -31,7 +31,14 @@ int sendUdp (char *message, int len, struct sockaddr_in *addr)
 
   ret = sendto (fd, message, len, 0, (struct sockaddr*)addr, sizeof(struct sockaddr));
   if (ret < 0)
-     perror ("sendto");
+  {
+#ifdef _Windows
+    int err = WSAGetLastError();
+    printf ("sendto: erroor %d:\n", err);
+#else
+    printf ("sendto: %s (%d)\n", strerror(errno), errno);
+#endif
+  }
 
   printf ("Ret %d\n", ret);
   sleep (4);
@@ -86,7 +93,7 @@ int main (int argc, char **argv)
   {
     printf ("[%d] Sending [%s] to %s port %d\n", i, message, pAddr, port);
     len = snprintf (sndMsg, sizeof(sndMsg), "[%2d] %s", i, message);
-    sendUdp (sndMsg, len, &addr);
+    send_udp (sndMsg, len, &addr);
   }
   return (-1);
 }

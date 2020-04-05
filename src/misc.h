@@ -74,7 +74,7 @@ extern "C" {
 
   #if defined(UNICODE) || defined(_UNICODE)
     #define _T(str)                L##str
-    #define _tcsicmp(s1, s2)      wcsncmp (s1, s2)
+    #define _tcsicmp(s1, s2)       wcsncmp (s1, s2)
     #define _tcsncpy(s1, s2, len)  wcsncpy (s1, s2, len)
   #else
     #define _T(str)                str
@@ -82,8 +82,8 @@ extern "C" {
     #define _tcsncpy(s1, s2, len)  strncpy (s1, s2, len)
   #endif
 
-  #define stricmp(s1, s2)        strcasecmp (s1, s2)
-  #define strnicmp(s1, s2, len)  strncasecmp (s1, s2, len)
+  #define stricmp(s1, s2)          strcasecmp (s1, s2)
+  #define strnicmp(s1, s2, len)    strncasecmp (s1, s2, len)
 
   /* Use kbhit(), getch() below
    */
