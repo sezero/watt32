@@ -196,12 +196,10 @@ gen_watcom ()
   echo "Generating Watcom makefiles, directories, errnos and dependencies"
   ../util/linux/mkmake -w -o watcom_s.mak -d build/watcom/small   makefile.all WATCOM SMALL
   ../util/linux/mkmake -w -o watcom_l.mak -d build/watcom/large   makefile.all WATCOM LARGE
-  ../util/linux/mkmake -w -o watcom_f.mak -d build/watcom/flat    makefile.all WATCOM FLAT
-  ../util/linux/mkmake -w -o watcom_w.mak -d build/watcom/win32   makefile.all WATCOM WIN32
   ../util/linux/mkmake -w -o watcom_3.mak -d build/watcom/small32 makefile.all WATCOM SMALL32
-
-  ../util/linux/mkdep -s.obj -p\$\(OBJDIR\)/ *.[ch] > build/watcom/watt32.dep
-  echo "neterr.c: build/watcom/syserr.c" >> build/watcom/watt32.dep
+  ../util/linux/mkmake -w -o watcom_f.mak -d build/watcom/flat    makefile.all WATCOM FLAT
+  ../util/linux/mkmake -w -o watcom_x.mak -d build/watcom/x32vm   makefile.all WATCOM FLAT X32VM
+  ../util/linux/mkmake -w -o watcom_w.mak -d build/watcom/win32   makefile.all WATCOM WIN32
 
   #
   # This require dosemu be installed
@@ -209,7 +207,12 @@ gen_watcom ()
   dosemu -dumb -c "../dosemu.bat"
 
   echo "Run wmake to make target(s):"
-  echo "  E.g. 'wmake -h -f watcom_l.mak' for large model (16-bit)"
+  echo "  E.g. 'wmake -h -f watcom_s.mak' for small model (16-bit)"
+  echo "       'wmake -h -f watcom_l.mak' for large model (16-bit)"
+  echo "       'wmake -h -f watcom_3.mak' for small model (32-bit)"
+  echo "       'wmake -h -f watcom_f.mak' for flat model  (DOS4GW)"
+  echo "       'wmake -h -f watcom_x.mak' for flat model  (X32VM)"
+  echo "       'wmake -h -f watcom_w.mak' for Win32"
 }
 
 gen_all ()
