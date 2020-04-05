@@ -65,9 +65,11 @@ test_script:
     - cmd: appveyor-script.bat build_tests
 
 #
-# Try to preserve previously downloaded CI packages.
+# Try to preserve previously downloaded CI packages
+# and the 'src/build' files.
 #
 cache:
   - '%APPVEYOR_BUILD_FOLDER%\CI-temp'
+  - '%APPVEYOR_BUILD_FOLDER%\src\build'
   - 'c:\Program Files (x86)\LLVM'
 
