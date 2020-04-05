@@ -2706,12 +2706,12 @@ void lang_init (const char *value)
       return;
     }
 #if defined(TEST_PROG)
-    printf ("file-name    = `%s'\n",   fname);
-    printf ("lang.prefix  = `%s'\n",   lang.prefix);
-    printf ("lang.entries = %u\n",     (unsigned int)lang.entries);
-    printf ("lang.lines   = %u\n",     lang.line);
-    printf ("lang.list    = %08lX\n",  (DWORD)lang.list);
-    printf ("lang.array   = %08lX\n\n",(DWORD)lang.array);
+    printf ("file-name    = `%s'\n", fname);
+    printf ("lang.prefix  = `%s'\n", lang.prefix);
+    printf ("lang.entries = %u\n",   (unsigned int)lang.entries);
+    printf ("lang.lines   = %u\n",   lang.line);
+    printf ("lang.list    = %" ADDR_FMT "\n",   ADDR_CAST(lang.list));
+    printf ("lang.array   = %" ADDR_FMT "\n\n", ADDR_CAST(lang.array));
 
     {
       const struct Elem *elem;
