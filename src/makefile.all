@@ -700,8 +700,6 @@ clean: .SYMBOLIC
 @endif
 	@echo Cleaning done
 
--!include "$(OBJROOT)watt32.dep"
-
 ########################################################################
 
 @elifdef VISUALC
