@@ -1,5 +1,5 @@
-#ifndef __TIMEIT_H
-#define __TIMEIT_H
+#ifndef _SYSDEP_H
+#define _SYSDEP_H
 
 /*
  * Timing stuff and portability hacks.
@@ -25,42 +25,73 @@
  * When compiling pure Winsock versions of various test programs:
  */
 #if defined(_Windows) && !defined(WATT32)
-  #if 0
-    #define _WATT32_FAKE_WINSOCK_H   /* Suppress errors from <w32api.h> */
-    #define _WATT32_FAKE_WINSOCK2_H
-    #define _WATT32_FAKE_WS2TCPIP_H
-    #define USE_SYS_TYPES_FD_SET     /* Shutup CygWin */
-  #endif
-
   #define __WATT_TCP_H
   #define __NETINET_IN_H
   #define __SYS_SOCKET_H
   #define __SYS_WTIME_H
-
   #define _WINSOCK_DEPRECATED_NO_WARNINGS
 
-  #include <winsock2.h>
-  #include <windows.h>
+  #if !defined(_WIN32_WINNT) || (_WIN32_WINNT < 0x0501)
+    #undef  _WIN32_WINNT
+    #define _WIN32_WINNT 0x0501
+  #endif
 
-  #define close(s)  closesocket (s)
-  #define uint64    u_int64
+  #if defined(__CYGWIN__) && !defined(__USE_W32_SOCKETS)
+    /*
+     * Do not call 'WSAStartup()' in test programs.
+     */
+    #undef _Windows
+
+    #include <sys/select.h>
+    #include <sys/ioctl.h>
+
+    #define uint64   unsigned long long
+    #define u_int64  uint64
+    #define ioctlsocket(s, cmd, val_p)  ioctl(s, cmd, val_p)
+  #else
+    /*
+     * Undo what <sys/w32api.h> did.
+     */
+    #undef _WINSOCKAPI_
+    #undef _WINSOCK2API_
+    #undef _WINSOCK_H
+    #undef _WINSOCK2_H
+
+    #include <winsock2.h>
+    #include <windows.h>
+
+    #define close(s)  closesocket (s)
+    #define uint64    unsigned __int64
+
+    static struct WSAData wsa_state;
+
+    static void cleanup (void)
+    {
+      WSACleanup();
+    }
+  #endif
+
+  #if defined(__CYGWIN__)
+    int kbhit (void);  /* In cyg_kbhit.c */
+  #endif
 
 #else
   #include "wattcp.h"
+  #include "timer.h"
+  #include "misc.h"
+
+  #include <netinet/in.h>
+  #include <sys/socket.h>
+  #include <arpa/inet.h>
 #endif
 
 #ifdef WATT32
   #undef _Windows  /* '__BORLANDC__' for Win32 seems to have this as a built-in */
 
-//  #include <tcp.h>
-  #define close(s)  close_s(s)
-  #define select    select_s
+  #undef  kbhit
   #define kbhit()   watt_kbhit()
-
-#elif defined(_WIN32)
-  #include <winsock2.h>
-  #include <windows.h>
-  #define close(s)  closesocket (s)
+  #define close(s)  close_s(s)
+  #define select(num, rd, wr, exc, tv) select_s(num, rd, wr, exc, tv)
 #endif
 
 #if defined(_WIN32)
@@ -68,9 +99,43 @@
   #define sleep(x)  Sleep((x)*1000)
 #endif
 
+#if defined(__CYGWIN__)
+  #define strnicmp(s1, s2, len)  strncasecmp (s1, s2, len)
+#endif
+
 #if defined(__DMC__)
   #define dosdate_t  dos_date_t
   #define dostime_t  dos_time_t
+#endif
+
+#ifndef STDIN_FILENO
+#define STDIN_FILENO 0
+#endif
+
+/*
+ * Hacks to shut-up Cygwin x64.
+ */
+#if !defined(__CYGWIN__) || !defined(__USE_W32_SOCKETS)
+  #define __ms_u_long   u_long
+  #define __ms_timeval  timeval
+#endif
+
+/* The 64-bit version of 'in_checksum_fast()' simply does a
+ * 'jmp _w32_in_checksum'. It desn't seems to hurt the speed.
+ */
+#if (DOSX)
+  #define HAVE_IN_CHKSUM_FAST
+  #define HAVE_CHECK_CPU_TYPE
+#endif
+
+/*
+ * Except for Cygwin x64 which uses no ASM code due to some weird linking issue.
+ * Like:
+ *   build/CygWin/64bit/cpumodel.o:fake:(.text+0x8): relocation truncated to fit: R_X86_64_32S against `.data'
+ */
+#if defined(__CYGWIN__) && defined(__x86_64__)
+  #undef HAVE_IN_CHKSUM_FAST
+  #undef HAVE_CHECK_CPU_TYPE
 #endif
 
 #if !defined(__WATCOMC__)
@@ -96,8 +161,10 @@
   #endif
 #endif   /* __WATCOMC__ */
 
+#define GCC_INLINE extern __inline__ __attribute__ ((__gnu_inline__))
+
 #if defined(__GNUC__) && defined(__i386__) && !defined(__NO_INLINE__)  /* -O0 */
-  W32_GCC_INLINE uint64 _get_rdtsc (void)
+  GCC_INLINE uint64 _get_rdtsc (void)
   {
     register uint64 tsc;
     __asm__ __volatile__ (
@@ -106,14 +173,14 @@
     return (tsc);
   }
 
-  W32_GCC_INLINE void _invd_cache (void)
+  GCC_INLINE void _invd_cache (void)
   {
     __asm__ __volatile__ (
               ".byte 0x0F, 0x08;");   /* INVD opcode */
   }
 
 #elif defined(__GNUC__) && defined(__x86_64__) && !defined(__NO_INLINE__)
-  W32_GCC_INLINE uint64 _get_rdtsc (void)
+  GCC_INLINE uint64 _get_rdtsc (void)
   {
     unsigned hi, lo;
     __asm__ __volatile__ (
@@ -121,7 +188,7 @@
     return ( (uint64)lo) | ( ((uint64)hi) << 32 );
   }
 
-  W32_GCC_INLINE void _invd_cache (void)
+  GCC_INLINE void _invd_cache (void)
   {
     __asm__ __volatile__ (
               ".byte 0x0F, 0x08;");   /* INVD opcode */
@@ -274,6 +341,9 @@
   #define check_invd() ((void)0)
 #endif
 
+/* If '../misc.h' was not included for this combination,
+ * but we need this:
+ */
 #if !defined(S64_FMT)
   #if defined(__GNUC__)
     #if defined(__DJGPP__) || defined(__CYGWIN__)
@@ -320,4 +390,4 @@
     }                                                        \
     while (0)
 
-#endif  /* __TIMEIT_H */
+#endif  /* _SYSDEP_H */

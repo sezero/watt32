@@ -1,7 +1,9 @@
 #include <stdio.h>
 #include "cpumodel.h"
 
-#ifdef __WATCOMC__
+#ifndef __WATCOMC__
+#error For Watcom only
+#endif
 
 typedef struct {
         unsigned eax;
@@ -46,8 +48,4 @@ int main (void)
   printf ("CR4 = %08lX\n", Get_CR4());
   return (0);
 }
-
-#else
-#error For Watcom only
-#endif
 

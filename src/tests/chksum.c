@@ -1,26 +1,15 @@
-#include <stdio.h>
-#include <stdlib.h>
 #include <malloc.h>
 #include <signal.h>
 #include <time.h>
 #include <limits.h>
 
-#include "wattcp.h"
-#include "misc.h"
-#include "timer.h"
+#include "sysdep.h"
 #include "sock_ini.h"
 #include "gettod.h"
-#include "chksum.h"
 #include "cpumodel.h"
+#include "chksum.h"
 
 #undef START_TIME
-
-/* The 64-bit version of in_checksum_fast() simply does a
- * 'jmp _w32_in_checksum'. Doesn't seems to hurt on speed.
- */
-#if (DOSX)
-  #define HAVE_IN_CHKSUM_FAST
-#endif
 
 long loops   = 20000;
 long ip_size = 10000;
@@ -35,7 +24,7 @@ long ip_size = 10000;
     if (!has_rdtsc)
        return ("");
 
-    snprintf (buf, sizeof(buf), "(%" U64_FMT " clk/call, ", delta64/loops);
+    snprintf (buf, sizeof(buf), "(%5" U64_FMT " clk/call, ", delta64/loops);
     return (buf);
   }
 
@@ -50,7 +39,7 @@ long ip_size = 10000;
 
     clocks = delta64 / loops;
     usec = (double)clocks / (double)clocks_per_usec;
-    sprintf (buf, "%.3f uS/call)", usec);
+    sprintf (buf, "%6.3f uS/call)", usec);
     return (buf);
   }
 
@@ -58,12 +47,11 @@ long ip_size = 10000;
   #define DELTA_TIME() delta64 = get_rdtsc() - start64
 
 #else
-  #define START_TIME()        ((void)0)
-  #define DELTA_TIME()        ((void)0)
-  #define get_clk_calls(d,l)  ""
-  #define get_usec_calls(d,l) ""
+  #define START_TIME()         ((void)0)
+  #define DELTA_TIME()         ((void)0)
+  #define get_clk_calls(d, l)  ""
+  #define get_usec_calls(d, l) ""
 #endif
-
 
 /*
  * Some notes:
@@ -115,6 +103,7 @@ int test_checksum_speed (const char *buf)
   long   j;
 
   /*---------------------------------------------------------------*/
+
   printf ("Timing in_checksum()....... ");
   fflush (stdout);
   gettimeofday2 (&start, NULL);
@@ -129,6 +118,7 @@ int test_checksum_speed (const char *buf)
           timeval_diff(&now, &start)/1E6, get_clk_calls(), get_usec_calls());
 
   /*---------------------------------------------------------------*/
+
   printf ("Timing ip_checksum()....... ");
   fflush (stdout);
   gettimeofday2 (&start, NULL);
@@ -142,8 +132,9 @@ int test_checksum_speed (const char *buf)
   printf ("time ....%.6fs %s%s\n",
           timeval_diff (&now, &start)/1E6, get_clk_calls(), get_usec_calls());
 
-#if defined(HAVE_IN_CHKSUM_FAST)
   /*---------------------------------------------------------------*/
+
+#if defined(HAVE_IN_CHKSUM_FAST)
   printf ("Timing in_checksum_fast().. ");
   fflush (stdout);
   gettimeofday2 (&start, NULL);
@@ -156,9 +147,13 @@ int test_checksum_speed (const char *buf)
   DELTA_TIME();
   printf ("time ....%.6fs %s%s\n",
           timeval_diff(&now, &start)/1E6, get_clk_calls(), get_usec_calls());
+
+#else
+  puts ("No in_checksum_fast() for this target.");
 #endif
 
   /*---------------------------------------------------------------*/
+
   printf ("Timing overhead............ ");
   fflush (stdout);
   gettimeofday2 (&start, NULL);

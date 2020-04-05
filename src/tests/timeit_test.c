@@ -1,21 +1,14 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <sys/types.h>
-#include <tcp.h>
 
-#include "timeit.h"
+#include "sysdep.h"
 
 #define ARGSUSED(foo) (void)foo
 
 #define u_int32_t unsigned long
 
-#if defined(__WATCOMC__)
-  #define QSORT_COMPARE __watcall
-#else
-  #define QSORT_COMPARE cdecl
-#endif
-
-static int QSORT_COMPARE cmpint (const void *a, const void *b)
+static int __watcall cmpint (const void *a, const void *b)
 {
   return *(int*)a - *(int*)b;
 }
@@ -24,7 +17,7 @@ static int QSORT_COMPARE cmpint (const void *a, const void *b)
  * Since 'TIME_IT()' wants an 'int function'
  */
 int qsort2 (void *base, size_t num, size_t size,
-            int (QSORT_COMPARE *cmp_func) (const void *, const void *))
+            int (__watcall *cmp_func) (const void *, const void *))
 {
   qsort (base, num, size, cmp_func);
   return (1);
@@ -73,7 +66,7 @@ static void generic_swap (void *_a, void *_b, int size)
  * it less suitable for kernel use.
  */
 int Qsort (void *_base, size_t num, size_t size,
-           int (QSORT_COMPARE *cmp_func) (const void *, const void *),
+           int (__watcall *cmp_func) (const void *, const void *),
            void (*swap_func) (void *, void *, int size))
 {
   /* pre-scale counters for performance

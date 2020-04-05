@@ -3,19 +3,11 @@
 #include <string.h>
 #include <time.h>
 
-#if !defined(__CYGWIN__) && !defined(__BORLANDC__)
-#include <dos.h>
-#endif
-
 #include "wattcp.h"
 #include "misc.h"
 #include "timer.h"
 #include "printk.h"
-
-#if defined(__DMC__)
-  #define dosdate_t  dos_date_t
-  #define dostime_t  dos_time_t
-#endif
+#include "sysdep.h"
 
 #ifdef __MSDOS__
 static int use_isr = 0;
@@ -32,7 +24,8 @@ int test_timers (DWORD msec)
 
   printf ("system ref. (now) = %lu\n"
           "set_timeout(1000) = %lu\n",
-          set_timeout(0), set_timeout(1000));
+          DWORD_CAST (set_timeout(0)),
+          DWORD_CAST (set_timeout(1000)));
 
   for (i = 0; i < 10; i++)
   {
@@ -171,7 +164,6 @@ void Usage (void)
         "  -i : test intel() functions\n");
   exit (-1);
 }
-
 
 int main (int argc, char **argv)
 {

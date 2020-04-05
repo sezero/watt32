@@ -1019,7 +1019,8 @@ static void DHCP_state_REBOOTING (int event)
  */
 static void W32_CALL dhcp_fsm (void)
 {
-  printf ("In %s(): send_timeout: %lu, state: %s\n", __FUNCTION__, send_timeout, state_name());
+  printf ("In %s(): send_timeout: %lu, state: %s\n",
+          __FUNCTION__, DWORD_CAST(send_timeout), state_name());
 
   WATT_YIELD();
 

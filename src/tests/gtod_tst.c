@@ -2,13 +2,8 @@
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
-#include <sys/wtime.h>
-#include <tcp.h>
 
-#ifdef _WIN32
-#include <windows.h>
-#define usleep(us)  Sleep((us)/1000UL)
-#endif
+#include "sysdep.h"
 
 int main (int argc, char **argv)
 {

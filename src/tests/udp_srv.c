@@ -7,36 +7,9 @@
 #include <string.h>
 #include <sys/types.h>
 
-#ifdef __CYGWIN__
-  extern int _w32_kbhit (void);
-  #define kbhit() _w32_kbhit()
-#else
-  #include <conio.h>
-#endif
+#include "sysdep.h"
 
-#ifdef WATT32
-  #include <tcp.h>
-  #define close    close_s
-  #define select   select_s
-  #undef _Windows  /* '__BORLANDC__' for Win32 seems to have this as a built-in */
-#endif
-
-#ifdef _Windows   /* Not Watt-32 on Windows! */
-  #define WIN32_LEAN_AND_MEAN
-  #include <winsock.h>
-  #define close(s) closesocket(s)
-
-  static struct WSAData wsa_state;
-
-  static void cleanup (void)
-  {
-    WSACleanup();
-  }
-#else
-  #if !defined(_MSC_VER) && !defined(__BORLANDC__)
-  #include <unistd.h>
-  #endif
-
+#if !defined(_Windows) /* Real Watt-32, Not native Winsock2 programs */
   #include <netinet/in.h>
   #include <sys/socket.h>
   #include <sys/ioctl.h>
@@ -49,10 +22,16 @@
 
 void usage (void)
 {
+#if defined(WATT32)
   printf ("udp_srv [-dn]\n"
-          "  listen for UDP-traffic on port %d\n"
+          "  listen for UDP-traffic on port %d.\n"
           "  -d  enable Watt-32 debug\n"
           "  -n  use non-blocking socket\n", MYPORT);
+#else
+  printf ("udp_srv [-n]\n"
+          "  listen for UDP-traffic on port %d.\n"
+          "  -n  use non-blocking socket\n", MYPORT);
+#endif
   exit (0);
 }
 
@@ -60,11 +39,9 @@ int main (int argc, char **argv)
 {
   struct sockaddr_in my_addr;    /* my address information */
   struct sockaddr_in their_addr; /* connector's address information */
-  int    sockfd;
-  int    addr_len, numbytes;
-  int    debug = 0;
-  int    non_block = 0;
-  char   buf[MAXBUFLEN];
+  char   buf [MAXBUFLEN];
+  int    sockfd, addr_len, numbytes, debug = 0;
+  __ms_u_long non_block = 0;
 
   while (argc > 1)
   {
@@ -72,7 +49,7 @@ int main (int argc, char **argv)
        non_block = 1;
     if (!strcmp(argv[1],"-d"))
        debug = 1;
-    if (!strcmp(argv[1],"-?"))
+    if (!strcmp(argv[1],"-?") || !strcmp(argv[1],"-h"))
        usage();
     argc--;
     argv++;
@@ -93,7 +70,8 @@ int main (int argc, char **argv)
   atexit (cleanup);
 #endif
 
-  if ((sockfd = socket(AF_INET, SOCK_DGRAM, 0)) == -1)
+  sockfd = socket (AF_INET, SOCK_DGRAM, 0);
+  if (sockfd == -1)
   {
     perror ("socket");
     return (1);
@@ -111,7 +89,7 @@ int main (int argc, char **argv)
   }
 
 #ifdef _Windows
-  ioctlsocket (sockfd, FIONBIO, (u_long*)&non_block);
+  ioctlsocket (sockfd, FIONBIO, &non_block);
 #else
   ioctlsocket (sockfd, FIONBIO, (char*)&non_block);
 #endif
@@ -129,7 +107,7 @@ int main (int argc, char **argv)
 
       FD_ZERO (&fd);
       FD_SET (sockfd, &fd);
-      n = select (sockfd+1, &fd, NULL, NULL, &tv);
+      n = select (sockfd+1, &fd, NULL, NULL, (struct __ms_timeval*)&tv);
       if (n < 0)
       {
         perror ("select");

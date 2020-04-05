@@ -21,15 +21,17 @@
 #include <string.h>
 #include <ctype.h>
 
-#include "wattcp.h"
-#include "timer.h"
-#include "misc.h"
+#include "sysdep.h"
 
 #define CPU_TEST
 #include "cpumodel.h"
 
 #if !defined(HAVE_UINT64)
-#error I need 64-bit integer support.
+#error "I need 64-bit integer support."
+#endif
+
+#if !defined(HAVE_CHECK_CPU_TYPE)
+#error "I need '_w32_CheckCpuType()'"
 #endif
 
 static char Cx86_step = 0;
@@ -326,7 +328,7 @@ void print_reg (DWORD reg, const char *what)
   BYTE c = loBYTE (reg >> 16);
   BYTE d = hiBYTE (reg >> 16);
 
-  printf ("%s: %08lX, %c%c%c%c\n", what, reg,
+  printf ("%s: %08lX, %c%c%c%c\n", what, DWORD_CAST(reg),
           isprint(a) ? a : '.',
           isprint(b) ? b : '.',
           isprint(c) ? c : '.',
@@ -455,7 +457,7 @@ void get_DRND_info (void)
      {
        DWORD val = 0;
        BOOL  ok = get_rdrand32 (&val);
-       printf ("  RDRAND: %10lu %s\n", val, ok ? "OK" : "FAIL");
+       printf ("  RDRAND: %10lu %s\n", DWORD_CAST(val), ok ? "OK" : "FAIL");
      }
 }
 
@@ -502,5 +504,5 @@ int main (void)
 
   return (0);
 }
-#endif  /* COMPILING_PCDBUG_C */
+#endif  /* !COMPILING_PCDBUG_C */
 
