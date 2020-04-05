@@ -370,7 +370,7 @@ select_ok:
   return (ret_count);
 }
 
-#if defined(WIN32)
+#if !defined(__DJGPP__)
 int W32_CALL select (int nfds, fd_set *read_fds, fd_set *write_fds,
                      fd_set *except_fds, struct timeval *timeout)
 {
