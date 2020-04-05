@@ -21,7 +21,11 @@
 #include <string.h>
 #include <ctype.h>
 
-#include "sysdep.h"
+#ifdef COMPILING_PCDBUG_C
+  #define HAVE_CHECK_CPU_TYPE
+#else
+  #include "sysdep.h"
+#endif
 
 #define CPU_TEST
 #include "cpumodel.h"
