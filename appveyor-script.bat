@@ -344,7 +344,7 @@ exit /b 0
 :: Build and run some test programs in './src/tests'.
 :: (But djgpp programs cannot run on AppVeyor).
 ::
-:: Build all except for the 'watcom' MODELS 'small', 'small32', 'flat' and 'large' (DOS).
+:: Build all except for the 'watcom' MODELS 'small' and 'small32' (DOS).
 :: All these generated makefiles requires GNU-make (a 'make' should already be on 'PATH').
 ::
 :build_tests
@@ -354,10 +354,10 @@ exit /b 0
 
   if %CPU%. == x86. set PATH=c:\Program Files (x86)\LLVM\bin;%PATH%
 
-  if %MODEL%. == flat.    goto :no_tests
   if %MODEL%. == small.   goto :no_tests
   if %MODEL%. == small32. goto :no_tests
-  if %MODEL%. == large.   goto :no_tests
+::if %MODEL%. == large.   goto :no_tests
+::if %MODEL%. == flat.    goto :no_tests
 
   call configur.bat %BUILDER%
   if %BUILDER%. == borland.  make -f bcc_w.mak
