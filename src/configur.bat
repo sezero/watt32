@@ -110,8 +110,6 @@ echo Generating Watcom makefiles, directories, errnos and dependencies
 %MKMAKE% -w -o watcom_x.mak -d build\watcom\x32vm   makefile.all WATCOM FLAT X32VM
 %MKMAKE% -w -o watcom_w.mak -d build\watcom\win32   makefile.all WATCOM WIN32
 %MKMAKE% -w -o watcom_3.mak -d build\watcom\small32 makefile.all WATCOM SMALL32
-%MKDEP%  -s.obj -p$(OBJDIR)\ *.c *.h  > build\watcom\watt32.dep
-echo neterr.c: build\watcom\syserr.c >> build\watcom\watt32.dep
 
 %WC_ERR% -s > build\watcom\syserr.c
 %WC_ERR% -e > ..\inc\sys\watcom.err
@@ -119,10 +117,10 @@ echo neterr.c: build\watcom\syserr.c >> build\watcom\watt32.dep
 echo Run wmake to make target(s):
 echo E.g. "wmake -h -f watcom_s.mak" for small model (16-bit)
 echo      "wmake -h -f watcom_l.mak" for large model (16-bit)
-echo      "wmake -h -f watcom_f.mak" for flat model
-echo      "wmake -h -f watcom_x.mak" for flat/X32VM model
+echo      "wmake -h -f watcom_3.mak" for small model (32-bit DOS4GW)
+echo      "wmake -h -f watcom_f.mak" for flat model  (DOS4GW)
+echo      "wmake -h -f watcom_x.mak" for flat model  (X32VM)
 echo      "wmake -h -f watcom_w.mak" for Win32
-echo      "wmake -h -f watcom_3.mak" for small model (32-bit)
 goto next
 
 ::--------------------------------------------------------------------------
