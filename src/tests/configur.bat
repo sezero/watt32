@@ -123,16 +123,20 @@ goto next
 echo Generating Watcom makefiles
 %MKMAKE% -o watcom_s.mak makefile.all WATCOM SMALL
 %MKMAKE% -o watcom_l.mak makefile.all WATCOM LARGE
+%MKMAKE% -o watcom_3.mak makefile.all WATCOM SMALL32
 %MKMAKE% -o watcom_f.mak makefile.all WATCOM FLAT
 %MKMAKE% -o watcom_x.mak makefile.all WATCOM FLAT X32VM
 %MKMAKE% -o watcom_w.mak makefile.all WATCOM WIN32
+%MKMAKE% -o watcom_d.mak makefile.all WATCOM WIN32 DLL
 
 echo Run GNU make to make target(s):
-echo   "make -f watcom_s.mak" for small model
-echo   "make -f watcom_l.mak" for large model
-echo   "make -f watcom_f.mak" for flat model
-echo   "make -f watcom_x.mak" for flat/X32VM model
+echo   "make -f watcom_s.mak" for small model (16-bit)
+echo   "make -f watcom_l.mak" for large model (16-bit)
+echo   "make -f watcom_3.mak" for small model (32-bit DOS4GW)
+echo   "make -f watcom_f.mak" for flat model  (DOS4GW)
+echo   "make -f watcom_x.mak" for flat model  (X32VM)
 echo   "make -f watcom_w.mak" for Win32
+echo   "make -f watcom_d.mak" for Win32 DLL
 goto next
 
 ::--------------------------------------------------------------------------
