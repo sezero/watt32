@@ -39,7 +39,7 @@ goto next
 ::--------------------------------------------------------------------------
 :mingw64
 ::
-echo Generating MinGW64-w64 makefile
+echo Generating MinGW64-w64 makefiles
 %MKMAKE% -o MinGW64_32.mak makefile.all MINGW64 WIN32 IS_GCC
 %MKMAKE% -o MinGW64_64.mak makefile.all MINGW64 WIN64 IS_GCC
 
