@@ -54,7 +54,9 @@ all:  $(EXTRA_OBJ) $(PROGS) .SYMBOLIC
 .c.exe: .PRECIOUS
       $(CC) $(COMMON_CFLAGS) $(CFLAGS) $(DBG_CFLAGS) $[@
       $(LINK) $(COMMON_LFLAGS) $(LFLAGS) name $^@ file {$[&.obj $(EXTRA_OBJ)} $(LIBRARY)
+!ifdef EXTRA_EXE
       $(EXTRA_EXE)
+!endif
 
 con-test.exe: w32-test.c .PRECIOUS
       $(CC) $(COMMON_CFLAGS) $(CFLAGS) $(DBG_CFLAGS) $[@
