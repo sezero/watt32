@@ -18,7 +18,7 @@
   #define INVD_CACHE
   #define TEST_UNDEF_OPCODE
 
-#elif defined(_MSC_VER) && defined(_M_IX86)
+#elif (defined(_MSC_VER) || defined(__WATCOMC__)) && defined(_M_IX86)
   #define TEST_UNDEF_OPCODE
 #endif
 
