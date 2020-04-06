@@ -1348,16 +1348,12 @@ static const struct search_list arp_types[] = {
                   { MIB_IPNET_TYPE_STATIC,  "Static" }
                 };
 
-#if defined(__WATCOMC__)
-  #define NlnsStale  NlnsState  /* typo in Watcom's <ntdef.h> */
-#endif
-
 static const struct search_list neighbour_states[] = {
                   { NlnsUnreachable, "Unreachable" },
                   { NlnsIncomplete,  "Incomplete" },
                   { NlnsProbe,       "Probe" },
                   { NlnsDelay,       "Delay" },
-                  { NlnsStale,       "Stale" },
+                  { 4,               "Stale" },    /* typo in Watcom's <ntdef.h> calls this 'NlnsState' */
                   { NlnsReachable,   "Reachable" },
                   { NlnsPermanent,   "Permanent" }
                 };
