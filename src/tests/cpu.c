@@ -38,9 +38,7 @@
 #error "I need '_w32_CheckCpuType()'"
 #endif
 
-#if defined(COMPILING_PCDBUG_C) || !defined(WATT32_STATIC)
 static char Cx86_step = 0;
-#endif
 
 const char *cpu_get_model (int type, int model);
 
