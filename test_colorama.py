@@ -1,7 +1,9 @@
 #!/usr/bin/env python
 
-"""A Python test of coloma on AppVeyor.
+"""A Python test of colorama on AppVeyor.
 """
+
+import sys
 
 try:
   from colorama import init, Style, Fore

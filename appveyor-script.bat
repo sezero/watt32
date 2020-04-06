@@ -447,5 +447,4 @@ exit /b 0
   exit /b
 
 :test_colorama
-  python.exe -m pip install colorama
   python.exe test_colorama.py
