@@ -4,13 +4,16 @@
 #  Watcom386 + Pmode/W executables.
 #
 
-.EXTENSIONS:
-.EXTENSIONS: .exe .obj .c
+#
+# Turn off these:
+# wlink  Warning! W1027: file clib3r.lib(strerror.c): redefinition of strerror_ ignored
+#
 
-COMPILE = *wcc386 -mf -3r -w5 -d2 -zq -oilrtf -I..\inc -fr=nul -bt=dos
-
-LINK = *wlink option quiet, map, verbose, eliminate, caseexact, stack=50k &
-         debug all system pmodew
+CC     = *wcc386
+CFLAGS = -bt=dos -mf -3r -wx -d2 -zq -oilrtf -fo=.obj -I..\inc -DWATT32_STATIC
+LINK   = *wlink
+LFLAGS = debug all system pmodew option stack=50k, eliminate &
+         option quiet, map, verbose disable 1027
 #        system pmodew option osname='PMODE/W', stub=pmodew.exe           &
 #        format os2 le libpath                                            &
 #        $(%watcom)\lib386 libpath $(%watcom)\lib386\dos
@@ -25,14 +28,15 @@ PROGS = ping.exe    popdump.exe rexec.exe  tcpinfo.exe cookie.exe  &
         blather.exe lister.exe
 
 
-all:  $(PROGS)
+all:  $(PROGS) .SYMBOLIC
       @echo Watcom386/PmodeW binaries done
 
 .c.exe: .PRECIOUS
-      $(COMPILE) $*.c
-      $(LINK) name $*.exe file $*.obj $(LIBRARY)
+      $(CC) $(CFLAGS) $[@
+      $(LINK) $(LFLAGS) name $^@ file $*.obj $(LIBRARY)
 
-clean:
+clean: .SYMBOLIC
       @del *.obj
       @del *.map
+      @del $(PROGS)
 

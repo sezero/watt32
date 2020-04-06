@@ -4,12 +4,16 @@
 #  Watcom386/DOS4GW executables.
 #
 
-.EXTENSIONS:
-.EXTENSIONS: .exe .obj .c
+#
+# Turn off these:
+# wlink  Warning! W1027: file clib3r.lib(strerror.c): redefinition of strerror_ ignored
+#
 
-COMPILE = *wcc386 -mf -3r -w5 -d2 -zq -zm -of -I..\inc -fr=nul -bt=dos
-LINK    = *wlink option quiet, map, verbose, eliminate, caseexact, stack=50k &
-            debug all system dos4g
+CC     = *wcc386
+CFLAGS = -bt=dos -mf -3r -wx -d2 -zq -zm -of -fo=.obj -I..\inc -DWATT32_STATIC
+LINK   = *wlink
+LFLAGS = debug all system dos4g option stack=50k, eliminate &
+         option quiet, map, verbose disable 1027
 
 LIBRARY = library ..\lib\wattcpwf.lib
 
@@ -24,10 +28,11 @@ all:  $(PROGS) .SYMBOLIC
       @echo Watcom386/DOS4GW binaries done
 
 .c.exe: .PRECIOUS
-      $(COMPILE) $*.c
-      $(LINK) name $*.exe file $*.obj $(LIBRARY)
+      $(CC) $(CFLAGS) $[@
+      $(LINK) $(LFLAGS) name $^@ file $[&.obj $(LIBRARY)
 
-clean:
+clean: .SYMBOLIC
       @del *.obj
       @del *.map
+      @del $(PROGS)
 

@@ -4,19 +4,16 @@
 #  Watcom386/DOS32A executables.
 #
 
-.EXTENSIONS:
-.EXTENSIONS: .exe .obj .c
-
-COMPILE = *wcc386 -mf -3r -w6 -d2 -zq -zm -of -I..\inc -fr=nul -bt=dos -s
-LINK    = *wlink
-LFLAGS  = option quiet, map, verbose, eliminate, caseexact, stack=50k &
-          debug all system dos32a
-
 #
 # Turn off these:
-#   Warning! W1027: file clib3r.lib(strerror.c): redefinition of strerror_ ignored
+# wlink  Warning! W1027: file clib3r.lib(strerror.c): redefinition of strerror_ ignored
 #
-LFLAGS += disable 1027
+
+CC     = *wcc386
+CFLAGS = -bt=dos -mf -3r -wx -d2 -zq -zm -of -s -fo=.obj -I..\inc -DWATT32_STATIC
+LINK   = *wlink
+LFLAGS = debug all system dos32a option stack=50k, eliminate &
+         option quiet, map, verbose disable 1027
 
 LIBRARY = library ..\lib\wattcpwf.lib
 
@@ -30,10 +27,10 @@ all:  $(PROGS) .SYMBOLIC
       @echo Watcom386/DOS32A binaries done
 
 .c.exe: .PRECIOUS
-      $(COMPILE) $*.c
-      $(LINK) $(LFLAGS) name $*.exe file $*.obj $(LIBRARY)
+      $(CC) $(CFLAGS) $[@
+      $(LINK) $(LFLAGS) name $^@ file $[&.obj $(LIBRARY)
 
-clean:
-      - rm *.obj *.map
+clean: .SYMBOLIC
+      - rm *.obj *.map $(PROGS)
 
 
