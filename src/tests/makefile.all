@@ -34,10 +34,10 @@ PYTHON           ?= py -3
 #
 # Only for the pure Winsock versions '*_w.exe' (clang/MSVC only)
 #
-@ifdef WATCOM
-  USE_WSOCK_TRACE ?= 0
-@else
+@ifdef VISUALC CLANG
   USE_WSOCK_TRACE ?= 1
+@else
+  USE_WSOCK_TRACE ?= 0
 @endif
 
 @ifdef IS_GCC
@@ -443,7 +443,7 @@ NO_W32_CFLAGS = -D_Windows
   endef
 
   define compile_and_link_ws2
-    $(CC) $(COMMON_CFLAGS) $(NO_W32_CFLAGS) -o $(1) $(2) $(LDFLAGS) -l ws2_32.lib
+    $(CC) $(COMMON_CFLAGS) $(NO_W32_CFLAGS) -o $(1) $(2) $(LDFLAGS) -l $(WS2_32_LIB)
     rm -f $(1:.exe=.tds)
   endef
 @endif
