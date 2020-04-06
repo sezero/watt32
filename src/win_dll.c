@@ -176,15 +176,15 @@ int load_dynamic_table (struct LoadTable *tab, int tab_size)
       FARPROC addr = GetProcAddress (mod_handle, tab->func_name);
 
       if (!addr)
-         CONSOLE_MSG (4, ("Function \"%s\" not found in %" TSTR2ASCII_FMT ".\n",
-                          tab->func_name, tab->mod_name));
+         TRACE_CONSOLE (4, "Function \"%s\" not found in %" TSTR2ASCII_FMT ".\n",
+                        tab->func_name, tab->mod_name);
       *tab->func_addr = addr;
     }
     tab->mod_handle = mod_handle;
 
-    CONSOLE_MSG (4, ("%2d: Module 0x%08lX/%" TSTR2ASCII_FMT ", func \"%s\" -> 0x%" ADDR_FMT ".\n",
-                     i, (u_long)HandleToUlong(tab->mod_handle), tab->mod_name, tab->func_name,
-                     ADDR_CAST(*tab->func_addr)));
+    TRACE_CONSOLE (4, "%2d: Module 0x%08lX/%" TSTR2ASCII_FMT ", func \"%s\" -> 0x%" ADDR_FMT ".\n",
+                   i, (u_long)HandleToUlong(tab->mod_handle), tab->mod_name, tab->func_name,
+                   ADDR_CAST(*tab->func_addr));
   }
   return (i);
 }
@@ -209,9 +209,9 @@ int unload_dynamic_table (struct LoadTable *tab, int tab_size)
        f_unload = 1;
     *tab->func_addr = NULL;
 
-    CONSOLE_MSG (4, ("%2d: function \"%s\" %s. Module \"%" TSTR2ASCII_FMT "\" %s.\n",
-                     i, tab->func_name, f_unload ? "freed"    : "not used",
-                     tab->mod_name,  m_unload ? "unloaded" : "not used"));
+    TRACE_CONSOLE (4, "%2d: function \"%s\" %s. Module \"%" TSTR2ASCII_FMT "\" %s.\n",
+                   i, tab->func_name, f_unload ? "freed"    : "not used",
+                   tab->mod_name,  m_unload ? "unloaded" : "not used");
   }
   return (i);
 }
