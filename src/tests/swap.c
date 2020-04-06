@@ -177,29 +177,26 @@ int naked_fastcall_ntohl (const void *buf, size_t max)
   return (1);
 }
 
-#if defined(__WATCOMC__)
-  #pragma disable_message (200)
-  #pragma disable_message (202)
-#endif
-
 int intrin_byteswap (const void *buf, size_t max)
 {
-  unsigned long *val = (unsigned long*) buf;
+#if defined(_MSC_VER)
+  unsigned long *val = (unsigned long*)buf;
   size_t   i;
 
-#if defined(_MSC_VER)
   for (i = 0; i < max; i++)
       _byteswap_ulong (*val++);
   return (1);
 #elif defined(__MINGW32__) || defined(__CYGWIN__)
+  unsigned long *val = (unsigned long*)buf;
+  size_t   i;
+
   for (i = 0; i < max; i++)
       __bswapd (*val++);
   return (1);
 #else
+  (void)buf; (void)max;
+
   printf ("%s() not available for %s.", __FUNCTION__, wattcpBuildCC());
-  fflush (stdout);
-  (void) i;
-  (void) max;
   return (0);
 #endif
 }
@@ -278,7 +275,7 @@ void test_swap_speed2 (const char *buf)
   TIME_IT (intrin_byteswap,      (buf, swap_size/4), loops);
 }
 
-void __watcall sigill_handler2 (int sig)
+void sigill_handler2 (int sig)
 {
   printf ("SIGILL caught");
   signal (sig, SIG_IGN);

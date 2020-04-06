@@ -1,4 +1,4 @@
-@ifndef SMALL LARGE FLAT WIN32 WIN64
+@ifndef SMALL LARGE FLAT WIN32 WIN64 SMALL32
 
  This is a master makefile that will generate all ./test GNU-makefiles.
  Currently supported compilers include:
@@ -34,7 +34,11 @@ PYTHON           ?= py -3
 #
 # Only for the pure Winsock versions '*_w.exe' (clang/MSVC only)
 #
-USE_WSOCK_TRACE ?= 1
+@ifdef WATCOM
+  USE_WSOCK_TRACE ?= 0
+@else
+  USE_WSOCK_TRACE ?= 1
+@endif
 
 @ifdef IS_GCC
   WS2_32_LIB = -lws2_32
@@ -104,7 +108,7 @@ endif
   PROGRAMS += swap.exe timeit_test.exe
 @endif
 
-@ifndef WIN32 WIN64 SMALL LARGE WATCOM
+@ifndef WIN32 WIN64 SMALL LARGE WATCOM SMALL32
   #
   # For MSDOS only, but not for Watcom (small, large)
   #
@@ -223,11 +227,7 @@ NO_W32_CFLAGS = -D_Windows
     @endif
   @endif
 @else
-  @ifdef WATCOM
-    LIB_DIR = ..\..\lib
-  @else
-    LIB_DIR = ../../lib
-  @endif
+  LIB_DIR = ../../lib
 @endif
 
 @ifdef MINGW32
@@ -263,13 +263,19 @@ NO_W32_CFLAGS = -D_Windows
 
 @elifdef WATCOM
   @ifdef SMALL
-    WATT_LIB = $(LIB_DIR)\wattcpws.lib
+    WATT_LIB = $(LIB_DIR)/wattcpws.lib
   @elifdef LARGE
-    WATT_LIB = $(LIB_DIR)\wattcpwl.lib
+    WATT_LIB = $(LIB_DIR)/wattcpwl.lib
+  @elifdef SMALL32
+    WATT_LIB = $(LIB_DIR)/wattcpw3.lib
   @elifdef FLAT
-    WATT_LIB = $(LIB_DIR)\wattcpwf.lib
+    WATT_LIB = $(LIB_DIR)/wattcpwf.lib
   @elifdef WIN32
-    WATT_LIB = $(LIB_DIR)\wattcpww.lib
+    @ifdef DLL
+      WATT_LIB = $(LIB_DIR)/wattcpww_imp.lib
+    @else
+      WATT_LIB = $(LIB_DIR)/wattcpww.lib
+    @endif
   @endif
 
 @elifdef BORLAND
@@ -340,33 +346,38 @@ NO_W32_CFLAGS = -D_Windows
   endef
 
 @elifdef WATCOM
-  LDFLAGS = option quiet, map, eliminate, caseexact
+  LDFLAGS = option quiet, map, eliminate
 
   @ifdef SMALL
     CC            = wcc
-    COMMON_CFLAGS = -ms -0 -os -zc -s -bt=dos -zq
-    LDFLAGS      += system dos sort global option quiet, caseexact, stack=10k
+    COMMON_CFLAGS = -ms -0 -wx -os -zc -s -bt=dos -zq
+    LDFLAGS      += system dos option quiet, stack=10k
 
   @elifdef LARGE
     CC            = wcc
-    COMMON_CFLAGS = -ml -0 -os -zc -s -bt=dos -zq
-    LDFLAGS      += system dos sort global option quiet, caseexact, stack=10k
+    COMMON_CFLAGS = -ml -0 -wx -os -zc -s -bt=dos -zq
+    LDFLAGS      += system dos option quiet, stack=10k
+
+  @elifdef SMALL32
+    CC            = wcc386
+    COMMON_CFLAGS = -ms -3r -wx -d2 -zm -s -bt=dos -oaxt -zq
+    LDFLAGS      += system dos4g option quiet, stack=100k
 
   @elifdef FLAT
     #
     # The '-3r/-3s' MUST match what 'wattcpwf.lib' was built with.
     #
     CC            = wcc386
-    COMMON_CFLAGS = -mf -3r -w5 -d2 -zff -zgf -zm -s -bt=dos -oilrtfm -zq
-    LDFLAGS      += system dos32a sort global option quiet, caseexact, stack=100k
+    COMMON_CFLAGS = -mf -3r -wx -d2 -zff -zgf -zm -s -bt=dos -oilrtfm -zq
+    LDFLAGS      += system dos4g option quiet, stack=100k
 
   @elifdef WIN32
     #
     # The '-3r/-3s' MUST match what '$(WATT_LIB)' was built with.
     #
     CC             = wcc386
-    COMMON_CFLAGS  = -bt=nt -mf -3r -w6 -d2 -zc -zm -zlf -bm -DWIN32 -fr=nul -of -zq
-    LDFLAGS       += system nt sort global option quiet, caseexact, stack=200k
+    COMMON_CFLAGS  = -bt=nt -mf -3r -wx -d2 -zc -zm -bm -DWIN32 -of -zq
+    LDFLAGS       += system nt option quiet, stack=200k
 
   @else
     $(error Unknown WATCOM model. Only 'SMALL', 'LARGE', 'FLAT' and 'WIN32'.)
