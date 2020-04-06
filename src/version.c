@@ -74,11 +74,7 @@ const char * W32_CALL wattcpVersion (void)
                 WATTCP_MAJOR_VER, WATTCP_MINOR_VER);
 #endif
 
-#if defined(UNICODE) || defined(_UNICODE)
-  p += sprintf (p, "%s Unicode), ", VARIANT);
-#else
   p += sprintf (p, "%s), ", VARIANT);
-#endif
 
 #if defined(__GNUC__)
   p += sprintf (p, "GNU-C %d.%d", __GNUC__, __GNUC_MINOR__);
@@ -685,9 +681,6 @@ static const char *capabilities[] = {
 #endif
 #if defined(USE_IPV6)
            "IPv6",
-#endif
-#if defined(USE_RS232_DBG)
-           "RS232",
 #endif
 #if defined(USE_DEAD_GWD)
            "dead-gw",

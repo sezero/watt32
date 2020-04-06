@@ -41,7 +41,6 @@
 #include "misc_str.h"
 #include "run.h"
 #include "timer.h"
-#include "rs232.h"
 #include "split.h"
 #include "pppoe.h"
 #include "pctcp.h"
@@ -159,8 +158,6 @@ static void (W32_CALL *system_yield)(void) = NULL;
 int W32_CALL udp_listen (_udp_Socket *s, WORD lport, DWORD ip,
                          WORD port, ProtoHandler handler)
 {
-  SIO_TRACE (("udp_listen"));
-
   udp_close (s);
   WATT_LARGE_CHECK (s, sizeof(*s));
   memset (s, 0, sizeof(*s));
@@ -195,8 +192,6 @@ int W32_CALL udp_open (_udp_Socket *s, WORD lport, DWORD ip,
                        WORD port, ProtoHandler handler)
 {
   BOOL bcast;
-
-  SIO_TRACE (("udp_open"));
 
   udp_close (s);
   WATT_LARGE_CHECK (s, sizeof(*s));
@@ -268,8 +263,6 @@ static void udp_close (const _udp_Socket *udp)
 {
   _udp_Socket *s, *prev;
 
-  SIO_TRACE (("udp_close"));
-
   for (s = prev = _udp_allsocs; s; prev = s, s = s->next)
   {
     if (udp != s)
@@ -310,8 +303,6 @@ int W32_CALL udp_SetTTL (_udp_Socket *s, BYTE ttl)
 int W32_CALL tcp_open (_tcp_Socket *s, WORD lport, DWORD ip,
                        WORD rport, ProtoHandler handler)
 {
-  SIO_TRACE (("tcp_open"));
-
   WATT_LARGE_CHECK (s, sizeof(*s));
   _tcp_unthread (s, FALSE);    /* just in case not totally closed */
 
@@ -391,8 +382,6 @@ int W32_CALL tcp_open (_tcp_Socket *s, WORD lport, DWORD ip,
 int W32_CALL tcp_listen (_tcp_Socket *s, WORD lport, DWORD ip,
                          WORD port, ProtoHandler handler, WORD timeout)
 {
-  SIO_TRACE (("tcp_listen"));
-
   WATT_LARGE_CHECK (s, sizeof(*s));
   _tcp_unthread (s, FALSE);     /* just in case not totally closed */
   memset (s, 0, sizeof(*s));
@@ -456,13 +445,8 @@ int W32_CALL tcp_listen (_tcp_Socket *s, WORD lport, DWORD ip,
  */
 void _tcp_close (_tcp_Socket *s)
 {
-  SIO_TRACE (("_tcp_close"));
-
   if (s->ip_type != TCP_PROTO)
-  {
-    SIO_TRACE (("_tcp_close~0"));
-    return;
-  }
+     return;
 
   if (s->state == tcp_StateESTAB ||
       s->state == tcp_StateESTCL ||
@@ -505,7 +489,6 @@ void _tcp_close (_tcp_Socket *s)
     maybe_reuse_localport (s);
     _tcp_unthread (s, FALSE);
   }
-  SIO_TRACE (("_tcp_close~"));
 }
 
 /**
@@ -513,12 +496,10 @@ void _tcp_close (_tcp_Socket *s)
  */
 _tcp_Socket *_tcp_abort (_tcp_Socket *s, const char *file, unsigned line)
 {
-  SIO_TRACE (("_tcp_abort"));
-
   SET_ERR_MSG (s, _LANG("TCP Abort"));
 
-  TCP_TRACE_MSG (("_tcp_abort(%" ADDR_FMT ") called from %s (%u). State %s\n",
-                  ADDR_CAST(s), file, line, tcpStateName(s->state)));
+  TRACE_FILE ("_tcp_abort(%" ADDR_FMT ") called from %s (%u). State %s\n",
+              ADDR_CAST(s), file, line, tcpStateName(s->state));
 
   if (s->state >= tcp_StateSYNSENT &&
       s->state <= tcp_StateLASTACK)
@@ -557,8 +538,6 @@ _tcp_Socket *_tcp_abort (_tcp_Socket *s, const char *file, unsigned line)
 int _tcp_sendsoon (_tcp_Socket *s, const char *file, unsigned line)
 {
   DWORD timeout;
-
-  SIO_TRACE (("_tcp_sendsoon"));
 
   if (s->ip_type != TCP_PROTO)
      return (0);
@@ -599,8 +578,6 @@ _tcp_Socket *_tcp_unthread (_tcp_Socket *ds, BOOL free_tx)
 {
   _tcp_Socket *s, *prev;
   _tcp_Socket *next = NULL;
-
-  SIO_TRACE (("_tcp_unthread"));
 
   if (ds == NULL)
      return (NULL);
@@ -660,8 +637,6 @@ _tcp_Socket *_tcp_handler (const in_Header *ip, BOOL broadcast)
   DWORD        seq;
   WORD         dstPort, srcPort;
   BOOL         is_ip4 = (ip->ver == 4);
-
-  SIO_TRACE (("_tcp_handler"));
 
   if (is_ip4)
   {
@@ -820,7 +795,7 @@ _tcp_Socket *_tcp_handler (const in_Header *ip, BOOL broadcast)
       SEQ_GEQ(seq, s->recv_next) &&
       SEQ_LEQ(seq, s->recv_next+s->adv_win+1))
   {
-    TCP_TRACE_MSG (("_tcp_handler(): got RST, SEQ %lu\n", (u_long)seq));
+    TRACE_FILE ("_tcp_handler(): got RST, SEQ %lu\n", (u_long)seq);
     tcp_sockreset (s, FALSE);
     return (NULL);
   }
@@ -859,8 +834,8 @@ static BOOL udp_checksum (const in_Header *ip, const udp_Header *udp, int len)
 
   if (CHECKSUM(&ph,sizeof(ph)) != 0xFFFF)
   {
-    TCP_CONSOLE_MSG (1, (_LANG("Bad udp checksum. ")));
-    TCP_TRACE_MSG (("Bad udp checksum\n"));
+    TRACE_CONSOLE (1, "Bad udp checksum. ");
+    TRACE_FILE ("Bad udp checksum\n");
     STAT (udpstats.udps_badsum++);
     return (FALSE);
   }
@@ -1057,8 +1032,6 @@ _udp_Socket *_udp_handler (const in_Header *ip, BOOL broadcast)
   const BYTE       *data;
   const udp_Header *udp = NULL;
 
-  TCP_TRACE_MSG (("_udp_handler\n"));
-
   if (is_ip4)
   {
     destin   = intel (ip->destination);
@@ -1183,7 +1156,7 @@ _udp_Socket *_udp_handler (const in_Header *ip, BOOL broadcast)
   /* Figure out the pcdhcp.c problems
    */
   if (udp->srcPort == 67 || udp->dstPort == 67)
-     TCP_CONSOLE_MSG (1, ("DHCP-data len: %d\n", len));
+     TRACE_CONSOLE (1, "DHCP-data len: %d\n", len);
 
   if (s->protoHandler)
   {
@@ -1227,8 +1200,6 @@ void tcp_Retransmitter (BOOL force)
   _tcp_Socket *s, *next;
 
   static DWORD timeout = 0UL;
-
-  SIO_TRACE (("tcp_Retransmitter"));
 
   /* do this once per tcp_RETRAN_TIME
    */
@@ -1299,8 +1270,8 @@ void tcp_Retransmitter (BOOL force)
       {
         s->rtt_time = 0UL;           /* stop RTT timer */
 
-        TCP_CONSOLE_MSG (3, ("Regular retran TO set unacked back to "
-                             "0 from %ld\n", s->send_una));
+        TRACE_CONSOLE (3, "Regular retran TO set unacked back to "
+                          "0 from %ld\n", s->send_una);
 
         /* strategy handles closed windows.  JD + EE
          */
@@ -1348,9 +1319,8 @@ void tcp_Retransmitter (BOOL force)
         {
           /**< \todo Allow for 3 SYN before giving up
            */
-          TCP_TRACE_MSG (("SYN (re)sent in tcp_Retransmitter(), "
-                          " rtt_time %ld\n",
-                          get_timediff(s->rtt_time,set_timeout(0))));
+          TRACE_FILE ("SYN (re)sent in tcp_Retransmitter(), rtt_time %ld\n",
+                      get_timediff(s->rtt_time,set_timeout(0)));
         }
       }
 
@@ -1408,12 +1378,10 @@ WORD W32_CALL tcp_tick (sock_type *s)
 
   if (tick_active > 0)
   {
-    TCP_CONSOLE_MSG (1, ("tcp_tick() reentered\n"));
+    TRACE_CONSOLE (1, "tcp_tick() reentered\n");
     return (s ? s->tcp.ip_type : 0);
   }
   tick_active++;
-
-  SIO_TRACE (("tcp_tick"));
 
 #if !defined(USE_UDP_ONLY)
   /*
@@ -1517,8 +1485,6 @@ static int udp_write (_udp_Socket *s, const BYTE *data, int len)
   in_Header   *ip4 = NULL;
   udp_Header  *udp;
 
-  SIO_TRACE (("udp_write"));
-
 #if defined(USE_IPV6)
   if (s->is_ip6)
   {
@@ -1588,8 +1554,6 @@ static int udp_read (_udp_Socket *s, BYTE *buf, int maxlen)
 {
   int len = s->rx_datalen;
 
-  SIO_TRACE (("udp_read"));
-
   if (maxlen < 0)
       maxlen = INT_MAX;
 
@@ -1624,8 +1588,8 @@ static void sock_reduce_mss (sock_type *s, WORD MTU)
          tcp->max_seg -= MSS_REDUCE;
     tcp->max_seg = min (max(MSS_MIN, tcp->max_seg), _mss);
 
-    TCP_TRACE_MSG (("MSS for %s reduced to %u\n",
-                    _inet_ntoa(NULL,tcp->hisaddr), tcp->max_seg));
+    TRACE_FILE ("MSS for %s reduced to %u\n",
+                _inet_ntoa(NULL,tcp->hisaddr), tcp->max_seg);
 #endif
   }
   else
@@ -1648,8 +1612,6 @@ void _udp_cancel (const in_Header *ip, int icmp_type, int icmp_code,
   int          len     = in_GetHdrLen (ip);
   udp_Header  *udp     = (udp_Header*) ((BYTE*)ip + len);
   _udp_Socket *s;
-
-  SIO_TRACE (("_udp_cancel"));
 
   src_port = intel16 (udp->srcPort);
   dst_port = intel16 (udp->dstPort);
@@ -1758,8 +1720,6 @@ void _tcp_cancel (const in_Header *ip, int icmp_type, int icmp_code,
   WORD   src_port = intel16 (tcp->srcPort);
   WORD   dst_port = intel16 (tcp->dstPort);
 
-  SIO_TRACE (("_tcp_cancel"));
-
   /* demux to active sockets (passive cannot get ICMP)
    */
   for (s = _tcp_allsocs; s; s = s->next)
@@ -1845,8 +1805,6 @@ static int tcp_read (_tcp_Socket *s, BYTE *buf, int maxlen)
 {
   int len;
 
-  SIO_TRACE (("tcp_read"));
-
   if (maxlen < 0)
       maxlen = INT_MAX;
 
@@ -1892,8 +1850,6 @@ static int tcp_read (_tcp_Socket *s, BYTE *buf, int maxlen)
 static int tcp_write (_tcp_Socket *s, const BYTE *data, UINT len)
 {
   UINT room;
-
-  SIO_TRACE (("tcp_write"));
 
   if (s->state != tcp_StateESTAB)
      return (0);
@@ -1953,8 +1909,6 @@ static _tcp_Socket *tcp_findseq (const in_Header *ip, const tcp_Header *tcp)
   DWORD        ack_num  = intel (tcp->acknum);
   WORD         dst_port = intel16 (tcp->dstPort);
 
-  SIO_TRACE (("tcp_findseq"));
-
   for (s = _tcp_allsocs; s; s = s->next)
   {
     if (s->hisport != 0       &&
@@ -1973,8 +1927,6 @@ static void tcp_sockreset (_tcp_Socket *s, BOOL proxy)
 {
   const char *str = proxy ? "Proxy reset connection"
                           : "Remote reset connection";
-
-  SIO_TRACE (("tcp_sockreset"));
 
   if (debug_on)
      outsnl (_LANG(str));
@@ -2005,7 +1957,7 @@ static void tcp_sockreset (_tcp_Socket *s, BOOL proxy)
     s->timeout     = 0;
     s->karn_count  = 0;
     s->state       = tcp_StateLISTEN;
-    TCP_TRACE_MSG (("tcp_sockreset(): continue to LISTEN\n"));
+    TRACE_FILE ("tcp_sockreset(): continue to LISTEN\n");
   }
   else
   {
@@ -2027,8 +1979,6 @@ static void tcp_sockreset (_tcp_Socket *s, BOOL proxy)
  */
 static void tcp_no_arp (_tcp_Socket *s)
 {
-  SIO_TRACE (("tcp_no_arp"));
-
   s->err_msg = _LANG ("No ARP reply");
   STAT (ip4stats.ips_noroute++);
 
@@ -2054,8 +2004,6 @@ static BOOL tcp_checksum (const in_Header *ip, const tcp_Header *tcp, int len)
 {
   tcp_PseudoHeader ph = { 0,0,0,0,0,0 };
 
-  SIO_TRACE (("tcp_checksum"));
-
   ph.src      = ip->source;
   ph.dst      = ip->destination;
   ph.protocol = TCP_PROTO;
@@ -2065,8 +2013,8 @@ static BOOL tcp_checksum (const in_Header *ip, const tcp_Header *tcp, int len)
   if (CHECKSUM(&ph,sizeof(ph)) != 0xFFFF)
   {
     STAT (tcpstats.tcps_rcvbadsum++);
-    TCP_CONSOLE_MSG (1, (_LANG("Bad tcp checksum. ")));
-    TCP_TRACE_MSG (("Bad tcp checksum\n"));
+    TRACE_CONSOLE (1, "Bad tcp checksum. ");
+    TRACE_FILE ("Bad tcp checksum\n");
     return (FALSE);
   }
   return (TRUE);
@@ -2080,14 +2028,12 @@ static void tcp_rtt_win (_tcp_Socket *s)
 {
   DWORD timeout;
 
-  SIO_TRACE (("tcp_rtt_win"));
-
   /* update our retransmission stuff (Karn algorithm)
    */
   if (s->karn_count == 2)    /* Wake up from slow-start */
   {
-    TCP_CONSOLE_MSG (2, ("Finally got it safely zapped from %ld to ???\n",
-                     s->send_una));
+    TRACE_CONSOLE (2, "Finally got it safely zapped from %ld to ???\n",
+                   s->send_una);
   }
   else if (s->vj_last)     /* We expect an immediate response */
   {
@@ -2128,10 +2074,10 @@ static void tcp_rtt_win (_tcp_Socket *s)
 
     tcp_rtt_add (s, s->rto, _mtu);
 
-    TCP_CONSOLE_MSG (2, ("RTO %u  sa %lu  sd %lu  cwindow %u"
-                     "  wwindow %u  unacked %ld\n",
-                     s->rto, (u_long)s->vj_sa, (u_long)s->vj_sd, s->cwindow,
-                     s->wwindow, s->send_una));
+    TRACE_CONSOLE (2, "RTO %u  sa %lu  sd %lu  cwindow %u"
+                      "  wwindow %u  unacked %ld\n",
+                   s->rto, (u_long)s->vj_sa, (u_long)s->vj_sd, s->cwindow,
+                   s->wwindow, s->send_una);
   }
 
   s->karn_count = 0;
@@ -2175,12 +2121,10 @@ static void tcp_upd_win (_tcp_Socket *s, unsigned line)
 {
   UINT winfree = s->max_rx_data - (UINT)s->rx_datalen;
 
-  SIO_TRACE (("tcp_upd_win"));
-
   if (winfree < s->max_seg/2)
   {
     _tcp_send (s, __FILE__, line);  /* update window now */
-    TCP_CONSOLE_MSG (2, ("tcp_upd_win(%d): win-free %u\n", line, winfree));
+    TRACE_CONSOLE (2, "tcp_upd_win(%d): win-free %u\n", line, winfree);
   }
 }
 
@@ -2375,8 +2319,6 @@ int _tcp_send (_tcp_Socket *s, const char *file, unsigned line)
   int          pkt_num;          /* 0 .. s->cwindow-1 */
   int          rtt;
 
-  SIO_TRACE (("_tcp_send"));
-
   s->recent = 0;
   dst = (_pktserial ? NULL : &s->his_ethaddr);
 
@@ -2531,10 +2473,10 @@ int _tcp_send (_tcp_Socket *s, const char *file, unsigned line)
 
   s->send_una = start_data;  /* relative start of tx_data[] buffer */
 
-  TCP_CONSOLE_MSG (2, ("tcp_send (called from %s/%u): sent %u bytes in %u "
-                   "packets with (%ld) unacked. SND.NXT %lu\n",
-                   file, line, send_tot_len, pkt_num, s->send_una,
-                   (u_long)s->send_next));
+  TRACE_CONSOLE (2, "tcp_send (called from %s/%u): sent %u bytes in %u "
+                    "packets with (%ld) unacked. SND.NXT %lu\n",
+                    file, line, send_tot_len, pkt_num, s->send_una,
+                    (u_long)s->send_next);
 
   s->vj_last = 0UL;
   if (s->karn_count == 2)
@@ -2721,8 +2663,6 @@ int _tcp_keepalive (_tcp_Socket *tcp)
   BYTE  kc;
   int   rc;
 
-  SIO_TRACE (("_tcp_keepalive"));
-
   if (tcp->ip_type != TCP_PROTO || tcp->state < tcp_StateSYNSENT ||
       tcp->tx_datalen > 0)
      return (0);
@@ -2842,8 +2782,6 @@ VoidProc W32_CALL sock_yield (_tcp_Socket *s, VoidProc func)
  */
 int W32_CALL sock_abort (sock_type *s)
 {
-  SIO_TRACE (("sock_abort"));
-
   switch (s->tcp.ip_type)
   {
 #if !defined(USE_UDP_ONLY)
@@ -2870,8 +2808,6 @@ static int raw_read (_raw_Socket *raw, BYTE *buf, int maxlen)
 {
   int len = 0;
 
-  SIO_TRACE (("raw_read"));
-
   if (raw->used)
   {
     int   hlen = in_GetHdrLen (&raw->ip);
@@ -2895,8 +2831,6 @@ static int raw_read (_raw_Socket *raw, BYTE *buf, int maxlen)
 int W32_CALL sock_read (sock_type *s, BYTE *buf, size_t maxlen)
 {
   int count = 0;
-
-  SIO_TRACE (("sock_read"));
 
   do
   {
@@ -2950,8 +2884,6 @@ int W32_CALL sock_read (sock_type *s, BYTE *buf, size_t maxlen)
  */
 int W32_CALL sock_fastread (sock_type *s, BYTE *buf, int len)
 {
-  SIO_TRACE (("sock_fastread"));
-
   if (s->udp.ip_type == UDP_PROTO)
      return udp_read (&s->udp, buf, len);
 
@@ -2982,8 +2914,6 @@ int W32_CALL sock_write (sock_type *s, const BYTE *data, int len)
   size_t chunk;
   size_t remain  = len;
   int    written = 0;
-
-  SIO_TRACE (("sock_write"));
 
   while (remain > 0)
   {
@@ -3037,8 +2967,6 @@ int W32_CALL sock_write (sock_type *s, const BYTE *data, int len)
  */
 int W32_CALL sock_fastwrite (sock_type *s, const BYTE *data, int len)
 {
-  SIO_TRACE (("sock_fastwrite"));
-
   switch (s->udp.ip_type)
   {
     case UDP_PROTO:
@@ -3063,8 +2991,6 @@ int W32_CALL sock_fastwrite (sock_type *s, const BYTE *data, int len)
  */
 int W32_CALL sock_enqueue (sock_type *s, const BYTE *data, int len)
 {
-  SIO_TRACE (("sock_enqueue"));
-
   if (len <= 0)
      return (0);
 
@@ -3107,8 +3033,6 @@ int W32_CALL sock_enqueue (sock_type *s, const BYTE *data, int len)
  */
 void W32_CALL sock_noflush (sock_type *s)
 {
-  SIO_TRACE (("sock_noflush"));
-
   if (s->tcp.ip_type == TCP_PROTO)
   {
     s->tcp.flags &= ~tcp_FlagPUSH;
@@ -3122,8 +3046,6 @@ void W32_CALL sock_noflush (sock_type *s)
  */
 void W32_CALL sock_flush (sock_type *s)
 {
-  SIO_TRACE (("sock_flush"));
-
   if (s->tcp.ip_type == TCP_PROTO)
   {
     _tcp_Socket *tcp = &s->tcp;
@@ -3143,8 +3065,6 @@ void W32_CALL sock_flush (sock_type *s)
  */
 void W32_CALL sock_flushnext (sock_type *s)
 {
-  SIO_TRACE (("sock_flushnext"));
-
   if (s->tcp.ip_type == TCP_PROTO)
   {
     s->tcp.flags |= tcp_FlagPUSH;
@@ -3158,8 +3078,6 @@ void W32_CALL sock_flushnext (sock_type *s)
  */
 int W32_CALL sock_close (sock_type *s)
 {
-  SIO_TRACE (("sock_close"));
-
   switch (s->tcp.ip_type)
   {
     case UDP_PROTO:
@@ -3197,8 +3115,6 @@ void tcp_rtt_add (const _tcp_Socket *s, UINT rto, UINT MTU)
   struct tcp_rtt *rtt;
   DWORD  addr = s->hisaddr;
 
-  SIO_TRACE (("tcp_rtt_add"));
-
   if (~addr & ~sin_mask)  /* 0.0.0.0 or broadcast addresses? */
      return;
 
@@ -3219,8 +3135,6 @@ void tcp_rtt_add (const _tcp_Socket *s, UINT rto, UINT MTU)
 BOOL tcp_rtt_get (const _tcp_Socket *s, UINT *rto, UINT *MTU)
 {
   struct tcp_rtt *rtt = &rtt_cache [(s->hisaddr & 0xFFFF) % RTTCACHE];
-
-  SIO_TRACE (("tcp_rtt_get"));
 
   STAT (tcpstats.tcps_segstimed++);
 

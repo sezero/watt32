@@ -82,11 +82,11 @@ CORE_SOURCE = bsdname.c  btree.c    chksum.c   country.c  crc.c      dynip.c    
               pcdhcp.c   pcdns.c    pcicmp.c   pcicmp6.c  pcigmp.c   pcintr.c   \
               pcping.c   pcpkt.c    pcpkt32.c  pcqueue.c  pcrarp.c   pcrecv.c   \
               pcsed.c    pcstat.c   pctcp.c    ports.c    powerpak.c ppp.c      \
-              pppoe.c    profile.c  punycode.c qmsg.c     rs232.c    run.c      \
-              settod.c   sock_dbu.c sock_in.c  sock_ini.c sock_io.c  sock_prn.c \
-              sock_scn.c sock_sel.c split.c    misc_str.c swsvpkt.c  tcp_fsm.c  \
-              tcp_md5.c  tftp.c     timer.c    udp_rev.c  version.c  wdpmi.c    \
-              win_dll.c  winadinf.c winmisc.c  winpkt.c   x32vm.c
+              pppoe.c    profile.c  punycode.c qmsg.c     run.c      settod.c   \
+              sock_dbu.c sock_in.c  sock_ini.c sock_io.c  sock_prn.c sock_scn.c \
+              sock_sel.c split.c    misc_str.c swsvpkt.c  tcp_fsm.c  tcp_md5.c  \
+              tftp.c     timer.c    udp_rev.c  version.c  wdpmi.c    win_dll.c  \
+              winadinf.c winmisc.c  winpkt.c   x32vm.c
 
 BSD_SOURCE =  accept.c   bind.c     bsddbug.c  close.c    connect.c  fcntl.c    \
               fsext.c    get_ai.c   get_ip.c   get_ni.c   get_xbyr.c geteth.c   \
@@ -196,7 +196,6 @@ DOS_OBJS = \
            $(OBJPATH)pcintr.obj   \
            $(OBJPATH)powerpak.obj \
            $(OBJPATH)qmsg.obj     \
-           $(OBJPATH)rs232.obj    \
            $(OBJPATH)wdpmi.obj    \
            $(OBJPATH)x32vm.obj
 
@@ -363,8 +362,12 @@ C_ARGS    = $(OBJPATH)bcc.arg
 MAKE_FILE = bcc_l.mak
 
 @elifdef FLAT
-CC        = bcc32
-CFLAGS    = -4- -RT- -O2 -WX -f- -Z -H -H=$(TEMP)\bcc_f.pch
+CC = f:\gv\Borland55\Bin\bcc32
+#
+# This is just a test. Old 'bcc32' such as the above v5.5 will no
+# longer work in Watt-32. So dropping support for Borland (small, large, flat) is imminent.
+#
+CFLAGS    = -4- -RT- -O2 -H -H=$(TEMP)\bcc_f.pch -D_M_IX86=1 -D__BORLANDC__=0x0550
 AFLAGS    = -mx -m2 -t -l -DDOSX
 STAT_LIB  = ..\lib\wattcpbf.lib
 LIBFLAG   = /P32
@@ -651,7 +654,6 @@ $(STAT_LIB): $(OBJS) $(LIB_ARGS)
 	$(AR) -q -b -c -pa -z=export.tmp $^@ @$(LIB_ARGS)
 
 $(OBJPATH)language.obj: language.c lang.c
-
 $(OBJPATH)asmpkt.obj:   asmpkt.asm
 $(OBJPATH)chksum0.obj:  chksum0.asm
 $(OBJPATH)cpumodel.obj: cpumodel.asm

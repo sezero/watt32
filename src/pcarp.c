@@ -20,7 +20,6 @@
 #include "misc_str.h"
 #include "run.h"
 #include "timer.h"
-#include "rs232.h"
 #include "ip4_in.h"
 #include "ip4_out.h"
 #include "sock_ini.h"
@@ -1408,8 +1407,8 @@ BOOL W32_CALL _arp_cache_add (DWORD ip, const void *eth, BOOL expires)
     ae->flags = (ARP_FLG_INUSE | ARP_FLG_FIXED);
     memcpy (&ae->hardware, eth, sizeof(ae->hardware));
 
-    CONSOLE_MSG (4, ("_arp_cache_add(): ip: %s, eth: %s, ARP_TOP_FIXED: %d, flags: %02X\n",
-                    _inet_ntoa(NULL,ip), MAC_address(eth), ARP_TOP_FIXED-1, ae->flags));
+    TRACE_CONSOLE (4, "_arp_cache_add(): ip: %s, eth: %s, ARP_TOP_FIXED: %d, flags: %02X\n",
+                   _inet_ntoa(NULL,ip), MAC_address(eth), ARP_TOP_FIXED-1, ae->flags);
   }
   return (TRUE);
 }
@@ -2329,6 +2328,7 @@ int main (int argc, char **argv)
     while ((len = sock_read(&sock,(BYTE*)buf,sizeof(buf))) > 0)
          fwrite (buf, len, 1, stdout);
   }
+
 sock_err:
   if (status == -1)
     printf ("Cannot connect to %s: %s\n", host, sockerr(&sock));
