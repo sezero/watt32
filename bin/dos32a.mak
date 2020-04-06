@@ -10,12 +10,12 @@
 #
 
 CC     = *wcc386
-CFLAGS = -bt=dos -mf -3r -wx -d2 -zq -zm -of -s -fo=.obj -I..\inc -DWATT32_STATIC
+CFLAGS = -bt=dos -mf -3r -wx -d2 -zq -zm -of -s -fo=.obj -I"../inc" -DWATT32_STATIC
 LINK   = *wlink
 LFLAGS = debug all system dos32a option stack=50k, eliminate &
          option quiet, map, verbose disable 1027
 
-LIBRARY = library ..\lib\wattcpwf.lib
+LIBRARY = library ../lib/wattcpwf.lib
 
 PROGS = ping.exe    popdump.exe rexec.exe   tcpinfo.exe cookie.exe  &
         daytime.exe dayserv.exe finger.exe  host.exe    lpq.exe     &

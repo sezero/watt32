@@ -12,11 +12,11 @@
 #
 
 CC     = *wcc386
-CFLAGS = -bt=nt -3r -wx -d2 -zq -zc -zm -fo=.obj -I..\inc -DWIN32
+CFLAGS = -bt=nt -3r -wx -d2 -zq -zc -zm -fo=.obj -I"../inc" -DWIN32
 LINK   = *wlink
 LFLAGS = debug all system nt option eliminate &
          option quiet, map disable 1027 &
-         library ..\lib\wattcpww_imp.lib
+         library ../lib/wattcpww_imp.lib
 
 PROGS = ping.exe     popdump.exe rexec.exe   tcpinfo.exe &
         cookie.exe   daytime.exe dayserv.exe finger.exe  &
