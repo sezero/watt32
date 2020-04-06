@@ -542,7 +542,7 @@ AR = *wlib
 
 @ifdef SMALL
 CC       = *wcc
-CFLAGS   = -bt=dos -ms -0 -os -zc -s -zlf
+CFLAGS   = -bt=dos -ms -0 -os -zc -s -zlf -DWATT32_STATIC
 AFLAGS   = -bt=dos
 STAT_LIB = $(LIBPATH)wattcpws.lib
 OBJDIR   = $(OBJROOT)small
@@ -550,7 +550,7 @@ I_CFLAGS = -I"$(%WATCOM)/h"
 
 @elifdef LARGE
 CC       = *wcc
-CFLAGS   = -bt=dos -ml -0 -os -zc -s -zlf
+CFLAGS   = -bt=dos -ml -0 -os -zc -s -zlf -DWATT32_STATIC
 AFLAGS   = -bt=dos
 STAT_LIB = $(LIBPATH)wattcpwl.lib
 OBJDIR   = $(OBJROOT)large
@@ -558,7 +558,7 @@ I_CFLAGS = -I"$(%WATCOM)/h"
 
 @elifdef FLAT
 CC       = *wcc386
-CFLAGS   = -bt=dos -mf -3r -zff -zgf -zm -s -zlf -oilrtfm
+CFLAGS   = -bt=dos -mf -3r -zff -zgf -zm -s -zlf -oilrtfm -DWATT32_STATIC
 AFLAGS   = -bt=dos -3r -dDOSX -dDOS4GW
 STAT_LIB = $(LIBPATH)wattcpwf.lib
 OBJDIR   = $(OBJROOT)flat
@@ -578,7 +578,7 @@ I_CFLAGS = -I"$(%WATCOM)/h" -I"$(%WATCOM)/h/nt"
 
 @elifdef SMALL32
 CC       = *wcc386
-CFLAGS   = -bt=dos -ms -3r -oaxt -s -zlf
+CFLAGS   = -bt=dos -ms -3r -oaxt -s -zlf -DWATT32_STATIC
 AFLAGS   = -bt=dos -3s -dDOSX -dDOS4GW
 STAT_LIB = $(LIBPATH)wattcpw3.lib
 OBJDIR   = $(OBJROOT)small32
@@ -592,8 +592,8 @@ LIB_ARGS  = $(OBJPATH)wlib.arg
 LINK_ARGS = $(OBJPATH)wlink.arg
 C_ARGS    = $(OBJPATH)wcc.arg
 
-AFLAGS += -zq -fr=nul -w3 -d1 -I"../inc"
-CFLAGS += -zq -fr=nul -wx -DWATT32_BUILD -I. -I"../inc"
+AFLAGS += -zq -w3 -d1 -I"../inc"
+CFLAGS += -zq -wx -DWATT32_BUILD -I. -I"../inc"
 
 #
 # WCC386-flags used:
@@ -648,7 +648,7 @@ $(WATT_DLL): $(OBJS) $(RESOURCE) $(LINK_ARGS)
 @endif
 
 $(STAT_LIB): $(OBJS) $(LIB_ARGS)
-	$(AR) -q -b -c -pa $^@ @$(LIB_ARGS)
+	$(AR) -q -b -c -pa -z=export.tmp $^@ @$(LIB_ARGS)
 
 $(OBJPATH)language.obj: language.c lang.c
 
