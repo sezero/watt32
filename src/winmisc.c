@@ -358,7 +358,7 @@ static void CALLBACK pre_err_handler (INT_PTR arg)
   if (!handle)
      return;
 
-  (*p_BT_InsLogEntryF) (handle, BTLL_INFO, _T("Starting Watt-32 crash-report:"));
+  (*p_BT_InsLogEntryF) (handle, BTLL_INFO, "Starting Watt-32 crash-report:");
 
   if (_watt_assert_buf[0])
      (*p_BT_InsLogEntryF) (handle, BTLL_IMPORTANT, _watt_assert_buf);
@@ -524,17 +524,12 @@ static BOOL WinDnsQueryCommon (WORD type, const void *what,
 
     else if (rr->wType == DNS_TYPE_PTR && type == DNS_TYPE_PTR)
     {
-      _tcsncpy (result, dr->Data.PTR.pNameHost, size);
-      TRACE_CONSOLE (2, "PTR: %" TSTR2ASCII_FMT "\n", (const TCHAR*)result);
+      _strlcpy (result, dr->Data.PTR.pNameHost, size);
+      TRACE_CONSOLE (2, "PTR: %s\n", (const char*)result);
     }
     else if (rr->wType == DNS_TYPE_CNAME)
     {
-#ifdef UNICODE
-       const char *src = wstring_acp (dr->Data.CNAME.pNameHost);
-#else
-       const char *src = dr->Data.CNAME.pNameHost;
-#endif
-      _strlcpy (dom_cname, src, sizeof(dom_cname));
+      _strlcpy (dom_cname, dr->Data.CNAME.pNameHost, sizeof(dom_cname));
       TRACE_CONSOLE (2, "CNAME: %s\n", dom_cname);
     }
     else
@@ -619,12 +614,7 @@ BOOL WinDnsCachePut_A4 (const char *name, DWORD ip4)
      return (FALSE);
 
   memset (&rr, 0, sizeof(rr));
-
-#ifdef UNICODE
-  rr.pName = _tcsdup (astring_acp(name));
-#else
   rr.pName = strdup (name);
-#endif
 
   rr.wType = DNS_TYPE_A;
   rr.Data.A.IpAddress = htonl (ip4);
