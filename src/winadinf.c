@@ -1353,7 +1353,7 @@ static const struct search_list neighbour_states[] = {
                   { NlnsIncomplete,  "Incomplete" },
                   { NlnsProbe,       "Probe" },
                   { NlnsDelay,       "Delay" },
-                  { 4,               "Stale" },    /* typo in Watcom's <ntdef.h> calls this 'NlnsState' */
+                  { 4,               "Stale" },  /* typo in Watcom's <nt/nldef.h> calls this 'NlnsState' */
                   { NlnsReachable,   "Reachable" },
                   { NlnsPermanent,   "Permanent" }
                 };
