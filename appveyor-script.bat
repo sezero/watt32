@@ -143,12 +143,11 @@ if %BUILDER%. == . (
 set BITS=32
 if %CPU%. == x64. set BITS=64
 
-if %1. == build_src.     goto :build_src
-if %1. == build_bin.     goto :build_bin
-if %1. == build_tests.   goto :build_tests
-if %1. == test_colorama. goto :test_colorama
+if %1. == build_src.   goto :build_src
+if %1. == build_bin.   goto :build_bin
+if %1. == build_tests. goto :build_tests
 
-echo Usage: %~dp0%0 ^[build_src ^| build_bin ^| build_tests^ | ^test_colorama]
+echo Usage: %~dp0%0 ^[build_src ^| build_bin ^| build_tests^]
 exit /b 1
 
 :build_src
@@ -446,5 +445,3 @@ exit /b 0
   7z x -y -o%WATCOM% %CI_ROOT%\watcom20.zip > NUL
   exit /b
 
-:test_colorama
-  python.exe test_colorama.py

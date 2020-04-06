@@ -61,7 +61,6 @@ build_script:
     - cmd: appveyor-script.bat build_bin
 
 test_script:
-    - cmd: appveyor-script.bat test_colorama
     - cmd: appveyor-script.bat build_tests
 
 #
