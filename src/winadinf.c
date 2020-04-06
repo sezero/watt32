@@ -1348,7 +1348,7 @@ static const struct search_list arp_types[] = {
                   { MIB_IPNET_TYPE_STATIC,  "Static" }
                 };
 
-#if defined(__WATCOMC__)
+#if defined(__WATCOMC__) && (__WATCOMC__ < 1300)
   #define NlnsStale  NlnsState  /* typo in Watcom's <ntdef.h> */
 #endif
 
