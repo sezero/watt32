@@ -6,7 +6,7 @@
 #  Usage: 'wmake -h -f wc_win.mak'
 #
 
-MODEL   = flat
+MODEL   = win32
 CC      = *wcc386 -3r
 CFLAGS  = -bt=nt -mf -oaxt -DWIN32 -DWATT32_STATIC
 LFLAGS  = system nt
