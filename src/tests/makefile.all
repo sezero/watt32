@@ -271,11 +271,7 @@ NO_W32_CFLAGS = -D_Windows
   @elifdef FLAT
     WATT_LIB = $(LIB_DIR)/wattcpwf.lib
   @elifdef WIN32
-    @ifdef DLL
-      WATT_LIB = $(LIB_DIR)/wattcpww_imp.lib
-    @else
-      WATT_LIB = $(LIB_DIR)/wattcpww.lib
-    @endif
+    WATT_LIB = $(LIB_DIR)/wattcpww.lib
   @endif
 
 @elifdef BORLAND
