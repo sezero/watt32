@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-"""A Python replacement for appveyor-script.bat.
+"""A Python replacement for the appveyor-script.bat.
 """
 
 from __future__ import print_function
@@ -10,7 +10,8 @@ import sys, os, time
 #
 URLs = { 'djgpp':   'http://www.watt-32.net/CI/dj-win.zip',
          'watcom':  'http://www.watt-32.net/CI/watcom20.zip',
-         'borland': 'http://www.watt-32.net/CI/borland.zip'
+         'borland': 'http://www.watt-32.net/CI/borland.zip',
+         'clang':   'http://www.watt-32.net/CI/llvm-installer.exe',
        }
 
 builders = [ "visualc", "clang", "mingw32", "mingw64", "borland", "djgpp", "watcom" ]
@@ -36,7 +37,7 @@ if local_test:
     colour_red    = ""
     colour_yellow = ""
 
-else:    # Use ESC-sequences on ApppVeyor
+else:    # Use ESC-sequences on AppVeyor
   colour_yellow = "\e[1;33m"
   colour_red    = "\e[1;31m"
   colour_off    = "\e[0m"
@@ -166,7 +167,7 @@ def url_progress (blocks, block_size, total_size):
 # Check if a local 'fname' exist. Otherwise download it from 'url'
 # and unzip it using '7z'.
 #
-def download_and_install (fname, url):
+def download_and_install (fname, url, is_clang_x86=False):
   if os.path.exists(fname):
     cprint ("A local %s already exist.\n" % fname)
     return 0
@@ -179,16 +180,29 @@ def download_and_install (fname, url):
   cprint ("url_get: %s -> %s.\n" % (url, fname))
   url_get (url, filename = fname, reporthook = url_progress)
   print ("")
+
   directory = os.path.dirname (fname)
-  cprint ("Unzipping %s to %s.\n" % (fname, directory))
-  r = os.system ("7z x -y -o%s %s > NUL" % (directory, fname))
-  if r != 0:
-    Fatal ("7z failed: %d." % r)
+
+  if is_clang_x86:
+    global local_test
+    if local_test:
+      cprint ('Not installing 32-bit LLVM using "cd %s & cmd /c start /wait llvm-installer.exe /S"\n' % directory)
+    else:
+      cprint ('Installing 32-bit LLVM...')
+      os.system ('cd %s & cmd /c start /wait llvm-installer.exe /S' % directory)
+      os.system ('clang-cl -v')
+
+  else:
+    cprint ("Unzipping %s to %s.\n" % (fname, directory))
+    r = os.system ("7z x -y -o%s %s > NUL" % (directory, fname))
+    if r != 0:
+      Fatal ("7z failed: %d." % r)
+
 
 def generate_oui():
   cprint ("Generating 'src/oui-generated.c'.")
   r = os.system ("python.exe make-oui.py > oui-generated.c")
-  cprint ("--------------------------------------------------------------------------------------------------")
+  cprint ('--------------------------------------------------------------------------------------------------\n')
   return r
 
 #
@@ -249,13 +263,14 @@ def get_src_make_command (builder, cpu, model=""):
       cprint ("[%s]: Building for Watcom/large:\n" % cpu)
       return 'wmake -h -f watcom_l.mak'
 
-    Fatal ("[%s]: BUILDER Watcom  needs a MODEL!" % cpu)
+    Fatal ("[%s]: BUILDER Watcom needs a MODEL!" % cpu)
 
   Fatal ("[%s]: I did not expect this!" % cpu)
 
 
 #
-# Print a colourised message and return the makefile command for 'build_bin':
+# Print a colourised message and return the makefile command for 'build_bin'.
+# Return the 'PROGS_x' and makefile name.
 #
 def get_bin_make_command (env_vars):
   builder = env_vars['BUILDER']
@@ -263,41 +278,42 @@ def get_bin_make_command (env_vars):
 
   if builder == 'djgpp':
     cprint ('[%s]: Building PROGS_DJ=%s:' % (cpu, env_vars['PROGS_DJ']))
-    return 'make -f djgpp_win.mak DPMI_STUB=0 %s' % env_vars['PROGS_DJ']
+    return 'make -f djgpp_win.mak DPMI_STUB=0', env_vars['PROGS_DJ']
 
   if builder == 'visualc':
      cprint ("[%s]: Building PROGS_VC=%s\n" % (cpu, env_vars['PROGS_VC']))
-     return 'nmake -nologo -f visualc.mak %s' % env_vars['PROGS_VC']
+     return 'nmake -nologo -f visualc.mak', env_vars['PROGS_VC']
 
   if builder == 'mingw64':
      cprint ("[%s]: Building PROGS_MW=%s\n" % (cpu, env_vars['PROGS_MW']))
-     return 'make -f mingw64.mak %s' % env_vars['PROGS_MW']
+     return 'make -f mingw64.mak', env_vars['PROGS_MW']
 
   if builder == 'clang':
      cprint ("[%s]: Building PROGS_CL=%s\n" % (cpu, env_vars['PROGS_CL']))
-     return 'make -f clang.mak %s' % env_vars['PROGS_CL']
+     return 'make -f clang.mak', env_vars['PROGS_CL']
 
   if builder == 'borland':
      cprint ("[%s]: Building PROGS_BC=%s\n" % (cpu, env_vars['PROGS_BC']))
-     return '%s\\bin\\make -f bcc_win.mak %s' % (env_vars['BCCDIR'], env_vars['PROGS_BC'])
+     return '%s\\bin\\make -f bcc_win.mak' % env_vars['BCCDIR'], env_vars['PROGS_BC']
 
   if builder == 'watcom':
     model =  env_vars['MODEL']
     if model == 'win32':
       cprint ('[%s]: watcom/Win32: Building PROGS_WC_WIN=%s' % (cpu, env_vars['PROGS_WC_WIN']))
-      return 'wmake -h -f wc_win.mak %s' % env_vars['PROGS_WC_WIN']
+      return 'wmake -h -f wc_win.mak', env_vars['PROGS_WC_WIN']
 
     if model == 'flat':
       cprint ('[%s]: watcom/flat: Building PROGS_WC_FLAT=%s' % (cpu, env_vars['PROGS_WC_FLAT']))
-      return 'wmake -h -f causeway.mak %s' % env_vars['PROGS_WC_FLAT']
+      return 'wmake -h -f causeway.mak', env_vars['PROGS_WC_FLAT']
 
     if model == 'large':
       cprint ('[%s]: watcom/large: Building PROGS_WC_LARGE=%s' % (cpu, env_vars['PROGS_WC_LARGE']))
-      return 'wmake -h -f watcom.mak %s' % env_vars['PROGS_WC_LARGE']
+      return 'wmake -h -f watcom.mak', env_vars['PROGS_WC_LARGE']
 
-    Fatal ("[%s]: BUILDER Watcom  needs a MODEL!" % cpu)
+    Fatal ("[%s]: BUILDER Watcom needs a MODEL!" % cpu)
 
   cprint ("[%s]: No 'build_bin' for 'BUILDER=%s' yet." % (cpu, builder))
+  return '', ''
 
 #
 # Concatinate 2 dictionaries:
@@ -329,9 +345,13 @@ def main():
   os.system ("md %s 2> NUL" % env_vars['CI_ROOT'])
 
   try:
-    builder  = os.getenv ("BUILDER")
-    zip_file = env_vars['CI_ROOT'] + '\\' + os.path.basename (URLs[builder])
-    download_and_install (zip_file, URLs[builder])
+    builder   = env_vars['BUILDER']
+    cpu       = env_vars['CPU']
+    installer = env_vars['CI_ROOT'] + '\\' + os.path.basename (URLs[builder])
+    if builder == 'clang' and cpu == 'x86':
+      download_and_install (installer, URLs[builder], True)
+    else:
+      download_and_install (installer, URLs[builder])
   except KeyError:
     # No need to install anything for this '%BUILDER%'
     pass
@@ -371,14 +391,21 @@ def main():
 
   elif sys.argv[1] == 'build_bin':
     os.chdir ('bin')
+
     bin_vars = get_env_vars_bin()
+    bin_make, bin_progs = get_bin_make_command (merge_dicts(env_vars, bin_vars))
+    if bin_progs == '':
+      return 0
+
+    os.system ('rm -f %s' % bin_progs)
+
     r = write_and_run_bat ("build_bin.bat",
                            [ '@echo off',
                              'setlocal',
                              'prompt $P$G',
                              get_env_string (env_vars),
                              get_env_string (bin_vars),
-                             get_bin_make_command (merge_dicts(env_vars, bin_vars))
+                             '%s %s' % (bin_make, bin_progs)
                            ] )
 
   elif sys.argv[1] == 'build_tests':
@@ -386,7 +413,7 @@ def main():
                            [ '@echo off',
                              'prompt $P$G',
                              get_env_string (env_vars),
-                             r'src\tests',
+                             r'cd src\tests',
                              r'call configur.bat %BUILDER%',
                              r'if %BUILDER%. == borland.  make -f bcc_w.mak',
                              r'if %BUILDER%. == djgpp.    make -f djgpp.mak',
