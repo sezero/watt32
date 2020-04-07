@@ -16,41 +16,48 @@ URLs = { 'djgpp':   'http://www.watt-32.net/CI/dj-win.zip',
 
 builders = [ "visualc", "clang", "mingw32", "mingw64", "borland", "djgpp", "watcom" ]
 
+have_colorama = 0
+
 #
 # When testing locally, there should be no '%APPVEYOR_PROJECT_NAME%'
 #
 if os.getenv ("APPVEYOR_PROJECT_NAME"):
   local_test = 0
+  echo = 'c:\\msys64\\usr\\bin\\echo.exe -en'
 else:
   local_test = 1
+  echo = os.getenv('MSYS2_ROOT') + r'\usr\bin\echo.exe -en'
 
-if local_test:
-  try:
-    from colorama import init, Fore, Style
-    init()
-    colour_off    = Style.RESET_ALL
-    colour_red    = Fore.RED + Style.BRIGHT
-    colour_yellow = Fore.YELLOW + Style.BRIGHT
+try:
+  from colorama import init, Fore, Style  # Fails on AppVeyour
+  init()
+  colour_off    = Style.RESET_ALL
+  colour_red    = Fore.RED + Style.BRIGHT
+  colour_yellow = Fore.YELLOW + Style.BRIGHT
+  have_colorama = 1
 
-  except ImportError:
-    colour_off    = ""
-    colour_red    = ""
-    colour_yellow = ""
+except ImportError:
+  colour_off    = r'\e[0m'
+  colour_yellow = r'\e[1;33m'
+  colour_red    = r'\e[1;31m'
 
-else:    # Use ESC-sequences on AppVeyor
-  colour_yellow = "\e[1;33m"
-  colour_red    = "\e[1;31m"
-  colour_off    = "\e[0m"
-
+#
+# Why so hard to get colours on AppVeyor?
+#
 def cprint (s):
-  print ("%s%s%s" % (colour_yellow, s, colour_off), end="")
+  s = '%s%s%s' % (colour_yellow, s, colour_off)
+  global have_colorama
+  if have_colorama:
+    print (s, end="")
+  else:
+    os.system ('%s "%s"' % (echo, s))
 
 def Fatal (s):
-  print ("%s%s%s" % (colour_red, s, colour_off))
+  cprint ("%s%s" % (colour_red, s))
   sys.exit (1)
 
 #
-# Create a .bat file in '%TEMP' and run it via 'cmd /c file.bat'
+# Create a .bat file in '%TEMP' and run it via 'cmd.exe /c file.bat'
 #
 def write_and_run_bat (fname, content, args=""):
   bat = os.getenv("TEMP") + "\\" + fname
@@ -59,7 +66,7 @@ def write_and_run_bat (fname, content, args=""):
   for l in content:
     f.write (l + '\n')
   f.close()
-  return os.system ("cmd /c %s %s" % (bat, args))
+  return os.system ('cmd.exe /C %s %s' % (bat, args))
 
 #
 # Env-vars common to 'build_src' and 'build_bin' and 'build_tests'
@@ -132,6 +139,7 @@ def get_env_vars_common():
     env_var['PATH'] = r'c:\Program Files\LLVM\bin;' + env_var['PATH']
 
   env_var['WSOCK_TRACE_LEVEL'] = '0'
+  env_var['USE_WSOCK_TRACE']   = '0'
 
   return env_var
 
@@ -169,7 +177,7 @@ def url_progress (blocks, block_size, total_size):
 #
 def download_and_install (fname, url, is_clang_x86=False):
   if os.path.exists(fname):
-    cprint ("A local %s already exist.\n" % fname)
+    cprint ("A local %s already exist.\n" % fname.replace('\\','/'))
     return 0
 
   try:
@@ -186,22 +194,22 @@ def download_and_install (fname, url, is_clang_x86=False):
   if is_clang_x86:
     global local_test
     if local_test:
-      cprint ('Not installing 32-bit LLVM using "cd %s & cmd /c start /wait llvm-installer.exe /S"\n' % directory)
+      cprint ('Not installing 32-bit LLVM using "cd %s & cmd.exe /C start /wait llvm-installer.exe /S"\n' % directory)
     else:
       cprint ('Installing 32-bit LLVM...')
-      os.system ('cd %s & cmd /c start /wait llvm-installer.exe /S' % directory)
+      os.system ('cd %s & cmd.exe /C start /wait llvm-installer.exe /S' % directory)
       os.system ('clang-cl -v')
 
   else:
-    cprint ("Unzipping %s to %s.\n" % (fname, directory))
-    r = os.system ("7z x -y -o%s %s > NUL" % (directory, fname))
+    cprint ('Unzipping %s to %s.\n' % (fname, directory))
+    r = os.system ('7z x -y -o%s %s > NUL' % (directory, fname))
     if r != 0:
       Fatal ("7z failed: %d." % r)
 
 
 def generate_oui():
   cprint ("Generating 'src/oui-generated.c'.")
-  r = os.system ("python.exe make-oui.py > oui-generated.c")
+  r = os.system ('python.exe make-oui.py > oui-generated.c')
   cprint ('--------------------------------------------------------------------------------------------------\n')
   return r
 
@@ -325,6 +333,9 @@ def merge_dicts (a, b):
   return r
 
 def run_test (prog, args=[]):
+  if not os.path.exists(prog):
+    cprint ("Test program '%s' failed to link! -----------------------------------------------\n" % cmd)
+    return 1
   cmd = prog + ' ' + ' '.join(args)
   cprint ("Running test '%s' ---------------------------------------------------------------\n" % cmd)
   return os.system (cmd)
@@ -342,11 +353,20 @@ def main():
   if not os.path.exists(base):
     Fatal ("Run %s from it's directory." % file)
 
-  os.system ("md %s 2> NUL" % env_vars['CI_ROOT'])
+  os.system ('md %s 2> NUL' % env_vars['CI_ROOT'])
+
+  builder = env_vars['BUILDER']
+  cpu     = env_vars['CPU']
+  model   = env_vars['MODEL']
+  cmd     = sys.argv[1]
+
+  cprint ("Doing '%s' for 'BUILDER=%s'" % (cmd, builder))
+  if builder == 'watcom':
+    cprint (", 'MODEL=%s'\n" % model)  # Only 'watcom' has a '%MODEL%' set in 'appveoyr.yml'
+  else:
+    cprint ('\n')
 
   try:
-    builder   = env_vars['BUILDER']
-    cpu       = env_vars['CPU']
     installer = env_vars['CI_ROOT'] + '\\' + os.path.basename (URLs[builder])
     if builder == 'clang' and cpu == 'x86':
       download_and_install (installer, URLs[builder], True)
@@ -356,7 +376,7 @@ def main():
     # No need to install anything for this '%BUILDER%'
     pass
 
-  if sys.argv[1] == 'fake_test':
+  if cmd == 'fake_test':
     r = write_and_run_bat ("fake_test.bat",
                            [ '@echo off',
                              'setlocal',
@@ -368,7 +388,7 @@ def main():
                            ],
                            sys.argv[1])
 
-  elif sys.argv[1] == 'build_src':
+  elif cmd == 'build_src':
     os.chdir ('src')
     if generate_oui() == 0:
       env_vars['CL'] = '-DHAVE_OUI_GENERATATED_C'
@@ -389,7 +409,7 @@ def main():
                              get_src_make_command (builder, env_vars['CPU'], env_vars['MODEL'])
                            ] )
 
-  elif sys.argv[1] == 'build_bin':
+  elif cmd == 'build_bin':
     os.chdir ('bin')
 
     bin_vars = get_env_vars_bin()
@@ -408,8 +428,8 @@ def main():
                              '%s %s' % (bin_make, bin_progs)
                            ] )
 
-  elif sys.argv[1] == 'build_tests':
-    r = write_and_run_bat ("build_test.bat",
+  elif cmd == 'build_tests':
+    r = write_and_run_bat ("build_tests.bat",
                            [ '@echo off',
                              'prompt $P$G',
                              get_env_string (env_vars),
