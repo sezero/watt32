@@ -612,9 +612,7 @@ CFLAGS += -d1
 #   -3r       optimise for 386, register call convention
 #   -s        no stack checking
 #   -zq       quiet compiling
-#   -d3       generate full debug info
-#   -fpi      inline math + emulation
-#   -fr       write errors to file (and stdout)
+#   -d{1,2,3} generate debug info
 #   -zlf      always generate default library information
 #   -zm       place each function in separate segment
 #   -oilrtfm  optimization flags
@@ -635,6 +633,7 @@ CFLAGS += -d1
 #   -s        no stack checking
 #   -zq       quiet compiling
 #   -zc       place const data into the code segment
+#   -d{1,2,3} generate debug info
 #   -os       optimization flags
 #     s:      favour code size over execution time
 #
