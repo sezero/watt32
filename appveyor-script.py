@@ -8,15 +8,16 @@ import sys, os, time
 
 # These can be rather slow:
 #
-URLs = { 'djgpp':   'http://www.watt-32.net/CI/dj-win.zip',
-         'watcom':  'http://www.watt-32.net/CI/watcom20.zip',
-         'borland': 'http://www.watt-32.net/CI/borland.zip',
-         'clang':   'http://www.watt-32.net/CI/llvm-installer.exe',
-       }
+URLs = { 'djgpp':   [ 'http://www.watt-32.net/CI/dj-win.zip',         42100 ],
+         'watcom':  [ 'http://www.watt-32.net/CI/watcom20.zip',       18982 ],
+         'borland': [ 'http://www.watt-32.net/CI/borland.zip',        37142 ],
+         'clang':   [ 'http://www.watt-32.net/CI/llvm-installer.exe',198478 ]
+       }                                                         # kBytes ^
 
-builders = [ "visualc", "clang", "mingw32", "mingw64", "borland", "djgpp", "watcom" ]
+builders = [ 'visualc', 'clang', 'mingw32', 'mingw64', 'borland', 'djgpp', 'watcom' ]
 
-have_colorama = 0
+use_colorama = 1
+use_curl     = int (os.getenv('USE_CURL','0'))
 
 #
 # When testing locally, there should be no '%APPVEYOR_PROJECT_NAME%'
@@ -29,15 +30,13 @@ else:
   echo       = os.getenv('MSYS2_ROOT') + '\\usr\\bin\\echo.exe -en'
 
 try:
-  from colorama2 import init, Fore, Style  # Fails on AppVeyour
+  from colorama import init, Fore, Style  # Fails on AppVeyour
   init()
-  colour_red    = Fore.RED    + Style.BRIGHT
   colour_yellow = Fore.YELLOW + Style.BRIGHT
   colour_off    = Style.RESET_ALL
-  have_colorama = 1
+  use_colorama = 1
 
 except ImportError:
-  colour_red    = r'\e[1;31m'
   colour_yellow = r'\e[1;33m'
   colour_off    = r'\e[0m'
 
@@ -45,19 +44,31 @@ except ImportError:
 # Why so hard to get colours on AppVeyor?
 #
 def cprint (s):
-  global have_colorama
-  if have_colorama:
+  global use_colorama
+  if use_colorama:
     s = '%s%s%s' % (colour_yellow, s, colour_off)
     print (s, end="")
   else:
     s = '%s%s%s' % (colour_yellow, s.replace('\\','/'), colour_off)
     cmd = '%s "%s"' % (echo, s)
-    print ('cmd: %s' % cmd)
+    # print ('cmd: %s' % cmd)
     os.system (cmd)
 
 def Fatal (s):
-  cprint ("%s%s" % (colour_red, s))
+  cprint (s)
   sys.exit (1)
+
+#
+# Check all needed local env-vars
+#
+def check_local_env (global_e):
+  if not local_test:
+    return
+
+  envs = ['WK_ROOT', 'WK_VER', 'VCToolsInstallDir', 'CLANG_32', 'CLANG_64', 'USE_CURL']
+  for e in envs:
+    if os.getenv(e) == None:
+      cprint ("Missing env-var '%s'.\n" % e)
 
 #
 # Create a .bat file in '%TEMP' and run it via 'cmd.exe /c file.bat'
@@ -72,48 +83,106 @@ def write_and_run_bat (fname, content, args=""):
   return os.system ('cmd.exe /C %s %s' % (bat, args))
 
 #
-# Env-vars common to 'build_src' and 'build_bin' and 'build_tests'
+# Return VisualC binary and library directories
+#
+def get_visualc_dirs (cpu):
+  vc_bin_dir = os.getenv ('VCToolsInstallDir', '?') + r'\bin\Hostx64\%s' % cpu
+  vc_lib_dir = os.getenv ('VCToolsInstallDir', '?') + r'\lib\%s' % cpu
+
+  if not os.path.isdir(vc_bin_dir):
+    Fatal ("vc_bin_dir '%s' does not exists!\n" % vc_bin_dir)
+
+  if not os.path.isdir(vc_lib_dir):
+    Fatal ("vc_lib_dir '%s' does not exists!\n" % vc_lib_dir)
+
+  return vc_bin_dir, vc_lib_dir
+
+#
+# local_test: Return Windows-Kits's 'ucrt' and 'um' (user-mode) library directories
+#
+def get_winkit_lib_dirs (cpu):
+  lib_dir = os.getenv('WK_ROOT') + r'\Lib\\' + os.getenv('WK_VER')
+  um_dir   = r'%s\um\%s'   % (lib_dir, cpu)
+  ucrt_dir = r'%s\ucrt\%s' % (lib_dir, cpu)
+
+  if not os.path.isdir(um_dir):
+    Fatal ("WinKit's um_dir '%s' does not exists!\n" % um_dir)
+
+  if not os.path.isdir(ucrt_dir):
+    Fatal ("WinKit's ucrt_dir '%s' does not exists!\n" % ucrt_dir)
+
+  return um_dir, ucrt_dir
+
+#
+# local_test: Return LLVM root for 'cpu = [x86 | x64]'
+#
+def get_LLVM_root (cpu):
+  if cpu == 'x86':
+    root = os.getenv ('CLANG_32')
+  elif cpu == 'x64':
+    root = os.getenv ('CLANG_64')
+  else:
+    root = '??'
+
+  if not os.path.isdir(root):
+    Fatal ("LLVM's root dir '%s' for 'CPU=%s' does not exists!\n" % (root, cpu))
+  return root
+
+#
+# Env-vars common to 'build_src', 'build_bin' and 'build_tests' stages.
 #
 def get_env_vars_common():
   env_var = {}
 
   global local_test
   if local_test:
-    watt_root = os.getenv ("WATT_ROOT")
+    watt_root = os.getenv ('WATT_ROOT')
     if not watt_root:
-       Fatal ("WATT_ROOT not set!")
+       Fatal ('WATT_ROOT not set!')
   else:
-    watt_root = "c:\projects\watt-32"
+    watt_root = 'c:\projects\watt-32'  # == %APPVEYOR_BUILD_FOLDER
 
-  cpu     = os.getenv ("CPU", "x86")
-  builder = os.getenv ("BUILDER", None)
+  cpu     = os.getenv ('CPU', 'x86')
+  builder = os.getenv ('BUILDER', None)
 
   if not builder:
-    Fatal ("BUILDER not set!")
+    Fatal ('BUILDER not set!')
 
   if not builder in builders:
     Fatal ("Illegal BUILDER: '%s'." % builder)
 
-  env_var['APPVEYOR_BUILD_FOLDER'] = watt_root
-  env_var['LOCAL_TEST'] = local_test
-  env_var['WATT_ROOT']  = watt_root
-  env_var['BUILDER']    = builder
-  env_var['CPU']        = cpu
-  env_var['CL']         = ''
-  env_var['MODEL']      = os.getenv ('MODEL', 'none')
-  env_var['PATH']       = os.getenv ('PATH')
+  if cpu != 'x86' and builder in ['watcom', 'djgpp', 'borland']:
+    Fatal ("BUILDER '%s' must have 'CPU=x86'." % builder)
 
-  if cpu == 'x86':
-    env_var['BITS'] = '32'
+  env_var['WATT_ROOT'] = watt_root
+  env_var['BUILDER']   = builder
+  env_var['CPU']       = cpu
+  env_var['CL']        = ''
+  env_var['MODEL']     = os.getenv ('MODEL', 'none')
+  env_var['PATH']      = os.getenv ('PATH')
+  env_var['BITS']      = ['32','64'][cpu == 'x64']
+  env_var['CI_ROOT']   = env_var['WATT_ROOT'] + r'\CI-temp'  # Download and install packages here
+
+  #
+  # Set needed env-vars unless this is AppVeyor.
+  # The 'vcvarsall.bat %CPU%' kludge fails to work here.
+  #
+  if local_test:
+    if builder in ['visualc', 'clang']:
+      vc_bin_dir, vc_lib_dir = get_visualc_dirs (cpu)
+      um_dir,     ucrt_dir   = get_winkit_lib_dirs (cpu)
+
+      env_var['PATH'] = vc_bin_dir + ';' + env_var['PATH']
+      env_var['LIB']  = vc_lib_dir + ';' + um_dir + ';' + ucrt_dir + ';' + os.getenv('LIB')
+
+      if builder == 'clang':
+        env_var['PATH'] = get_LLVM_root(cpu) + r'\bin;' + env_var['PATH']
+
   else:
-    env_var['BITS'] = '64'
+    if builder == 'clang' and cpu == 'x86':
+      env_var['PATH'] = r'c:\Program Files\LLVM\bin;' + env_var['PATH']
 
-  #
-  # Download stuff and install packages here:
-  #
-  env_var['CI_ROOT'] = env_var['APPVEYOR_BUILD_FOLDER'] + r'\CI-temp'
-
-  if builder == 'mingw32' or builder == 'mingw64':
+  if builder in ['mingw32', 'mingw64']:
     env_var['MINGW32'] = watt_root.replace ('\\','/')
     env_var['MINGW64'] = watt_root.replace ('\\','/')
 
@@ -138,11 +207,7 @@ def get_env_vars_common():
     env_var['CBUILDER_IS_LLVM_BASED'] = '1'
     env_var['PATH'] = env_var['BCCDIR'] + r'\bin;' + env_var['PATH']
 
-  if builder == 'clang' and cpu == 'x86':
-    env_var['PATH'] = r'c:\Program Files\LLVM\bin;' + env_var['PATH']
-
-  env_var['WSOCK_TRACE_LEVEL'] = '0'
-  env_var['USE_WSOCK_TRACE']   = '0'
+  env_var['USE_WSOCK_TRACE']   = '0'  # Needed in 'src/tests/makefile.all'
 
   return env_var
 
@@ -170,27 +235,38 @@ def get_env_vars_bin():
 #
 def url_progress (blocks, block_size, total_size):
   if blocks:
-    percent = 100 * (blocks * block_size) / total_size
     kBbyte_so_far = (blocks * block_size) / 1024
-    cprint ("Got %d kBytes (%u%%)\r" % (kBbyte_so_far, percent))
+    cprint ("Got %d kBytes\r" % kBbyte_so_far)
 
 #
 # Check if a local 'fname' exist. Otherwise download it from 'url'
 # and unzip it using '7z'.
 #
-def download_and_install (fname, url, is_clang_x86=False):
+def download_and_install (fname, url, fsize, is_clang_x86=False):
   if os.path.exists(fname):
     cprint ("A local %s already exist.\n" % fname)
     return 0
 
-  try:
-    from urllib import urlretrieve as url_get
-  except ImportError:
-    from urllib.request import urlretrieve as url_get
+  global use_curl
+  if use_curl:
+    if 1:
+      cprint ("curl version:\n")
+      os.system ("curl -V")
+      cprint ('--------------------------------------------------------------------------------------------------\n')
+    cprint ("curl: %s -> %s  %d kByte.\n" % (url, fname, fsize))
+    r = os.system ("curl -# -o %s %s" % (fname, url))
+    if r != 0:
+      Fatal ("curl failed: %d." % r)
 
-  cprint ("url_get: %s -> %s.\n" % (url, fname))
-  url_get (url, filename = fname, reporthook = url_progress)
-  print ("")
+  else:
+    try:
+      from urllib import urlretrieve as url_get
+    except ImportError:
+      from urllib.request import urlretrieve as url_get
+
+    cprint ("url_get: %s -> %s  %d kByte.\n" % (url, fname, fsize))
+    url_get (url, filename = fname, reporthook = url_progress)
+    print ("")
 
   directory = os.path.dirname (fname)
 
@@ -210,6 +286,9 @@ def download_and_install (fname, url, is_clang_x86=False):
       Fatal ("7z failed: %d." % r)
 
 
+#
+# Generate a 'src/oui-generated.c' file for including in 'src/winadinf.c'
+#
 def generate_oui():
   cprint ("Generating 'oui-generated.c'.")
   r = os.system ('python.exe make-oui.py > oui-generated.c')
@@ -225,9 +304,15 @@ def show_help():
 
 def get_env_string (envs):
   ret = ""
-  for e in iter(envs):
-     ret += 'set %s=%s\n' % (e, envs[e])
+  for e in sorted(envs):
+    ret += 'set %s=%s\n' % (e, envs[e])
   return ret
+
+
+def get_nmake():
+  if local_test:
+    return os.getenv ('VCToolsInstallDir', '?') + r'\bin\Hostx86\x86\nmake'
+  return 'nmake'
 
 #
 # Print a colourised message and return the makefile command for 'build_src':
@@ -239,7 +324,7 @@ def get_src_make_command (builder, cpu, model=""):
 
   if builder == 'visualc':
      cprint ("[%s]: Building release:\n" % cpu)
-     return 'nmake -nologo -f visualc-release_%s.mak' % bits
+     return '%s -nologo -f visualc-release_%s.mak' % (get_nmake(), bits)
 
   if builder == 'clang':
      cprint ("[%s]: Building release:\n" % cpu)
@@ -293,22 +378,22 @@ def get_bin_make_command (env_vars):
 
   if builder == 'visualc':
      cprint ("[%s]: Building PROGS_VC=%s\n" % (cpu, env_vars['PROGS_VC']))
-     return 'nmake -nologo -f visualc.mak', env_vars['PROGS_VC']
+     return '%s -nologo -f visualc.mak' % get_nmake(), env_vars['PROGS_VC']
 
   if builder == 'mingw64':
      cprint ("[%s]: Building PROGS_MW=%s\n" % (cpu, env_vars['PROGS_MW']))
-     return 'make -f mingw64.mak', env_vars['PROGS_MW']
+     return 'make -f mingw64.mak CPU=%s ' % cpu, env_vars['PROGS_MW']
 
   if builder == 'clang':
      cprint ("[%s]: Building PROGS_CL=%s\n" % (cpu, env_vars['PROGS_CL']))
-     return 'make -f clang.mak', env_vars['PROGS_CL']
+     return 'make -f clang.mak CPU=%s check_CPU ' % cpu, env_vars['PROGS_CL']
 
   if builder == 'borland':
      cprint ("[%s]: Building PROGS_BC=%s\n" % (cpu, env_vars['PROGS_BC']))
      return '%s\\bin\\make -f bcc_win.mak' % env_vars['BCCDIR'], env_vars['PROGS_BC']
 
   if builder == 'watcom':
-    model =  env_vars['MODEL']
+    model = env_vars['MODEL']
     if model == 'win32':
       cprint ('[%s]: watcom/Win32: Building PROGS_WC_WIN=%s' % (cpu, env_vars['PROGS_WC_WIN']))
       return 'wmake -h -f wc_win.mak', env_vars['PROGS_WC_WIN']
@@ -332,17 +417,24 @@ def get_bin_make_command (env_vars):
 #
 def merge_dicts (a, b):
   r = a.copy()   # start with a's keys and values
-  r.update(b)    # modifies r with b's keys and values & returns None
+  r.update (b)   # modifies r with b's keys and values and returns None
   return r
 
+#
+# Check if 'prog' exist and run it. Optionally with 'args'.
+#
 def run_test (prog, args=[]):
   if not os.path.exists(prog):
     cprint ("Test program '%s' failed to link! -----------------------------------------------\n" % prog)
     return 1
+
   cmd = prog + ' ' + ' '.join(args)
   cprint ("Running test '%s' ---------------------------------------------------------------\n" % cmd)
   return os.system (cmd)
 
+#
+# main entry. Turn this into a 'main_loop()' that handles all args?
+#
 def main():
   if len(sys.argv) != 2 or \
      sys.argv[1] not in ["build_src", "build_bin", "build_tests"]:
@@ -351,10 +443,12 @@ def main():
   env_vars = get_env_vars_common()
 
   base = os.path.basename(__file__)
-  file = env_vars['APPVEYOR_BUILD_FOLDER'] + '\\' + base
+  file = env_vars['WATT_ROOT'] + '\\' + base
 
   if not os.path.exists(base):
     Fatal ("Run %s from it's directory." % file)
+
+  check_local_env (env_vars)
 
   os.system ('md %s 2> NUL' % env_vars['CI_ROOT'])
 
@@ -363,18 +457,22 @@ def main():
   model   = env_vars['MODEL']
   cmd     = sys.argv[1]
 
-  cprint ("Doing '%s' for 'BUILDER=%s'\n" % (cmd, builder))
+  # Since only 'watcom' has a '%MODEL%' set in 'appveoyr.yml'
+  #
   if builder == 'watcom':
-    cprint (", 'MODEL=%s'\n" % model)  # Only 'watcom' has a '%MODEL%' set in 'appveoyr.yml'
+    cprint ("Doing '%s' for 'BUILDER=%s', 'MODEL=%s'\n" % (cmd, builder, model))
   else:
-    cprint ('\n')
+    cprint ("Doing '%s' for 'BUILDER=%s'\n" % (cmd, builder))
 
+  #
+  # Should be done for 'cmd == build_src' only.
+  #
   try:
-    installer = env_vars['CI_ROOT'] + '\\' + os.path.basename (URLs[builder])
+    installer = env_vars['CI_ROOT'] + '\\' + os.path.basename (URLs[builder][0])
     if builder == 'clang' and cpu == 'x86':
-      download_and_install (installer, URLs[builder], True)
+      download_and_install (installer, URLs[builder][0], URLs[builder][1], True)
     else:
-      download_and_install (installer, URLs[builder])
+      download_and_install (installer, URLs[builder][0], URLs[builder][1])
   except KeyError:
     pass
 
@@ -391,11 +489,21 @@ def main():
                          'call configur.bat %s' % builder
                        ] )
 
+    bin2c  = env_vars['WATT_ROOT'] + r'\util\win32\bin2c.exe'
+    bin2c_ = bin2c.replace ('\\','/')
+
+    nasm  = env_vars['WATT_ROOT'] + r'\util\win32\nasm.exe'
+    nasm_ = nasm.replace ('\\','/')
+
     r = write_and_run_bat ("build_src_2.bat",
                            [ '@echo off',
                              'setlocal',
                              'prompt $P$G',
                              get_env_string (env_vars),
+                             r'set W32_BIN2C=%s'  % bin2c,
+                             r'set W32_BIN2C_=%s' % bin2c_,
+                             r'set W32_NASM=%s'   % nasm,
+                             r'set W32_NASM_=%s'  % nasm_,
                              get_src_make_command (builder, env_vars['CPU'], env_vars['MODEL'])
                            ] )
 
@@ -406,39 +514,49 @@ def main():
     if bin_progs == '':
       return 0
 
-    os.system ('rm -f %s' % bin_progs)
     r = write_and_run_bat ("build_bin.bat",
                            [ '@echo off',
                              'setlocal',
                              'prompt $P$G',
+                             'rm -f %s' % bin_progs,
                              get_env_string (env_vars),
                              get_env_string (bin_vars),
                              '%s %s' % (bin_make, bin_progs)
                            ] )
 
   elif cmd == 'build_tests':
+    if builder == 'watcom' and model not in ['large', 'flat', 'win32']:
+      Fatal ("[%s]: BUILDER Watcom needs a MODEL!" % cpu)
+
+    os.chdir ('src\\tests')
     r = write_and_run_bat ("build_tests.bat",
                            [ '@echo off',
                              'prompt $P$G',
                              get_env_string (env_vars),
-                             r'cd src\tests',
                              r'call configur.bat %BUILDER%',
-                             r'if %BUILDER%. == borland.  make -f bcc_w.mak',
-                             r'if %BUILDER%. == djgpp.    make -f djgpp.mak',
-                             r'if %BUILDER%. == clang.    make -f clang_%BITS%.mak',
-                             r'if %BUILDER%. == mingw64.  make -f MinGW64_%BITS%.mak',
-                             r'if %BUILDER%. == visualc.  make -f visualc_%BITS%.mak',
+                             r'if %BUILDER%. == visualc.  make -f visualc_%BITS%.mak clean all',
+                             r'if %BUILDER%. == clang.    make -f clang_%BITS%.mak   clean all',
+                             r'if %BUILDER%. == mingw64.  make -f MinGW64_%BITS%.mak clean all',
+                             r'if %BUILDER%. == borland.  make -f bcc_w.mak          clean all',
+                             r'if %BUILDER%. == djgpp.    make -f djgpp.mak          clean all',
                              r'if %BUILDER%. == watcom. (',
-                             r'   if %MODEL%. == large. make -f watcom_l.mak',
-                             r'   if %MODEL%. == flat.  make -f watcom_f.mak',
-                             r'   if %MODEL%. == win32. make -f watcom_w.mak',
+                             r'   if %MODEL%. == large. make -f watcom_l.mak clean all',
+                             r'   if %MODEL%. == flat.  make -f watcom_f.mak clean all',
+                             r'   if %MODEL%. == win32. make -f watcom_w.mak clean all',
                              ')',
                            ] )
-    os.chdir ('src\\tests')
-    run_test ('cpu.exe')
-    run_test ('cpuspeed.exe', ['1', '1'])
-    run_test ('swap.exe')
-    run_test ('chksum.exe', ['-s'])
+
+    can_run_on_windows = (builder in ['visualc', 'clang', 'mingw32', 'mingw64', 'borland', 'watcom'])
+    if builder == 'watcom' and model != 'win32':
+      can_run_on_windows = False
+
+    if can_run_on_windows:
+      run_test ('cpu.exe')
+      run_test ('cpuspeed.exe', ['1', '1'])
+      run_test ('swap.exe')
+      run_test ('chksum.exe', ['-s'])
+    else:
+      cprint ("Cannot run '%s' tests on Windows.\n" % builder)
 
   if r:
     cprint ("r: %d" % r)
