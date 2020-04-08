@@ -279,7 +279,7 @@ static void sigill_handler2 (int sig)
   #pragma aux do_ill_op = \
             "db 0Fh, 0Bh";  /* UD2 opcode */
 
-#elif defined(__GNUC__)
+#elif defined(__GNUC__) || defined(__clang__)
   void do_ill_op (void)
   {
     __asm__ (".byte 0x0F, 0x0B");
