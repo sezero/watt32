@@ -694,6 +694,7 @@ clean: .SYMBOLIC
 	@if exist $(STAT_LIB) $(RM) $(STAT_LIB)
 	@if exist $(C_ARGS)   $(RM) $(C_ARGS)
 	@if exist $(LIB_ARGS) $(RM) $(LIB_ARGS)
+	@if exist export.tmp  $(RM) export.tmp
 !ifdef PKT_STUB
 	@if exist $(PKT_STUB) $(RM) $(PKT_STUB)
 !endif
