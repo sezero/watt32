@@ -372,22 +372,22 @@
 
 #define TIME_IT(func, args, loops)                           \
     do {                                                     \
-      uint64        clk_per_loop, T = _get_rdtsc();          \
-      unsigned long abs, dec;                                \
-      int           i, flen;                                 \
+      volatile uint64        clk_per_loop, T = _get_rdtsc(); \
+      volatile unsigned long abs, dec;                       \
+      volatile long          i, flen;                        \
                                                              \
       flen = printf ("Timing %s()", #func);                  \
       for (i = 0; i < 37-flen; i++)                          \
           putchar ('.');                                     \
       fflush (stdout);                                       \
       check_invd();                                          \
-      for (i = 0; i < (int)loops; i++)                       \
+      for (i = 0; i < (long)loops; i++)                      \
           if (!func args)                                    \
              break;                                          \
-      if (i == (int)loops) { /* all loops ran okay */        \
+      if (i == (long)loops) { /* all loops ran okay */       \
         clk_per_loop = (_get_rdtsc() - T) / loops;           \
-        abs = (unsigned long)(clk_per_loop/1000ULL);         \
-        dec = (unsigned long)(clk_per_loop % 1000ULL);       \
+        abs = (unsigned long) (clk_per_loop/1000ULL);        \
+        dec = (unsigned long) (clk_per_loop % 1000ULL);      \
         if (clk_per_loop > 1000ULL)                          \
              printf (" %6lu.%03lu clocks/loop\n", abs, dec); \
         else printf (" %10lu clocks/loop\n", abs);           \

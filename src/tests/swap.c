@@ -18,7 +18,7 @@
   #define INVD_CACHE
   #define TEST_UNDEF_OPCODE
 
-#elif defined(_MSC_VER) && defined(_M_IX86)
+#elif defined(_MSC_VER)
   #define TEST_UNDEF_OPCODE
 
 #elif defined(__WATCOMC__) && defined(__386__)
@@ -30,25 +30,16 @@
 #include "gettod.h"
 #include "cpumodel.h"
 
-uint64 start64;
-long   loops     = 20000;
-long   swap_size = 10000;
+static volatile uint64 start64;
+static volatile long   loops     = 20000;
+static volatile long   swap_size = 10000;
 
-const char *get_clk_calls (uint64 delta)
+static const char *get_clk_calls (uint64 delta)
 {
   static char buf[50];
 
   snprintf (buf, sizeof(buf), "(%5" U64_FMT " clocks per 1000 calls)",
             4000*delta/(loops*swap_size));
-  return (buf);
-}
-
-const char *Delta_ms (clock_t dt)
-{
-  static char buf[10];
-  double delta = 1000.0 * (double) dt / (double)CLOCKS_PER_SEC;
-
-  snprintf (buf, sizeof(buf), "%6.1f", delta);
   return (buf);
 }
 
@@ -145,49 +136,49 @@ static W32_INLINE unsigned long cdecl naked_fastcall_one (unsigned long x)
 }
 #endif
 
-int simple_cdecl_ntohl (const void *buf, size_t max)
+static int simple_cdecl_ntohl (const void *buf, size_t max)
 {
-  unsigned long *val = (unsigned long*) buf;
-  size_t   i;
+  unsigned long  *val = (unsigned long*) buf;
+  volatile size_t i;
 
   for (i = 0; i < max; i++)
       simple_cdecl_one (*val++);
   return (1);
 }
 
-int naked_cdecl_ntohl (const void *buf, size_t max)
+static int naked_cdecl_ntohl (const void *buf, size_t max)
 {
-  unsigned long *val = (unsigned long*) buf;
-  size_t   i;
+  unsigned long  *val = (unsigned long*) buf;
+  volatile size_t i;
 
   for (i = 0; i < max; i++)
       naked_cdecl_one (*val++);
   return (1);
 }
 
-int naked_fastcall_ntohl (const void *buf, size_t max)
+static int naked_fastcall_ntohl (const void *buf, size_t max)
 {
-  unsigned long *val = (unsigned long*) buf;
-  size_t   i;
+  unsigned long  *val = (unsigned long*) buf;
+  volatile size_t i;
 
   for (i = 0; i < max; i++)
       naked_fastcall_one (*val++);
   return (1);
 }
 
-int intrin_byteswap (const void *buf, size_t max)
+static int intrin_byteswap (const void *buf, size_t max)
 {
 #if defined(_MSC_VER)
-  unsigned long *val = (unsigned long*) buf;
-  size_t   i;
+  unsigned long  *val = (unsigned long*) buf;
+  volatile size_t i;
 
   for (i = 0; i < max; i++)
       _byteswap_ulong (*val++);
   return (1);
 
 #elif defined(__MINGW32__) || defined(__CYGWIN__)
-  unsigned long *val = (unsigned long*) buf;
-  size_t   i;
+  unsigned long  *val = (unsigned long*) buf;
+  volatile size_t i;
 
   for (i = 0; i < max; i++)
       __bswapd (*val++);
@@ -203,10 +194,10 @@ int intrin_byteswap (const void *buf, size_t max)
 
 /*----------------------------------------------------------------------*/
 
-void test_swap_speed (const char *buf)
+static void test_swap_speed (const char *buf)
 {
   struct timeval start, now;
-  long   i;
+  volatile long  i;
 
   /*---------------------------------------------------------------*/
   printf ("Timing simple_cdecl_ntohl()......... ");
@@ -218,6 +209,7 @@ void test_swap_speed (const char *buf)
       simple_cdecl_ntohl (buf, swap_size/4);
 
   gettimeofday2 (&now, NULL);
+
   printf ("time ....%.6fs %s\n",
           timeval_diff(&now, &start)/1E6,
           get_clk_calls(get_rdtsc()-start64));
@@ -266,7 +258,7 @@ void test_swap_speed (const char *buf)
           get_clk_calls(get_rdtsc()-start64));
 }
 
-void test_swap_speed2 (const char *buf)
+static void test_swap_speed2 (const char *buf)
 {
   puts ("Calling the same via 'TIME_IT()' macro:");
   TIME_IT (simple_cdecl_ntohl,   (buf, swap_size/4), loops);
@@ -275,7 +267,7 @@ void test_swap_speed2 (const char *buf)
   TIME_IT (intrin_byteswap,      (buf, swap_size/4), loops);
 }
 
-void sigill_handler2 (int sig)
+static void sigill_handler2 (int sig)
 {
   printf ("SIGILL caught");
   signal (sig, SIG_IGN);
@@ -290,13 +282,24 @@ void sigill_handler2 (int sig)
 #elif defined(__GNUC__)
   void do_ill_op (void)
   {
-    __asm__ (".byte 0x0f, 0x0b");
+    __asm__ (".byte 0x0F, 0x0B");
   }
 
 #elif defined(_MSC_VER) && defined(_M_IX86)
   void do_ill_op (void)
   {
     __asm ud2
+  }
+
+#elif defined(_MSC_VER) && (defined(_M_IA64) || defined(_M_X64))
+  /*
+   * A 'VMLOAD machine instruction':
+   *   https://docs.microsoft.com/en-us/cpp/intrinsics/svm-vmload?view=vs-2019
+   * Try it and see what it does.
+   */
+  void do_ill_op (void)
+  {
+    __svm_vmload(0);
   }
 
 #elif defined(__BORLANDC__)
@@ -306,7 +309,7 @@ void sigill_handler2 (int sig)
   }
 #endif
 
-void test_undef_opcode (void)
+static void test_undef_opcode (void)
 {
 #ifdef TEST_UNDEF_OPCODE
   signal (SIGILL, sigill_handler2);
@@ -318,7 +321,7 @@ void test_undef_opcode (void)
   exit (0);
 }
 
-void Usage (const char *argv0)
+static void Usage (const char *argv0)
 {
   printf ("Usage: %s [-i buf-size] [-l loops] [-o]\n"
           "  -i : size of swap buffer (default %ld).\n"
@@ -333,7 +336,7 @@ int cdecl main (int argc, char **argv)
   int   ch, i;
   char *buf = NULL;
 
-  while ((ch = getopt(argc, argv, "l:i:o?")) != EOF)
+  while ((ch = getopt(argc, argv, "l:i:oh?")) != EOF)
     switch (ch)
     {
       case 'l':
