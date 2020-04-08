@@ -16,7 +16,7 @@ URLs = { 'djgpp':   [ 'http://www.watt-32.net/CI/dj-win.zip',         42100 ],
 
 builders = [ 'visualc', 'clang', 'mingw32', 'mingw64', 'borland', 'djgpp', 'watcom' ]
 
-use_colorama = 1
+use_colorama = 0
 use_curl     = int (os.getenv('USE_CURL','0'))
 
 #
