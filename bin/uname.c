@@ -73,7 +73,7 @@ int main (int argc, char **argv)
 {
   int ch;
 
-  while ((ch = getopt(argc, argv, "?amnprsv")) != EOF)
+  while ((ch = getopt(argc, argv, "h?amnprsv")) != EOF)
      switch (ch)
      {
        case 'a':
@@ -99,6 +99,7 @@ int main (int argc, char **argv)
        case 'v':
             v_flag = 1;
             break;
+       case 'h':
        case '?':
        default : usage();
      }
