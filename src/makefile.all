@@ -341,12 +341,13 @@ clean:
 
 @elifdef BORLAND
 
+LIBFLAGS = /C /E /u
+
 @ifdef SMALL
 CC        = bcc
 CFLAGS    = -ms -H -H=$(TEMP)\bcc_s.pch -f- -Z
 AFLAGS    = -mx -m2 -t -l
 STAT_LIB  = ..\lib\wattcpbs.lib
-LIBFLAG   =
 OBJDIR    = build\borland\small
 C_ARGS    = $(OBJPATH)bcc.arg
 MAKE_FILE = bcc_s.mak
@@ -356,7 +357,7 @@ CC        = bcc
 CFLAGS    = -ml -H -H=$(TEMP)\bcc_l.pch -f- -Z
 AFLAGS    = -mx -m2 -t -l
 STAT_LIB  = ..\lib\wattcpbl.lib
-LIBFLAG   = /P32
+LIBFLAG   = $(LIBFLAGS) /P32
 OBJDIR    = build\borland\large
 C_ARGS    = $(OBJPATH)bcc.arg
 MAKE_FILE = bcc_l.mak
@@ -370,7 +371,7 @@ CC = f:\gv\Borland55\Bin\bcc32
 CFLAGS    = -4- -RT- -O2 -H -H=$(TEMP)\bcc_f.pch -D_M_IX86=1 -D__BORLANDC__=0x0550
 AFLAGS    = -mx -m2 -t -l -DDOSX
 STAT_LIB  = ..\lib\wattcpbf.lib
-LIBFLAG   = /P32
+LIBFLAG   = $(LIBFLAGS) /P32
 OBJDIR    = build\borland\flat
 C_ARGS    = $(OBJPATH)bcc32.arg
 MAKE_FILE = bcc_f.mak
@@ -432,7 +433,7 @@ AFLAGS = -mx -m2 -t -l -DDOSX
 STAT_LIB  = ..\lib\wattcpbw.lib
 IMP_LIB   = ..\lib\wattcpbw_imp.lib
 WATT_DLL  = ..\bin\watt-32.dll
-LIBFLAG   = /P64
+LIBFLAG   = $(LIBFLAGS) /P64
 RESOURCE  = $(OBJPATH)watt-32.res
 OBJDIR    = build\borland\win32
 MAKE_FILE = bcc_w.mak
@@ -464,8 +465,8 @@ all: $(PKT_STUB) $(C_ARGS) $(OBJPATH)cflags.h $(OBJPATH)cflagsbf.h $(TARGETS)
 	@echo All done
 
 $(STAT_LIB): $(OBJS)
-	$(BCCDIR)\bin\tlib $(STAT_LIB) /C /E $(LIBFLAG) @&&|
-	  -+$(OBJS:.obj=-+)
+	$(BCCDIR)\bin\tlib $(STAT_LIB) $(LIBFLAG) @&&|
+	  $(OBJS)
 |
 	- @del $(STAT_LIB:.lib=.bak)
 
