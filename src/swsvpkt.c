@@ -116,7 +116,8 @@ struct SwsVpktUsr *SwsVpktOpen (const char *szName,
     return (NULL);
   }
 
-  /* Start the worker thread */
+  /* Start the worker thread
+   */
   pPacket->hWorker = CreateThread (NULL, 0, WorkerThread, pPacket,
                                    CREATE_SUSPENDED, NULL);
   if (!pPacket->hWorker)
