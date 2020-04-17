@@ -101,11 +101,8 @@ set DOS_INCLUDE=%WATCOM%\h
 ::
 set BCCDIR=%CI_ROOT%
 
-rem set LIBDIR=%BCCDIR%\lib
-rem set MAKEDIR=%BCCDIR%\bin
-
-set INCLUDE=%BCCDIR%\include\windows;%BCCDIR%\include\windows\sdk;%INCLUDE%
-set CBUILDER_IS_LLVM_BASED=1
+if %BUILDER%. == borland. set CBUILDER_IS_LLVM_BASED=1
+if %BUILDER%. == borland. set INCLUDE=%BCCDIR%\include\windows;%BCCDIR%\include\windows\sdk;%INCLUDE%
 
 ::
 :: Shit for brains 'cmd' cannot have this inside a 'if x (' block since
@@ -344,7 +341,7 @@ exit /b 0
 :: All these generated makefiles requires GNU-make (a 'make' should already be on 'PATH').
 ::
 :build_tests
-  goto :generate_wattcp_cfg
+  call :generate_wattcp_cfg
   cd src\tests
 
   set USE_WSOCK_TRACE=0
@@ -468,10 +465,11 @@ exit /b 0
 :: Generate a 'c:\projects\watt-32\wattcp.cfg' for AppVeyor
 ::
 :generate_wattcp_cfg
+  echo on
   %_ECHO% "\e[1;33mGenerating 'c:\projects\watt-32\wattcp.cfg\wattcp.cfg'.\e[0m"
   echo nameserver      = 8.8.8.8                              > c:\projects\watt-32\wattcp.cfg
   echo winpkt.device   = "\Device\NPF_{??}"                  >> c:\projects\watt-32\wattcp.cfg
-  echo winpkt.dumpfile = c:\projects\watt-32\winpkt_dump.txt >> c:\projects\watt-32\wattcp.cfg
+  echo winpkt.dumpfile = $(WATT_ROOT)\winpkt_dump.txt        >> c:\projects\watt-32\wattcp.cfg
   echo winpkt.trace    = 1                                   >> c:\projects\watt-32\wattcp.cfg
   echo winpkt.rxmode   = 0x20                                >> c:\projects\watt-32\wattcp.cfg
   echo my_ip           = 10.0.0.2                            >> c:\projects\watt-32\wattcp.cfg
