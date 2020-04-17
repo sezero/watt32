@@ -2340,7 +2340,7 @@ const ADAPTER_INFO *PacketFindAdInfo (const char *AdapterName)
 const ADAPTER_INFO *PacketGetAdInfo (void)
 {
   winpkt_trace_func = "PacketGetAdInfo";
-  WINPKT_TRACE ("\n");
+  WINPKT_TRACE ("adapters_list: %p\n", adapters_list);
 
   return (adapters_list);
 }
