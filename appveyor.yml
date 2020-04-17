@@ -44,6 +44,11 @@ matrix:
 
 install:
   #
+  # Try to install WinPcap
+  #
+  - cinst winpcap
+
+  #
   # Prepend the PATH for 'make' + 'sh' used by 'MinGW', 'djgpp', 'CygWin' etc.
   #
   - cmd: set PATH=c:\msys64\usr\bin;%PATH%
