@@ -397,7 +397,7 @@ int W32_CALL pkt_eth_init (mac_address *mac_addr)
 {
   enum eth_init_result rc;
   DWORD thread_id;
-  BOOL  is_up;
+  BOOL  is_up, unknown_driver;
   char  descr [512];
 
   if (_watt_is_win9x)  /**< \todo Support Win-9x/ME/CE too */
@@ -430,13 +430,17 @@ int W32_CALL pkt_eth_init (mac_address *mac_addr)
   }
 #endif
 
+  /* If no 'winpkt.device' specified, call 'PacketInitModule()' regardless.
+   */
+  unknown_driver = (_pktdrvrname[0] == '\0');
+
   _eth_SwsVpkt   = (strnicmp(_pktdrvrname,"\\\\.\\SwsVpkt",11) == 0);
   _eth_winpcap   = (strnicmp(_pktdrvrname,"\\Device\\NPF_{",13) == 0);
   _eth_npcap     = (strnicmp(_pktdrvrname,"\\Device\\NPCAP_{",13) == 0);
   _eth_win10pcap = (strnicmp(_pktdrvrname,"\\Device\\WTCAP_A_{",15) == 0);
   _eth_wanpacket = (strnicmp(_pktdrvrname,"\\Device\\NPF_Generic",19) == 0);
 
-  if ((_eth_winpcap || _eth_npcap || _eth_win10pcap) && !PacketInitModule())
+  if ((_eth_winpcap || _eth_npcap || _eth_win10pcap || unknown_driver) && !PacketInitModule())
   {
     (*_printf) (_LANG("Failed to initialise WinPcap.\n"));
     pkt_release();
@@ -1369,7 +1373,7 @@ static BOOL get_if_stat_swsvpkt (const struct SwsVpktUsr *usr, BOOL *is_up)
   struct SwsVpktAdapterState state;
 
   memset (&state, '\0', sizeof(state));
-  if (!SwsVpktGetAdapterState(usr,&state))
+  if (!SwsVpktGetAdapterState(usr, &state))
      return (FALSE);
 
   *is_up = (state.isMediaConnected) || (state.isWan && !state.isWanDown);
