@@ -46,7 +46,7 @@ install:
   #
   # Try to install WinPcap
   #
-  - cinst winpcap
+  # - cinst winpcap
 
   #
   # Prepend the PATH for 'make' + 'sh' used by 'MinGW', 'djgpp', 'CygWin' etc.
