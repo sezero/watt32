@@ -474,7 +474,7 @@ exit /b 0
   %_ECHO% "\e[1;33mGenerating 'c:\projects\watt-32\wattcp.cfg\wattcp.cfg'.\e[0m"
   echo debug           = 2                                    > c:\projects\watt-32\wattcp.cfg
   echo nameserver      = 8.8.8.8                             >> c:\projects\watt-32\wattcp.cfg
-  echo winpkt.device   = "\Device\NPF_{??}"                  >> c:\projects\watt-32\wattcp.cfg
+  echo winpkt.device   =                                     >> c:\projects\watt-32\wattcp.cfg
   echo winpkt.dumpfile = $(WATT_ROOT)\winpkt_dump.txt        >> c:\projects\watt-32\wattcp.cfg
   echo winpkt.trace    = 1                                   >> c:\projects\watt-32\wattcp.cfg
   echo winpkt.rxmode   = 0x20                                >> c:\projects\watt-32\wattcp.cfg
