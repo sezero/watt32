@@ -369,6 +369,11 @@ exit /b 0
   %_ECHO% "\e[1;33mRunning test 'chksum.exe -s' ----------------------------------------------\e[0m"
   chksum.exe -s
 
+  if exist %WATT_ROOT%\winpkt_dump.txt (
+    %_ECHO% "\e[1;33mContent of %WATT_ROOT%\winpkt_dump.txt -----------------------------------\e[0m"
+    type %WATT_ROOT%\winpkt_dump.txt
+  )
+
 :no_tests
   exit /b 0
 
