@@ -62,7 +62,7 @@ const char *oui_val_to_name (unsigned oui)
 {
   const struct tok *t = bsearch (&oui, oui_values, num_oui_values, sizeof(*t),
                                  (CompareFunc)compare);
-  return (t ? t->s : "Unknown");
+  return (t ? t->s : "Unknown OUI");
 }
 """
 
