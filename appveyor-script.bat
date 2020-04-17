@@ -166,24 +166,6 @@ cd src
 if %LOCAL_TEST% == 1 (
   echo on
   if not exist "%APPVEYOR_BUILD_FOLDER%" (echo No '%APPVEYOR_BUILD_FOLDER%'. Edit this .bat-file & exit /b 1)
-) else (
-
-  %_ECHO% "\e[1;33mGenerating '%WATTCP.CFG%\wattcp.cfg'.\e[0m"
-  echo nameserver = 8.8.8.8                          > %WATTCP.CFG%\wattcp.cfg
-  echo winpkt.device = \Device\NPF_{??}             >> %WATTCP.CFG%\wattcp.cfg
-  echo winpkt.dumpfile =%WATT_ROOT%\winpkt_dump.txt >> %WATTCP.CFG%\wattcp.cfg
-  echo winpkt.trace    = 1                          >> %WATTCP.CFG%\wattcp.cfg
-  echo winpkt.rxmode   = 0x20                       >> %WATTCP.CFG%\wattcp.cfg
-  echo my_ip         = 10.0.0.2                     >> %WATTCP.CFG%\wattcp.cfg
-  echo gateway       = 10.0.0.1                     >> %WATTCP.CFG%\wattcp.cfg
-  echo netmask       = 255.255.255.0                >> %WATTCP.CFG%\wattcp.cfg
-  echo hosts         = $(WATT_ROOT)\bin\hosts       >> %WATTCP.CFG%\wattcp.cfg
-  echo hosts6        = $(WATT_ROOT)\bin\hosts6      >> %WATTCP.CFG%\wattcp.cfg
-  echo services      = $(WATT_ROOT)\bin\services    >> %WATTCP.CFG%\wattcp.cfg
-  echo protocols     = $(WATT_ROOT)\bin\protocol    >> %WATTCP.CFG%\wattcp.cfg
-  echo networks      = $(WATT_ROOT)\bin\networks    >> %WATTCP.CFG%\wattcp.cfg
-  echo ethers        = $(WATT_ROOT)\ethers          >> %WATTCP.CFG%\wattcp.cfg
-  type %WATTCP.CFG%\wattcp.cfg
 )
 
 ::
@@ -362,6 +344,7 @@ exit /b 0
 :: All these generated makefiles requires GNU-make (a 'make' should already be on 'PATH').
 ::
 :build_tests
+  goto :generate_wattcp_cfg
   cd src\tests
 
   set USE_WSOCK_TRACE=0
@@ -479,4 +462,26 @@ exit /b 0
     exit /b
   )
   %CI_ROOT%\WinPcap_4_1_3.exe
+  exit /b
+
+::
+:: Generate a 'c:\projects\watt-32\wattcp.cfg' for AppVeyor
+::
+:generate_wattcp_cfg
+  %_ECHO% "\e[1;33mGenerating 'c:\projects\watt-32\wattcp.cfg\wattcp.cfg'.\e[0m"
+  echo nameserver      = 8.8.8.8                              > c:\projects\watt-32\wattcp.cfg
+  echo winpkt.device   = "\Device\NPF_{??}"                  >> c:\projects\watt-32\wattcp.cfg
+  echo winpkt.dumpfile = c:\projects\watt-32\winpkt_dump.txt >> c:\projects\watt-32\wattcp.cfg
+  echo winpkt.trace    = 1                                   >> c:\projects\watt-32\wattcp.cfg
+  echo winpkt.rxmode   = 0x20                                >> c:\projects\watt-32\wattcp.cfg
+  echo my_ip           = 10.0.0.2                            >> c:\projects\watt-32\wattcp.cfg
+  echo gateway         = 10.0.0.1                            >> c:\projects\watt-32\wattcp.cfg
+  echo netmask         = 255.255.255.0                       >> c:\projects\watt-32\wattcp.cfg
+  echo hosts           = $(WATT_ROOT)\bin\hosts              >> c:\projects\watt-32\wattcp.cfg
+  echo hosts6          = $(WATT_ROOT)\bin\hosts6             >> c:\projects\watt-32\wattcp.cfg
+  echo services        = $(WATT_ROOT)\bin\services           >> c:\projects\watt-32\wattcp.cfg
+  echo protocols       = $(WATT_ROOT)\bin\protocol           >> c:\projects\watt-32\wattcp.cfg
+  echo networks        = $(WATT_ROOT)\bin\networks           >> c:\projects\watt-32\wattcp.cfg
+  echo ethers          = $(WATT_ROOT)\ethers                 >> c:\projects\watt-32\wattcp.cfg
+  type c:\projects\watt-32\wattcp.cfg
   exit /b
