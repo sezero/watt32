@@ -417,19 +417,25 @@ extern const char *qword_str (uint64 val);
  * Setting console colours. Windows only.
  */
 #if defined(WIN32) || defined(WIN64)
-  #define SET_ATTR(a)   SetConsoleTextAttribute (stdout_hnd, (console_info.wAttributes & ~7) | \
-                                                 (FOREGROUND_INTENSITY | (a)))
-  #define NORM_TEXT()   SetConsoleTextAttribute (stdout_hnd, console_info.wAttributes & ~FOREGROUND_INTENSITY)
-  #define HIGH_TEXT()   SetConsoleTextAttribute (stdout_hnd, console_info.wAttributes | FOREGROUND_INTENSITY)
-  #define YELLOW_TEXT() SET_ATTR (FOREGROUND_GREEN | FOREGROUND_RED)
-  #define RED_TEXT()    SET_ATTR (FOREGROUND_RED)
+  #define SET_ATTR(a)      SetConsoleTextAttribute (stdout_hnd, (console_info.wAttributes & ~7) | \
+                                                    (FOREGROUND_INTENSITY | (a)))
+  #define NORM_TEXT()      SetConsoleTextAttribute (stdout_hnd, console_info.wAttributes & ~FOREGROUND_INTENSITY)
+  #define HIGH_TEXT()      SetConsoleTextAttribute (stdout_hnd, console_info.wAttributes | FOREGROUND_INTENSITY)
+  #define YELLOW_TEXT()    SET_ATTR (FOREGOUND_YELLOW)
+  #define RED_TEXT()       SET_ATTR (FOREGROUND_RED)
 #else
-  #define SET_ATTR(a)   ((void)0)
-  #define NORM_TEXT()   ((void)0)
-  #define HIGH_TEXT()   ((void)0)
-  #define YELLOW_TEXT() ((void)0)
-  #define RED_TEXT()    ((void)0)
+  #define SET_ATTR(a)      ((void)0)
+  #define NORM_TEXT()      ((void)0)
+  #define HIGH_TEXT()      ((void)0)
+  #define YELLOW_TEXT()    ((void)0)
+  #define RED_TEXT()       ((void)0)
+  #define FOREGROUND_BLUE  0
+  #define FOREGROUND_GREEN 0
+  #define FOREGROUND_RED   0
 #endif
+
+#define FOREGOUND_YELLOW (FOREGROUND_GREEN | FOREGROUND_RED)
+#define FOREGOUND_WHITE  (FOREGROUND_BLUE | FOREGROUND_GREEN | FOREGROUND_RED)
 
 /*
  * In pc_cbrk.c

@@ -162,16 +162,16 @@ static void dump_frag_holes (const char *where, const struct frag_ctrl *fc, cons
 
   if (!fc)
   {
-    TRACE_MSG (6, "%s, No frag!\n", where);
+    TRACE_MSG (FOREGOUND_YELLOW, "%s, No frag!\n", where);
     return;
   }
 
-  TRACE_MSG (15, "%s: fc->used: %d, fc->data_offset: %" ADDR_FMT "\n",
+  TRACE_MSG (FOREGOUND_WHITE, "%s: fc->used: %d, fc->data_offset: %" ADDR_FMT "\n",
                  where, fc->used, ADDR_CAST(fc->data_offset));
 
   for (h = hole; h; h = h->next)
   {
-    TRACE_MSG (15, "hole: %" ADDR_FMT ", h->start: %ld, h->end: %ld\n",
+    TRACE_MSG (FOREGOUND_WHITE, "hole: %" ADDR_FMT ", h->start: %ld, h->end: %ld\n",
                    ADDR_CAST(h), h->start, h->end);
   }
 }
@@ -301,7 +301,7 @@ static BOOL setup_first_frag (const in_Header *ip, int idx)
   if (hip->marker != BUCKET_MARKER)
      TRACE_CONSOLE (0, "frag_buckets[%d] destroyed\n!", idx);
 
-  TRACE_MSG (7, "frag_bucket[%d] = %" ADDR_FMT "\n", idx, ADDR_CAST(hip));
+  TRACE_MSG (FOREGOUND_WHITE, "frag_bucket[%d] = %" ADDR_FMT "\n", idx, ADDR_CAST(hip));
 
   /* Remember MAC source address
    */
@@ -328,7 +328,7 @@ static BOOL setup_first_frag (const in_Header *ip, int idx)
   fb->active++;         /* inc active frags counter */
 
   WATT_ASSERT (fb->active == 1);
-  TRACE_MSG (7, "bucket=%d, active=%u, i=%u\n", idx, fb->active, i);
+  TRACE_MSG (FOREGOUND_WHITE, "bucket=%d, active=%u, i=%u\n", idx, fb->active, i);
 
   /* Setup frag header data, first packet
    */
@@ -392,7 +392,7 @@ static BOOL setup_first_frag (const in_Header *ip, int idx)
     hole->end   = MAX_FRAG_SIZE;
     hole->next  = NULL;
 
-    TRACE_MSG (7, "hole %" ADDR_FMT ", hole->start %lu, hole->end %lu\n",
+    TRACE_MSG (FOREGOUND_WHITE, "hole %" ADDR_FMT ", hole->start %lu, hole->end %lu\n",
                ADDR_CAST(hole), hole->start, hole->end);
   }
 
@@ -460,7 +460,7 @@ int ip4_defragment (const in_Header **ip_ptr, DWORD offset, WORD flags)
   data_length = (long) intel16 (ip->length) - in_GetHdrLen (ip);
   data_end    = data_start + data_length;
 
-  TRACE_MSG (7, "\nip4_defrag: %s -> %s, id 0x%04X, len %ld, ofs %ld, fbits %s\n",
+  TRACE_MSG (FOREGOUND_WHITE, "\nip4_defrag: %s -> %s, id 0x%04X, len %ld, ofs %ld, fbits %s\n",
                 _inet_ntoa(NULL,intel(ip->source)),
                 _inet_ntoa(NULL,intel(ip->destination)),
                 intel16(ip->identification), data_length, data_start,
@@ -468,13 +468,13 @@ int ip4_defragment (const in_Header **ip_ptr, DWORD offset, WORD flags)
 
   if ((flags & IP_MF) && data_length == 0 && offset != 0)
   {
-    TRACE_MSG (7, "No data.\n");
+    TRACE_MSG (FOREGOUND_WHITE, "No data.\n");
     goto drop_frag;
   }
 
   if ((flags & IP_MF) && (data_length & 7) != 0)
   {
-    TRACE_MSG (7, "Frag-data not multiple of 8.\n");
+    TRACE_MSG (FOREGOUND_WHITE, "Frag-data not multiple of 8.\n");
     goto drop_frag;
   }
 
@@ -485,7 +485,7 @@ int ip4_defragment (const in_Header **ip_ptr, DWORD offset, WORD flags)
 
   if (!found)
   {
-    TRACE_MSG (7, "bucket=%d, i=%d, key not found\n", free_bucket, slot);
+    TRACE_MSG (FOREGOUND_WHITE, "bucket=%d, i=%d, key not found\n", free_bucket, slot);
     bucket = free_bucket;
     fb     = frag_buckets + bucket;
 
@@ -506,7 +506,7 @@ int ip4_defragment (const in_Header **ip_ptr, DWORD offset, WORD flags)
   fc = &frag_control [bucket][slot];
   fb = frag_buckets + bucket;
 
-  TRACE_MSG (7, "bucket=%d, slot=%d key found, fbits: %s, active=%d\n",
+  TRACE_MSG (FOREGOUND_WHITE, "bucket=%d, slot=%d key found, fbits: %s, active=%d\n",
              bucket, slot, decode_fbits(fbits), fb->active);
 
   if (fbits & IS_LAST)           /* Adjust length  */
@@ -586,7 +586,7 @@ int ip4_defragment (const in_Header **ip_ptr, DWORD offset, WORD flags)
      memcpy (fc->data_offset + data_start,
              (BYTE*)ip + in_GetHdrLen(ip), (size_t)data_length);
 
-  TRACE_MSG (7, "got_hole %d, fc->hole_first %" ADDR_FMT "\n",
+  TRACE_MSG (FOREGOUND_WHITE, "got_hole %d, fc->hole_first %" ADDR_FMT "\n",
              got_hole, ADDR_CAST(fc->hole_first));
 
   if (fc->hole_first == NULL)  /* Now we have all the parts */
@@ -631,7 +631,7 @@ int ip4_free_fragment (const in_Header *ip)
 
     if (fb->used && ip == &hip->hdr)
     {
-      TRACE_MSG (7, "ip4_free_fragment(%" ADDR_FMT "), bucket=%d, active=%d\n",
+      TRACE_MSG (FOREGOUND_WHITE, "ip4_free_fragment(%" ADDR_FMT "), bucket=%d, active=%d\n",
                  ADDR_CAST(ip), j, fb->active);
 
       fb->used   = FALSE;
@@ -656,7 +656,7 @@ static void W32_CALL chk_timeout_frags (void)
     struct frag_bucket *fb = frag_buckets + j;
     struct frag_ctrl   *fc = &frag_control[j][0];
 
-    TRACE_MSG (14, "chk_timeout_frags(), bucket %u, active %d, used %d\n",
+    TRACE_MSG (FOREGOUND_YELLOW, "chk_timeout_frags(), bucket %u, active %d, used %d\n",
                j, fb->active, fb->used);
     if (!fb->active)
        continue;
@@ -683,7 +683,7 @@ static void W32_CALL chk_timeout_frags (void)
 
       STAT (ip4stats.ips_fragtimeout++);
 
-      TRACE_MSG (14, "chk_timeout_frags(), bucket %u, slot %d, id %04X\n",
+      TRACE_MSG (FOREGOUND_YELLOW, "chk_timeout_frags(), bucket %u, slot %d, id %04X\n",
                  j, i, intel16(fb->key.ident));
 
       if (ip4_free_fragment(&fb->ip->hdr))
