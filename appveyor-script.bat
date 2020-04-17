@@ -465,9 +465,10 @@ exit /b 0
 :: Generate a 'c:\projects\watt-32\wattcp.cfg' for AppVeyor
 ::
 :generate_wattcp_cfg
-  echo on
+  if %LOCAL_TEST. == 1. exit /b
   %_ECHO% "\e[1;33mGenerating 'c:\projects\watt-32\wattcp.cfg\wattcp.cfg'.\e[0m"
-  echo nameserver      = 8.8.8.8                              > c:\projects\watt-32\wattcp.cfg
+  echo debug           = 2                                    > c:\projects\watt-32\wattcp.cfg
+  echo nameserver      = 8.8.8.8                             >> c:\projects\watt-32\wattcp.cfg
   echo winpkt.device   = "\Device\NPF_{??}"                  >> c:\projects\watt-32\wattcp.cfg
   echo winpkt.dumpfile = $(WATT_ROOT)\winpkt_dump.txt        >> c:\projects\watt-32\wattcp.cfg
   echo winpkt.trace    = 1                                   >> c:\projects\watt-32\wattcp.cfg
