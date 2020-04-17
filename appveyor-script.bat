@@ -11,6 +11,8 @@ prompt $P$G
 set URL_DJ_WIN_ZIP=http://www.watt-32.net/CI/dj-win.zip
 set URL_WATCOM_ZIP=http://www.watt-32.net/CI/watcom20.zip
 set URL_BORLAND_ZIP=http://www.watt-32.net/CI/borland.zip
+set URL_WINPCAP_EXE=https://www.winpcap.org/install/bin/WinPcap_4_1_3.exe
+set URL_LLVM_EXE=https://prereleases.llvm.org/win-snapshots/LLVM-10.0.0-e20a1e486e1-win32.exe
 
 ::
 :: D/L from MS's OneDrive instead with the below cryptic 'URL_x' strings.
@@ -50,6 +52,7 @@ if %APPVEYOR_PROJECT_NAME%. == . (
   set WATT_ROOT=c:\projects\watt-32
   set APPVEYOR_BUILD_FOLDER=c:\projects\watt-32
   set APPVEYOR_BUILD_FOLDER_UNIX=c:/projects/watt-32
+  set WATTCP.CFG=%WATT_ROOT%
   set _ECHO=c:\msys64\usr\bin\echo.exe -e
 )
 
@@ -163,6 +166,24 @@ cd src
 if %LOCAL_TEST% == 1 (
   echo on
   if not exist "%APPVEYOR_BUILD_FOLDER%" (echo No '%APPVEYOR_BUILD_FOLDER%'. Edit this .bat-file & exit /b 1)
+) else (
+
+  %_ECHO% "\e[1;33mGenerating '%WATTCP.CFG%\wattcp.cfg'.\e[0m"
+  echo nameserver = 8.8.8.8                          > %WATTCP.CFG%\wattcp.cfg
+  echo winpkt.device = \Device\NPF_{??}             >> %WATTCP.CFG%\wattcp.cfg
+  echo winpkt.dumpfile =%WATT_ROOT%\winpkt_dump.txt >> %WATTCP.CFG%\wattcp.cfg
+  echo winpkt.trace    = 1                          >> %WATTCP.CFG%\wattcp.cfg
+  echo winpkt.rxmode   = 0x20                       >> %WATTCP.CFG%\wattcp.cfg
+  echo my_ip         = 10.0.0.2                     >> %WATTCP.CFG%\wattcp.cfg
+  echo gateway       = 10.0.0.1                     >> %WATTCP.CFG%\wattcp.cfg
+  echo netmask       = 255.255.255.0                >> %WATTCP.CFG%\wattcp.cfg
+  echo hosts         = $(WATT_ROOT)\bin\hosts       >> %WATTCP.CFG%\wattcp.cfg
+  echo hosts6        = $(WATT_ROOT)\bin\hosts6      >> %WATTCP.CFG%\wattcp.cfg
+  echo services      = $(WATT_ROOT)\bin\services    >> %WATTCP.CFG%\wattcp.cfg
+  echo protocols     = $(WATT_ROOT)\bin\protocol    >> %WATTCP.CFG%\wattcp.cfg
+  echo networks      = $(WATT_ROOT)\bin\networks    >> %WATTCP.CFG%\wattcp.cfg
+  echo ethers        = $(WATT_ROOT)\ethers          >> %WATTCP.CFG%\wattcp.cfg
+  type %WATTCP.CFG%\wattcp.cfg
 )
 
 ::
@@ -391,7 +412,7 @@ exit /b 0
 
 :download_LLVM
   %_ECHO% "\e[1;33mDownloading 32-bit LLVM...'.\e[0m"
-  curl -# -o %CI_ROOT%\llvm-installer.exe https://prereleases.llvm.org/win-snapshots/LLVM-10.0.0-e20a1e486e1-win32.exe
+  curl -# -o %CI_ROOT%\llvm-installer.exe %URL_LLVM_EXE%
   if not errorlevel == 0 (
     %_ECHO% "\e[1;31mThe curl download failed!\e[0m"
     exit /b 1
@@ -445,3 +466,17 @@ exit /b 0
   7z x -y -o%WATCOM% %CI_ROOT%\watcom20.zip > NUL
   exit /b
 
+
+::
+:: Download and install WinPcap
+::
+:install_winpcap
+  if exist %CI_ROOT%\WinPcap\Uninstall.exe exit /b
+  %_ECHO% "\e[1;33mDownloading WinPcap 4.1.3:\e[0m"
+  curl -# -o %CI_ROOT%\WinPcap_4_1_3.exe %URL_WINPCAP_EXE%
+  if not errorlevel == 0 (
+    %_ECHO% "\e[1;31mThe curl download failed!\e[0m"
+    exit /b
+  )
+  %CI_ROOT%\WinPcap_4_1_3.exe
+  exit /b
