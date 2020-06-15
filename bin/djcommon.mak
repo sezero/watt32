@@ -69,7 +69,7 @@ WATTLIB     = $(WATT32_ROOT)/lib/libwatt.a
 MAP_FILE    = $(DJGPP_EXE:.exe=.map)
 
 CC      = $(BIN_PREFIX)gcc
-CFLAGS += -g -Wno-strict-aliasing -DWATT32 -I$(WATT32_ROOT)/inc
+CFLAGS += -g -Wall -Wno-strict-aliasing -DWATT32 -I$(WATT32_ROOT)/inc
 
 ifneq ($(CC_SRC),)
   LFLAGS += -lstdcxx

@@ -340,7 +340,7 @@ W32_FUNC const char *W32_CALL _w32_inet_ntop (int af, const void *src,
                                               char *dst, size_t size);
 /*
  * Some of the values under the Registry key
- *   HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\Class\{4d36e972-e325-11ce-bfc1-08002be10318}\000x
+ *   HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\Class\{4D36E972-E325-11CE-BFC1-08002BE10318}\000x
  */
 struct setup_info_st {
        char                 *NetCfgInstanceId;
@@ -364,6 +364,7 @@ static void setup_info_dump (void);
 static void setup_info_adapter_print (const char *adapter_name);
 static void setup_info_free (void);
 static const char *convert_ch_to_freq (int ch);
+static const char *get_if_type (DWORD if_type);
 
 static BOOL ipv4_only_iface = TRUE;
 static char work_buf [10000];
@@ -812,15 +813,15 @@ static void setup_info_dump (void)
                 "     DriverVersion:    %s\n"
                 "     ComponentId:      %s\n"
                 "     DeviceInstanceID: %s\n"
-                "     IfTypePreStart:   %u\n"
-                "     next:             %p\n",
+                "     IfTypePreStart:   %s (%lu)\n"
+                "     next:             %p\n\n",
                 i,
                 inf->NetCfgInstanceId,
                 inf->DriverDate,
                 inf->DriverVersion,
                 inf->ComponentId,
                 inf->DeviceInstanceID,
-                inf->IfTypePreStart,
+                get_if_type(inf->IfTypePreStart), inf->IfTypePreStart,
                 inf->next);
   }
 }
@@ -843,7 +844,6 @@ static void setup_info_adapter_print (const char *adapter_name)
   const char  *DeviceInstanceID = "<unknown>";
   const char  *InstallTimeStamp = "<unknown>";
   unsigned     IfTypePreStart   = 0;
-  char         buf [20];
 
   for (inf = setup_info + 0; inf; inf = inf->next)
   {
@@ -866,7 +866,7 @@ static void setup_info_adapter_print (const char *adapter_name)
   (*_printf) ("      DriverVersion:     %s\n", DriverVersion);
   (*_printf) ("      ComponentId:       %s\n", ComponentId);
   (*_printf) ("      DeviceInstanceID:  %s\n", DeviceInstanceID);
-  (*_printf) ("      IfTypePreStart:    %s\n", IfTypePreStart ? itoa((int)IfTypePreStart, buf, 10) : "<unknown>");
+  (*_printf) ("      IfTypePreStart:    %s (%lu)\n", get_if_type(IfTypePreStart), IfTypePreStart);
 }
 
 static void setup_info_free (void)
@@ -1419,7 +1419,11 @@ static const struct search_list neighbour_states[] = {
 
 #define SMI_IETF 0
 
-#if defined(HAVE_OUI_GENERATATED_C)
+#if defined(__BORLANDC__)
+ // #define HAVE_OUI_GENERATED_C  // A test
+#endif
+
+#if defined(HAVE_OUI_GENERATED_C)
   #include "oui-generated.c"
 #endif
 

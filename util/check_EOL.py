@@ -14,8 +14,10 @@ Check if 'file' or 'wildcard' of files are binary or have LF or CRLF line ending
 # Mainly used to check text-files in the Watt-32 project.
 #
 # By G. Vanem <gvanem@yahoo.no> 2020.
-
+#
 import sys, os, glob, string, fnmatch, argparse
+
+PY3 = (sys.version[0] >= '3')
 
 parser = argparse.ArgumentParser (add_help=False)
 parser.add_argument ("-h", dest="help", action="store_true")
@@ -46,14 +48,18 @@ def check_file (file, tot):
     while 1:
       c0 = content [pos]
       c1 = content [pos+1]
-      if not str(c0) in string.printable:
+
+      # if not str(c0) in string.printable:
+      if bin(c0) < 32:
+        bin_chars += 1
+      elif c0 > 0x7f:
         bin_chars += 1
       else:
         ascii_chars += 1
-        c0_0A = (c0 == '\n')
-        c0_0D = (c0 == '\r')
-        c1_0A = (c1 == '\n')
-        c1_0D = (c1 == '\r')
+        c0_0A = (c0 == b'\n')
+        c0_0D = (c0 == b'\r')
+        c1_0A = (c1 == b'\n')
+        c1_0D = (c1 == b'\r')
 
         if c0_0D and c1_0A:        # \r\n
           EOL_dos += 1
@@ -70,7 +76,7 @@ def check_file (file, tot):
         c_last = content [flen-1]
         break
 
-  if EOL_unix + EOL_dos == 0 and c_last == '\n':  # last char was '\n'
+  if EOL_unix + EOL_dos == 0 and c_last == b'\n':  # last char was '\n'
     EOL_unix += 1
 
   if is_bin:

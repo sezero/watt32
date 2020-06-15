@@ -480,7 +480,7 @@ int W32_CALL pkt_eth_init (mac_address *mac_addr)
      _strlcpy (_pktdrvr_descr, strrtrim(descr), sizeof(_pktdrvr_descr));
 
   if (!_pkt_inf->get_if_type_op ||
-      !(*_pkt_inf->get_if_type_op)(_pkt_inf->adapter, &_pktdevclass))
+      !(*_pkt_inf->get_if_type_op) (_pkt_inf->adapter, &_pktdevclass))
   {
     (*_printf) (_LANG("Failed to get interface type.\n"));
     pkt_release();

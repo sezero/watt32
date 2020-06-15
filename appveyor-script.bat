@@ -341,12 +341,18 @@ exit /b 0
 :: All these generated makefiles requires GNU-make (a 'make' should already be on 'PATH').
 ::
 :build_tests
-  call :generate_wattcp_cfg
+  if %LOCAL_TEST. == 0. (
+    %_ECHO% "\e[1;33mGenerating 'c:\projects\watt-32\wattcp.cfg\wattcp.cfg'.\e[0m"
+    call :generate_wattcp_cfg
+  )
+
   cd src\tests
 
   set USE_WSOCK_TRACE=0
 
   if %CPU%. == x86. set PATH=c:\Program Files (x86)\LLVM\bin;%PATH%
+
+  %_ECHO% "\e[1;33m[%CPU%]Configuring 'build_tests' for 'BUILDER=%BUILDER%'.\e[0m"
 
   call configur.bat %BUILDER%
   if %BUILDER%. == borland.  make -f bcc_w.mak
@@ -465,8 +471,6 @@ exit /b 0
 :: Generate a 'c:\projects\watt-32\wattcp.cfg' for AppVeyor
 ::
 :generate_wattcp_cfg
-  if %LOCAL_TEST. == 1. exit /b
-  %_ECHO% "\e[1;33mGenerating 'c:\projects\watt-32\wattcp.cfg\wattcp.cfg'.\e[0m"
   echo debug           = 2                                    > c:\projects\watt-32\wattcp.cfg
   echo nameserver      = 8.8.8.8                             >> c:\projects\watt-32\wattcp.cfg
   echo winpkt.device   =                                     >> c:\projects\watt-32\wattcp.cfg

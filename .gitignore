@@ -169,7 +169,6 @@ bin/SUCK
 bin/syslogd
 bin/syslogd2
 bin/TALK
-bin/TELNET
 bin/TFTP
 bin/TFTPD
 bin/TIMEOUT
