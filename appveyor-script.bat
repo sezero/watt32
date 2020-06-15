@@ -173,7 +173,7 @@ if %LOCAL_TEST% == 1 (
 set CL=
 %_ECHO% "\e[1;33mGenerating 'src/oui-generated.c'.\e[0m"
 python.exe make-oui.py > oui-generated.c
-if errorlevel 0 set CL=-DHAVE_OUI_GENERATATED_C
+if errorlevel 0 set CL=-DHAVE_OUI_GENERATED_C
 %_ECHO% "\e[1;33m--------------------------------------------------------------------------------------------------\e[0m"
 
 if %BUILDER%. == visualc. (

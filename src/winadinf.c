@@ -1451,7 +1451,7 @@ static const char *get_phys_address (const void *a, ULONG len, BOOL show_manuf)
     else *p = '\0';
   }
 
-#if defined(HAVE_OUI_GENERATATED_C)
+#if defined(HAVE_OUI_GENERATED_C)
   /**
    * Get the manufacturer name for this MAC-address.
    * \todo Get addresses such as 00:FF:DB:EF:7D:48 from a
