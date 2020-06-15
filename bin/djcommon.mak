@@ -13,6 +13,28 @@
 .PHONY:    check_src check_exe check_gcc
 
 #
+# If building on Windows, the '$(BIN_PREFIX)gcc' should become something
+# like 'f:/gv/djgpp/bin/i586-pc-msdosdjgpp-gcc'.
+#
+# If building on plain old DOS, it is simply 'gcc' which 'make' should
+# find on %PATH.
+#
+ifeq ($(OS),Windows_NT)
+  ifeq ($(DJ_PREFIX),)
+    $(error Define a $(DJ_PREFIX) to point to the ROOT of the djgpp cross compiler).
+  endif
+
+  BIN_PREFIX ?= $(DJ_PREFIX)
+
+  #
+  # In case %DJDIR is not set under Windows. Why would it exist?
+  #
+  DJDIR ?= e:/djgpp
+else
+  BIN_PREFIX =
+endif
+
+#
 # Override any Unix-like SHELL set in environment or djgpp.env
 # At least "make depend" needs a DOS-style shell. Specifically
 # the "sed" command doesn't work with `SHELL=/bin/sh' or `bash'.
@@ -33,10 +55,10 @@ check_exe:
 	@echo \"DJGPP_EXE\" not defined. Define \"DJGPP_EXE = file.exe\".. before including DJCOMMON.MAK
 endif
 
-ifneq ($(shell gcc -dumpmachine), djgpp)
-check_gcc:
-	@echo 'gcc seems not to be djgpp compiled. Maybe your $$PATH is wrong?'
-endif
+# ifneq ($(shell $(BIN_PREFIX)gcc -dumpmachine), djgpp)
+# check_gcc:
+# 	@echo 'gcc seems not to be djgpp compiled. Maybe your $$PATH is wrong?'
+# endif
 
 
 OBJS    += $(SRC:.c=.o)
@@ -46,8 +68,8 @@ WATT32_ROOT = $(realpath $(WATT_ROOT))
 WATTLIB     = $(WATT32_ROOT)/lib/libwatt.a
 MAP_FILE    = $(DJGPP_EXE:.exe=.map)
 
-CC      = gcc
-CFLAGS += -g -Wall -Wno-strict-aliasing -DWATT32 -I$(WATT32_ROOT)/inc
+CC      = $(BIN_PREFIX)gcc
+CFLAGS += -g -Wno-strict-aliasing -DWATT32 -I$(WATT32_ROOT)/inc
 
 ifneq ($(CC_SRC),)
   LFLAGS += -lstdcxx
