@@ -22,6 +22,8 @@
 #define WSADESCRIPTION_LEN  256
 #define WSASYS_STATUS_LEN   128
 
+__BEGIN_DECLS
+
 typedef struct WSAData {
         unsigned short wVersion;
         unsigned short wHighVersion;
@@ -51,6 +53,8 @@ typedef struct winsock_fd_set {
       } winsock_fd_set;
 
 W32_FUNC int __stdcall __WSAFDIsSet (int s, winsock_fd_set *fd);
+
+__END_DECLS
 
 #endif  /* _WATT32_FAKE_WINSOCK2_H */
 #endif  /* _WATT32_FAKE_WINSOCK_H */

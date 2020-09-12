@@ -19,6 +19,8 @@
 
 #if !defined(_WATT32_FAKE_WINSOCK_H)
 
+__BEGIN_DECLS
+
 typedef struct _SOCKET_ADDRESS {
         struct sockaddr lpSockaddr;
         int             iSockaddrLength;
@@ -56,6 +58,8 @@ typedef struct winsock_fd_set {
       } winsock_fd_set;
 
 W32_FUNC int __stdcall __WSAFDIsSet (int s, winsock_fd_set *fd);
+
+__END_DECLS
 
 #endif  /* _WATT32_FAKE_WINSOCK_H */
 #endif  /* _WATT32_FAKE_WINSOCK2_H */
