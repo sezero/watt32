@@ -294,14 +294,14 @@ NO_W32_CFLAGS = -D_Windows
     $(CC) -c $(COMMON_CFLAGS) $(W32_CFLAGS) $(2) -Fo.\\
     link -out:$(strip $(1)) $(LDFLAGS) $(notdir $(2:.c=.obj)) $(WATT_LIB) user32.lib advapi32.lib > link.tmp
     cat link.tmp >> $(1:.exe=.map)
-    rm -f $(1:.exe=.lib) $(1:.exe=.exp) link.tmp
+    @rm -f $(1:.exe=.lib) $(1:.exe=.exp) link.tmp
   endef
 
   define compile_and_link_ws2
     $(CC) -c $(COMMON_CFLAGS) $(NO_W32_CFLAGS) $(2) -Fo.\\
     link -out:$(strip $(1)) $(LDFLAGS) $(notdir $(2:.c=.obj)) user32.lib advapi32.lib $(WS2_32_LIB) > link.tmp
     cat link.tmp >> $(1:.exe=.map)
-    rm -f $(1:.exe=.lib) $(1:.exe=.exp) link.tmp
+    @rm -f $(1:.exe=.lib) $(1:.exe=.exp) link.tmp
   endef
 
 @elifdef HIGHC
@@ -341,7 +341,7 @@ NO_W32_CFLAGS = -D_Windows
     echo '$(LDFLAGS)'                     > 386link.arg
     $(CC) -c @highc.arg -o $(1:.c=.obj) $(1)
     386link @386link.arg $(1:.c=.obj) -exe $(2)
-    rm -f highc.arg 386link.arg
+    @rm -f highc.arg 386link.arg
   endef
 
 @elifdef WATCOM
@@ -431,12 +431,12 @@ NO_W32_CFLAGS = -D_Windows
 
   define compile_and_link
     $(CC) $(COMMON_CFLAGS) $(W32_CFLAGS) -o $(1) $(2) $(LDFLAGS) -l $(WATT_LIB)
-    rm -f $(1:.exe=.tds)
+    @rm -f $(1:.exe=.tds)
   endef
 
   define compile_and_link_ws2
     $(CC) $(COMMON_CFLAGS) $(NO_W32_CFLAGS) -o $(1) $(2) $(LDFLAGS) -l $(WS2_32_LIB)
-    rm -f $(1:.exe=.tds)
+    @rm -f $(1:.exe=.tds)
   endef
 @endif
 
