@@ -14,8 +14,8 @@
 
 #include <time.h>
 
-#if defined(__HIGHC__) || defined(__BORLANDC__)
-#undef timezone   /* a macro in HigHC / bcc 5+ */
+#if defined(__HIGHC__) || defined(__BORLANDC__) || defined(_CRT_BEGIN_C_HEADER)
+#undef timezone   /* a macro in HigHC, bcc 5+ or Win-Kit */
 #endif
 
 #if defined(__DJGPP__) || defined(__CYGWIN__)
