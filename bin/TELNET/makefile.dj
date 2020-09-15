@@ -18,8 +18,8 @@ include ../djcommon.mak
 CFLAGS += -DSTRUCT_CALLOUT_DEFINED
 
 ifeq ($(USE_SSL),1)
-  CFLAGS += -DUSE_SSL -I$(SSL_ROOT)/openssl -I$(SSL_ROOT)
-  LFLAGS += $(SSL_ROOT)/lib/libcrypt.a
+  CFLAGS  += -DUSE_SSL -I$(SSL_ROOT)/openssl -I$(SSL_ROOT)
+  LDFLAGS += $(SSL_ROOT)/lib/libcrypt.a
 endif
 
 keyb32.exe: keyb.c
