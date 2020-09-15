@@ -465,6 +465,31 @@ void get_DRND_info (void)
      }
 }
 
+void get_cache_info (void)
+{
+  DWORD eax = 0, ebx = 0, ecx = 0, edx;
+  DWORD cache_sz = 0;
+
+  printf ("\nCacheLine: ");
+
+  if (!strncmp(x86_vendor_id, "GenuineIntel", 12))
+  {
+    get_cpuid (1, &eax, &ebx, &ecx, &edx);
+    if (ebx)
+       cache_sz = 8 * loBYTE (ebx >> 8);
+  }
+  else if (!strcmp(x86_vendor_id, "AuthenticAMD"))
+  {
+    get_cpuid (0x80000005, &eax, &ebx, &ecx, &edx);
+    if (ecx)
+       cache_sz = loBYTE (ecx);
+  }
+
+  if (cache_sz)
+       printf ("%lu bytes\n", cache_sz);
+  else puts ("Unknown");
+}
+
 void print_misc_regs (void)
 {
 #if (DOSX)
@@ -502,6 +527,8 @@ int main (void)
   if (x86_have_cpuid)
        print_cpuid_info();
   else puts ("No CPUID");
+
+  get_cache_info();
 
   if (!strncmp(x86_vendor_id, "GenuineIntel",12))
      get_DRND_info();
