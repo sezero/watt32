@@ -121,7 +121,7 @@ void W32_CALL ReadEthersFile (void)
     int    save;
     eth_address eth;
 
-    if (!get_ether_entry(buf,&eth,host_ip,sizeof(host_ip)))
+    if (!get_ether_entry(buf, &eth, host_ip, sizeof(host_ip)))
        continue;
 
     if (num_entries == -1)

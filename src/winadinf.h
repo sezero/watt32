@@ -89,7 +89,7 @@
  * Maybe not such a good idea.
  */
 #if defined(_WIN32_MAXVER) && (_WIN32_MAXVER > _WIN32_WINNT) && 0
-  #undef _WIN32_WINNT
+  #undef  _WIN32_WINNT
   #define _WIN32_WINNT _WIN32_MAXVER
 #endif
 
