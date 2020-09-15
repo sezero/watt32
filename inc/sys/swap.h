@@ -225,16 +225,16 @@ W32_FUNC unsigned short cdecl _w32_intel16 (unsigned short x);
   #define intel16(x)  __NtoHS(x)
 
   #define __NtoHS(x)  (_AX = x, \
-                       __emit__(0x86,0xC4),      /* xchg ah, al */ \
+                       __emit__(0x86, 0xC4),       /* xchg ah, al */ \
                        _AX)
 
   #define __NtoHL(x)  (_EAX = x, \
-                       __emit__(0x86,0xC4),      /* xchg ah, al  */ \
-                       __emit__(0xC1,0xC8,0x10), /* ror  eax, 16 */ \
-                       __emit__(0x86,0xC4),      /* xchg ah, al  */ \
+                       __emit__(0x86, 0xC4),       /* xchg ah, al  */ \
+                       __emit__(0xC1, 0xC8, 0x10), /* ror  eax, 16 */ \
+                       __emit__(0x86, 0xC4),       /* xchg ah, al  */ \
                        _EAX)
 
-#elif defined(__CCDL__) && defined(__386__)       /* LadSoft 386 */
+#elif defined(__CCDL__) && defined(__386__)     /* LadSoft 386 */
   #define intel(x)    __NtoHL(x)
   #define intel16(x)  __NtoHS(x)
 
@@ -261,6 +261,7 @@ W32_FUNC unsigned short cdecl _w32_intel16 (unsigned short x);
 #elif defined(__LCC__) && 0              /* LCC-Win32 */
   #define intel(x)    __NtoHL(x)
   #define intel16(x)  __NtoHS(x)
+
   #if 0
     #include <intrinsics.h>
     #define W32_LCC_INTRINSICS_INCLUDED  /* header guard is missing */
