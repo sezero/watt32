@@ -2015,6 +2015,14 @@ static void print_mib_if_row2 (DWORD index, const MIB_IF_ROW2 *row)
     }
   }
 }
+
+#else
+static const char *get_if_type (DWORD if_type)
+{
+  static char buf [10];
+
+  return itoa ((int)if_type, buf, 10);
+}
 #endif /* ON_WIN_VISTA && HAVE_NETIOAPI_H */
 
 /*
