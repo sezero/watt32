@@ -341,7 +341,7 @@ exit /b 0
 :: All these generated makefiles requires GNU-make (a 'make' should already be on 'PATH').
 ::
 :build_tests
-  if %LOCAL_TEST. == 0. (
+  if %LOCAL_TEST%. == 0. (
     %_ECHO% "\e[1;33mGenerating 'c:\projects\watt-32\wattcp.cfg\wattcp.cfg'.\e[0m"
     call :generate_wattcp_cfg
   )
