@@ -474,7 +474,7 @@ exit /b 0
   echo debug           = 2                                    > c:\projects\watt-32\wattcp.cfg
   echo nameserver      = 8.8.8.8                             >> c:\projects\watt-32\wattcp.cfg
   echo winpkt.device   =                                     >> c:\projects\watt-32\wattcp.cfg
-  echo winpkt.dumpfile = -                                   >> c:\projects\watt-32\wattcp.cfg
+  echo winpkt.dumpfile = $(WATT_ROOT)\winpkt_dump.txt        >> c:\projects\watt-32\wattcp.cfg
   echo winpkt.trace    = 2                                   >> c:\projects\watt-32\wattcp.cfg
   echo winpkt.rxmode   = 0x20                                >> c:\projects\watt-32\wattcp.cfg
   echo my_ip           = 10.0.0.2                            >> c:\projects\watt-32\wattcp.cfg
