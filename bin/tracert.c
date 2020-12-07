@@ -402,15 +402,14 @@ W32_CLANG_PACK_WARN_DEF()
 /*
  * Prototypes
  */
-typedef int (*DebugProc)(void *sock, const struct ip *ip,
-                         const char *fname, unsigned line);
+typedef int (*DebugProc) (void *sock, const struct ip *ip,
+                          const char *fname, unsigned line);
 
 W32_DATA DebugProc W32_NAMESPACE (debug_recv);
 
-int         Check_ICMP   (const struct ip *ip, int seq, int *type, int *code);
-const char *GetAddress   (struct in_addr adr);
-
-int trace_this_ttl (int ttl, int seq);
+int         Check_ICMP (const struct ip *ip, int seq, int *type, int *code);
+const char *GetAddress (struct in_addr adr);
+int         trace_this_ttl (int ttl, int seq);
 
 /*
  * Local data
@@ -459,15 +458,18 @@ int    indent;
 
 double min, max, sum = 0.0, sumsq = 0.0;
 
+const char *get_probe_proto (void)
+{
 #if (PROBE_PROTOCOL == IPPROTO_UDP)
-  const char *probe_proto = "UDP";
+  return ("UDP");
 #elif (PROBE_PROTOCOL == IPPROTO_TCP)
-  const char *probe_proto = "TCP";
+  return ("TCP");
 #elif (PROBE_PROTOCOL == IPPROTO_ICMP)
-  const char *probe_proto = "ICMP";
+  return ("ICMP");
 #else
-  const char *probe_proto = "??";
+  return ("??");
 #endif
+}
 
 struct in_addr last_addr;
 
@@ -598,7 +600,7 @@ int main (int argc, char **argv)
   printf ("sizeof(struct in_addr): %d\n", sizeof(struct in_addr));
 #endif
 
-  while ((ch = getopt(argc,argv,"?aAcdDnVvQMf:g:m:p:q:s:w:t:h:")) != EOF)
+  while ((ch = getopt(argc, argv, "?aAcdDnVvQMf:g:m:p:q:s:w:t:h:")) != EOF)
       switch (ch)
       {
         case '?': usage (1);
@@ -725,13 +727,13 @@ int main (int argc, char **argv)
     else data_len = MINPACKET;
   }
 
-  whereto = htonl (lookup_host(hostname,NULL));
+  whereto = htonl (lookup_host(hostname, NULL));
   if (!whereto)
       Exit (dom_strerror(dom_errno));
 
   outpacket = (struct opacket*) &outbuf;
 
-  if (!_arp_resolve(ntohl(whereto),&outpacket->eth.ether_dhost))
+  if (!_arp_resolve(ntohl(whereto), &outpacket->eth.ether_dhost))
      Exit ("No route to host");
 
   if (source)
@@ -747,7 +749,7 @@ int main (int argc, char **argv)
     int i;
     for (i = 0; i < num_lsrr; i++)
     {
-      gw_hosts[i] = htonl (lookup_host(gw_names[i],NULL));
+      gw_hosts[i] = htonl (lookup_host(gw_names[i], NULL));
       if (!gw_hosts[i])
          Exit (dom_strerror(dom_errno));
     }
@@ -774,14 +776,14 @@ int main (int argc, char **argv)
     struct hostent *hp;
     char   name [MAXHOSTNAMELEN];
 
-    printf ("Reverse lookup (%s)..",hostname);
+    printf ("Reverse lookup (%s)..", hostname);
     fflush (stdout);
-    hp = gethostbyaddr ((char*)&whereto,sizeof(whereto),AF_INET);
+    hp = gethostbyaddr ((char*)&whereto, sizeof(whereto), AF_INET);
     if (!hp)
        printf ("<unknown>\n");
     else
     {
-      hostname = strcpy (name,hp->h_name);
+      hostname = strcpy (name, hp->h_name);
       printf ("`%s'\n", hostname);
     }
   }
@@ -789,7 +791,7 @@ int main (int argc, char **argv)
   /*
    *  Finished initialising stuff. Enter main traceroute loop
    */
-  printf ("\r%s traceroute to %s (%s)", probe_proto, hostname, NET_ADDR(whereto));
+  printf ("\r%s traceroute to %s (%s)", get_probe_proto(), hostname, NET_ADDR(whereto));
 
 #if (PROBE_PROTOCOL != IPPROTO_ICMP)
   printf (" dest-port %d", dport);
@@ -810,7 +812,7 @@ int main (int argc, char **argv)
       puts (" Skipping this hop");
       continue;
     }
-    if (!trace_this_ttl(ttl,++seq))
+    if (!trace_this_ttl(ttl, ++seq))
        break;
   }
   return (0);
@@ -1219,8 +1221,7 @@ int Check_ICMP (const struct ip *ip, int seq, int *ret_type, int *ret_code)
        return (0);
 
 #if (PROBE_PROTOCOL == IPPROTO_UDP || PROBE_PROTOCOL == IPPROTO_TCP)
-    sprintf (tbuf, "for %s-ports %u/%u",
-             probe_proto,
+    sprintf (tbuf, "for %s-ports %u/%u", get_probe_proto(),
 #if (PROBE_PROTOCOL == IPPROTO_UDP)
              ntohs(orig_udp->uh_sport), ntohs(orig_udp->uh_dport));
 #else
@@ -1505,7 +1506,7 @@ int trace_this_ttl (int ttl, int seq)
     DWORD  timeout;
     double delta_t;
 
-    if (send_probe(ttl,tos) == 0)
+    if (send_probe(ttl, tos) == 0)
     {
       halt_flag = 1;
       break;
@@ -1550,8 +1551,7 @@ int trace_this_ttl (int ttl, int seq)
   {
     throughput = 100.0 - lost * 100.0 / probe;
     printf ("  (%1.1f ms/%1.1f ms(+-%1.1f ms)/%1.1f ms)",
-             min, sum / (probe - lost),
-             (double)sqrt((double)sumsq)/(probe-lost), max);
+            min, sum / (probe - lost), (double)sqrt((double)sumsq)/(probe-lost), max);
     printf (" %d/%d (%#3.2f%%)", probe - lost, probe, throughput);
   }
 

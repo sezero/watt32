@@ -111,7 +111,7 @@
   #define SYS_ERRLIST sys_errlist
 
 #elif defined(_MSC_VER) && (_MSC_VER <= 800)
-  #error "Quick-C no longer supported"
+  #error "Quick-C is no longer supported"
 
 #elif defined(_MSC_VER)    /* Visual C, assuming Win32 */
   #define SYS_ERRLIST _w32_sys_errlist

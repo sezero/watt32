@@ -54,6 +54,7 @@
        *c = toupper (*c);
     return (str);
   }
+
   #define stricmp(s1, s2)      strcasecmp(s1, s2)
   #define strnicmp(s1, s2, n)  strncasecmp(s1, s2, n)
   #define strlwr(s)            my_strlwr(s)
@@ -80,7 +81,7 @@
   #define SLASH    '\\'
 
 #else /* assume unix: */
-  #define MKDIR(D)  mkdir ((D),0755)
+  #define MKDIR(D)  mkdir ((D), 0755)
   #define SLASH     '/'
 #endif
 

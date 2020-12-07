@@ -54,40 +54,40 @@ void Usage (void)
   exit (1);
 }
 
-void process_makefile (const char *infname, const char *outfname)
+void process_makefile (const char *in_fname, const char *out_fname)
 {
   char  buf[1024], *p;
   FILE *out = stdout;
   FILE *in;
 
   if (verbose)
-     fprintf (stdout, "infname = `%s', outfname = `%s'\n", infname, outfname);
+     fprintf (stdout, "in_fname = `%s', out_fname = `%s'\n", in_fname, out_fname);
 
-  in = fopen (infname, "rt");
+  in = fopen (in_fname, "rt");
   if (!in)
   {
-    fprintf (stderr, "Cannot open `%s'\n", infname);
+    fprintf (stderr, "Cannot open `%s'\n", in_fname);
     Usage();
   }
 
-  if (outfname)
+  if (out_fname)
   {
-    out = fopen (outfname, "wt");
+    out = fopen (out_fname, "wt");
     if (!out)
     {
-      fprintf (stderr, "Cannot open `%s'\n", outfname);
+      fprintf (stderr, "Cannot open `%s'\n", out_fname);
       Usage();
     }
   }
 
-  while (fgets(buf,sizeof(buf)-1,in))
+  while (fgets(buf, sizeof(buf)-1, in))
   {
     p = buf;
 #if 1
     while (*p == ' ')
          p++;
 #endif
-    if (!SLprep_line_ok(p,pt))
+    if (!SLprep_line_ok(p, pt))
        continue;
 
     if (line_cont_ch == '&')   /* WATCOM */
@@ -100,7 +100,7 @@ void process_makefile (const char *infname, const char *outfname)
          p[len-1] = '&';
     }
     if (p > buf)
-      fprintf (out, "%*s", (int)(p-buf), " ");
+       fprintf (out, "%*s", (int)(p-buf), " ");
     fputs (p, out);
   }
   if (out != stdout)
@@ -193,7 +193,7 @@ int main (int argc, char **argv)
   {
     char *arg = strupr (argv[i]);
 
-    if (watcom_endings && !strcmp(arg,"WATCOM"))
+    if (watcom_endings && !strcmp(arg, "WATCOM"))
        line_cont_ch = '&';
     SLdefine_for_ifdef (arg);
   }

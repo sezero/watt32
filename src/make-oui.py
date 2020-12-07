@@ -42,13 +42,12 @@ static size_t num_oui_values = %d;
 /* Comparision routine needed by bsearch() routines.
  * Use signed arithmetic.
  *
- * If MSVC fastcall (option -Gr) is in effect, this function
- * MUST be __cdecl.
+ * This function MUST be 'cdecl' except for OpenWatcom.
  */
-#ifdef _GR
-  #define CALL_CONV __cdecl
-#else
+#ifdef __WATCOMC__
   #define CALL_CONV
+#else
+  #define CALL_CONV  cdecl
 #endif
 
 static int CALL_CONV compare (const struct tok *a, const struct tok *b)
@@ -65,7 +64,6 @@ const char *oui_val_to_name (unsigned oui)
   return (t ? t->s : "Unknown OUI");
 }
 """
-
 
 def write_oui_data (f):
   f.write (OUI_HEAD % (OUI_URL, __file__, time.ctime()))
