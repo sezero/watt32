@@ -1382,6 +1382,14 @@ static void sock_fortify_exit (void)
 }
 #endif /* USE_FORTIFY && USE_DEBUG */
 
+/*
+ *  With MSVC using the 'Univeral CRT', the <errno.h> is in the Windows SDK.
+ * Then there should be no relationship between 'ERRNO_VENDOR_VERSION' and
+ * errno-values.
+ */
+#if defined(_VCRUNTIME_H)
+#undef ERRNO_VENDOR_VERSION
+#endif
 
 #if defined(USE_DEBUG) && defined(ERRNO_VENDOR_VERSION)
 /**
@@ -1494,7 +1502,7 @@ static void check_errno_version (void)
   const char *err_file;
   const char *ven, *ver = vendor_version (&ven, &err_file);
 
-  if (*ver && strcmp(ver,ERRNO_VENDOR_VERSION))
+  if (*ver && strcmp(ver, ERRNO_VENDOR_VERSION))
   {
     (*_printf) ("\nWarning: %%WATT_ROOT%%\\inc\\sys\\%s was created "
                 "with a different compiler\nversion (%s vs %s, %s). "
