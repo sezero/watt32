@@ -225,7 +225,7 @@ define _CPP_FILTER_PY
     last_line = l
 
   if empty_lines > 0:
-    sys.stderr.write ("Removed %d empty lines." % empty_lines)
+    sys.stderr.write ("Removed %d empty lines.\n" % empty_lines)
 
 endef
 
