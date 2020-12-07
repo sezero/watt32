@@ -3215,8 +3215,8 @@ static void print_wlan_networklist (const WLAN_AVAILABLE_NETWORK_LIST *wlist)
     const WLAN_AVAILABLE_NETWORK *bss = (const WLAN_AVAILABLE_NETWORK*) wlist->Network + i;
     int   dBm;
 
-    (*_printf) ("    Profile Name[%lu]:        %" WIDESTR_FMT "\n",
-                (u_long)i, bss->strProfileName[0] ? bss->strProfileName : L"<Not connected>");
+    (*_printf) ("    Profile Name[%lu]:      %s%" WIDESTR_FMT "\n",
+                (u_long)i, i >= 10 ? " " : "  ", bss->strProfileName[0] ? bss->strProfileName : L"<Not connected>");
 
     (*_printf) ("    SSID:                   %s\n", get_ssid(&bss->dot11Ssid));
     (*_printf) ("    BSS Network type:       %s\n",
