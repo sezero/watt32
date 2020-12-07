@@ -25,8 +25,9 @@ endif
 #
 # For the C-preprocessing rule below.
 #
-USE_CLANG_FORMAT ?= 1
-PYTHON           ?= py -3
+USE_ASTYLE_FORMAT ?= 1
+USE_CLANG_FORMAT  ?= 1
+PYTHON            ?= py -3
 
 #
 # Use the 'Winsock-tracing' library:
@@ -294,14 +295,14 @@ NO_W32_CFLAGS = -D_Windows
     $(CC) -c $(COMMON_CFLAGS) $(W32_CFLAGS) $(2) -Fo.\\
     link -out:$(strip $(1)) $(LDFLAGS) $(notdir $(2:.c=.obj)) $(WATT_LIB) user32.lib advapi32.lib > link.tmp
     cat link.tmp >> $(1:.exe=.map)
-    @rm -f $(1:.exe=.lib) $(1:.exe=.exp) link.tmp
+    rm -f $(1:.exe=.lib) $(1:.exe=.exp) link.tmp
   endef
 
   define compile_and_link_ws2
     $(CC) -c $(COMMON_CFLAGS) $(NO_W32_CFLAGS) $(2) -Fo.\\
     link -out:$(strip $(1)) $(LDFLAGS) $(notdir $(2:.c=.obj)) user32.lib advapi32.lib $(WS2_32_LIB) > link.tmp
     cat link.tmp >> $(1:.exe=.map)
-    @rm -f $(1:.exe=.lib) $(1:.exe=.exp) link.tmp
+    rm -f $(1:.exe=.lib) $(1:.exe=.exp) link.tmp
   endef
 
 @elifdef HIGHC
@@ -341,7 +342,7 @@ NO_W32_CFLAGS = -D_Windows
     echo '$(LDFLAGS)'                     > 386link.arg
     $(CC) -c @highc.arg -o $(1:.c=.obj) $(1)
     386link @386link.arg $(1:.c=.obj) -exe $(2)
-    @rm -f highc.arg 386link.arg
+    rm -f highc.arg 386link.arg
   endef
 
 @elifdef WATCOM
@@ -431,12 +432,12 @@ NO_W32_CFLAGS = -D_Windows
 
   define compile_and_link
     $(CC) $(COMMON_CFLAGS) $(W32_CFLAGS) -o $(1) $(2) $(LDFLAGS) -l $(WATT_LIB)
-    @rm -f $(1:.exe=.tds)
+    rm -f $(1:.exe=.tds)
   endef
 
   define compile_and_link_ws2
     $(CC) $(COMMON_CFLAGS) $(NO_W32_CFLAGS) -o $(1) $(2) $(LDFLAGS) -l $(WS2_32_LIB)
-    @rm -f $(1:.exe=.tds)
+    rm -f $(1:.exe=.tds)
   endef
 @endif
 
@@ -687,28 +688,57 @@ udp_test.c: sysdep.h
 udp_srv_w.exe: sysdep.h
 udp_test_w.exe: sysdep.h
 
-
 #
 # Command to generate a nicer C preprocessed output
-# with the help of a generated 'cpp_filter.py' and optionally 'clang-format'.
+# with the help of a generated 'cpp_filter.py' and optionally 'clang-format' or 'astyle'.
 #
-ifeq ($(USE_CLANG_FORMAT),1)
-  C_FORMATER = | clang-format -style=Mozilla -assume-filename=c
+# A 'USE_ASTYLE_FORMAT = 1' needs 'astyle.exe' on PATH and a '%HOME/.astylerc'.
+#
+ifeq ($(USE_ASTYLE_FORMAT),1)
+  ASTYLE_TMP = $(realpath $(TEMP))/astyle-in-file.c
+
+  define C_preprocess
+    $(file  > $(3),/* The preprocessed and AStyle'd output of '$(strip $(2))':)
+    $(file >> $(3), * $(CC) -E)
+    @$(foreach f, $(1), $(file >> $(3), * $(f)))
+    $(file >> $(3), *---------------------------------------------------------)
+    $(file >> $(3), */)
+    $(CC) -E $(1) $(2) | $(PYTHON) cpp_filter.py > $(ASTYLE_TMP)
+    astyle < $(ASTYLE_TMP) >> $(3)
+    @echo
+  endef
+
+else ifeq ($(USE_CLANG_FORMAT),1)
+  define C_preprocess
+    $(file  > $(3),/* The preprocessed and clang-format'd output of '$(strip $(2))':)
+    $(file >> $(3), * $(CC) -E)
+    @$(foreach f, $(1), $(file >> $(3), * $(f)))
+    $(file >> $(3), *---------------------------------------------------------)
+    $(file >> $(3), */)
+    $(CC) -E $(1) $(2) | $(PYTHON) cpp_filter.py | clang-format -style=Mozilla -assume-filename=c >> $(3)
+    @echo
+  endef
+
+else
+  define C_preprocess
+    $(file  > $(3),/* The preprocessed output of '$(strip $(2))':)
+    $(file >> $(3), * $(CC) -E)
+    @$(foreach f, $(1), $(file >> $(3), * $(f)))
+    $(file >> $(3), *---------------------------------------------------------)
+    $(file >> $(3), */)
+    $(CC) -E $(1) $(2) | $(PYTHON) cpp_filter.py >> $(3)
+    @echo
+  endef
 endif
 
-define C_preprocess
-  $(CC) -E $(1) | $(PYTHON) cpp_filter.py $(C_FORMATER) > $(2)
-  @echo
-endef
-
 udp_srv_w.i: udp_srv.c cpp_filter.py FORCE
-	$(call C_preprocess, $(COMMON_CFLAGS) $(NO_W32_CFLAGS) $<, $@)
+	$(call C_preprocess, $(COMMON_CFLAGS) $(NO_W32_CFLAGS), $<, $@)
 
 udp_test_w.i: udp_test.c cpp_filter.py FORCE
-	$(call C_preprocess, $(COMMON_CFLAGS) $(NO_W32_CFLAGS) $<, $@)
+	$(call C_preprocess, $(COMMON_CFLAGS) $(NO_W32_CFLAGS), $<, $@)
 
 %.i: %.c cpp_filter.py FORCE
-	$(call C_preprocess, $(COMMON_CFLAGS) $(W32_CFLAGS) $<, $@)
+	$(call C_preprocess, $(COMMON_CFLAGS) $(W32_CFLAGS), $<, $@)
 
 FORCE:
 
@@ -780,6 +810,6 @@ define CPP_FILTER_PY
     last_line = line
 
   if empty_lines > 0:
-    sys.stderr.write ("Removed %d empty lines." % empty_lines)
+    sys.stderr.write ("Removed %d empty lines.\n" % empty_lines)
 
 endef
