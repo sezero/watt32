@@ -62,19 +62,19 @@ W32_FUNC const char *W32_CALL wattcpBuildCC (void);      /* what is the compiler
 W32_FUNC const char *W32_CALL wattcpBuildCCexe (void);   /* what is the compiler name */
 W32_FUNC const char *W32_CALL wattcpBuildCflags (void);  /* what CFLAGS were used */
 
+#if defined(_M_X64) || defined(_M_IA64) || defined(_M_AMD64) || defined(__x86_64__)
+  #define W32_UNDOC_TCP_SOCKET_SIZE  4520
+  #define W32_UNDOC_UDP_SOCKET_SIZE  1780
+#else
+  #define W32_UNDOC_TCP_SOCKET_SIZE  4470
+  #define W32_UNDOC_UDP_SOCKET_SIZE  1740
+#endif
+
 #if !defined(WATT32_BUILD)
  /*
   * Hide the details of these structures when using Watt-32.
   * In 64-bit mode, these structures are a bit higher.
   */
-  #if defined(_M_X64) || defined(_M_IA64) || defined(_M_AMD64) || defined(__x86_64__)
-    #define W32_UNDOC_TCP_SOCKET_SIZE  4520
-    #define W32_UNDOC_UDP_SOCKET_SIZE  1780
-  #else
-    #define W32_UNDOC_TCP_SOCKET_SIZE  4470
-    #define W32_UNDOC_UDP_SOCKET_SIZE  4470
-  #endif
-
   typedef void sock_type;
   typedef void in_Header;
   typedef void udp_Header;
@@ -97,6 +97,9 @@ W32_FUNC const char *W32_CALL wattcpBuildCflags (void);  /* what CFLAGS were use
   #define tcp_Socket  struct tcp_Socket  /* in wattcp.h */
   #define udp_Socket  struct udp_Socket  /* in wattcp.h */
   #define sock_type   union  sock_type   /* in wattcp.h */
+
+  W32_COMPILE_TIME_ASSERT (tcp_Socket, sizeof(tcp_Socket) <= W32_UNDOC_TCP_SOCKET_SIZE);
+  W32_COMPILE_TIME_ASSERT (udp_Socket, sizeof(udp_Socket) <= W32_UNDOC_UDP_SOCKET_SIZE);
 
 #endif /* WATT32_BUILD */
 
