@@ -1436,13 +1436,14 @@ int init_geoip (const char *argv0)
 
 #ifdef USE_IP2LOCATION
   ip2loc_ctx = IP2Location_open (file1);
+
+  if (ip2loc_ctx && IP2Location_DB_set_shared_memory(ip2loc_ctx->file) == -1)
+     puts ("IP2Location SHM failed. Continuing in file I/O mode.");
+
   if (verbose || debug_mode >= 2)
   {
-    printf ("IP2Location ver: %s, API: %s\n",
-            IP2Location_lib_version_string(),
-            IP2Location_api_version_string());
-
-    printf ("IP2Location Data: %-20s%s (size: %lu MB).\n",
+    printf ("IP2Location ver: %s\n", IP2Location_lib_version_string());
+    printf ("IP2Location bin: %-20s%s (size: %lu MB).\n",
             file1, file1_found ? "" : " Not found", file1_size/(1024*1024));
   }
 #else
