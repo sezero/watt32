@@ -982,8 +982,6 @@ int32_t IP2Location_load_database_into_memory(FILE *file, void *memory, int64_t 
 // Close the corresponding memory, based on the opened option
 int32_t IP2Location_DB_close(FILE *file)
 {
-	struct stat buffer;
-
 	if (lookup_mode == IP2LOCATION_CACHE_MEMORY) {
 		if (memory_pointer != NULL) {
 			free(memory_pointer);
@@ -991,6 +989,8 @@ int32_t IP2Location_DB_close(FILE *file)
 	} else if (lookup_mode == IP2LOCATION_SHARED_MEMORY) {
 		if (memory_pointer != NULL) {
 #ifndef	WIN32
+			struct stat buffer;
+
 			if (fstat(fileno(file), &buffer) == 0) {
 				munmap(memory_pointer, buffer.st_size);
 			}
