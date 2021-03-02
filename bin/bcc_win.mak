@@ -2,7 +2,7 @@
 # Makefile for Waterloo TCP sample applications
 #
 # Borland / CBuilder / WIN32 executables.
-
+#
 .AUTODEPEND
 
 #
@@ -16,6 +16,7 @@ STATIC_LIB = 0
 !if "$(CBUILDER_IS_LLVM_BASED)" == ""
   CC     = $(BCCDIR)\bin\bcc32
   CFLAGS = -WC -v
+  C_INCLUDE_PATH =  # Prevent it picking up any MinGW/gcc headers
 !else
   CC     = $(BCCDIR)\bin\bcc32c
   CFLAGS = -q -lq -Xdriver -Wno-format-security
@@ -46,6 +47,9 @@ gui-test.exe: w32-test.c
 
 con-test.exe: w32-test.c
       $(CC) -o con-test.exe $(CFLAGS) w32-test.c -l $(WATT_LIB)
+
+tracert.exe: tracert.c geoip.c IP2Location.c
+      $(CC) -o tracert.exe $(CFLAGS) -DUSE_IP2LOCATION -DIS_WATT32 -l $(WATT_LIB) tracert.c geoip.c IP2Location.c
 
 .c.exe:
      $(CC) -o $*.exe $(CFLAGS) $*.c -l $(WATT_LIB)
