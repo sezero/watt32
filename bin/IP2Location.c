@@ -20,7 +20,7 @@
 	  #include <sys/mman.h>
 	#endif
 	#if defined(IS_WATT32)
-	  #include <sys/swap.h>
+	  #include <tcp.h>
 	#endif
 #endif
 
