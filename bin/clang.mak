@@ -23,6 +23,14 @@ USE_DEBUG_LIB ?= 0
 #
 USE_STATIC_LIB ?= 0
 
+#
+# Add support for Geo-location in the 'tracert.c' program:
+#   GEOIP_LIB = 2 ==> compile with 'ip2location.c'
+#   GEOIP_LIB = 1 ==> compile with 'geoip.c'
+#   GEOIP_LIB = 0 ==> compile with neither.
+#
+GEOIP_LIB = 2
+
 CC = clang-cl
 
 ifeq ($(USE_DEBUG_LIB),1)
@@ -70,9 +78,17 @@ gui-test.exe: w32-test.c $(WATT_LIB)
 	link $(LDFLAGS) -subsystem:windows -out:$@ w32-test.obj $(WATT_LIB) $(EX_LIBS)
 	@echo
 
+TRACERT_CFLAGS = $(CFLAGS) -DIS_WATT32 # -DPROBE_PROTOCOL=IPPROTO_TCP
+
+ifeq ($(GEOIP_LIB),1)
+  TRACERT_CFLAGS += -DUSE_GEOIP
+else ifeq ($(GEOIP_LIB),2)
+  TRACERT_CFLAGS += -DUSE_IP2LOCATION
+endif
+
 tracert.exe: tracert.c geoip.c $(WATT_LIB)
-	$(CC) -c -DUSE_GEOIP $(CFLAGS) tracert.c geoip.c
-	link $(LDFLAGS) -out:$@ tracert.obj geoip.obj $(WATT_LIB) $(EX_LIBS)
+	$(CC) -c $(TRACERT_CFLAGS) tracert.c geoip.c IP2Location.c
+	link $(LDFLAGS) -out:$@ tracert.obj geoip.obj IP2Location.obj $(WATT_LIB) $(EX_LIBS)
 	@echo
 
 %.exe: %.c $(WATT_LIB)
