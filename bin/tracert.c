@@ -245,6 +245,9 @@
  * 09/19/96: Rewritten to work with Waterloo TCP/IP
  *           Gisle Vanem <gvanem@yahoo.no>
  *
+ * 10/10/2006: Added support for GeoIP to print country information
+ *
+ * 02/03/2021: Added support for IP2Location to print country and city information
  */
 
 #include <stdio.h>
@@ -256,6 +259,7 @@
 #include <time.h>
 #include <limits.h>
 #include <sys/stat.h>
+#include <direct.h>  /* getcwd() */
 
 #ifdef __CYGWIN__
   #include <unistd.h>
@@ -299,11 +303,7 @@
   #pragma GCC diagnostic ignored "-Wstrict-aliasing"
 #endif
 
-#ifdef USE_GEOIP
-  #ifndef __CYGWIN__
-  #include <direct.h>  /* getcwd() */
-  #endif
-
+#if defined(USE_GEOIP)
   #include "geoip.h"
 
   extern void _GeoIP_setup_dbfilename (void);
@@ -311,9 +311,16 @@
   static int get_country_from_ip (struct in_addr addr,
                                   const char **country_code,
                                   const char **country_name);
+  static int get_city_from_ip (struct in_addr ip, char *city, size_t city_size);
 
-  static int get_city_from_ip (struct in_addr ip,
-                               char *city);
+#elif defined(USE_IP2LOCATION)
+  #include "IP2Location.h"
+
+  static int init_geoip (const char *argv0);
+  static int get_country_from_ip (struct in_addr addr,
+                                  const char **country_code,
+                                  const char **country_name);
+  static int get_city_from_ip (struct in_addr ip, char *city, size_t city_size);
 #endif
 
 #ifndef S_ISREG
@@ -474,11 +481,15 @@ const char *get_probe_proto (void)
 struct in_addr last_addr;
 
 /*
- * This needs '-DUSE_GEOIP' to be set in makefile.
+ * This needs '-DUSE_GEOIP' or '-DUSE_IP2LOCATION' to be set in makefile.
  * Look up country/city information using one or both of the databases in the directory
- * of tracert.exe:
+ * of 'tracert.exe' and if '-DUSE_GEOIP' is defined:
  *   debug_mode <= 1 use GeoLiteCity.dat only.
  *   debug_mode >= 2 use GeoLiteCountry.dat + GeoLiteCity.dat
+ *
+ *  and if '-DUSE_IP2LOCATION' is defined:
+ *    use only 'IP2Location.bin' in directory of 'tracert.exe' for both
+ *    country and city information.
  */
 int get_country = 0;
 
@@ -501,7 +512,7 @@ static void Exit (const char *fmt, ...)
   for (i = 0; i < num_lsrr; i++)
      free (gw_names[i]);
 
-#ifdef USE_GEOIP
+#if defined(USE_GEOIP) || defined(USE_IP2LOCATION)
   {
     void W32_CDECL exit_geoip (void);
     exit_geoip();
@@ -518,9 +529,13 @@ void W32_CDECL SigIntHandler (int sig)
 
 void usage (int details)
 {
-#ifdef USE_GEOIP
+#if defined(USE_GEOIP)
   #define C_OPTION "c"
   #define C_HELP   "         -c  Print country-code from GeoIP database.\n"
+
+#elif defined(USE_IP2LOCATION)
+  #define C_OPTION "c"
+  #define C_HELP   "         -c  Print country-code from IP2Location database.\n"
 
 #else
   #define C_OPTION ""
@@ -579,7 +594,7 @@ static void show_version_info (const char *argv0)
   puts (VERSION);
   puts (wattcpVersion());
 
-#ifdef USE_GEOIP
+#if defined(USE_GEOIP) || defined(USE_IP2LOCATION)
   verbose++;
   init_geoip (argv0);
 #else
@@ -600,7 +615,7 @@ int main (int argc, char **argv)
   printf ("sizeof(struct in_addr): %d\n", sizeof(struct in_addr));
 #endif
 
-  while ((ch = getopt(argc, argv, "?aAcdDnVvQMf:g:m:p:q:s:w:t:h:")) != EOF)
+  while ((ch = getopt(argc, argv, "?aA" C_OPTION "dDnVvQMf:g:m:p:q:s:w:t:h:")) != EOF)
       switch (ch)
       {
         case '?': usage (1);
@@ -695,7 +710,7 @@ int main (int argc, char **argv)
         default : usage (0);
       }
 
-#ifdef USE_GEOIP
+#if defined(USE_GEOIP) || defined(USE_IP2LOCATION)
   if (get_country > 0)
      init_geoip (argv[0]);
 #endif
@@ -1301,10 +1316,15 @@ int resolve_ip (DWORD ip, char *result)
 }
 #endif
 
+#if defined(USE_GEOIP) || defined(USE_IP2LOCATION)
 #if defined(USE_GEOIP)
+  static GeoIP *geoip_country_ctx = NULL;
+  static GeoIP *geoip_city_ctx    = NULL;
+#else
+  static IP2Location *geoip_country_ctx = NULL;
+  static IP2Location *geoip_city_ctx    = NULL;
+#endif
 
-static GeoIP *geoip_country_ctx  = NULL;
-static GeoIP *geoip_city_ctx     = NULL;
 static char  *geoip_country_info = NULL;
 static char  *geoip_city_info    = NULL;
 static int    geoip_country_db   = 0;
@@ -1316,13 +1336,19 @@ void W32_CDECL exit_geoip (void)
      free (geoip_city_info);
   if (geoip_country_info)
      free (geoip_country_info);
+
+#ifdef USE_GEOIP
   if (geoip_city_ctx)
      GeoIP_delete (geoip_city_ctx);
   if (geoip_country_ctx)
      GeoIP_delete (geoip_country_ctx);
-
   GeoIP_cleanup();
-  geoip_country_info     = NULL;
+#else
+  if (geoip_country_ctx)
+     IP2Location_close (geoip_country_ctx);
+#endif
+
+  geoip_country_info = NULL;
   geoip_country_ctx = NULL;
   geoip_city_ctx    = NULL;
 }
@@ -1368,6 +1394,7 @@ int init_geoip (const char *argv0)
   if (debug_mode >= 2)
      printf ("home_dir: %s\n", home_dir);
 
+#ifdef USE_GEOIP
   GeoIP_setup_custom_directory (home_dir);
   _GeoIP_setup_dbfilename();
 
@@ -1379,13 +1406,18 @@ int init_geoip (const char *argv0)
   snprintf (file2, sizeof(file2), "%s\\GeoLiteCity.dat", home_dir);
 #endif
 
+#else   /* USE_IP2LOCATION */
+  snprintf (file1, sizeof(file1), "%s\\IP2Location.bin", home_dir);
+  file2[0] = '\0';
+#endif
+
   free (home_dir);
 
   if (verbose || debug_mode >= 2)
   {
     struct stat st;
 
-    if (stat(file1,&st) != 0 || !S_ISREG(st.st_mode))
+    if (stat(file1, &st) != 0 || !S_ISREG(st.st_mode))
     {
       printf ("Cannot open %s\n", file1);
       file1_found = 0;
@@ -1393,7 +1425,7 @@ int init_geoip (const char *argv0)
     else
      file1_size = st.st_size;
 
-    if (stat(file2,&st) != 0 || !S_ISREG(st.st_mode))
+    if (!file2[0] || stat(file2, &st) != 0 || !S_ISREG(st.st_mode))
     {
       printf ("Cannot open %s\n", file2);
       file2_found = 0;
@@ -1402,6 +1434,18 @@ int init_geoip (const char *argv0)
      file2_size = st.st_size;
   }
 
+#ifdef USE_IP2LOCATION
+  geoip_country_ctx = IP2Location_open (file1);
+  // if (verbose || debug_mode >= 2)
+  {
+    printf ("IP2Location ver: %s, API: %s\n",
+            IP2Location_lib_version_string(),
+            IP2Location_api_version_string());
+
+    printf ("IP2Location Data: %-20s%s (size: %lu MB).\n",
+            file1, file1_found ? "" : " Not found", file1_size/(1024*1024));
+  }
+#else
   geoip_country_ctx = GeoIP_open (file1, GEOIP_COUNTRY_EDITION);
   geoip_city_ctx    = GeoIP_open (file2, GEOIP_CITY_EDITION_REV0);
 
@@ -1417,11 +1461,8 @@ int init_geoip (const char *argv0)
 
   geoip_country_db   = GeoIP_database_edition (geoip_country_ctx);
   geoip_country_info = GeoIP_database_info (geoip_country_ctx);
-
-#if 1
-  geoip_city_db   = GeoIP_database_edition (geoip_city_ctx);
-  geoip_city_info = GeoIP_database_info (geoip_city_ctx);
-#endif
+  geoip_city_db      = GeoIP_database_edition (geoip_city_ctx);
+  geoip_city_info    = GeoIP_database_info (geoip_city_ctx);
 
   if (verbose || debug_mode >= 2)
   {
@@ -1433,31 +1474,74 @@ int init_geoip (const char *argv0)
     printf ("GeoIP country-file: %-20s%s (size: %lu MB).\n", file1, file1_found ? "" : " Not found", file1_size/(1024*1024));
     printf ("GeoIP city-file:    %-20s%s (size: %lu MB).\n", file2, file2_found ? "" : " Not found", file2_size/(1024*1024));
   }
+#endif
+
   atexit (exit_geoip);
   return (1);
 }
 
 int get_country_from_ip (struct in_addr ip, const char **country_code, const char **country_name)
 {
-  int id;
-
-  /* If these fails, the above init failed.
-   */
-  if (geoip_country_db != GEOIP_COUNTRY_EDITION || !geoip_country_ctx)
+  if (!geoip_country_ctx)
      return (0);
 
-  id = GeoIP_id_by_ipnum (geoip_country_ctx, ntohl(ip.s_addr));
   if (country_code)
-     *country_code = GeoIP_code_by_id (id);
+     *country_code = "-";
+
   if (country_name)
-     *country_name = GeoIP_name_by_id (id);
+     *country_name = "-";
+
+#if defined(USE_GEOIP)
+  {
+    int id;
+
+    if (geoip_country_db != GEOIP_COUNTRY_EDITION)
+       return (0);
+
+    id = GeoIP_id_by_ipnum (geoip_country_ctx, ntohl(ip.s_addr));
+    if (country_code)
+       *country_code = GeoIP_code_by_id (id);
+    if (country_name)
+       *country_name = GeoIP_name_by_id (id);
+  }
+#else
+  ip_container container;
+
+  if (country_code)
+  {
+    IP2LocationRecord *rec1;
+
+    container.version = 4;
+    container.ipv4 = ntohl (ip.s_addr);
+    rec1 = IP2Location_get_ipv4_record (geoip_country_ctx, COUNTRYSHORT, container);
+    if (rec1)
+       *country_code = rec1->country_short;
+ // IP2Location_free_record (rec1);
+  }
+
+  if (country_name)
+  {
+    IP2LocationRecord *rec2;
+
+    container.version = 4;
+    container.ipv4 = ntohl (ip.s_addr);
+    rec2 = IP2Location_get_ipv4_record (geoip_country_ctx, COUNTRYLONG, container);
+    if (rec2)
+       *country_name = rec2->country_long;
+ // IP2Location_free_record (rec2);
+  }
+#endif
+
   return (1);
 }
 
-int get_city_from_ip (struct in_addr ip, char *city)
+int get_city_from_ip (struct in_addr ip, char *city, size_t city_size)
 {
 #if 0
   GeoIPRecord *rec;
+
+  city[0] = '-';
+  city[1] = '\0';
 
   /* If these fails, the above init failed.
    */
@@ -1470,8 +1554,30 @@ int get_city_from_ip (struct in_addr ip, char *city)
   if (!rec)
      return (0);
 
-  strcpy (city, rec->city);
+  strncpy (city, rec->city, city_size);
   GeoIPRecord_delete (rec);
+  return (1);
+
+#elif defined(USE_IP2LOCATION)
+  /*
+   * IP2Location uses only one context:
+   *   a 'geoip_country_ctx' for both country, region and city-information.
+   */
+  IP2LocationRecord *rec;
+  ip_container       container;
+
+  city[0] = '-';
+  city[1] = '\0';
+
+  container.version = 4;
+  container.ipv4 = ntohl (ip.s_addr);
+  rec = IP2Location_get_ipv4_record (geoip_country_ctx, CITY, container);
+
+  if (!rec)
+     return (0);
+
+  strncpy (city, rec->city, city_size);
+  IP2Location_free_record (rec);
   return (1);
 #else
   (void) ip;
@@ -1479,6 +1585,10 @@ int get_city_from_ip (struct in_addr ip, char *city)
   return (0);
 #endif
 }
+
+#elif defined(USE_GEOIP)
+
+
 #endif  /* USE_GEOIP */
 
 
@@ -1555,14 +1665,13 @@ int trace_this_ttl (int ttl, int seq)
     printf (" %d/%d (%#3.2f%%)", probe - lost, probe, throughput);
   }
 
-#ifdef USE_GEOIP
   if (get_country > 0)
   {
     const char *country_code, *country_name = "?";
     char  city[100] = "?";
 
-    if (get_country_from_ip(last_addr, &country_code, &country_name) &&
-        country_code[0] != '-')
+#if defined(USE_GEOIP)
+    if (get_country_from_ip(last_addr, &country_code, &country_name) && country_code[0] != '-')
     {
       const char *comma = strchr (country_name, ',');
       printf (", CC: %.3s (%.*s)",
@@ -1570,10 +1679,17 @@ int trace_this_ttl (int ttl, int seq)
               country_name);
     }
 
-    if (get_city_from_ip(last_addr, city))
+    if (get_city_from_ip(last_addr, city, sizeof(city)) && city[0] != '-')
        printf (", City: %s", city);
   }
+#elif defined(USE_IP2LOCATION)
+    if (get_country_from_ip(last_addr, NULL, &country_name) && country_name[0] != '-')
+       printf (", %s", country_name);
+
+    if (get_city_from_ip(last_addr, city, sizeof(city)) && city[0] != '-')
+       printf (" / %s", city);
 #endif
+  }
 
   puts ("");
   fflush (stdout);

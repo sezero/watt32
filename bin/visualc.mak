@@ -11,6 +11,14 @@
 STATIC_LIB = 0
 
 #
+# Add support for Geo-location in the 'tracert.c' program:
+#   GEOIP_LIB = 2 ==> compile with 'ip2location.c'
+#   GEOIP_LIB = 1 ==> compile with 'geoip.c'
+#   GEOIP_LIB = 0 ==> compile with neither.
+#
+GEOIP_LIB = 2
+
+#
 # Debug-mode or release-mode libraries are used. Make sure wattcp*.lib
 # was compiled with the same configuration. If Watt-32 libs where built
 # with "-M?d" and "-D_DEBUG" you should set DEBUG_MODE = 1.
@@ -97,11 +105,19 @@ con-test.exe: w32-test.c # tmp.res
       $(CC) -c $(CFLAGS) -Focon-test.obj w32-test.c
       link $(LDFLAGS) -subsystem:console -map:$*.map -out:$*.exe con-test.obj $(LIBS)
 
-TRACERT_CFLAGS = $(CFLAGS) -DUSE_GEOIP # -DPROBE_PROTOCOL=IPPROTO_TCP
+TRACERT_CFLAGS = $(CFLAGS) -DIS_WATT32 # -DPROBE_PROTOCOL=IPPROTO_TCP
+
+!if "$(GEOIP_LIB)" == "1"
+TRACERT_CFLAGS = $(TRACERT_CFLAGS) -DUSE_GEOIP
+!endif
+
+!if "$(GEOIP_LIB)" == "2"
+TRACERT_CFLAGS = $(TRACERT_CFLAGS) -DUSE_IP2LOCATION
+!endif
 
 tracert.exe: tracert.c geoip.c # tmp.res
-      $(CC) -c $(TRACERT_CFLAGS) tracert.c geoip.c
-      link $(LDFLAGS) -verbose -map:$*.map -out:$*.exe tracert.obj geoip.obj $(LIBS) > link.tmp
+      $(CC) -c $(TRACERT_CFLAGS) tracert.c geoip.c ip2location.c
+      link $(LDFLAGS) -verbose -map:$*.map -out:$*.exe tracert.obj geoip.obj IP2Location.obj $(LIBS) > link.tmp
       cat link.tmp >> tracert.map
 
 .c.exe: # tmp.res
