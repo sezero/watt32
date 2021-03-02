@@ -36,6 +36,14 @@ DPMI_STUB = 0
 #
 MAKE_MAP = 0
 
+#
+# Add support for Geo-location in the 'tracert.c' program:
+#   GEOIP_LIB = 2 ==> compile with 'ip2location.c'
+#   GEOIP_LIB = 1 ==> compile with 'geoip.c'
+#   GEOIP_LIB = 0 ==> compile with neither.
+#
+GEOIP_LIB = 2
+
 prefix = /dev/env/DJDIR/net/watt
 
 INC_DIR = ../inc
@@ -94,7 +102,31 @@ endif
 dxe_tst.exe: dxe_tst.c ../lib/dxe/libwatt.a
 	$(CC) $(CFLAGS) $*.c ../lib/dxe/libwatt.a -o $*.exe
 
-tracert.exe: EXTRAS += -DUSE_GEOIP geoip.c
+tracert_obj = $(addprefix $(OBJ_DIR)/, tracert.o geoip.o IP2Location.o tiny.o)
+
+tracert_CFLAGS = -DIS_WATT32 # -DPROBE_PROTOCOL=IPPROTO_TCP
+
+ifeq ($(GEOIP_LIB),1)
+  tracert_CFLAGS += -DUSE_GEOIP
+else ifeq ($(GEOIP_LIB),2)
+  tracert_CFLAGS += -DUSE_IP2LOCATION
+endif
+
+$(tracert_obj): CFLAGS += $(tracert_CFLAGS)
+
+$(OBJ_DIR)/%.o: %.c
+	$(CC) -c $(CFLAGS) -o $@ $<
+
+tracert.exe: $(tracert_obj)
+ifeq ($(DPMI_STUB),1)
+	$(call link_EXE, $(OBJ_DIR)/tracert.exe, $^, tracert.map)
+	$(call bin_cat_files, $(DJDIR)/bin/cwsdstub.exe, $(OBJ_DIR)/tracert.exe, tracert.exe)
+else
+	$(call link_EXE, $@, $^, tracert.map)
+endif
+	rm -f $(OBJ_DIR)/geoip.o $(OBJ_DIR)/IP2Location.o
+	@echo
+
 
 %.exe: %.c ../lib/libwatt.a
 ifeq ($(PROFILE),1)

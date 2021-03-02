@@ -19,15 +19,13 @@ extern "C" {
 #include <stdlib.h>
 #endif
 
-#ifdef WIN32
+#ifdef _WIN32
 #define int16_t short
 #define int32_t int
 #define int64_t long long int
-#endif
-
-#ifndef WIN32
-#include <stdint.h>
 #else
+#include <stdint.h>
+#endif
 
 #ifndef uint8_t
 #define uint8_t unsigned char
@@ -46,11 +44,10 @@ extern "C" {
 #endif
 
 #ifndef uint32_t
-#ifndef WIN32
+#ifndef _WIN32
 #define uint32_t int
 #else
 #define uint32_t unsigned int
-#endif
 #endif
 #endif
 
@@ -165,7 +162,16 @@ typedef struct ip_container {
 
 /* Public functions */
 IP2Location *IP2Location_open(char *bin);
-int IP2Location_open_mem(IP2Location *handler, enum IP2Location_lookup_mode);
+
+#if !defined(MSDOS)
+int32_t IP2Location_open_mem(IP2Location *handler, enum IP2Location_lookup_mode);
+void    IP2Location_delete_shm();
+void    IP2Location_DB_del_shm();
+int32_t IP2Location_set_lookup_mode(IP2Location *handler, enum IP2Location_lookup_mode);
+int32_t IP2Location_set_memory_cache(FILE* file);
+int32_t IP2Location_set_shared_memory(FILE* file);
+#endif
+
 uint32_t IP2Location_close(IP2Location *handler);
 IP2LocationRecord *IP2Location_get_country_short(IP2Location *handler, char *ip);
 IP2LocationRecord *IP2Location_get_country_long(IP2Location *handler, char *ip);
@@ -192,7 +198,6 @@ IP2LocationRecord *IP2Location_get_ipv4_record(IP2Location *handler, uint32_t mo
 IP2LocationRecord *IP2Location_get_ipv6_record(IP2Location *handler, uint32_t mode, ip_container parsed_ip);
 
 void IP2Location_free_record(IP2LocationRecord *record);
-void IP2Location_delete_shm();
 unsigned long int IP2Location_api_version_num(void);
 char *IP2Location_api_version_string(void);
 char *IP2Location_lib_version_string(void);
@@ -206,7 +211,6 @@ int32_t IP2Location_DB_set_file_io();
 int32_t IP2Location_DB_set_memory_cache(FILE *file);
 int32_t IP2Location_DB_set_shared_memory(FILE *file);
 int32_t IP2Location_DB_close(FILE *file);
-void IP2Location_DB_del_shm();
 
 unsigned long int IP2Location_api_version_number(void);
 void IP2Location_clear_memory();
@@ -215,9 +219,6 @@ void IP2Location_delete_shared_memory();
 float IP2Location_read_float(FILE* handle, uint32_t position);
 struct in6_addr IP2Location_read_ipv6_address(FILE* handle, uint32_t position);
 char *IP2Location_read_string(FILE* handle, uint32_t position);
-int IP2Location_set_lookup_mode(IP2Location *handler, enum IP2Location_lookup_mode);
-int32_t IP2Location_set_memory_cache(FILE* file);
-int32_t IP2Location_set_shared_memory(FILE* file);
 
 #ifdef __cplusplus
 }

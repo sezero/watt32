@@ -6,7 +6,7 @@
  * modify it under the terms of the MIT license
  */
 
-#if defined(WIN32) && !defined(IS_WATT32)
+#if defined(_WIN32) && !defined(IS_WATT32)
 	#include <winsock2.h>
 	#include <ws2tcpip.h>
 #else
@@ -77,12 +77,10 @@ static int32_t IP2Location_load_database_into_memory(FILE *file, void *memory_po
 static IP2LocationRecord *IP2Location_new_record();
 static IP2LocationRecord *IP2Location_get_record(IP2Location *handler, char *ip, uint32_t mode);
 
-#ifndef WIN32
-static int32_t shm_fd;
-#else
-#ifdef WIN32
-HANDLE shm_fd;
-#endif
+#if !defined(_WIN32) && !defined(MSDOS)
+  static int32_t shm_fd;
+#elif defined(_WIN32)
+  HANDLE shm_fd;
 #endif
 
 // Open IP2Location BIN database file
@@ -128,6 +126,8 @@ static int IP2Location_initialize(IP2Location *handler)
 	return 0;
 }
 
+#if !defined(MSDOS)
+
 // This function to set the DB access type.
 int32_t IP2Location_open_mem(IP2Location *handler, enum IP2Location_lookup_mode mode)
 {
@@ -161,19 +161,6 @@ int32_t IP2Location_set_lookup_mode(IP2Location *handler, enum IP2Location_looku
 	return IP2Location_open_mem(handler, mode);
 }
 
-// Close the IP2Location database file
-uint32_t IP2Location_close(IP2Location *handler)
-{
-	is_in_memory = 0;
-
-	if (handler != NULL) {
-		IP2Location_DB_close(handler->file);
-		free(handler);
-	}
-
-	return 0;
-}
-
 // Delete IP2Location shared memory if its present
 void IP2Location_delete_shm()
 {
@@ -190,6 +177,20 @@ void IP2Location_clear_memory()
 void IP2Location_delete_shared_memory()
 {
 	IP2Location_DB_del_shm();
+}
+#endif  /* MSDOS */
+
+// Close the IP2Location database file
+uint32_t IP2Location_close(IP2Location *handler)
+{
+	is_in_memory = 0;
+
+	if (handler != NULL) {
+		IP2Location_DB_close(handler->file);
+		free(handler);
+	}
+
+	return 0;
 }
 
 // Compare IPv6 address
@@ -852,7 +853,7 @@ int32_t IP2Location_set_memory_cache(FILE *file)
 }
 
 // Set to use shared memory
-#ifndef WIN32
+#if !defined(_WIN32) && !defined(MSDOS)
 int32_t IP2Location_DB_set_shared_memory(FILE *file)
 {
 	struct stat buffer;
@@ -917,8 +918,8 @@ int32_t IP2Location_DB_set_shared_memory(FILE *file)
 
 	return 0;
 }
-#else
-#ifdef WIN32
+
+#elif defined(_WIN32)
 int32_t IP2Location_DB_set_shared_memory(FILE *file)
 {
 	struct stat buffer;
@@ -958,7 +959,14 @@ int32_t IP2Location_DB_set_shared_memory(FILE *file)
 
 	return 0;
 }
-#endif
+
+#else /* MSDOS etc. */
+int32_t IP2Location_DB_set_shared_memory(FILE *file)
+{
+	lookup_mode = IP2LOCATION_FILE_IO;
+	(void) file;
+	return -1;
+}
 #endif
 
 // Alias to IP2Location_DB_set_shared_memory()
@@ -988,7 +996,7 @@ int32_t IP2Location_DB_close(FILE *file)
 		}
 	} else if (lookup_mode == IP2LOCATION_SHARED_MEMORY) {
 		if (memory_pointer != NULL) {
-#ifndef	WIN32
+#if !defined(_WIN32) && !defined(MSDOS)
 			struct stat buffer;
 
 			if (fstat(fileno(file), &buffer) == 0) {
@@ -996,11 +1004,9 @@ int32_t IP2Location_DB_close(FILE *file)
 			}
 
 			close(shm_fd);
-#else
-#ifdef WIN32
+#elif defined(_WIN32)
 			UnmapViewOfFile(memory_pointer);
 			CloseHandle(shm_fd);
-#endif
 #endif
 		}
 	}
@@ -1020,18 +1026,16 @@ int32_t IP2Location_close_memory(FILE *file)
 	return IP2Location_DB_close(file);
 }
 
-#ifndef	WIN32
 // Remove shared memory object
+#if defined(_WIN32) || defined(MSDOS)
+void IP2Location_DB_del_shm()
+{
+}
+#else
 void IP2Location_DB_del_shm()
 {
 	shm_unlink(IP2LOCATION_SHM);
 }
-#else
-#ifdef WIN32
-void IP2Location_DB_del_shm()
-{
-}
-#endif
 #endif
 
 struct in6_addr IP2Location_readIPv6Address(FILE *handle, uint32_t position)

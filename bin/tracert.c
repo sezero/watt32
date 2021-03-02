@@ -1437,8 +1437,10 @@ int init_geoip (const char *argv0)
 #ifdef USE_IP2LOCATION
   ip2loc_ctx = IP2Location_open (file1);
 
+#ifndef MSDOS
   if (ip2loc_ctx && IP2Location_DB_set_shared_memory(ip2loc_ctx->file) == -1)
      puts ("IP2Location SHM failed. Continuing in file I/O mode.");
+#endif
 
   if (verbose || debug_mode >= 2)
   {
@@ -1478,6 +1480,9 @@ int init_geoip (const char *argv0)
 #endif
 
   atexit (exit_geoip);
+
+  (void) file2_found;
+  (void) file2_size;
   return (1);
 }
 
@@ -1586,6 +1591,7 @@ int get_city_from_ip (struct in_addr ip, char *city, size_t city_size)
 #else
   (void) ip;
   (void) city;
+  (void) city_size;
   return (0);
 #endif
 }
