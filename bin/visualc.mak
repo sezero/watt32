@@ -117,7 +117,7 @@ TRACERT_CFLAGS = $(TRACERT_CFLAGS) -DUSE_GEOIP
 TRACERT_CFLAGS = $(TRACERT_CFLAGS) -DUSE_IP2LOCATION
 !endif
 
-tracert.exe: tracert.c geoip.c # tmp.res
+tracert.exe: tracert.c geoip.c geoip.h ip2location.c ip2location.h # tmp.res
       $(CC) -c $(TRACERT_CFLAGS) tracert.c geoip.c ip2location.c
       link $(LDFLAGS) -verbose -map:$*.map -out:$*.exe tracert.obj geoip.obj IP2Location.obj $(LIBS) > link.tmp
       cat link.tmp >> tracert.map

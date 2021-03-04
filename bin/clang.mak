@@ -86,7 +86,7 @@ else ifeq ($(GEOIP_LIB),2)
   TRACERT_CFLAGS += -DUSE_IP2LOCATION
 endif
 
-tracert.exe: tracert.c geoip.c $(WATT_LIB)
+tracert.exe: tracert.c geoip.c IP2Location.c $(WATT_LIB)
 	$(CC) -c $(TRACERT_CFLAGS) tracert.c geoip.c IP2Location.c
 	link $(LDFLAGS) -out:$@ tracert.obj geoip.obj IP2Location.obj $(WATT_LIB) $(EX_LIBS)
 	@echo
@@ -138,6 +138,6 @@ wol.exe:      wol.c
 eth-wake.exe: eth-wake.c
 ident.exe:    ident.c
 country.exe:  country.c
-tracert.exe:  tracert.c geoip.c
+tracert.exe:  tracert.c geoip.c geoip.h IP2Location.c IP2Location.h
 wol.exe:      wol.c
 

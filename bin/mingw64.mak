@@ -63,6 +63,8 @@ ifeq ($(MAKE_MAP),1)
   MAPFILE = -Wl,--print-map,--sort-common,--cref > $(@:.exe=.map)
 endif
 
+CFLAGS += -DIS_WATT32 -DUSE_IP2LOCATION  # Or '-DUSE_GEOIP'
+
 PROGS = ping.exe     popdump.exe  rexec.exe    tcpinfo.exe  cookie.exe   \
         daytime.exe  dayserv.exe  finger.exe   host.exe     lpq.exe      \
         lpr.exe      ntime.exe    ph.exe       stat.exe     htget.exe    \
@@ -72,20 +74,28 @@ PROGS = ping.exe     popdump.exe  rexec.exe    tcpinfo.exe  cookie.exe   \
 all: $(PROGS)
 	@echo 'MinGW64-w64 binaries done. $$(CPU)=$(CPU).'
 
-tracert.exe: EXTRAS += geoip.c -DUSE_GEOIP # -DPROBE_PROTOCOL=IPPROTO_TCP
-
 con-test.exe: w32-test.c $(WATT_LIB)
-	$(CC) $(CFLAGS) $(LDFLAGS) -o con-test.exe $^ $(EXTRAS) $(MAPFILE)
+	$(CC) $(CFLAGS) $(LDFLAGS) -o con-test.exe $^ $(MAPFILE)
 	@echo
 
 gui-test.exe: w32-test.c $(WATT_LIB)
-	$(CC) -DIS_GUI=1 $(CFLAGS) $(LDFLAGS) -Wl,--subsystem,windows \
-	      -o $@ $^ $(EXTRAS) $(MAPFILE)
+	$(CC) -DIS_GUI=1 $(CFLAGS) $(LDFLAGS) -Wl,--subsystem,windows -o $@ $^ $(MAPFILE)
+	@echo
+
+tracert.exe: tracert.c geoip.c IP2Location.c $(WATT_LIB)
+	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ tracert.c geoip.c IP2Location.c $(WATT_LIB) $(MAPFILE)
 	@echo
 
 %.exe: %.c $(WATT_LIB)
-	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ $(EXTRAS) $^ $(MAPFILE)
+	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ $^ $(MAPFILE)
 	@echo
+
+%.i: %.c FORCE
+	@echo "Preprocessed output of $<" | tee $@
+	$(CC) -E $(CFLAGS) $< | astyle >> $@
+	@echo
+
+FORCE:
 
 clean:
 	rm -f $(PROGS)
@@ -131,5 +141,5 @@ wol.exe:      wol.c
 eth-wake.exe: eth-wake.c
 ident.exe:    ident.c
 country.exe:  country.c
-tracert.exe:  tracert.c # geoip.c
+tracert.exe:  tracert.c geoip.c geoip.h IP2Location.c IP2Location.h
 

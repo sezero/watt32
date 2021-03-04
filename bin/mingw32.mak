@@ -1,6 +1,6 @@
 #
 #  GNU Makefile for some Waterloo TCP sample applications
-#  Gisle Vanem 2004
+#  Gisle Vanem 2004 - 2020.
 #
 #  Target:
 #    GNU C 3+ (MinGW)
@@ -30,6 +30,8 @@ else
   WATT_LIB = ../lib/libwatt32.dll.a
 endif
 
+CFLAGS += -DIS_WATT32 -DUSE_GEOIP  # Or '-DUSE_IP2LOCATION'
+
 ifeq ($(MAKE_MAP),1)
   MAPFILE = -Wl,--print-map,--sort-common,--cref > $*.map
 endif
@@ -44,17 +46,19 @@ all: $(PROGS)
 	@echo 'MinGW32 binaries done.'
 
 con-test.exe: w32-test.c $(WATT_LIB)
-	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ $^ $(EXTRAS) $(MAPFILE)
+	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ $^ $(MAPFILE)
 
 gui-test.exe: w32-test.c $(WATT_LIB)
-	$(CC) -DIS_GUI=1 $(CFLAGS) $(LDFLAGS) -Wl,--subsystem,windows \
-	      -o $@ $^ $(EXTRAS) $(MAPFILE)
+	$(CC) -DIS_GUI=1 $(CFLAGS) $(LDFLAGS) -Wl,--subsystem,windows -o $@ $^ $(MAPFILE)
+	@echo
 
-tracert.exe: tracert.c geoip.c $(WATT_LIB)
-	$(CC) -DUSE_GEOIP $(CFLAGS) $(LDFLAGS) -o $*.exe $(EXTRAS) $^ $(MAPFILE)
+tracert.exe: tracert.c geoip.c IP2Location.c $(WATT_LIB)
+	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ tracert.c geoip.c IP2Location.c $(WATT_LIB) $(MAPFILE)
+	@echo
 
 %.exe: %.c $(WATT_LIB)
-	$(CC) $(CFLAGS) $(LDFLAGS) -o $*.exe $(EXTRAS) $^ $(MAPFILE)
+	$(CC) $(CFLAGS) $(LDFLAGS) -o $*.exe $^ $(MAPFILE)
+	@echo
 
 clean:
 	rm -f $(PROGS)
@@ -103,5 +107,5 @@ wol.exe:      wol.c
 eth-wake.exe: eth-wake.c
 ident.exe:    ident.c
 country.exe:  country.c
-tracert.exe:  tracert.c geoip.c
+tracert.exe:  tracert.c geoip.c geoip.h IP2Location.c IP2Location.h
 
