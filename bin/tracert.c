@@ -1564,7 +1564,7 @@ int get_city_from_ip (struct in_addr ip, char *city, size_t city_size)
   if (!rec)
      return (0);
 
-  strncpy (city, rec->city, city_size);
+  strncpy (city, rec->city, city_size-1);
   GeoIPRecord_delete (rec);
   return (1);
 
@@ -1586,7 +1586,7 @@ int get_city_from_ip (struct in_addr ip, char *city, size_t city_size)
   if (!rec)
      return (0);
 
-  strncpy (city, rec->city, city_size);
+  strncpy (city, rec->city, city_size-1);
   IP2Location_free_record (rec);
   return (1);
 #else
