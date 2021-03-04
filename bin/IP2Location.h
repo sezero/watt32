@@ -51,10 +51,10 @@ extern "C" {
 #endif
 #endif
 
-#define API_VERSION			8.2.0
+#define API_VERSION			8.3.1
 #define API_VERSION_MAJOR	8
-#define API_VERSION_MINOR	2
-#define API_VERSION_RELEASE	0
+#define API_VERSION_MINOR	3
+#define API_VERSION_RELEASE	1
 #define API_VERSION_NUMERIC (((API_VERSION_MAJOR * 100) + API_VERSION_MINOR) * 100 + API_VERSION_RELEASE)
 
 #define MAX_IPV4_RANGE	4294967295U
@@ -92,7 +92,7 @@ extern "C" {
 #define INVALID_IP_ADDRESS "INVALID IP ADDRESS"
 #define IPV6_ADDRESS_MISSING_IN_IPV4_BIN "IPV6 ADDRESS MISSING IN IPV4 BIN"
 #define NOT_SUPPORTED "This parameter is unavailable for selected data file. Please upgrade the data file."
-#define IP2LOCATION_SHM "/IP2location_Shm"
+#define IP2LOCATION_SHM "IP2location_Shm"
 #define MAP_ADDR 4194500608
 
 enum IP2Location_lookup_mode {
@@ -164,12 +164,12 @@ typedef struct ip_container {
 IP2Location *IP2Location_open(char *bin);
 
 #if !defined(MSDOS)
-int32_t IP2Location_open_mem(IP2Location *handler, enum IP2Location_lookup_mode);
-void    IP2Location_delete_shm();
-void    IP2Location_DB_del_shm();
-int32_t IP2Location_set_lookup_mode(IP2Location *handler, enum IP2Location_lookup_mode);
-int32_t IP2Location_set_memory_cache(FILE* file);
-int32_t IP2Location_set_shared_memory(FILE* file);
+  int32_t IP2Location_open_mem(IP2Location *handler, enum IP2Location_lookup_mode);
+  void    IP2Location_delete_shm();
+  void    IP2Location_DB_del_shm();
+  int32_t IP2Location_set_lookup_mode(IP2Location *handler, enum IP2Location_lookup_mode);
+  int32_t IP2Location_set_memory_cache(FILE* file);
+  int32_t IP2Location_set_shared_memory(FILE* file);
 #endif
 
 uint32_t IP2Location_close(IP2Location *handler);
@@ -201,6 +201,7 @@ void IP2Location_free_record(IP2LocationRecord *record);
 unsigned long int IP2Location_api_version_num(void);
 char *IP2Location_api_version_string(void);
 char *IP2Location_lib_version_string(void);
+char *IP2Location_bin_version(IP2Location *handler);
 
 struct in6_addr IP2Location_readIPv6Address(FILE *handle, uint32_t position);
 uint32_t IP2Location_read32(FILE *handle, uint32_t position);

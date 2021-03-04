@@ -40,8 +40,9 @@
 	#define _STR2(x) #x
 	#define _STR(x) _STR2(x)
 	#define PACKAGE_VERSION _STR(API_VERSION)
+	#include <tchar.h>
 #else
-	#define PACKAGE_VERSION "8.2.0"
+	#define PACKAGE_VERSION "8.3.1"
 #endif
 
 uint8_t COUNTRY_POSITION[25]			= {0,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2};
@@ -821,6 +822,20 @@ char *IP2Location_lib_version_string(void)
 	return (PACKAGE_VERSION);
 }
 
+// Get BIN database version
+char *IP2Location_bin_version(IP2Location *handler)
+{
+	if (handler == NULL) {
+		return NULL;
+	}
+
+	static char version[64];
+
+	sprintf(version, "%d-%d-%d", handler->database_year + 2000, handler->database_month, handler->database_day);
+
+	return (version);
+}
+
 // Set to use memory caching
 int32_t IP2Location_DB_set_memory_cache(FILE *file)
 {
@@ -920,6 +935,20 @@ int32_t IP2Location_DB_set_shared_memory(FILE *file)
 }
 
 #elif defined(_WIN32)
+
+// Return a name for the shared-memory object
+// For Windows, this depends on whether 'UNICODE' is defined
+// (hence the use of 'TCHAR').
+static const TCHAR *get_shm_name(void) {
+	static TCHAR name[64] = _T("");
+
+	if (!name[0]) {
+		_sntprintf(name, sizeof(name)/sizeof(name[0]), _T("%s_%lu"),
+                   _T(IP2LOCATION_SHM), GetProcessId(NULL));
+	}
+	return name;
+}
+
 int32_t IP2Location_DB_set_shared_memory(FILE *file)
 {
 	struct stat buffer;
@@ -932,7 +961,7 @@ int32_t IP2Location_DB_set_shared_memory(FILE *file)
 		return -1;
 	}
 
-	shm_fd = CreateFileMapping(INVALID_HANDLE_VALUE, NULL, PAGE_READWRITE, 0, buffer.st_size + 1, TEXT(IP2LOCATION_SHM));
+	shm_fd = CreateFileMapping(INVALID_HANDLE_VALUE, NULL, PAGE_READWRITE, 0, buffer.st_size + 1, get_shm_name());
 
 	if (shm_fd == NULL) {
 		lookup_mode = IP2LOCATION_FILE_IO;
