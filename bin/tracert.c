@@ -1444,8 +1444,9 @@ int init_geoip (const char *argv0)
 
   if (verbose || debug_mode >= 2)
   {
-    printf ("IP2Location ver: %s\n", IP2Location_lib_version_string());
-    printf ("IP2Location bin: %-20s%s (size: %lu MB).\n",
+    printf ("IP2Location ver:  %s\n", IP2Location_lib_version_string());
+    printf ("IP2Location bin:  %s\n", ip2loc_ctx ? IP2Location_bin_version(ip2loc_ctx) : "<none>");
+    printf ("IP2Location file: %-20s%s (size: %lu MB).\n",
             file1, file1_found ? "" : " Not found", file1_size/(1024*1024));
   }
 #else
