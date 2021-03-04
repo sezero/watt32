@@ -350,8 +350,8 @@
  * A simple compile-time assert() macro.
  * Use it like 'W32_COMPILE_TIME_ASSERT (some_typedef, sizeof(some_typedef) == 10);'
  *
- * If 'x == FALSE', it expands to 'typedef int w32_compile_time_assert_some_typedef [-1];'
- * which should not compile.
+ * If 'sizeof(some_typedef) != 10' (i.e. 'x == 0'), it expands to
+ * 'typedef int w32_compile_time_assert_some_typedef [-1];' which will not compile.
  */
 #define W32_COMPILE_TIME_ASSERT(name, x) \
         typedef int w32_compile_time_assert_ ## name [(x) * 2 - 1]
