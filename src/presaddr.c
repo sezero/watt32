@@ -30,6 +30,9 @@ static const char *inet_ntop6 (const u_char *src, char *dst, size_t size);
 static int         inet_pton6 (const char *src, u_char *dst);
 #endif
 
+#undef inet_ntop  /* provide the un-prefixed versions too */
+#undef inet_pton
+
 /**
  * Convert a network format address to presentation format.
  *

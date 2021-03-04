@@ -125,6 +125,8 @@
 #define sock_stats                  W32_NAMESPACE (sock_stats)
 #define _inet_ntoa                  W32_NAMESPACE (_inet_ntoa)
 #define _inet_addr                  W32_NAMESPACE (_inet_addr)
+#define inet_ntop                   W32_NAMESPACE (inet_ntop)
+#define inet_pton                   W32_NAMESPACE (inet_pton)
 #define defaultdomain               W32_NAMESPACE (defaultdomain)
 #define dns_do_idna                 W32_NAMESPACE (dns_do_idna)
 #define dns_do_ipv6                 W32_NAMESPACE (dns_do_ipv6)
@@ -268,7 +270,7 @@
   #define delay  W32_NAMESPACE (delay)
 #endif
 
-#if !defined(__CYGWIN__) && !defined(__DJGPP__)
+#if !defined(__CYGWIN__) && !defined(__MINGW32__) && !defined(__DJGPP__)
   #define gettimeofday  W32_NAMESPACE (gettimeofday)
 #endif
 
