@@ -13,7 +13,7 @@
 #define multihomes         W32_NAMESPACE (multihomes)
 #define print_hook         W32_NAMESPACE (print_hook)
 #define usr_post_init      W32_NAMESPACE (usr_post_init)
-#define cookies            W32_NAMESPACE (cookies)
+#define Cookies            W32_NAMESPACE (Cookies)
 #define last_cookie        W32_NAMESPACE (last_cookie)
 #define ctrace_on          W32_NAMESPACE (ctrace_on)
 #define dynamic_host       W32_NAMESPACE (dynamic_host)
@@ -28,7 +28,7 @@ extern WORD multihomes;
 
 extern void (W32_CALL *print_hook)   (const char *);
 
-extern DWORD cookies [MAX_COOKIES];
+extern DWORD Cookies [MAX_COOKIES];
 extern WORD  last_cookie;
 extern int   ctrace_on;
 extern BOOL  dynamic_host;

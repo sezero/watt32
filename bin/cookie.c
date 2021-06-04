@@ -34,7 +34,7 @@ int get_cookie (DWORD host, int all_jars)
     }
     for (i = 0; i < last_cookie; i++)
     {
-      status = udp_open (s, 0, cookies[i], COOKIE_PORT, NULL);
+      status = udp_open (s, 0, Cookies[i], COOKIE_PORT, NULL);
       if (status && !all_jars)
          break;
     }

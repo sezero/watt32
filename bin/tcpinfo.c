@@ -384,7 +384,7 @@ int MS_CDECL main (int argc, char **argv)
   {
     if (i)
        printf ("                 : ");
-    printf ("%s\n", _inet_ntoa(NULL, cookies[i]));
+    printf ("%s\n", _inet_ntoa(NULL, Cookies[i]));
   }
   puts("");
 #endif

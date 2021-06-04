@@ -272,7 +272,7 @@ W32_DATA int       block_udp;
 W32_DATA int       block_icmp;
 W32_DATA int       block_ip;
 W32_DATA WORD      last_cookie;
-W32_DATA DWORD     cookies [MAX_COOKIES];
+W32_DATA DWORD     Cookies [MAX_COOKIES];
 
 W32_DATA BOOL     _watt_do_exit;
 W32_DATA BOOL      survive_eth;

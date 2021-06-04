@@ -191,7 +191,7 @@ static void bootp_parse (const struct bootp *bootp_in, int max)
            for (i = 0; i < *(p+1) ; i += sizeof(ip))
            {
              ip = intel (*(DWORD*)(p+2+i));
-             _add_server (&last_cookie, cookies, DIM(cookies), ip);
+             _add_server (&last_cookie, Cookies, DIM(Cookies), ip);
            }
            break;
 

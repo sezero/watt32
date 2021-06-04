@@ -71,7 +71,7 @@ int  stkwalk_details   = 1;    /* Win: simple (1) or detailed(2) stack-trace. */
 int  fortify_fail_rate = 0;    /* The fail-rate for Fortify mallocer. */
                                /* Effective only with USE_FORTIFY. */
 
-DWORD cookies [MAX_COOKIES];
+DWORD Cookies [MAX_COOKIES];
 WORD  last_cookie = 0;
 
 static void          deprecated_key    (const char *old_key, const char *new_key);
@@ -526,7 +526,7 @@ static void set_cookie (const char *value)
 {
   DWORD ip = resolve (value);
 
-  _add_server (&last_cookie, cookies, DIM(cookies), ip);
+  _add_server (&last_cookie, Cookies, DIM(Cookies), ip);
 }
 
 /**
