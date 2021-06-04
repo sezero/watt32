@@ -220,6 +220,9 @@ DEF_FUNC (DWORD, GetIpForwardTable2,
           (__in  WORD                   family,
            __out MIB_IPFORWARD_TABLE2 **table));
 
+DEF_FUNC (BOOL, GetIpForwardEntry2,
+          (__inout MIB_IPFORWARD_ROW2 *row));
+
 DEF_FUNC (DWORD, ConvertInterfaceLuidToIndex,
           (__in  const NET_LUID    *luid,
            __out       NET_IFINDEX *index));
@@ -396,6 +399,7 @@ static struct LoadTable dyn_funcs2[] = {
                         ADD_VALUE ("iphlpapi.dll", GetBestRoute),
                         ADD_VALUE ("iphlpapi.dll", GetBestRoute2),
                         ADD_VALUE ("iphlpapi.dll", GetIpForwardTable2),
+                        ADD_VALUE ("iphlpapi.dll", GetIpForwardEntry2),
                         ADD_VALUE ("iphlpapi.dll", ConvertInterfaceLuidToIndex),
                         ADD_VALUE ("iphlpapi.dll", ConvertInterfaceLuidToNameA),
                         ADD_VALUE ("iphlpapi.dll", GetIpNetworkConnectionBandwidthEstimates),
