@@ -131,6 +131,14 @@
 #if !defined(WIN32) && !defined(_WIN32)  /* <winerror.h> value is okay */
 #define NOERROR        0               /* no error */
 #endif
+
+/* A fix for the 'c-ares' resolver library that has a:
+ *   #ifndef NOERROR
+ *   #define NOERROR ns_r_noerror
+ *   #endif
+ */
+#define ns_r_noerror   0
+
 #define FORMERR        1               /* format error */
 #define SERVFAIL       2               /* server failure */
 #define NXDOMAIN       3               /* non existent domain */
