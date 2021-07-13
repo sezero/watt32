@@ -405,6 +405,8 @@ extern char  DATA_DECL x86_vendor_id[13];
  * Use the '__rdtsc()' from <intrin.h>.
  */
 #elif defined(_MSC_VER) && defined(_M_X64)
+  #include <intrin.h>
+
   #pragma intrinsic   (__rdtsc)
   #undef  get_rdtsc
   #define get_rdtsc() __rdtsc()
