@@ -492,7 +492,7 @@ void get_cache_info (void)
 
 void print_misc_regs (void)
 {
-#if (DOSX)
+#if (DOSX) && !defined(_WIN64)
   WORD cs = MY_CS();
   WORD ds = MY_DS();
   WORD es = MY_ES();

@@ -125,10 +125,12 @@
 #endif
 
 /* The 64-bit version of 'in_checksum_fast()' simply does a
- * 'jmp _w32_in_checksum'. It desn't seems to hurt the speed.
+ * 'jmp _w32_in_checksum'. It doesn't seems to hurt the speed.
  */
 #if (DOSX)
+  #ifndef _WIN64
   #define HAVE_IN_CHKSUM_FAST
+  #endif
   #define HAVE_CHECK_CPU_TYPE
 #endif
 
@@ -257,7 +259,7 @@
           "nop"            \
           __modify [__ax __dx];
 
-  #define get_rdtsc() _get_rdtsc() /* since there isn't none in cpumodel.asm */
+  #define get_rdtsc() _get_rdtsc() /* since there isn't one in cpumodel.asm */
 
   extern void _invd_cache (void);
   #pragma aux _invd_cache = \

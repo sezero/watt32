@@ -402,9 +402,9 @@ extern char  DATA_DECL x86_vendor_id[13];
 
 /*
  * And finally a RDTSC + CPUID hack for 64-bit CPUs.
- * Use the one in cpumodel.asm.
+ * Use the '__rdtsc()' from <intrin.h>.
  */
-#elif defined(_MSC_VER) && defined(_M_X64) && 0
+#elif defined(_MSC_VER) && defined(_M_X64)
   #pragma intrinsic   (__rdtsc)
   #undef  get_rdtsc
   #define get_rdtsc() __rdtsc()

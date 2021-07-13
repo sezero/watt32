@@ -43,8 +43,8 @@ long ip_size = 10000;
     return (buf);
   }
 
-  #define START_TIME() start64 = get_rdtsc()
-  #define DELTA_TIME() delta64 = get_rdtsc() - start64
+  #define START_TIME() start64 = GET_RDTSC()
+  #define DELTA_TIME() delta64 = GET_RDTSC() - start64
 
 #else
   #define START_TIME()         ((void)0)
