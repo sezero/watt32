@@ -931,11 +931,6 @@ CFLAGS = -nologo -Zi -Zo -GS- -I. -I../inc \
 
 CFLAGS += -Wno-\#pragma-messages
 
-#
-# This is handy warning:
-#
-CFLAGS += -Wmissing-prototypes
-
 @ifdef DEBUG
   CFLAGS += -MDd
 @else
