@@ -288,7 +288,9 @@ extern char  DATA_DECL x86_vendor_id[13];
   #pragma alias (get_rdtsc2, "_w32_get_rdtsc2")
 #endif
 
-#if defined(WIN32)
+#if defined(_WIN64)
+  #define GET_RDTSC()  __rdtsc()  /* In '<intrin.h>' */
+#elif defined(_WIN32)
   extern uint64 win_get_rdtsc (void);
   #define GET_RDTSC()  win_get_rdtsc()
 #else
