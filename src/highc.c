@@ -149,6 +149,17 @@ int _mw_watt_system (const char *cmd)
   return (rc);
 }
 
+void TRACE_FILE (const char *fmt, ...)
+{
+  ARGSUSED (fmt);
+}
+
+void TRACE_CONSOLE (int level, const char *fmt, ...)
+{
+  ARGSUSED (level);
+  ARGSUSED (fmt);
+}
+
 /*
  * The following functions are called when Call_trace, Prolog_trace
  * and Epilog_trace pragmas are in effect.
@@ -172,25 +183,25 @@ static const char *caller [MAX_LEVEL];
 
 static BOOL is_watt32_func (const char *func) /* incomplete */
 {
-  if (!strcmp(func,"watt_sock_init"))
+  if (!strcmp(func, "watt_sock_init"))
      return (TRUE);
-  if (!strcmp(func,"sock_init"))
+  if (!strcmp(func, "sock_init"))
      return (TRUE);
-  if (!strcmp(func,"_w32_init_misc"))
+  if (!strcmp(func, "_w32_init_misc"))
      return (TRUE);
-  if (!strcmp(func,"setup_dos_xfer_buf"))
+  if (!strcmp(func, "setup_dos_xfer_buf"))
      return (TRUE);
-  if (!strcmp(func,"RDTSC_enabled"))
+  if (!strcmp(func, "RDTSC_enabled"))
      return (TRUE);
-  if (!strcmp(func,"_w32_init_timers"))
+  if (!strcmp(func, "_w32_init_timers"))
      return (TRUE);
-  if (!strcmp(func,"set_utc_offset"))
+  if (!strcmp(func, "set_utc_offset"))
      return (TRUE);
-  if (!strcmp(func,"get_zone"))
+  if (!strcmp(func, "get_zone"))
      return (TRUE);
-  if (!strcmp(func,"tcp_init"))
+  if (!strcmp(func, "tcp_init"))
      return (TRUE);
-  if (!strcmp(func,"_eth_init"))
+  if (!strcmp(func, "_eth_init"))
      return (TRUE);
   return (FALSE);   /**< \todo Fill in the rest (use a generated table?) */
 }
@@ -209,10 +220,10 @@ void _call_trace (const char *from, const char *module, unsigned line,
   (*_printf) ("%-16s:%*s %s() -> %s()\n", where, level, "", from, to);
 
   if (caller[level] == NULL ||
-      (strcmp(from,caller[level])) && is_watt32_func(to))
+      (strcmp(from, caller[level])) && is_watt32_func(to))
      caller[level++] = from;
 
-  else if (last_module && !strcmp(module,last_module) && level > 0)
+  else if (last_module && !strcmp(module, last_module) && level > 0)
      level--;
 
   last_module = module;

@@ -59,7 +59,14 @@ int _ip4_frag_reasm = MAX_IP_HOLDTIME;  /* configurable; pcconfig.c */
 
 #if defined(USE_FRAGMENTS)
 
-#if defined(TEST_PROG)
+#if defined(__HIGHC__)
+  static void TRACE_MSG (int color,  const char *fmt, ...)
+  {
+    ARGSUSED (color);
+    ARGSUSED (fmt);
+  }
+
+#elif defined(TEST_PROG)
   #define TRACE_MSG(color, args, ...)              \
           do {                                     \
             SET_ATTR (color);                      \

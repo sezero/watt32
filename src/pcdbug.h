@@ -40,8 +40,11 @@ extern   void dbug_flush (void);
 /*
  * Send Rx/Tx packet to debug-file.
  * 'nw_pkt' must point to network layer packet.
+*
+ * Since High-C does not handle the below 'var-args', use a dummy
+ * function in 'highc.c'.
  */
-#if defined(USE_DEBUG)
+#if defined(USE_DEBUG) && !defined(__HIGHC__)
   #define DEBUG_RX(sock, nw_pkt)                             \
           do {                                               \
             if (debug_recv)                                  \
@@ -75,8 +78,14 @@ extern   void dbug_flush (void);
 #else
   #define DEBUG_RX(sock, ip)               ((void)0)
   #define DEBUG_TX(sock, ip)               ((void)0)
-  #define TRACE_FILE(args, ...)            ((void)0)
-  #define TRACE_CONSOLE(level, args, ...)  ((void)0)
+
+  #if defined(__HIGHC__)
+    extern void TRACE_FILE    (const char *fmt, ...);
+    extern void TRACE_CONSOLE (int level, const char *fmt, ...);
+  #else
+    #define TRACE_FILE(args, ...)            ((void)0)
+    #define TRACE_CONSOLE(level, args, ...)  ((void)0)
+  #endif
 #endif
 
 #endif
