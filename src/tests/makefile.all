@@ -41,11 +41,17 @@ PYTHON            ?= py -3
   USE_WSOCK_TRACE ?= 0
 @endif
 
+ifeq ($(CPU),x64)
+  _X64_SUFFIX = _x64
+else
+  _X64_SUFFIX =
+endif
+
 @ifdef IS_GCC
   WS2_32_LIB = -lws2_32
 @else
   ifeq ($(USE_WSOCK_TRACE),1)
-    WS2_32_LIB = wsock_trace.lib
+    WS2_32_LIB = wsock_trace$(_X64_SUFFIX).lib
   else
     WS2_32_LIB = ws2_32.lib
   endif
