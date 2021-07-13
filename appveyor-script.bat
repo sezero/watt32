@@ -342,7 +342,7 @@ exit /b 0
 ::
 :build_tests
   if %LOCAL_TEST%. == 0. (
-    %_ECHO% "\e[1;33mGenerating 'c:\projects\watt-32\wattcp.cfg\wattcp.cfg'.\e[0m"
+    %_ECHO% "\e[1;33mGenerating 'c:\projects\watt-32\wattcp.cfg'.\e[0m"
     call :generate_wattcp_cfg
   )
 
@@ -366,13 +366,13 @@ exit /b 0
      if %MODEL%. == win32. make -f watcom_w.mak
   )
 
-  %_ECHO% "\e[1;33mRunning test 'cpu.exe' ----------------------------------------------------\e[0m"
+  %_ECHO% "\e[1;33mRunning test 'cpu.exe' ---------------------------------------------------------------\e[0m"
   cpu.exe
-  %_ECHO% "\e[1;33mRunning test 'cpuspeed.exe 1 1' -------------------------------------------\e[0m"
+  %_ECHO% "\e[1;33mRunning test 'cpuspeed.exe 1 1' ------------------------------------------------------\e[0m"
   cpuspeed.exe 1 1
-  %_ECHO% "\e[1;33mRunning test 'swap.exe' ---------------------------------------------------\e[0m"
+  %_ECHO% "\e[1;33mRunning test 'swap.exe' --------------------------------------------------------------\e[0m"
   swap.exe
-  %_ECHO% "\e[1;33mRunning test 'chksum.exe -s' ----------------------------------------------\e[0m"
+  %_ECHO% "\e[1;33mRunning test 'chksum.exe -s' ---------------------------------------------------------\e[0m"
   chksum.exe -s
 
 :no_tests
