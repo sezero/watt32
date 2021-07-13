@@ -18,13 +18,6 @@
 #if !defined(_w32_CPUMODEL_H) && (DOSX)  /* Only for DOSX/Win32 targets */
 #define _w32_CPUMODEL_H
 
-#if defined(CPU_TEST) || defined(__LCC__) || (defined(_M_X64) && !defined(__GNUC__))
-  #undef  CONST
-  #define CONST
-#else
-  #define CONST const
-#endif
-
 #if defined(__DMC__)
   #define SYSCALL __syscall        /* no underscore prefix */
 #else
@@ -37,13 +30,13 @@
   #define DATA_DECL cdecl
 #endif
 
-extern CONST char  DATA_DECL x86_type;       /* type of CPU (3=386, 4=486, ...) */
-extern CONST char  DATA_DECL x86_model;
-extern CONST char  DATA_DECL x86_mask;
-extern CONST int   DATA_DECL x86_hard_math;  /* FPU present */
-extern CONST DWORD DATA_DECL x86_capability;
-extern CONST int   DATA_DECL x86_have_cpuid;
-extern CONST char  DATA_DECL x86_vendor_id[13];
+extern char  DATA_DECL x86_type;       /* type of CPU (3=386, 4=486, ...) */
+extern char  DATA_DECL x86_model;
+extern char  DATA_DECL x86_mask;
+extern int   DATA_DECL x86_hard_math;  /* FPU present */
+extern DWORD DATA_DECL x86_capability;
+extern int   DATA_DECL x86_have_cpuid;
+extern char  DATA_DECL x86_vendor_id[13];
 
 /* x86_capability bits
  */

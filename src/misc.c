@@ -86,14 +86,14 @@ int _w32_errno = 0;
   /* The 64-bit gcc versions of these (i.e. MinGW64) are in cpumodel.S.
    * But for other 64-bit targets, put this here for now.
    */
-#elif defined(_M_X64) && !defined(__GNUC__) && 0
-  CONST int   x86_have_cpuid = TRUE;  /* All 64-bit CPU's have CPUID */
-  CONST DWORD x86_capability;
-  CONST char  x86_type;
-  CONST char  x86_model;
-  CONST char  x86_mask;
-  CONST int   x86_hard_math;
-  CONST char  x86_vendor_id[13];
+#elif defined(__x86_64__) || defined(_M_X64)
+  int   x86_have_cpuid = TRUE;  /* All 64-bit CPU's have CPUID */
+  DWORD x86_capability;
+  char  x86_type;
+  char  x86_model;
+  char  x86_mask;
+  int   x86_hard_math;
+  char  x86_vendor_id[13];
 
   void cdecl CheckCpuType (void)
   {
@@ -187,7 +187,6 @@ unsigned short cdecl _w32_intel16 (unsigned short val)
 }
 
 #if (DOSX) && defined(CS_WRITABLE)
-// #error test
 static const BYTE bswap32[] = {
              0x8B,0x44,0x24,0x04,       /* mov eax,[esp+4] */
              0x0F,0xC8,                 /* bswap eax       */
@@ -256,11 +255,11 @@ static BOOL RDTSC_enabled (void)
       x86_type < 5)     /* Not a Pentium class CPU */
      return (FALSE);
 
-  if (!strncmp(x86_vendor_id,"AuthenticAMD",12) &&
-      (x86_capability & X86_CAPA_TSC))            /* AMD with TSC, okay? */
+  if (!strncmp(x86_vendor_id, "AuthenticAMD", 12) &&
+      (x86_capability & X86_CAPA_TSC))              /* AMD with TSC, okay? */
      return (TRUE);
 
-  if (!strncmp(x86_vendor_id,"CentaurHauls",12))  /* Centaur/VIA is okay */
+  if (!strncmp(x86_vendor_id, "CentaurHauls", 12))  /* Centaur/VIA is okay */
   {
 #if 0
    /* The following code was originally written by
@@ -281,8 +280,8 @@ static BOOL RDTSC_enabled (void)
     return (TRUE);
   }
 
-  if (strncmp(x86_vendor_id,"GenuineIntel",12) ||   /* Not Genuine Intel or */
-      (x86_capability & X86_CAPA_TSC) == 0)         /* RDTSC not supported */
+  if (strncmp(x86_vendor_id, "GenuineIntel", 12) ||  /* Not Genuine Intel or */
+      (x86_capability & X86_CAPA_TSC) == 0)          /* RDTSC not supported */
      return (FALSE);
 
 #if (DOSX) && !defined(__LCC__)
@@ -1722,7 +1721,7 @@ void FATAL_HANDLER (UINT stk)
 
   #define W32_INLINE
   #define W32_GCC_INLINE
-  #define extern
+//#define extern
   #define __inline__
   #define __inline
 
