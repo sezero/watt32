@@ -106,7 +106,7 @@ ZLIB_SOURCE = zadler32.c  zcompres.c zcrc32.c   zgzio.c \
 C_SOURCE = $(CORE_SOURCE) $(BSD_SOURCE) $(BIND_SOURCE) $(ZLIB_SOURCE)
 
 COMMON_OBJS = \
-@ifndef LCC CYGWIN64
+@ifndef LCC WIN64
        $(OBJPATH)chksum0.obj  $(OBJPATH)cpumodel.obj  \
 @endif
        $(OBJPATH)accept.obj   $(OBJPATH)bind.obj      \
@@ -1148,9 +1148,8 @@ CFLAGS  = -O2 -g -Wall -Wno-strict-aliasing -mthreads -pipe -I. -I../inc \
 LDFLAGS = -shared -Wl,--enable-stdcall-fixup,--print-map,--sort-common,--cref
 
 #
-# gcc/as debug formats:
+# 'as' debug formats:
 #
-CFLAGS += -gstabs
 AFLAGS += -gstabs
 
 #
@@ -1227,7 +1226,7 @@ NO_OPT ?= 0
 CC      = gcc
 
 ifeq ($(NO_OPT),0)
-  CFLAGS = -O2 -g -gstabs
+  CFLAGS = -O2 -g
 else
   #
   # 'make NO_OPT=1 -f *.mak' -> tests gcc 5.x with no optimisations
@@ -1244,12 +1243,13 @@ LDFLAGS = -shared -Wl,--enable-stdcall-fixup,--print-map,--sort-common,--cref
 #  * for 32-bit programs, use MinGW64_32.mak.
 #  * for 64-bit programs, use MinGW64_64.mak.
 #
-# I have tested TDM-gcc [1] only. [2] may work here too. (And
+# I have tested TDM-gcc [1 + 3] only. [2] may work here too. (And
 # there are other MinGW64 packages too).
 # For TDM-gcc, 64-bit programs is the default (unless '-m32' is used).
 #
 # [1] http://tdm-gcc.tdragon.net/
 # [2] http://mingw-w64.sourceforge.net/
+# [3] https://jmeubank.github.io/tdm-gcc/
 #
 # And the 'PATH' must have been setup to choose the correct 'gcc.exe'.
 #
@@ -1293,7 +1293,7 @@ $(OBJPATH)chksum0.o:  chksum0.S
 $(OBJPATH)cpumodel.o: cpumodel.S
 
 $(OBJPATH)%.o: %.c
-	$(CC) -c @$(C_ARGS) -o $@ -c $<
+	$(CC) -c @$(C_ARGS) -o $@ $<
 
 $(OBJPATH)%.o: %.S
 	$(CC) -E @$(C_ARGS) $< > $(OBJPATH)$*.iS
@@ -1610,6 +1610,15 @@ $(OBJPATH)cflagsbf.h: $(C_ARGS)
 @endif
 
 @ifdef HIGHC DJGPP MINGW32 MINGW64 CLANG CYGWIN32 CYGWIN64 CLANG
+#
+# Preprocess a .c-file and pipe through 'Astyle' to beautify it.
+#
+%.i: %.c
+	@echo "Preprocessed result of $< with these CFLAGS:"    > $@
+	cat $(C_ARGS)                                          >> $@
+	@echo "----------------------------------------------" >> $@
+	$(CC) -E @$(C_ARGS) $< | astyle >> $@
+	@echo
 
 DEP_REPLACE = sed -e 's/\(.*\)\.o: /\n$$(OBJPATH)\1.o: /' \
                   -e 's@/cygdrive/@:@'
