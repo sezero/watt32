@@ -522,23 +522,18 @@ CPUID_DATA cpuid (int);
 #pragma aux cpuid =  \
             ".586"   \
             "cpuid"  \
-            "mov [esi],eax"    \
-            "mov [esi+4],ebx"  \
-            "mov [esi+8],ecx"  \
-            "mov [esi+12],edx" \
+            "mov [esi], eax"    \
+            "mov [esi+4], ebx"  \
+            "mov [esi+8], ecx"  \
+            "mov [esi+12], edx" \
             __modify [__eax __ebx __ecx __edx] __parm [__eax];
-
-
-extern unsigned long cdecl _w32_Get_CR4 (void);
-#pragma aux (__cdecl) _w32_Get_CR4   "*"
-#define Get_CR4       _w32_Get_CR4
 
 void watcom_cpuid_test (void)
 {
   CPUID_DATA data;
 
   data = cpuid (0);
-  printf ("Maximum value permitted for CPUID instruction = %lu\n", data.eax);
+  printf ("\nMaximum value permitted for CPUID instruction = %lu\n", data.eax);
   printf ("Signature = [%.4s%.4s%.4s]\n", &data.ebx, &data.edx, &data.ecx);
 
   data = cpuid (1);
