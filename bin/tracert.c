@@ -259,12 +259,12 @@
 #include <time.h>
 #include <limits.h>
 #include <sys/stat.h>
-#include <direct.h>  /* getcwd() */
 
 #ifdef __CYGWIN__
   #include <unistd.h>
 #else
   #include <conio.h>
+  #include <direct.h>  /* getcwd() */
 #endif
 
 #include <sys/socket.h>
