@@ -297,18 +297,18 @@ Follow these steps closely:
 
      watcom   -> similar for Watcom.
      digmars  -> similar for Digital Mars.
-     highc    -> `highc.mak'     + `build\highc\watt32.dep'.
-     clang    -> `clang.mak'     + `build\clang\watt32.dep'.
-     djgpp    -> `djgpp.mak'     + `build\djgpp\watt32.dep'.
-     ladsoft  -> `ladsoft.mak'   + `build\ladsoft\watt32.wat'.
-     mingw32  -> `mingw32.mak'   + `build\mingw32\watt32.dep'.
-     mingw64  -> `mingw64.mak'   + `build\mingw64\watt32.dep'.
-     cygwin   -> `cygwin.mak'    + `build\cygwin\watt32.dep'.
-     visualc  -> `visualc-*.mak' + `build\visualc\watt32.dep'.
-     pellesc  -> `pellesc.mak'   + `build\pellesc\watt32.dep'.
-     lcc      -> `lcc.mak'       + `build\lcc\watt32.dep'.
+     highc    -> `highc.mak' and `build\highc\watt32.dep'.
+     clang    -> `clang_32.mak', `clang_64.mak' and `build\clang\watt32.dep'.
+     djgpp    -> `djgpp.mak'       + `build\djgpp\watt32.dep'.
+     ladsoft  -> `ladsoft.mak'     + `build\ladsoft\watt32.wat'.
+     mingw32  -> `mingw32.mak'     + `build\MinGW32\watt32.dep'.
+     mingw64  -> `mingw64_32.mak', `mingw64_64.mak' and `build\MinGW64\watt32.dep'.
+     cygwin   -> `cygwin_32.mak', `cygwin_64.mak' and `build\Cygwin\watt32.dep'.
+     visualc  -> `visualc-*.mak' and `build\visualc\watt32.dep'.
+     pellesc  -> `pellesc.mak'     + `build\pellesc\watt32.dep'.
+     lcc      -> `lcc.mak'         + `build\lcc\watt32.dep'.
      all      -> All of the above.
-     clean    -> deletes all generated `*.mak', `watt32.dep', `zlib.dep',
+     clean    -> deletes all generated `*.mak', `watt32.dep',
                  `syserr.c' and `.\inc\sys\*.err' files.
 
    E.g. To make small and large libraries for Borland,
@@ -352,10 +352,10 @@ Follow these steps closely:
 
 8. Building the source distribution WATT32S*.ZIP requires these tools:
 
-   For djgpp:   DJGPP 2.01 or later (djgpp 2.00 not tested)
-                (djdev2??.zip package from Simtel).
-                GCC 2.7 or later, (including `cpp' and `ar')
-                GNU Make 3.6 or later.
+   For djgpp:   DJGPP 2.01 or later (djgpp 2.00 not tested) from:
+                  ftp://ftp.delorie.com/pub/djgpp/current/v2/
+                GCC 4.7 or later, (including `cpp' and `ar')
+                GNU Make 4 or later.
 
    For Borland: Only Borland C 4.5 has been tested.
                 Borland's TASM (3.0 or later).
@@ -401,9 +401,8 @@ Follow these steps closely:
                 environment.
 
    For all: To make library after changing `.\src\language.l',
-            GNU Flex 2.5.4 is required. Download from a Simtel
-            mirror near you or from:
-            <ftp://ftp.simtel.net/pub/simtelnet/gnu/djgpp/v2gnu/flx254b.zip>
+            GNU Flex 2.5.4 (or newer) is required. Download from:
+              http://gnuwin32.sourceforge.net/packages/flex.htm
 
    Hint: If you have a RAM-disk of at least 5 Mbyte, building djgpp target
          may be speeded up by defining a `TMPDIR' directory on a RAM-disk;
