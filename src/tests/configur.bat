@@ -7,7 +7,6 @@ if %OS%. == Windows_NT. set MKMAKE=..\..\util\win32\mkmake.exe
 if %1. == djgpp. goto start
 
 :start
-if %1.==mingw32.  goto mingw32
 if %1.==mingw64.  goto mingw64
 if %1.==mingw.    goto mingw64
 if %1.==cygwin.   goto cygwin
@@ -23,17 +22,6 @@ if %1.==-h.       goto usage
 if %1.==-?.       goto usage
 if not %1.==.     goto bad_usage
 goto quit
-
-::--------------------------------------------------------------------------
-:: old-style MinGW from 'mingw.org'. Soon history...
-:mingw32
-::
-echo Generating MinGW32 makefile
-%MKMAKE% -o MinGW32.mak makefile.all MINGW32 WIN32 IS_GCC
-
-echo Run GNU make to make target:
-echo   make -f MinGW32.mak
-goto next
 
 ::--------------------------------------------------------------------------
 :mingw64
@@ -150,7 +138,7 @@ echo Unknown option '%1'.
 :usage
 ::
 echo Configuring Watt-32 tcp/ip targets.
-echo Usage: %0 {watcom, borland, highc, djgpp, mingw32, mingw64, cygwin32, cygwin64, visualc, clang, all, clean}
+echo Usage: %0 {watcom, borland, highc, djgpp, mingw64, cygwin32, cygwin64, visualc, clang, all, clean}
 goto quit
 
 ::--------------------------------------------------------------------------
@@ -161,7 +149,6 @@ del highc.mak
 del clang_32.mak   clang_64.mak
 del visualc_32.mak visualc_64.mak
 del MinGW64_32.mak MinGW64_64.mak
-del MinGW32.mak
 del Cygwin_32.mak  Cygwin_64.mak
 del watcom_?.mak
 del bcc_?.mak
@@ -173,7 +160,6 @@ goto next
 call %0 djgpp    %2
 call %0 clang    %2
 call %0 visualc  %2
-call %0 mingw32  %2
 call %0 mingw64  %2
 call %0 cygwin32 %2
 call %0 cygwin64 %2

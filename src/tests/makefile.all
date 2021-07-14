@@ -3,7 +3,7 @@
  This is a master makefile that will generate all ./test GNU-makefiles.
  Currently supported compilers include:
 
-    CYGWIN, DJGPP, HIGHC, MINGW32, MINGW64, VISUALC, WATCOM, BORLAND, CLANG
+    CYGWIN, DJGPP, HIGHC, MINGW64, VISUALC, WATCOM, BORLAND, CLANG
 
  Supported memory models and targets include:
 
@@ -233,11 +233,7 @@ NO_W32_CFLAGS = -D_Windows
   LIB_DIR = ../../lib
 @endif
 
-@ifdef MINGW32
-  COMMON_CFLAGS += -m32
-  WATT_LIB       = $(LIB_DIR)/libwatt32.a
-
-@elifdef MINGW64
+@ifdef MINGW64
   WATT_LIB = $(LIB_DIR)/libwatt32.a
 
 @elifdef CYGWIN
