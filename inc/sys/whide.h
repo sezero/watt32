@@ -277,7 +277,6 @@
 /* Hide private sumbols while building Watt-32.
  */
 #if defined(WATT32_BUILD)
-  #define in_checksum_fast W32_NAMESPACE (in_checksum_fast)
   #define do_checksum      W32_NAMESPACE (do_checksum)
 #endif
 

@@ -18,23 +18,14 @@
 #include "chksum.h"
 
 /**
- * This checksum routine is only used by 16-bit targets (and files
- * outside the library). 32-bit targets use in_checksum_fast() in
- * chksum0.s + chksum0.asm.
- *
- * \note `in_check_sum()' and `in_checksum_fast()' are equally fast
- *       on a Pentium 4 CPU. But on a Pentium 2 the ASM version is
- *       approx. 10 times faster.
+ * This checksum routine is now used for *all* targets since
+ * `in_checksum_fast()` was removed.
  */
 WORD W32_CALL in_checksum (const void *ptr, unsigned len)
 {
   register long  sum       = 0;
   register long  slen      = (long) len;   /* must be signed */
   register const WORD *wrd = (const WORD*) ptr;
-
-  #if defined(WIN32) || defined(__DJGPP__)
-  // WATT_ASSERT (0);  /* Why should we use this slow checksum routine? */
-  #endif
 
   while (slen > 1)
   {
@@ -122,16 +113,6 @@ int _ip6_icmp_checksum (const in6_Header *ip, const void *icmp, unsigned len)
   return (_ip6_checksum(ip, IP6_NEXT_ICMP, icmp, len) == 0xFFFF);
 }
 #endif /* USE_IPV6 */
-
-
-#if defined(WIN32) && 0
-/**
- * Do the IP checksum in NIC hardware.
- */
-int ndis_in_checksum_offload (const void *ptr, unsigned len)
-{
-}
-#endif  /* WIN32 */
 
 #if defined(NOT_USED)
 

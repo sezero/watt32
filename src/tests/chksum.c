@@ -53,24 +53,6 @@ long ip_size = 10000;
   #define get_usec_calls(d, l) ""
 #endif
 
-/*
- * Some notes:
- *
- * Timing 'in_checksum_fast()' and 'in_checksum()' reveals that
- * Watcom's wcc386 is around 100% faster that gcc 2.95.2. And that
- * 'in_checksum_fast()' is around 2.5 times faster than 'in_checksum()'
- * compiled with wcc386. Hence using 'in_checksum_fast()' for djgpp
- * targets gives around 450% performance gain !!
- */
-
-const char * Delta_ms (clock_t dt)
-{
-  static char buf[10];
-  double delta = 1000.0 * (double) dt / (double)CLOCKS_PER_SEC;
-  sprintf (buf, "%6.1f", delta);
-  return (buf);
-}
-
 WORD ip_checksum (const char *ptr, int len)
 {
   register long sum = 0;
@@ -134,26 +116,6 @@ int test_checksum_speed (const char *buf)
 
   /*---------------------------------------------------------------*/
 
-#if defined(HAVE_IN_CHKSUM_FAST)
-  printf ("Timing in_checksum_fast().. ");
-  fflush (stdout);
-  gettimeofday2 (&start, NULL);
-  START_TIME();
-
-  for (j = 0; j < loops; j++)
-      in_checksum_fast (buf, ip_size);
-
-  gettimeofday2 (&now, NULL);
-  DELTA_TIME();
-  printf ("time ....%.6fs %s%s\n",
-          timeval_diff(&now, &start)/1E6, get_clk_calls(), get_usec_calls());
-
-#else
-  puts ("No in_checksum_fast() for this target.");
-#endif
-
-  /*---------------------------------------------------------------*/
-
   printf ("Timing overhead............ ");
   fflush (stdout);
   gettimeofday2 (&start, NULL);
@@ -178,17 +140,9 @@ int test_checksum_correctness (const char *buf)
     WORD len   = 10 + (i % 1000);
     WORD csum1 = ~in_checksum (buf, len);
     WORD csum2 = ~ip_checksum (buf, len);
-#if defined(HAVE_IN_CHKSUM_FAST)
-    WORD csum3 = ~in_checksum_fast (buf, len);
-#else
-    WORD csum3 = 0;
-#endif
 
-    printf ("in_checksum = %04X, ip_checksum = %04X, "
-            "in_checksum_fast = %04X %c %c\n",
-            csum1, csum2, csum3,
-            (csum1 != csum2 ? '!' : ' '),
-            (csum1 != csum3 ? '!' : ' '));
+    printf ("in_checksum = %04X, ip_checksum = %04X %c\n",
+            csum1, csum2, csum1 != csum2 ? '!' : ' ');
   }
   return (0);
 }
@@ -264,11 +218,6 @@ int main (int argc, char **argv)
   if (sflag || cflag)
   {
     buf = alloca (ip_size);
-    if (!buf)
-    {
-      puts ("alloca() failed");
-      return (-1);
-    }
     for (i = 0; i < ip_size; i++)
         buf[i] = i % 255;
   }

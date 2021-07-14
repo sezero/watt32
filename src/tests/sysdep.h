@@ -124,13 +124,7 @@
   #define __ms_timeval  timeval
 #endif
 
-/* The 64-bit version of 'in_checksum_fast()' simply does a
- * 'jmp _w32_in_checksum'. It doesn't seems to hurt the speed.
- */
 #if (DOSX)
-  #ifndef _WIN64
-  #define HAVE_IN_CHKSUM_FAST
-  #endif
   #define HAVE_CHECK_CPU_TYPE
 #endif
 
@@ -140,7 +134,6 @@
  *   build/CygWin/64bit/cpumodel.o:fake:(.text+0x8): relocation truncated to fit: R_X86_64_32S against `.data'
  */
 #if defined(__CYGWIN__) && defined(__x86_64__)
-  #undef HAVE_IN_CHKSUM_FAST
   #undef HAVE_CHECK_CPU_TYPE
 #endif
 

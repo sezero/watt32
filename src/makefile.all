@@ -72,7 +72,7 @@ W32_NASM = nasm
 !endif
 @endif
 
-ASM_SOURCE = asmpkt.asm chksum0.asm cpumodel.asm
+ASM_SOURCE = asmpkt.asm cpumodel.asm
 
 CORE_SOURCE = bsdname.c  btree.c    chksum.c   country.c  crc.c      dynip.c    \
               echo.c     fortify.c  getopt.c   gettod.c   highc.c    idna.c     \
@@ -107,7 +107,7 @@ C_SOURCE = $(CORE_SOURCE) $(BSD_SOURCE) $(BIND_SOURCE) $(ZLIB_SOURCE)
 
 COMMON_OBJS = \
 @ifndef LCC WIN64
-       $(OBJPATH)chksum0.obj  $(OBJPATH)cpumodel.obj  \
+       $(OBJPATH)cpumodel.obj  \
 @endif
        $(OBJPATH)accept.obj   $(OBJPATH)bind.obj      \
        $(OBJPATH)bsddbug.obj  $(OBJPATH)bsdname.obj   \
@@ -321,7 +321,6 @@ $(OBJPATH)%.o: %.S
 	$(CC) -E @$(C_ARGS) $< > $(OBJPATH)$*.iS
 	$(AS) $(AFLAGS) $(OBJPATH)$*.iS -o $@
 
-$(OBJPATH)chksum0.o:  chksum0.S
 $(OBJPATH)cpumodel.o: cpumodel.S
 
 install: all
@@ -493,7 +492,6 @@ $(C_ARGS): $(MAKE_FILE)
 | $<
 
 $(OBJPATH)asmpkt.obj:   asmpkt.asm
-$(OBJPATH)chksum0.obj:  chksum0.asm
 $(OBJPATH)cpumodel.obj: cpumodel.asm
 
 .c.obj:
@@ -660,7 +658,6 @@ $(STAT_LIB): $(OBJS) $(LIB_ARGS)
 
 $(OBJPATH)language.obj: language.c lang.c
 $(OBJPATH)asmpkt.obj:   asmpkt.asm
-$(OBJPATH)chksum0.obj:  chksum0.asm
 $(OBJPATH)cpumodel.obj: cpumodel.asm
 
 .c{$(OBJDIR)}.obj:  .AUTODEPEND
@@ -832,7 +829,6 @@ $(WATT_DLL) $(IMP_LIB): $(OBJS) $(RESOURCE) $(LINK_ARGS)
 	@del $(IMP_LIB:.lib=.exp)
 	touch $(IMP_LIB)
 
-$(OBJPATH)chksum0.obj:  chksum0.asm
 $(OBJPATH)cpumodel.obj: cpumodel.asm
 
 .cpp{$(OBJDIR)}.obj:
@@ -896,7 +892,6 @@ $(WATT_DLL) $(IMP_LIB): $(OBJS)
 	lcclnk $(LDFLAGS) -o $(WATT_DLL) -map watt-32.map $(OBJS) $(EX_LIBS)
 	implib $(IMP_LIB) $(WATT_DLL)
 
-$(OBJPATH)chksum0.obj:  chksum0.asm
 $(OBJPATH)cpumodel.obj: cpumodel.asm
 
 .c{$(OBJDIR)}.obj:
@@ -1072,9 +1067,6 @@ $(STAT_LIB): $(OBJS)
 	@echo -replace $(OBJS)                       >> $(OBJPATH)lib.arg
 	$(AR) $(STAT_LIB) @$(OBJPATH)lib.arg
 
-$(OBJPATH)chksum0.obj: chksum0.asm
-	$(AS) $(AFLAGS) $<, $(OBJDIR_)\chksum0.obj
-
 $(OBJPATH)cpumodel.obj: cpumodel.asm
 	$(AS) $(AFLAGS) $<, $(OBJDIR_)\cpumodel.obj
 
@@ -1084,7 +1076,7 @@ $(OBJPATH)%.obj: %.c
 include $(OBJPATH)watt32.dep
 
 clean:
-	rm -f $(TARGETS) $(OBJPATH)*.obj $(OBJPATH)*.arg $(OBJPATH)*.h chksum0.lst cpumodel.lst $(PKT_STUB)
+	rm -f $(TARGETS) $(OBJPATH)*.obj $(OBJPATH)*.arg $(OBJPATH)*.h cpumodel.lst $(PKT_STUB)
 	@echo Cleaning done
 
 ########################################################################
@@ -1112,7 +1104,6 @@ $(STAT_LIB): $(OBJS)
 	$(AR) $(STAT_LIB) @$(OBJPATH)xlib.rsp
 	- @del $(STAT_LIB:.lib=.bak)
 
-$(OBJPATH)chksum0.obj:  chksum0.asm
 $(OBJPATH)cpumodel.obj: cpumodel.asm
 
 .c.obj:
@@ -1197,7 +1188,6 @@ $(IMP_LIB): $(WATT_DLL)
 $(WATT_DLL): $(OBJS) $(RESOURCE) $(LINK_ARGS)
 	$(CC) $(LDFLAGS) -Wl,--out-implib,$(IMP_LIB) -o $@ @$(LINK_ARGS) > $(WATT_DLL:.dll=.map)
 
-$(OBJPATH)chksum0.o:  chksum0.S
 $(OBJPATH)cpumodel.o: cpumodel.S
 
 $(OBJPATH)%.o: %.c
@@ -1284,7 +1274,6 @@ $(IMP_LIB): $(WATT_DLL)
 $(WATT_DLL): $(OBJS) $(RESOURCE) $(LINK_ARGS)
 	$(CC) $(LDFLAGS) -Wl,--out-implib,$(IMP_LIB) -o $@ @$(LINK_ARGS) > $(WATT_DLL:.dll=.map)
 
-$(OBJPATH)chksum0.o:  chksum0.S
 $(OBJPATH)cpumodel.o: cpumodel.S
 
 $(OBJPATH)%.o: %.c
@@ -1341,7 +1330,6 @@ $(IMP_LIB): $(WATT_DLL)
 $(WATT_DLL): $(OBJS) $(RESOURCE) $(LINK_ARGS)
 	$(CC) $(LDFLAGS) -Wl,--out-implib,$(IMP_LIB) -o $@ @$(LINK_ARGS) > $(@:.dll=.map)
 
-$(OBJPATH)chksum0.o:  chksum0.S
 $(OBJPATH)cpumodel.o: cpumodel.S
 
 $(OBJPATH)%.o: %.c
@@ -1404,7 +1392,6 @@ $(WATT_DLL) $(IMP_LIB): $(OBJS) $(RESOURCE)
            $** $(EX_LIBS) > link.tmp
 	type link.tmp >> $(WATT_DLL:.dll=.map)
 
-$(OBJPATH)chksum0.obj:  chksum0.asm
 $(OBJPATH)cpumodel.obj: cpumodel.asm
 
 .c{$(OBJDIR)}.obj:
