@@ -74,7 +74,6 @@ int _w32_errno = 0;
 
 #if (DOSX & (PHARLAP|X32VM)) && defined(HAVE_FARPTR48)
   FARPTR _watt_dosFp; /* we have 48-bit far-pointers */
-
 #endif
 
 #if defined(__LCC__)

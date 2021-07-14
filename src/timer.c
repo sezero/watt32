@@ -986,7 +986,9 @@ uint64 win_get_rdtsc (void)
     ct = GetCurrentThread();
     am = SetThreadAffinityMask (ct, 1);
   }
-  rc = GET_RDTSC();
+
+  rc = __rdtsc();
+
   if (num_cpus > 1)
      SetThreadAffinityMask (ct, am);
   return (rc);

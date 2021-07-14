@@ -265,41 +265,14 @@ extern char  DATA_DECL x86_vendor_id[13];
 #endif
 
 #if defined(_WIN64)
-  #define GET_RDTSC()  __rdtsc()  /* In '<intrin.h>' */
+  #define GET_RDTSC()  __rdtsc()        /* In '<intrin.h>' */
+
 #elif defined(_WIN32)
-  extern uint64 win_get_rdtsc (void);
+  extern uint64 win_get_rdtsc (void);   /* In 'timer.c' */
   #define GET_RDTSC()  win_get_rdtsc()
+
 #else
   #define GET_RDTSC()  get_rdtsc()
-#endif
-
-
-#if 0 && (defined(__BORLANDC__) || defined(__DMC__)) && \
-         (defined(__SMALL__) || defined(__LARGE__)) && \
-         defined(__SMALL32__)
-  /*
-   * Save FPU state.
-   */
-  static void pkt_save_fpu (char far *state)
-  {
-    __asm les bx, state
-    __asm fnstcw  es:[bx]     /* save IEM bit status */
-    __asm nop                 /* delay while control word saved */
-    __asm fndisi              /* disable BUSY signal */
-    __asm mov ax, es:[bx]     /* get original control word in AX */
-    __asm fsave   es:[bx]     /* save FPU state */
-    __asm fwait               /* wait for save to complete */
-    __asm mov es:[bx],ax      /* put original control word in saved state */
-  }
-
-  /*
-   * Restore FPU state.
-   */
-  static void pkt_restore_fpu (char far *state)
-  {
-    __asm les bx, state
-    __asm frstor es:[bx]
-  }
 #endif
 
 #undef SYSCALL
