@@ -280,11 +280,6 @@ endif
 CFLAGS = -O3 -g -I. -I../inc -DWATT32_BUILD -W -Wall -Wno-strict-aliasing \
          -march=i386 -mtune=i586
 
-#
-# This is handy warning:
-#
-CFLAGS += -Wmissing-prototypes
-
 ifeq ($(filter 2 3 4,$(word 3, $(shell true | $(CC) -E -dD -x c - | grep 'define\ *__GNUC__'))),)
   # We have gcc >= 5.x and we must ensure that always traditional
   # GNU extern inline semantics are used (aka -fgnu89-inline) even
