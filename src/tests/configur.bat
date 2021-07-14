@@ -10,9 +10,7 @@ if %1. == djgpp. goto start
 if %1.==mingw32.  goto mingw32
 if %1.==mingw64.  goto mingw64
 if %1.==mingw.    goto mingw64
-if %1.==cygwin.   goto cygwin32
-if %1.==cygwin32. goto cygwin32
-if %1.==cygwin64. goto cygwin64
+if %1.==cygwin.   goto cygwin
 if %1.==djgpp.    goto djgpp
 if %1.==highc.    goto highc
 if %1.==visualc.  goto visualc
@@ -27,6 +25,7 @@ if not %1.==.     goto bad_usage
 goto quit
 
 ::--------------------------------------------------------------------------
+:: old-style MinGW from 'mingw.org'. Soon history...
 :mingw32
 ::
 echo Generating MinGW32 makefile
@@ -49,23 +48,16 @@ echo   make -f MinGW64_64.mak
 goto next
 
 ::--------------------------------------------------------------------------
-:cygwin32
+:cygwin
 ::
-echo Generating CygWin32 makefile, directory and dependencies
-%MKMAKE% -o CygWin32.mak makefile.all CYGWIN32 WIN32 IS_GCC
+echo Generating Cygwin (x86/x64) makefiles
+%MKMAKE% -o Cygwin_32.mak makefile.all CYGWIN32 WIN32 IS_GCC
+%MKMAKE% -o Cygwin_64.mak makefile.all CYGWIN64 WIN64 IS_GCC
 
-echo Run GNU make to make target:
-echo   make -f CygWin32.mak
-goto next
-
-::--------------------------------------------------------------------------
-:cygwin64
-::
-echo Generating CygWin64 makefile, directory and dependencies
-%MKMAKE% -o CygWin64.mak makefile.all CYGWIN64 WIN64 IS_GCC
-
-echo Run GNU make to make target:
-echo   make -f CygWin64.mak
+echo Run GNU make to make target(s):
+echo   "make -f Cygwin_32.mak"
+echo   "make -f Cygwin_64.mak"
+echo Depending on which gcc.exe (32 or 64-bit) is first on your PATH, use the correct 'Cygwin_32.mak' or 'Cygwin_64.mak'.
 goto next
 
 ::--------------------------------------------------------------------------
@@ -170,7 +162,7 @@ del clang_32.mak   clang_64.mak
 del visualc_32.mak visualc_64.mak
 del MinGW64_32.mak MinGW64_64.mak
 del MinGW32.mak
-del CygWin32.mak   CygWin64.mak
+del Cygwin_32.mak  Cygwin_64.mak
 del watcom_?.mak
 del bcc_?.mak
 goto next

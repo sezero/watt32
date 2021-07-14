@@ -61,9 +61,7 @@ if %1.==clang.    goto clang
 if %1.==mingw32.  goto mingw32
 if %1.==mingw64.  goto mingw64
 if %1.==borland.  goto borland
-if %1.==cygwin.   goto cygwin32
-if %1.==cygwin32. goto cygwin32
-if %1.==cygwin64. goto cygwin64
+if %1.==cygwin.   goto cygwin
 if %1.==djgpp.    goto djgpp
 if %1.==ladsoft.  goto ladsoft
 if %1.==lcc.      goto lcc
@@ -192,6 +190,7 @@ echo     or "nmake -f visualc-release_64.mak"
 goto next
 
 ::--------------------------------------------------------------------------
+:: old-style MinGW from 'mingw.org'. Soon history...
 :mingw32
 ::
 echo Generating MinGW32 makefile, directory, errnos and dependencies
@@ -210,7 +209,7 @@ goto next
 ::--------------------------------------------------------------------------
 :mingw64
 ::
-echo Generating MinGW64-w64 makefiles, directory, errnos and dependencies
+echo Generating MinGW64-w64 makefiles, directories, errnos and dependencies
 %MKMAKE% -o MinGW64_32.mak             -d build\MinGW64\32bit makefile.all MINGW64 WIN32
 %MKMAKE% -o MinGW64_64.mak             -d build\MinGW64\64bit makefile.all MINGW64 WIN64
 %MKDEP%  -s.o -p$(OBJDIR)/32bit/ *.c *.h > build\MinGW64\32bit\watt32.dep
@@ -230,33 +229,27 @@ make.exe -s -f ../util/pkg-conf.mak mingw64_pkg
 goto next
 
 ::--------------------------------------------------------------------------
-:cygwin32
+:cygwin
 ::
-echo Generating CygWin32 makefile, directory and dependencies
-%MKMAKE% -o CygWin32.mak -d build\CygWin\32bit makefile.all CYGWIN32 WIN32
+echo Generating CygWin (x86/x64) makefiles, directories and dependencies
+%MKMAKE% -o Cygwin_32.mak -d build\CygWin\32bit makefile.all CYGWIN32 WIN32
+%MKMAKE% -o Cygwin_64.mak -d build\CygWin\64bit makefile.all CYGWIN64 WIN64
 %MKDEP%  -s.o -p$(OBJDIR)/ *.c *.h > build\CygWin\32bit\watt32.dep
+%MKDEP%  -s.o -p$(OBJDIR)/ *.c *.h > build\CygWin\64bit\watt32.dep
 
-echo Run GNU make to make target:
-echo   make -f CygWin32.mak
 make.exe -s -f ../util/pkg-conf.mak cygwin_pkg
-goto next
-
-::--------------------------------------------------------------------------
-:cygwin64
-::
-echo Generating CygWin64 makefile, directory and dependencies
-%MKMAKE% -o CygWin64.mak -d build\CygWin\64bit makefile.all CYGWIN64 WIN64
-%MKDEP% -s.o -p$(OBJDIR)/ *.c *.h > build\CygWin\64bit\watt32.dep
-
-echo Run GNU make to make target:
-echo   make -f CygWin64.mak
 make.exe -s -f ../util/pkg-conf.mak cygwin64_pkg
+
+echo Run GNU make to make target(s):
+echo   E.g. "make -f Cygwin_32.mak"
+echo     or "make -f Cygwin_64.mak"
+echo Depending on which gcc.exe (32 or 64-bit) is first on your PATH, use the correct 'Cygwin_32.mak' or 'Cygwin_64.mak'.
 goto next
 
 ::--------------------------------------------------------------------------
 :pellesc
 ::
-echo Generating PellesC makefiles, directory, errnos and dependencies
+echo Generating PellesC makefiles, directories, errnos and dependencies
 %MKMAKE% -o pellesc_32.mak -d build\pellesc\32bit makefile.all PELLESC WIN32
 %MKMAKE% -o pellesc_64.mak -d build\pellesc\64bit makefile.all PELLESC WIN64
 %MKDEP%  -s.obj -p$(OBJDIR)\ *.c *.h   > build\pellesc\watt32.dep
@@ -315,7 +308,7 @@ echo Unknown option '%1'.
 :usage
 ::
 echo Configuring Watt-32 tcp/ip targets.
-echo Usage: %0 {borland, clang, cygwin32, cygwin64, djgpp, highc, ladsoft,
+echo Usage: %0 {borland, clang, cygwin, djgpp, highc, ladsoft,
 echo                      mingw32, mingw64, pellesc, visualc, watcom, all, clean}
 goto quit
 
@@ -334,8 +327,8 @@ del visualc-debug_64.mak
 del MinGW32.mak
 del MinGW64_32.mak
 del MinGW64_64.mak
-del CygWin32.mak
-del CygWin64.mak
+del Cygwin_32.mak
+del Cygwin_64.mak
 del watcom_w.mak
 del pellesc_32.mak
 del pellesc_64.mak
@@ -351,8 +344,9 @@ del build\highc\watt32.dep
 del build\ladsoft\watt32.dep
 del build\visualc\watt32.dep
 del build\MinGW32\watt32.dep
-del build\MinGW64\watt32.dep
-del build\CygWin\watt32.dep
+del build\MinGW64\32bit\watt32.dep
+del build\MinGW64\64bit\watt32.dep
+del build\CygWin\32bit\watt32.dep
 del build\CygWin\64bit\watt32.dep
 del build\watcom\watt32.dep
 del build\pellesc\watt32.dep
@@ -398,7 +392,6 @@ call %0 visualc   %2
 call %0 mingw32   %2
 call %0 mingw64   %2
 call %0 cygwin    %2
-call %0 cygwin64  %2
 call %0 watcom    %2
 call %0 lcc       %2
 call %0 clang     %2
