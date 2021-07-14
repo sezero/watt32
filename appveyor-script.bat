@@ -55,6 +55,7 @@ if %APPVEYOR_PROJECT_NAME%. == . (
   set WATTCP.CFG=%WATT_ROOT%
   set WATTCP_CFG=%WATT_ROOT%
   set _ECHO=c:\msys64\usr\bin\echo.exe -e
+  set CYGWIN=nodosfilewarning
 )
 
 ::
@@ -203,6 +204,13 @@ if %BUILDER%. == mingw64. (
   exit /b
 )
 
+if %BUILDER%. == cygwin. (
+  call configur.bat cygwin
+  %_ECHO% "\e[1;33m[%CPU%]: Building:\e[0m"
+  make -f cygwin_%BITS%.mak
+  exit /b
+)
+
 if %BUILDER%. == djgpp. (
   call :install_djgpp
   call configur.bat djgpp
@@ -246,13 +254,14 @@ if %BUILDER%. == watcom. (
 exit /b 1
 
 ::
-:: './bin/' programs to build for djgpp, Visual-C, MinGW-w64, clang-cl, Borland:
+:: './bin/' programs to build for djgpp, Visual-C, MinGW-w64, Cygwin, clang-cl and Borland:
 ::
 :build_bin
 
 set PROGS_DJ=bping.exe ping.exe finger.exe ident.exe htget.exe tcpinfo.exe tracert.exe country.exe
 set PROGS_VC=ping.exe finger.exe tcpinfo.exe host.exe htget.exe tracert.exe con-test.exe gui-test.exe lpq.exe lpr.exe ntime.exe whois.exe ident.exe country.exe
 set PROGS_MW=%PROGS_VC%
+set PROGS_CYG=%PROGS_VC%
 set PROGS_CL=%PROGS_VC%
 set PROGS_BC=%PROGS_VC%
 
@@ -281,6 +290,12 @@ if %BUILDER%. == visualc. (
 if %BUILDER%. == mingw64. (
   %_ECHO% "\e[1;33m[%CPU%]: Building PROGS_MW=%PROGS_MW%:\e[0m"
   make -f mingw64.mak %PROGS_MW%
+  exit /b
+)
+
+if %BUILDER%. == cygwin. (
+  %_ECHO% "\e[1;33m[%CPU%]: Building PROGS_CYG=%PROGS_CYG%:\e[0m"
+  make -f cygwin.mak %PROGS_CYG%
   exit /b
 )
 
@@ -335,7 +350,7 @@ exit /b 0
 ::
 :build_tests
   if %LOCAL_TEST%. == 0. (
-    %_ECHO% "\e[1;33mGenerating 'c:\projects\watt-32\wattcp.cfg'.\e[0m"
+    %_ECHO% "\e[1;33mGenerating '%WATTCP_CFG%\wattcp.cfg'.\e[0m"
     call :generate_wattcp_cfg
   )
 
@@ -352,6 +367,7 @@ exit /b 0
   if %BUILDER%. == djgpp.    make -f djgpp.mak
   if %BUILDER%. == clang.    make -f clang_%BITS%.mak
   if %BUILDER%. == mingw64.  make -f MinGW64_%BITS%.mak
+  if %BUILDER%. == cygwin.   make -f Cygwin_%BITS%.mak
   if %BUILDER%. == visualc.  make -f visualc_%BITS%.mak
   if %BUILDER%. == watcom. (
      if %MODEL%. == large. make -f watcom_l.mak
@@ -464,20 +480,20 @@ exit /b 0
 :: Generate a 'c:\projects\watt-32\wattcp.cfg' for AppVeyor
 ::
 :generate_wattcp_cfg
-  echo debug           = 2                                    > c:\projects\watt-32\wattcp.cfg
-  echo nameserver      = 8.8.8.8                             >> c:\projects\watt-32\wattcp.cfg
-  echo winpkt.device   =                                     >> c:\projects\watt-32\wattcp.cfg
-  echo winpkt.dumpfile = $(WATT_ROOT)\winpkt_dump.txt        >> c:\projects\watt-32\wattcp.cfg
-  echo winpkt.trace    = 2                                   >> c:\projects\watt-32\wattcp.cfg
-  echo winpkt.rxmode   = 0x20                                >> c:\projects\watt-32\wattcp.cfg
-  echo my_ip           = 10.0.0.2                            >> c:\projects\watt-32\wattcp.cfg
-  echo gateway         = 10.0.0.1                            >> c:\projects\watt-32\wattcp.cfg
-  echo netmask         = 255.255.255.0                       >> c:\projects\watt-32\wattcp.cfg
-  echo hosts           = $(WATT_ROOT)\bin\hosts              >> c:\projects\watt-32\wattcp.cfg
-  echo hosts6          = $(WATT_ROOT)\bin\hosts6             >> c:\projects\watt-32\wattcp.cfg
-  echo services        = $(WATT_ROOT)\bin\services           >> c:\projects\watt-32\wattcp.cfg
-  echo protocols       = $(WATT_ROOT)\bin\protocol           >> c:\projects\watt-32\wattcp.cfg
-  echo networks        = $(WATT_ROOT)\bin\networks           >> c:\projects\watt-32\wattcp.cfg
-  echo ethers          = $(WATT_ROOT)\ethers                 >> c:\projects\watt-32\wattcp.cfg
-  type c:\projects\watt-32\wattcp.cfg
+  echo debug           = 2                                    > %WATTCP_CFG%\wattcp.cfg
+  echo nameserver      = 8.8.8.8                             >> %WATTCP_CFG%\wattcp.cfg
+  echo winpkt.device   =                                     >> %WATTCP_CFG%\wattcp.cfg
+  echo winpkt.dumpfile = $(WATT_ROOT)\winpkt_dump.txt        >> %WATTCP_CFG%\wattcp.cfg
+  echo winpkt.trace    = 2                                   >> %WATTCP_CFG%\wattcp.cfg
+  echo winpkt.rxmode   = 0x20                                >> %WATTCP_CFG%\wattcp.cfg
+  echo my_ip           = 10.0.0.2                            >> %WATTCP_CFG%\wattcp.cfg
+  echo gateway         = 10.0.0.1                            >> %WATTCP_CFG%\wattcp.cfg
+  echo netmask         = 255.255.255.0                       >> %WATTCP_CFG%\wattcp.cfg
+  echo hosts           = $(WATT_ROOT)\bin\hosts              >> %WATTCP_CFG%\wattcp.cfg
+  echo hosts6          = $(WATT_ROOT)\bin\hosts6             >> %WATTCP_CFG%\wattcp.cfg
+  echo services        = $(WATT_ROOT)\bin\services           >> %WATTCP_CFG%\wattcp.cfg
+  echo protocols       = $(WATT_ROOT)\bin\protocol           >> %WATTCP_CFG%\wattcp.cfg
+  echo networks        = $(WATT_ROOT)\bin\networks           >> %WATTCP_CFG%\wattcp.cfg
+  echo ethers          = $(WATT_ROOT)\ethers                 >> %WATTCP_CFG%\wattcp.cfg
+  type %WATTCP_CFG%\wattcp.cfg
   exit /b

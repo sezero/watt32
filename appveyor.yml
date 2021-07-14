@@ -19,6 +19,10 @@ environment:
       CPU:     x86
     - BUILDER: mingw64
       CPU:     x64
+    - BUILDER: cygwin
+      CPU:     x86
+    - BUILDER: cygwin
+      CPU:     x64
     - BUILDER: borland
       CPU:     x86
     - BUILDER: djgpp
@@ -40,6 +44,7 @@ matrix:
   fast_finish: true
   allow_failures:
      - BUILDER: mingw64
+     - BUILDER: cygwin
      - BUILDER: clang
 
 install:
@@ -54,6 +59,11 @@ install:
   - cmd: set PATH=c:\msys64\usr\bin;%PATH%
 
   #
+  # Cygwin install option.
+  #
+  - cmd: set CYGWIN_OPT=-qgnNdOA -l c:\cygwin\var\cache\setup -R c:\cygwin -s http://cygwin.mirror.constant.com
+
+  #
   # Set compiler environment for MSVC/clang-cl first.
   # (the env-vars for 'BUILDER=watcom' is done in 'appveyor-script.bat').
   #
@@ -61,6 +71,7 @@ install:
   - cmd: if %BUILDER%. == clang.             call "c:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\vcvarsall.bat" %CPU%
   - cmd: if %BUILDER%-%CPU%. == mingw64-x86. set PATH=c:\msys64\MinGW32\bin;%PATH%
   - cmd: if %BUILDER%-%CPU%. == mingw64-x64. set PATH=c:\msys64\MinGW64\bin;%PATH%
+  - cmd: if %BUILDER%-%CPU%. == cygwin-x86.  c:\cygwin\setup-x86.exe %CYGWIN_OPT% > NUL & set PATH=c:\cygwin\bin;%PATH%
 
 build_script:
     - cmd: appveyor-script.bat build_src
