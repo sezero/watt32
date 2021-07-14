@@ -45,9 +45,9 @@ int MS_CDECL _tmain (int argc, TCHAR **argv)
 {
   int ch;
 
-  if (!strstr(wattcpBuildCC(),"_MSC_VER")  &&
-      !strstr(wattcpBuildCC(),"__clang__") &&
-      !strstr(wattcpBuildCC(),"__BORLANDC__"))
+  if (!strstr(wattcpBuildCC(), "_MSC_VER")  &&
+      !strstr(wattcpBuildCC(), "__clang__") &&
+      !strstr(wattcpBuildCC(), "__BORLANDC__"))
      printf ("This program is more useful with Visual-C, Clang or CBuilder.\n");
 
   while ((ch = getopt(argc, argv, "abdfeh?lsv")) != EOF)
@@ -95,8 +95,15 @@ int MS_CDECL _tmain (int argc, TCHAR **argv)
 }
 
 #if defined(IS_GUI)
-int APIENTRY _tWinMain (HINSTANCE instance, HINSTANCE prevInstance,
-                        LPTSTR cmdLine, int cmdShow)
+#if defined(__CYGWIN__)
+  extern int    _argc;
+  extern char **_argv;
+  #define __argc  _argc
+  #define __targv _argv
+#endif
+
+int WINAPI _tWinMain (HINSTANCE instance, HINSTANCE prevInstance,
+                      LPTSTR cmdLine, int cmdShow)
 {
   (void) instance;
   (void) prevInstance;

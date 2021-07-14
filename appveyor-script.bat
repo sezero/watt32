@@ -260,8 +260,8 @@ exit /b 1
 
 set PROGS_DJ=bping.exe ping.exe finger.exe ident.exe htget.exe tcpinfo.exe tracert.exe country.exe
 set PROGS_VC=ping.exe finger.exe tcpinfo.exe host.exe htget.exe tracert.exe con-test.exe gui-test.exe lpq.exe lpr.exe ntime.exe whois.exe ident.exe country.exe
+set PROGS_CYG=ping.exe finger.exe tcpinfo.exe host.exe htget.exe tracert.exe lpq.exe lpr.exe ntime.exe whois.exe ident.exe country.exe
 set PROGS_MW=%PROGS_VC%
-set PROGS_CYG=%PROGS_VC%
 set PROGS_CL=%PROGS_VC%
 set PROGS_BC=%PROGS_VC%
 

@@ -21,10 +21,10 @@ endif
 #
 # Set to 1 to link using static ../lib/$(CPU)/libwatt32-cygwin.a
 #
-STATIC_LIB = 0
+STATIC_LIB ?= 0
 
-CC      = gcc
-CFLAGS  = -g -Wall -W -O2 -I../inc -DWATT32 -I../inc
+CC     = gcc
+CFLAGS = -g -Wall -W -O2 -I../inc -DWATT32 -DUNICODE
 
 ifeq ($(CPU),x64)
   CFLAGS += -m64
@@ -44,13 +44,19 @@ PROGS = ping.exe     popdump.exe  rexec.exe   tcpinfo.exe  cookie.exe   \
         daytime.exe  dayserv.exe  finger.exe  host.exe     lpq.exe      \
         lpr.exe      ntime.exe    ph.exe      stat.exe     htget.exe    \
         revip.exe    vlsm.exe     whois.exe   wol.exe      eth-wake.exe \
-        ident.exe    country.exe  tracert.exe
+        ident.exe    country.exe  tracert.exe con-test.exe gui-test.exe
 
 all: $(PROGS)
 	@echo CygWin binaries done
 
 tracert.exe: tracert.c geoip.c
 	$(CC) $(CFLAGS) $(LDFLAGS) -DUSE_GEOIP tracert.c geoip.c -o $@ $(WATT_LIB) $(MAPFILE)
+
+gui-test.exe: w32-test.c # tmp.res
+	$(CC) $(CFLAGS) $(LDFLAGS) -DIS_GUI=1 -Wl,--subsystem,windows -o $@ w32-test.c $(WATT_LIB) $(MAPFILE)
+
+con-test.exe: w32-test.c # tmp.res
+	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ w32-test.c $(WATT_LIB) $(MAPFILE)
 
 %.exe: %.c $(WATT_LIB)
 	$(CC) $(CFLAGS) $(LDFLAGS) -o $*.exe $*.c $(WATT_LIB) $(MAPFILE)
