@@ -141,25 +141,18 @@ gen_mingw64 ()
   make -s -f ../util/pkg-conf.mak mingw64_pkg MINGW64_DIR=../lib
 }
 
-gen_cygwin32 ()
+gen_cygwin ()
 {
-  echo "Generating CygWin32 makefile, directory and dependencies"
-  ../util/linux/mkmake -o CygWin32.mak -d build/CygWin/32bit makefile.all CYGWIN WIN32
-  ../util/linux/mkdep -s.o -p\$\(OBJDIR\)/ *.c *.h > build/CygWin/watt32.dep
+  echo "Generating Cygwin makefiles, directories and dependencies"
+  ../util/linux/mkmake -o Cygwin_32.mak -d build/CygWin/32bit makefile.all CYGWIN WIN32
+  ../util/linux/mkmake -o Cygwin_64.mak -d build/CygWin/64bit makefile.all CYGWIN WIN64
+  ../util/linux/mkdep -s.o -p\$\(OBJDIR\)/ *.c *.h > build/CygWin/32bit/watt32.dep
+  ../util/linux/mkdep -s.o -p\$\(OBJDIR\)/ *.c *.h > build/CygWin/64bit/watt32.dep
 
-  echo "Run GNU make to make target:"
-  echo "  'make -f CygWin32.mak'"
-  make -s -f ../util/pkg-conf.mak cygwin_pkg CYGWIN_DIR=../lib
-}
-
-gen_cygwin64 ()
-{
-  echo "Generating CygWin64 makefile, directory and dependencies"
-  ../util/linux/mkmake -o CygWin64.mak -d build/CygWin/64bit makefile.all CYGWIN WIN64
-  ../util/linux/mkdep -s.o -p\$\(OBJDIR\)/ *.c *.h > build/CygWin/watt32.dep
-
-  echo "Run GNU make to make target:"
-  echo "  'make -f CygWin64.mak'"
+  echo "Run GNU make to make target(s):"
+  echo "    'make -f Cygwin_32.mak'"
+  echo " or 'make -f Cygwin_64.mak'"
+  make -s -f ../util/pkg-conf.mak cygwin_pkg   CYGWIN_DIR=../lib
   make -s -f ../util/pkg-conf.mak cygwin64_pkg CYGWIN_DIR=../lib
 }
 
@@ -220,14 +213,13 @@ gen_all ()
   gen_djgpp
   gen_mingw32
   gen_mingw64
-  gen_cygwin32
-  gen_cygwin64
+  gen_cygwin
   gen_watcom
 }
 
 do_clean ()
 {
-  rm -f djgpp.mak watcom_{f,l,s,w,x,3}.mak MinGW{32,64}.mak CygWin{32,64}.mak clang-release_{32,64}.mak clang-debug_{32,64}.mak
+  rm -f djgpp.mak watcom_{f,l,s,w,x,3}.mak MinGW{32,64}.mak CygWin_{32,64}.mak clang-release_{32,64}.mak clang-debug_{32,64}.mak
   rm -f build/djgpp/watt32.dep build/MinGW32/watt32.dep build/MinGW64/32bit/watt32.dep build/MinGW64/64bit/watt32.dep
   rm -f build/CygWin/watt32.dep build/watcom/watt32.dep build/clang/watt32.dep
   rm -f build/djgpp/syserr.c build/watcom/syserr.c build/MinGW32/syserr.c build/MinGW64/syserr.c build/clang/syserr.c
@@ -269,15 +261,14 @@ esac
 for i in "$@"
 do
  case $i in
-  all)       gen_all      ;;
-  clean)     do_clean     ;;
-  djgpp)     gen_djgpp    ;;
-  mingw32)   gen_mingw32  ;;
-  mingw64)   gen_mingw64  ;;
-  cygwin32)  gen_cygwin32 ;;
-  cygwin64)  gen_cygwin64 ;;
-  clang)     gen_clang    ;;
-  watcom)    gen_watcom   ;;
-  *)         bad_usage $i;;
+  all)     gen_all      ;;
+  clean)   do_clean     ;;
+  djgpp)   gen_djgpp    ;;
+  mingw32) gen_mingw32  ;;
+  mingw64) gen_mingw64  ;;
+  cygwin)  gen_cygwin   ;;
+  clang)   gen_clang    ;;
+  watcom)  gen_watcom   ;;
+  *)       bad_usage $i;;
  esac
 done
