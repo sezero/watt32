@@ -53,6 +53,7 @@ if %APPVEYOR_PROJECT_NAME%. == . (
   set APPVEYOR_BUILD_FOLDER=c:\projects\watt-32
   set APPVEYOR_BUILD_FOLDER_UNIX=c:/projects/watt-32
   set WATTCP.CFG=%WATT_ROOT%
+  set WATTCP_CFG=%WATT_ROOT%
   set _ECHO=c:\msys64\usr\bin\echo.exe -e
 )
 
