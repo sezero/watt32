@@ -52,8 +52,6 @@ if %APPVEYOR_PROJECT_NAME%. == . (
   set WATT_ROOT=c:\projects\watt-32
   set APPVEYOR_BUILD_FOLDER=c:\projects\watt-32
   set APPVEYOR_BUILD_FOLDER_UNIX=c:/projects/watt-32
-  set WATTCP.CFG=%WATT_ROOT%
-  set WATTCP_CFG=%WATT_ROOT%
   set _ECHO=c:\msys64\usr\bin\echo.exe -e
   set CYGWIN=nodosfilewarning
 )
@@ -350,6 +348,7 @@ exit /b 0
 ::
 :build_tests
   if %LOCAL_TEST%. == 0. (
+    set WATTCP_CFG=c:\projects\watt-32
     %_ECHO% "\e[1;33mGenerating '%WATTCP_CFG%\wattcp.cfg'.\e[0m"
     call :generate_wattcp_cfg
   )
@@ -477,23 +476,24 @@ exit /b 0
   exit /b
 
 ::
-:: Generate a 'c:\projects\watt-32\wattcp.cfg' for AppVeyor
+:: Generate a 'c:\projects\watt-32\wattcp.cfg' for AppVeyor only.
 ::
 :generate_wattcp_cfg
-  echo debug           = 2                                    > %WATTCP_CFG%\wattcp.cfg
-  echo nameserver      = 8.8.8.8                             >> %WATTCP_CFG%\wattcp.cfg
-  echo winpkt.device   =                                     >> %WATTCP_CFG%\wattcp.cfg
-  echo winpkt.dumpfile = $(WATT_ROOT)\winpkt_dump.txt        >> %WATTCP_CFG%\wattcp.cfg
-  echo winpkt.trace    = 2                                   >> %WATTCP_CFG%\wattcp.cfg
-  echo winpkt.rxmode   = 0x20                                >> %WATTCP_CFG%\wattcp.cfg
-  echo my_ip           = 10.0.0.2                            >> %WATTCP_CFG%\wattcp.cfg
-  echo gateway         = 10.0.0.1                            >> %WATTCP_CFG%\wattcp.cfg
-  echo netmask         = 255.255.255.0                       >> %WATTCP_CFG%\wattcp.cfg
-  echo hosts           = $(WATT_ROOT)\bin\hosts              >> %WATTCP_CFG%\wattcp.cfg
-  echo hosts6          = $(WATT_ROOT)\bin\hosts6             >> %WATTCP_CFG%\wattcp.cfg
-  echo services        = $(WATT_ROOT)\bin\services           >> %WATTCP_CFG%\wattcp.cfg
-  echo protocols       = $(WATT_ROOT)\bin\protocol           >> %WATTCP_CFG%\wattcp.cfg
-  echo networks        = $(WATT_ROOT)\bin\networks           >> %WATTCP_CFG%\wattcp.cfg
-  echo ethers          = $(WATT_ROOT)\ethers                 >> %WATTCP_CFG%\wattcp.cfg
+  echo # A generated %WATTCP_CFG%\wattcp.cfg for AppVeyor > %WATTCP_CFG%\wattcp.cfg
+  echo debug           = 2                               >> %WATTCP_CFG%\wattcp.cfg
+  echo nameserver      = 8.8.8.8                         >> %WATTCP_CFG%\wattcp.cfg
+  echo winpkt.device   =                                 >> %WATTCP_CFG%\wattcp.cfg
+  echo winpkt.dumpfile = $(WATT_ROOT)\winpkt_dump.txt    >> %WATTCP_CFG%\wattcp.cfg
+  echo winpkt.trace    = 2                               >> %WATTCP_CFG%\wattcp.cfg
+  echo winpkt.rxmode   = 0x20                            >> %WATTCP_CFG%\wattcp.cfg
+  echo my_ip           = 10.0.0.2                        >> %WATTCP_CFG%\wattcp.cfg
+  echo gateway         = 10.0.0.1                        >> %WATTCP_CFG%\wattcp.cfg
+  echo netmask         = 255.255.255.0                   >> %WATTCP_CFG%\wattcp.cfg
+  echo hosts           = $(WATT_ROOT)\bin\hosts          >> %WATTCP_CFG%\wattcp.cfg
+  echo hosts6          = $(WATT_ROOT)\bin\hosts6         >> %WATTCP_CFG%\wattcp.cfg
+  echo services        = $(WATT_ROOT)\bin\services       >> %WATTCP_CFG%\wattcp.cfg
+  echo protocols       = $(WATT_ROOT)\bin\protocol       >> %WATTCP_CFG%\wattcp.cfg
+  echo networks        = $(WATT_ROOT)\bin\networks       >> %WATTCP_CFG%\wattcp.cfg
+  echo ethers          = $(WATT_ROOT)\ethers             >> %WATTCP_CFG%\wattcp.cfg
   type %WATTCP_CFG%\wattcp.cfg
   exit /b

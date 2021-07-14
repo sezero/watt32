@@ -79,7 +79,6 @@ build_script:
 
 test_script:
 #    - cmd: set PATH=c:\Python34;%PATH% & set USE_CURL=1 & python.exe appveyor-script.py build_tests
-     - cmd: set WATTCP_CFG=c:\projects\watt-32
      - cmd: appveyor-script.bat build_tests
 
 #
