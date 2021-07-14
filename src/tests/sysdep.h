@@ -128,15 +128,6 @@
   #define HAVE_CHECK_CPU_TYPE
 #endif
 
-/*
- * Except for Cygwin x64 which uses no ASM code due to some weird linking issue.
- * Like:
- *   build/CygWin/64bit/cpumodel.o:fake:(.text+0x8): relocation truncated to fit: R_X86_64_32S against `.data'
- */
-#if defined(__CYGWIN__) && defined(__x86_64__)
-  #undef HAVE_CHECK_CPU_TYPE
-#endif
-
 #if !defined(__WATCOMC__)
   #define __watcall cdecl
 #else
