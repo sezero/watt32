@@ -987,7 +987,11 @@ uint64 win_get_rdtsc (void)
     am = SetThreadAffinityMask (ct, 1);
   }
 
+#ifdef __BORLANDC__
+  rc = get_rdtsc();
+#else
   rc = __rdtsc();
+#endif
 
   if (num_cpus > 1)
      SetThreadAffinityMask (ct, am);
