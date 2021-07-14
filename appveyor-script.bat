@@ -75,10 +75,9 @@ if %BUILDER%. == watcom. (
 ::
 :: Stuff common to '[build_src | build_bin | build_tests]'
 ::
-:: mingw32/mingw64: Stuff for 'util/pkg-conf.mak'.
+:: mingw64: Stuff for 'util/pkg-conf.mak'.
 ::
 md lib\pkgconfig 2> NUL
-set MINGW32=%APPVEYOR_BUILD_FOLDER_UNIX%
 set MINGW64=%APPVEYOR_BUILD_FOLDER_UNIX%
 
 ::
@@ -193,13 +192,6 @@ if %BUILDER%. == clang. (
   call configur.bat clang
   %_ECHO% "\e[1;33m[%CPU%]: Building release:\e[0m"
   make -f clang-release_%BITS%.mak
-  exit /b
-)
-
-if %BUILDER%. == mingw32. (
-  call configur.bat mingw32
-  %_ECHO% "\e[1;33m[%CPU%]: Building:\e[0m"
-  make -f MinGW32.mak
   exit /b
 )
 
