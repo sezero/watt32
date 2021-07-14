@@ -258,9 +258,9 @@ echo neterr.c: build\pellesc\syserr.c >> build\pellesc\watt32.dep
 ..\util\po_err -s > build\pellesc\syserr.c
 ..\util\po_err -e > ..\inc\sys\pellesc.err
 
-echo Run pomake to make targets:
+echo Run pomake to make target(s):
 echo   E.g. "pomake -f pellesc_32.mak"
-echo   E.g. "pomake -f pellesc_64.mak"
+echo     or "pomake -f pellesc_64.mak"
 goto next
 
 
@@ -282,7 +282,7 @@ goto next
 ::--------------------------------------------------------------------------
 :clang
 ::
-echo Generating CLang-Win32 makefiles, directory, errnos and dependencies
+echo Generating CLang-Win32 makefiles, directories, errnos and dependencies
 %MKMAKE% -o clang-release_32.mak -d build\clang\32bit\release makefile.all CLANG WIN32 RELEASE
 %MKMAKE% -o clang-release_64.mak -d build\clang\64bit\release makefile.all CLANG WIN64 RELEASE
 %MKMAKE% -o clang-debug_32.mak   -d build\clang\32bit\debug   makefile.all CLANG WIN32 DEBUG
