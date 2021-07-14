@@ -32,7 +32,7 @@ extern "C" {
 #if defined(__LCC__) && !defined(W32_LCC_INTRINSICS_INCLUDED)
   #include <intrinsics.h>
 
-#elif defined(__POCC__) || defined(__CYGWIN__)
+#elif defined(__POCC__) || defined(__CYGWIN__) || defined(__MINGW64_VERSION_MAJOR)
   #include <intrin.h>
 #endif
 
