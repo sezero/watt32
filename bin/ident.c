@@ -2,7 +2,6 @@
 #include <stdlib.h>
 #include <string.h>
 #include <assert.h>
-#include <conio.h>
 #include <tcp.h>
 #include <netdb.h>
 
@@ -13,7 +12,7 @@
 static int W32_CALL wait_handler (void *sock)
 {
   (void) sock;
-  return kbhit();
+  return watt_kbhit();
 }
 
 int ident (DWORD host, WORD client_port, WORD server_port)

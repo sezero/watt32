@@ -26,8 +26,11 @@
 #include <string.h>
 #include <time.h>
 #include <math.h>
-#include <dos.h>
 #include <tcp.h>
+
+#if !defined(__CYGWIN__)
+#include <dos.h>
+#endif
 
 #if !defined(__SMALL__) || defined(DOS386) /* 32-bit dmc defines __SMALL__ */
 #define TCP_TIME

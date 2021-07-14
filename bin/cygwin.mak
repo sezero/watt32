@@ -24,7 +24,7 @@ endif
 STATIC_LIB ?= 0
 
 CC     = gcc
-CFLAGS = -g -Wall -W -O2 -I../inc -DWATT32 -DUNICODE
+CFLAGS = -g -Wall -W -O2 -I../inc -Wno-address -DWATT32
 
 ifeq ($(CPU),x64)
   CFLAGS += -m64
