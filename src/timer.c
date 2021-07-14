@@ -987,7 +987,7 @@ uint64 win_get_rdtsc (void)
     am = SetThreadAffinityMask (ct, 1);
   }
 
-#ifdef __BORLANDC__
+#if defined(__BORLANDC__) || defined(__WATCOMC__)
   rc = get_rdtsc();
 #else
   rc = __rdtsc();
