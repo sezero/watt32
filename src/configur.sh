@@ -77,10 +77,10 @@ usage ()
 gen_djgpp ()
 {
   echo "Generating DJGPP makefile, directory, errnos and dependencies"
-  ../util/linux/mkmake -o djgpp.mak -d build/djgpp makefile.all  DJGPP
+  ../util/linux/mkmake -o djgpp.mak -d              build/djgpp makefile.all DJGPP
   ../util/linux/mkdep -s.o -p\$\(OBJDIR\)/ *.[ch] > build/djgpp/watt32.dep
+  echo "neterr.c: build/djgpp/syserr.c"          >> build/djgpp/watt32.dep
 
-  echo "neterr.c: build/djgpp/syserr.c" >> build/djgpp/watt32.dep
   #
   # these hacks won't work because errnos.c relies on being compiled as a target-exe.
   # echo "#include <errno.h>" | $DJGPP_PREFIX-gcc -E -dD - | grep "#define E" > ../util/generrno.h
@@ -96,10 +96,10 @@ gen_djgpp ()
 gen_mingw32 ()
 {
   echo "Generating MinGW32 makefile, directory, errnos and dependencies"
-  ../util/linux/mkmake -o MinGW32.mak -d build/MinGW32 makefile.all MINGW32 WIN32
+  ../util/linux/mkmake -o MinGW32.mak -d             build/MinGW32 makefile.all MINGW32 WIN32
   ../util/linux/mkdep -s.o -p\$\(OBJDIR\)/ *.c *.h > build/MinGW32/watt32.dep
+  echo "neterr.c: build/MinGW32/syserr.c"         >> build/MinGW32/watt32.dep
 
-  echo "neterr.c: build/MinGW32/syserr.c" >> build/MinGW32/watt32.dep
   #
   # these hacks won't work because errnos.c relies on being compiled as a target-exe.
   # echo "#include <errno.h>" | $MINGW_PREFIX-gcc -E -dD - | grep "#define E" > ../util/generrno.h
@@ -117,13 +117,11 @@ gen_mingw32 ()
 gen_mingw64 ()
 {
   echo "Generating MinGW64-w64 makefiles, directory, errnos and dependencies"
-  ../util/linux/mkmake -o MinGW64_32.mak -d build/MinGW64/32bit makefile.all MINGW64 WIN32
-  ../util/linux/mkmake -o MinGW64_64.mak -d build/MinGW64/64bit makefile.all MINGW64 WIN64
-  ../util/linux/mkdep -s.o -p\$\(OBJDIR\)32bit/ *.c *.h > build/MinGW64/32bit/watt32.dep
-  ../util/linux/mkdep -s.o -p\$\(OBJDIR\)64bit/ *.c *.h > build/MinGW64/64bit/watt32.dep
+  ../util/linux/mkmake -o MinGW64_32.mak -d          build/MinGW64/32bit makefile.all MINGW64 WIN32
+  ../util/linux/mkmake -o MinGW64_64.mak -d          build/MinGW64/64bit makefile.all MINGW64 WIN64
+  ../util/linux/mkdep -s.o -p\$\(OBJDIR\)/ *.c *.h > build/MinGW64/watt32.dep
+  echo "neterr.c: build/MinGW64/syserr.c"         >> build/MinGW64/watt32.dep
 
-  echo "neterr.c: build/MinGW64/syserr.c" >> build/MinGW64/32bit/watt32.dep
-  echo "neterr.c: build/MinGW64/syserr.c" >> build/MinGW64/64bit/watt32.dep
   #
   # these hacks won't work because errnos.c relies on being compiled as a target-exe.
   # echo "#include <errno.h>" | $MINGW64_PREFIX-gcc -E -dD - | grep "#define E" > ../util/generrno.h
@@ -144,10 +142,9 @@ gen_mingw64 ()
 gen_cygwin ()
 {
   echo "Generating Cygwin makefiles, directories and dependencies"
-  ../util/linux/mkmake -o Cygwin_32.mak -d build/CygWin/32bit makefile.all CYGWIN WIN32
-  ../util/linux/mkmake -o Cygwin_64.mak -d build/CygWin/64bit makefile.all CYGWIN WIN64
-  ../util/linux/mkdep -s.o -p\$\(OBJDIR\)/ *.c *.h > build/CygWin/32bit/watt32.dep
-  ../util/linux/mkdep -s.o -p\$\(OBJDIR\)/ *.c *.h > build/CygWin/64bit/watt32.dep
+  ../util/linux/mkmake -o Cygwin_32.mak -d           build/CygWin/32bit makefile.all CYGWIN WIN32
+  ../util/linux/mkmake -o Cygwin_64.mak -d           build/CygWin/64bit makefile.all CYGWIN WIN64
+  ../util/linux/mkdep -s.o -p\$\(OBJDIR\)/ *.c *.h > build/CygWin/watt32.dep
 
   echo "Run GNU make to make target(s):"
   echo "    'make -f Cygwin_32.mak'"
@@ -169,7 +166,7 @@ gen_clang ()
   ../util/linux/mkmake -o clang-debug_64.mak   -d build/clang/64bit/debug   makefile.all CLANG WIN64 DEBUG
 
   ../util/linux/mkdep -s.obj -p\$\(OBJDIR\)/ *.[ch] > build/clang/watt32.dep
-  echo "neterr.c: build/clang/syserr.c"             >> build/clang/watt32.dep
+  echo "neterr.c: build/clang/syserr.c"            >> build/clang/watt32.dep
 
   #
   # Not sure these will work (under Linux/Wine)?
@@ -219,9 +216,9 @@ gen_all ()
 
 do_clean ()
 {
-  rm -f djgpp.mak watcom_{f,l,s,w,x,3}.mak MinGW{32,64}.mak CygWin_{32,64}.mak clang-release_{32,64}.mak clang-debug_{32,64}.mak
-  rm -f build/djgpp/watt32.dep build/MinGW32/watt32.dep build/MinGW64/32bit/watt32.dep build/MinGW64/64bit/watt32.dep
-  rm -f build/CygWin/watt32.dep build/watcom/watt32.dep build/clang/watt32.dep
+  rm -f djgpp.mak watcom_{f,l,s,w,x,3}.mak MinGW32.mak MinGW64_{32,64}.mak CygWin_{32,64}.mak clang-release_{32,64}.mak clang-debug_{32,64}.mak
+  rm -f build/djgpp/watt32.dep  build/MinGW32/watt32.dep build/MinGW64/watt32.dep
+  rm -f build/CygWin/watt32.dep build/watcom/watt32.dep  build/clang/watt32.dep
   rm -f build/djgpp/syserr.c build/watcom/syserr.c build/MinGW32/syserr.c build/MinGW64/syserr.c build/clang/syserr.c
   rm -f ../inc/sys/djgpp.err ../inc/sys/watcom.err ../inc/sys/mingw32.err ../inc/sys/mingw64.err ../inc/sys/clang.err
 }
@@ -230,10 +227,10 @@ do_clean ()
 # Sanity check our pwd
 #
 test -f makefile.all || { missing_stuff ; }
-test -d ../bin || { missing_stuff ; }
-test -d ../inc || { missing_stuff ; }
-test -d ../lib || { missing_stuff ; }
-test -d ../util || { missing_stuff ; }
+test -d ../bin       || { missing_stuff ; }
+test -d ../inc       || { missing_stuff ; }
+test -d ../lib       || { missing_stuff ; }
+test -d ../util      || { missing_stuff ; }
 
 #
 # Make sure WATT_ROOT is set

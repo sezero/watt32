@@ -129,7 +129,7 @@ goto next
 echo Generating Metaware High-C makefile, directory, errnos and dependencies
 %MKMAKE% -o highc.mak -d build\highc makefile.all HIGHC FLAT
 %MKDEP%  -s.obj -p$(OBJDIR)/ *.c *.h > build\highc\watt32.dep
-echo neterr.c: build\highc/syserr.c >> build\highc\watt32.dep
+echo neterr.c: build/highc/syserr.c >> build\highc\watt32.dep
 
 %HC_ERR% -s > build\highc\syserr.c
 %HC_ERR% -e > ..\inc\sys\highc.err
@@ -159,7 +159,7 @@ goto next
 echo Generating DJGPP makefile, directory, errnos and dependencies
 %MKMAKE% -o djgpp.mak -d build\djgpp makefile.all DJGPP FLAT
 %MKDEP%  -s.o -p$(OBJDIR)/ *.c *.h   > build\djgpp\watt32.dep
-echo neterr.c: build\djgpp/syserr.c >> build\djgpp\watt32.dep
+echo neterr.c: build/djgpp/syserr.c >> build\djgpp\watt32.dep
 
 %DJ_ERR% -s > build\djgpp\syserr.c
 %DJ_ERR% -e > ..\inc\sys\djgpp.err
@@ -212,11 +212,8 @@ goto next
 echo Generating MinGW64-w64 makefiles, directories, errnos and dependencies
 %MKMAKE% -o MinGW64_32.mak             -d build\MinGW64\32bit makefile.all MINGW64 WIN32
 %MKMAKE% -o MinGW64_64.mak             -d build\MinGW64\64bit makefile.all MINGW64 WIN64
-%MKDEP%  -s.o -p$(OBJDIR)/32bit/ *.c *.h > build\MinGW64\32bit\watt32.dep
-%MKDEP%  -s.o -p$(OBJDIR)/64bit/ *.c *.h > build\MinGW64\64bit\watt32.dep
-
-echo neterr.c: build/MinGW64/syserr.c   >> build\MinGW64\32bit\watt32.dep
-echo neterr.c: build/MinGW64/syserr.c   >> build\MinGW64\64bit\watt32.dep
+%MKDEP%  -s.o -p$(OBJDIR)/ *.c *.h      > build\MinGW64\watt32.dep
+echo neterr.c: build/MinGW64/syserr.c  >> build\MinGW64\watt32.dep
 
 ..\util\mw64_err -s > build\MinGW64\syserr.c
 ..\util\mw64_err -e > ..\inc\sys\mingw64.err
@@ -231,11 +228,10 @@ goto next
 ::--------------------------------------------------------------------------
 :cygwin
 ::
-echo Generating CygWin (x86/x64) makefiles, directories and dependencies
-%MKMAKE% -o Cygwin_32.mak -d build\CygWin\32bit makefile.all CYGWIN WIN32
-%MKMAKE% -o Cygwin_64.mak -d build\CygWin\64bit makefile.all CYGWIN WIN64
-%MKDEP%  -s.o -p$(OBJDIR)/ *.c *.h > build\CygWin\32bit\watt32.dep
-%MKDEP%  -s.o -p$(OBJDIR)/ *.c *.h > build\CygWin\64bit\watt32.dep
+echo Generating Cygwin (x86/x64) makefiles, directories and dependencies
+%MKMAKE% -o Cygwin_32.mak          -d build\Cygwin\32bit makefile.all CYGWIN WIN32
+%MKMAKE% -o Cygwin_64.mak          -d build\Cygwin\64bit makefile.all CYGWIN WIN64
+%MKDEP%  -s.o -p$(OBJDIR)/ *.c *.h >  build\Cygwin\watt32.dep
 
 make.exe -s -f ../util/pkg-conf.mak cygwin_pkg
 make.exe -s -f ../util/pkg-conf.mak cygwin64_pkg
@@ -288,7 +284,7 @@ echo Generating CLang-Win32 makefiles, directories, errnos and dependencies
 %MKMAKE% -o clang-debug_32.mak   -d build\clang\32bit\debug   makefile.all CLANG WIN32 DEBUG
 %MKMAKE% -o clang-debug_64.mak   -d build\clang\64bit\debug   makefile.all CLANG WIN64 DEBUG
 %MKDEP% -s.obj -p$(OBJDIR)/ *.c *.h  > build\clang\watt32.dep
-echo neterr.c: build\clang\syserr.c >> build\clang\watt32.dep
+echo neterr.c: build/clang/syserr.c >> build\clang\watt32.dep
 
 ..\util\win32\clang_err -s > build\clang\syserr.c
 ..\util\win32\clang_err -e > ..\inc\sys\clang.err
@@ -343,42 +339,40 @@ del build\borland\watt32.dep
 del build\highc\watt32.dep
 del build\ladsoft\watt32.dep
 del build\visualc\watt32.dep
+del build\clang\watt32.dep
 del build\MinGW32\watt32.dep
-del build\MinGW64\32bit\watt32.dep
-del build\MinGW64\64bit\watt32.dep
-del build\CygWin\32bit\watt32.dep
-del build\CygWin\64bit\watt32.dep
-del build\watcom\watt32.dep
+del build\MinGW64\watt32.dep
+del build\Cygwin\watt32.dep
 del build\pellesc\watt32.dep
 del build\highc\watt32.dep
 del build\lcc\watt32.dep
-del build\clang\watt32.dep
+del build\watcom\watt32.dep
 
 del build\djgpp\syserr.c
-del build\watcom\syserr.c
 del build\borland\syserr.c
 del build\highc\syserr.c
 del build\ladsoft\syserr.c
 del build\visualc\syserr.c
+del build\watcom\syserr.c
 del build\MinGW32\syserr.c
 del build\MinGW64\syserr.c
 del build\pellesc\syserr.c
 del build\highc\syserr.c
 del build\lcc\syserr.c
-del build\clang\syserr.c
+del build\watcom\syserr.c
 
 del ..\inc\sys\djgpp.err
-del ..\inc\sys\watcom.err
 del ..\inc\sys\borlandc.err
 del ..\inc\sys\highc.err
 del ..\inc\sys\ladsoft.err
 del ..\inc\sys\visualc.err
+del ..\inc\sys\clang.err
 del ..\inc\sys\mingw32.err
 del ..\inc\sys\mingw64.err
 del ..\inc\sys\pellesc.err
 del ..\inc\sys\highc.err
 del ..\inc\sys\lcc.err
-del ..\inc\sys\clang.err
+del ..\inc\sys\watcom.err
 goto next
 
 ::------------------------------------------------------------
