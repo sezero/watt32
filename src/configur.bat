@@ -232,8 +232,8 @@ goto next
 :cygwin
 ::
 echo Generating CygWin (x86/x64) makefiles, directories and dependencies
-%MKMAKE% -o Cygwin_32.mak -d build\CygWin\32bit makefile.all CYGWIN32 WIN32
-%MKMAKE% -o Cygwin_64.mak -d build\CygWin\64bit makefile.all CYGWIN64 WIN64
+%MKMAKE% -o Cygwin_32.mak -d build\CygWin\32bit makefile.all CYGWIN WIN32
+%MKMAKE% -o Cygwin_64.mak -d build\CygWin\64bit makefile.all CYGWIN WIN64
 %MKDEP%  -s.o -p$(OBJDIR)/ *.c *.h > build\CygWin\32bit\watt32.dep
 %MKDEP%  -s.o -p$(OBJDIR)/ *.c *.h > build\CygWin\64bit\watt32.dep
 

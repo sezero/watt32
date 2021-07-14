@@ -51,8 +51,8 @@ goto next
 :cygwin
 ::
 echo Generating Cygwin (x86/x64) makefiles
-%MKMAKE% -o Cygwin_32.mak makefile.all CYGWIN32 WIN32 IS_GCC
-%MKMAKE% -o Cygwin_64.mak makefile.all CYGWIN64 WIN64 IS_GCC
+%MKMAKE% -o Cygwin_32.mak makefile.all CYGWIN WIN32 IS_GCC
+%MKMAKE% -o Cygwin_64.mak makefile.all CYGWIN WIN64 IS_GCC
 
 echo Run GNU make to make target(s):
 echo   "make -f Cygwin_32.mak"

@@ -3,7 +3,7 @@
  This is a master makefile that will generate all ./test GNU-makefiles.
  Currently supported compilers include:
 
-    CYGWIN32, CYGWIN64, DJGPP, HIGHC, MINGW32, MINGW64, VISUALC, WATCOM, BORLAND, CLANG
+    CYGWIN, DJGPP, HIGHC, MINGW32, MINGW64, VISUALC, WATCOM, BORLAND, CLANG
 
  Supported memory models and targets include:
 
@@ -81,18 +81,13 @@ ifeq ($(USE_IPV6),1)
   PROGRAMS += get_ai.exe get_ni.exe gethost6.exe presaddr.exe
 endif
 
-@ifdef WATCOM
-  @ifdef WIN32 FLAT
-    PROGRAMS += cpuid.exe
-  @endif
+@ifdef WATCOM WIN32 FLAT
+  PROGRAMS += cpuid.exe
 @endif
 
 @ifndef SMALL LARGE
-  @ifndef CYGWIN64
-    PROGRAMS += cpu.exe
-  @endif
-
-  PROGRAMS += chksum.exe   \
+  PROGRAMS += cpu.exe      \
+              chksum.exe   \
               cpuspeed.exe \
               eatsock.exe  \
               getserv.exe  \
@@ -206,7 +201,7 @@ NO_W32_CFLAGS = -D_Windows
   LDFLAGS += -ignore:4098
 @endif
 
-@ifdef VISUALC CLANG MINGW64 CYGWIN64
+@ifdef VISUALC CLANG MINGW64 CYGWIN
   @ifdef WIN32
     #
     # WIN32 -> 32-bit programs.
@@ -230,7 +225,7 @@ NO_W32_CFLAGS = -D_Windows
     @endif
   @endif
 
-  @ifdef MINGW64 CYGWIN64
+  @ifdef MINGW64 CYGWIN
     COMMON_CFLAGS += -m$(BITS)
   @endif
 
@@ -245,7 +240,7 @@ NO_W32_CFLAGS = -D_Windows
 @elifdef MINGW64
   WATT_LIB = $(LIB_DIR)/libwatt32.a
 
-@elifdef CYGWIN32 CYGWIN64
+@elifdef CYGWIN
   CYG_KBHIT_O = cyg_kbhit.o
   WATT_LIB    = $(LIB_DIR)/libwatt32-cygwin.a
 
@@ -291,7 +286,7 @@ NO_W32_CFLAGS = -D_Windows
 @endif
 
 
-@ifdef CYGWIN32 CYGWIN64
+@ifdef CYGWIN
   CC             = gcc
   COMMON_CFLAGS += -static-libgcc -Wno-unused-but-set-variable -Wno-unused-function -Wno-unused-variable
   NO_W32_CFLAGS += -D__USE_W32_SOCKETS  # Use Winsock2
