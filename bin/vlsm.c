@@ -182,7 +182,7 @@ void cmd_quit (void)
 
 void cmd_help (void)
 {
-  char buf[64];
+  char buf [20 + sizeof(progPath)];
   char *pager = getenv ("PAGER");
 
   if (pager)
