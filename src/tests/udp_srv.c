@@ -16,6 +16,10 @@
   #include <arpa/inet.h>
 #endif
 
+#ifndef __ms_u_long
+#define __ms_u_long unsigned long
+#endif
+
 #define MYPORT 6543    /* the port users will be connecting to */
 
 #define MAXBUFLEN 100
@@ -45,11 +49,11 @@ int main (int argc, char **argv)
 
   while (argc > 1)
   {
-    if (!strcmp(argv[1],"-n"))
+    if (!strcmp(argv[1], "-n"))
        non_block = 1;
-    if (!strcmp(argv[1],"-d"))
+    if (!strcmp(argv[1], "-d"))
        debug = 1;
-    if (!strcmp(argv[1],"-?") || !strcmp(argv[1],"-h"))
+    if (!strcmp(argv[1], "-?") || !strcmp(argv[1], "-h"))
        usage();
     argc--;
     argv++;
@@ -61,8 +65,8 @@ int main (int argc, char **argv)
   sock_init();
 
 #elif defined(_Windows)
-  memset (&wsa_state, 0, sizeof(wsa_state));
-  if (WSAStartup(MAKEWORD(1,1),&wsa_state) != 0)
+  memset (&wsa_state, '\0', sizeof(wsa_state));
+  if (WSAStartup(MAKEWORD(1,1), &wsa_state) != 0)
   {
     printf ("Unable to start WinSock, error code=%d\n", WSAGetLastError());
     return (0);
@@ -128,10 +132,10 @@ int main (int argc, char **argv)
       return (1);
     }
 
-    printf ("\007got packet from %s\n",inet_ntoa(their_addr.sin_addr));
-    printf ("packet is %d bytes long\n",numbytes);
+    printf ("\007got packet from %s\n", inet_ntoa(their_addr.sin_addr));
+    printf ("packet is %d bytes long\n", numbytes);
     buf[numbytes] = '\0';
-    printf ("packet contains \"%s\"\n",buf);
+    printf ("packet contains \"%s\"\n", buf);
 
     /*  --- Reply to this message (echo) */
 
