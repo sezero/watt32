@@ -40,6 +40,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <assert.h>
+#include <wchar.h>
 
 //#define OLE2ANSI           /* Use ASCII from Ole32.dll functions */
 
@@ -851,7 +852,7 @@ static void setup_info_adapter_print (const char *adapter_name)
 
   for (inf = setup_info + 0; inf; inf = inf->next)
   {
-    if (!inf->NetCfgInstanceId || strcmp(inf->NetCfgInstanceId,adapter_name))
+    if (!inf->NetCfgInstanceId || strcmp(inf->NetCfgInstanceId, adapter_name))
        continue;
 
     IfTypePreStart   = inf->IfTypePreStart;
@@ -948,32 +949,32 @@ static int setup_info_populate (const char *key_name, struct setup_info_st *info
                   value[0] ? value : "(no value)",
                   data[0]  ? data  : "(no data)");
 
-           if (!strcmp(value,"NetCfgInstanceId"))
+           if (!strcmp(value, "NetCfgInstanceId"))
            {
              info->NetCfgInstanceId = strdup (data);
              added++;
            }
-           else if (!strcmp(value,"MatchingDeviceId"))
+           else if (!strcmp(value, "MatchingDeviceId"))
            {
              info->MatchingDeviceId = strdup (data);
              added++;
            }
-           else if (!strcmp(value,"DriverDate"))
+           else if (!strcmp(value, "DriverDate"))
            {
              info->DriverDate = strdup (data);
              added++;
            }
-           else if (!strcmp(value,"DriverVersion"))
+           else if (!strcmp(value, "DriverVersion"))
            {
              info->DriverVersion = strdup (data);
              added++;
            }
-           else if (!strcmp(value,"DeviceInstanceID"))
+           else if (!strcmp(value, "DeviceInstanceID"))
            {
              info->DeviceInstanceID = strdup (data);
              added++;
            }
-           else if (!strcmp(value,"ComponentId"))
+           else if (!strcmp(value, "ComponentId"))
            {
              info->ComponentId = strdup (data);
              added++;
@@ -981,7 +982,7 @@ static int setup_info_populate (const char *key_name, struct setup_info_st *info
            break;
 
       case REG_DWORD:
-           if (!strcmp(value,"IfTypePreStart"))
+           if (!strcmp(value, "IfTypePreStart"))
            {
              info->IfTypePreStart = val32;
              added++;
@@ -991,7 +992,7 @@ static int setup_info_populate (const char *key_name, struct setup_info_st *info
            break;
 
       case REG_QWORD:
-           if (!strcmp(value,"NetworkInterfaceInstallTimestamp"))
+           if (!strcmp(value, "NetworkInterfaceInstallTimestamp"))
            {
              info->NetworkInterfaceInstallTimestamp = (ULONGLONG)val64;
              t_val = ULONGLONG_to_ctime (info->NetworkInterfaceInstallTimestamp);
@@ -1111,12 +1112,12 @@ static BOOL skip_filter_iface (const BYTE *descr_a, const wchar_t *descr_w)
   {
     end_w = wcschr (descr_w, L'\0') - 5;
 //  printf ("end_w: '%" WIDESTR_FMT "'\n", end_w);
-    return (memcmp(end_w,(const void*)L"-000",2*4) == 0);
+    return (memcmp(end_w, (const void*)L"-000", 2*4) == 0);
   }
 
-  end_a = strchr ((const char*)descr_a,'\0') - 5;
+  end_a = strchr ((const char*)descr_a, '\0') - 5;
 //printf ("end_a: '%s'\n", end_a);
-  return (memcmp(end_a,(const void*)"-000",4) == 0);
+  return (memcmp(end_a, (const void*)"-000", 4) == 0);
 }
 
 #undef  ADD_VALUE
@@ -1971,7 +1972,7 @@ static const char *get_if_type (DWORD if_type)
 {
   const char *ret = _list_lookup (if_type, if_types, DIM(if_types));
 
-  if (!strncmp(ret,"_IF_TYPE_",9))
+  if (!strncmp(ret, "_IF_TYPE_", 9))
      ret += 9;
   return (ret);
 }
