@@ -536,7 +536,7 @@ static BOOL gethostbyaddr_internal (const char *addr_name, int len, int type,
   addr = *(DWORD*) addr_name;
 
   if ((addr == INADDR_ANY ||           /* 0.0.0.0 -> my_ip_addr */
-       addr == gethostid()) &&
+       addr == (DWORD)gethostid()) &&
       gethostname(name,sizeof(name)) == 0)
   {
     /** \todo Should return all our addresses if we're multihomed.
