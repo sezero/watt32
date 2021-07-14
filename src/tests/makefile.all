@@ -81,10 +81,6 @@ ifeq ($(USE_IPV6),1)
   PROGRAMS += get_ai.exe get_ni.exe gethost6.exe presaddr.exe
 endif
 
-@ifdef WATCOM WIN32 FLAT
-  PROGRAMS += cpuid.exe
-@endif
-
 @ifndef SMALL LARGE
   PROGRAMS += cpu.exe      \
               chksum.exe   \
