@@ -567,6 +567,7 @@ static const char *get_guid_str (const GUID *guid)
 static char *strip_end (char *buf, char ch)
 {
   char *p = buf + strlen(buf) - 1;
+
   if (*p == ch)
      *p = '\0';
    return (buf);
@@ -1772,12 +1773,12 @@ static int _pkt_win_print_GetIfTable (void)
   {
     const MIB_IFROW *if_row = (const MIB_IFROW*) (if_table->table + i);
 
-    if (skip_this_iface(NULL,if_row,NULL))
+    if (skip_this_iface(NULL, if_row, NULL))
     {
       num_ifaces_skipped++;
       continue;
     }
-    if (skip_filter_iface(if_row->bDescr,NULL))
+    if (skip_filter_iface(if_row->bDescr, NULL))
     {
       num_ifaces_filtered++;
       continue;
@@ -1827,12 +1828,12 @@ static int _pkt_win_print_GetIfTable2 (void)
   {
     const MIB_IF_ROW2 *if_row2 = if_table2->Table + i;
 
-    if (skip_this_iface(NULL,NULL,if_row2))
+    if (skip_this_iface(NULL, NULL, if_row2))
     {
       num_ifaces_skipped++;
       continue;
     }
-    if (skip_filter_iface(NULL,if_row2->Description))
+    if (skip_filter_iface(NULL, if_row2->Description))
     {
       num_ifaces_filtered++;
       continue;
@@ -2068,12 +2069,12 @@ static int _pkt_win_print_GetIfTable2Ex (void)
   {
     const MIB_IF_ROW2 *if_row2 = if_table2->Table + i;
 
-    if (skip_this_iface(NULL,NULL,if_row2))
+    if (skip_this_iface(NULL, NULL, if_row2))
     {
       num_ifaces_skipped++;
       continue;
     }
-    if (skip_filter_iface(NULL,if_row2->Description))
+    if (skip_filter_iface(NULL, if_row2->Description))
     {
       num_ifaces_filtered++;
       continue;
@@ -2240,14 +2241,14 @@ static int _pkt_win_print_GetAdaptersAddresses (void)
     ipv4_only_iface = TRUE;
     num++;
 
-    if (skip_this_iface(addr,NULL,NULL))
+    if (skip_this_iface(addr, NULL, NULL))
     {
       addr = addr->Next;
       num_ifaces_skipped++;
       continue;
     }
 
-    if (skip_filter_iface(NULL,addr->Description))
+    if (skip_filter_iface(NULL, addr->Description))
     {
       addr = addr->Next;
       num_ifaces_filtered++;

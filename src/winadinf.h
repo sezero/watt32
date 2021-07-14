@@ -235,6 +235,15 @@
   #define COMPILE_WINADINF_C
 
 #elif defined(__CYGWIN__)       /* CygWin 32/64-bit */
+  #include <cygwin/version.h>
+
+  #if (CYGWIN_VERSION_DLL_MAJOR >= 3002)  /* Not sure about the version */
+    #define HAVE_NETIOAPI_H
+    #define HAVE_WLANAPI_H
+    #define HAVE_WINDOT11_H
+    #define HAVE_WSAQuerySetA
+  #endif
+
   #define COMPILE_WINADINF_C
 #endif
 
