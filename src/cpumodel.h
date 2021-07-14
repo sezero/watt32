@@ -105,26 +105,7 @@ extern char  DATA_DECL x86_vendor_id[13];
   extern BOOL  SYSCALL cdecl SelReadable (WORD sel);
 #endif
 
-#if defined(__WATCOMC__) && 0 /* no more need for this */
-  #pragma aux x86_type                    "*"
-  #pragma aux x86_model                   "*"
-  #pragma aux x86_mask                    "*"
-  #pragma aux x86_hard_math               "*"
-  #pragma aux x86_capability              "*"
-  #pragma aux x86_vendor_id               "*"
-  #pragma aux x86_have_cpuid              "*"
-
-  #pragma aux (__cdecl) _w32_CheckCpuType "*"
-  #pragma aux (__cdecl) _w32_MY_CS        "*"
-  #pragma aux (__cdecl) _w32_MY_DS        "*"
-  #pragma aux (__cdecl) _w32_MY_ES        "*"
-  #pragma aux (__cdecl) _w32_MY_SS        "*"
-  #pragma aux (__cdecl) _w32_asm_ffs      "*"
-  #pragma aux (__cdecl) _w32_Get_CR4      "*"
-  #pragma aux (__cdecl) _w32_SelWriteable "*"
-  #pragma aux (__cdecl) _w32_SelReadable  "*"
-
-#elif defined(__HIGHC__)
+#if defined(__HIGHC__)
   #pragma alias (x86_type,         "x86_type")
   #pragma alias (x86_model,        "x86_model")
   #pragma alias (x86_mask,         "x86_mask")
@@ -161,7 +142,7 @@ extern char  DATA_DECL x86_vendor_id[13];
               ".byte 0x0F,0xA2;"   /* cpuid opcode */
             : "=a" (*eax), "=b" (*ebx), "=c" (*ecx), "=d" (*edx)
             : "0" (val));
-    ARGSUSED (val);  /* for lint etc. */
+    ARGSUSED (val);
     ARGSUSED (eax);
     ARGSUSED (ebx);
     ARGSUSED (ecx);
@@ -209,22 +190,17 @@ extern char  DATA_DECL x86_vendor_id[13];
     ARGSUSED (r4);
   }
 
-  #if 1
-    /*
-     * Taken from:
-     *   http://stackoverflow.com/questions/9887839/clock-cycle-count-wth-gcc
-     */
-    W32_GCC_INLINE uint64 get_rdtsc (void)
-    {
-      unsigned hi, lo;
-      __asm__ __volatile__ (
-                "rdtsc" : "=a" (lo), "=d" (hi) );
-      return ( (uint64)lo) | ( ((uint64)hi) << 32 );
-    }
-  #else
-    #undef  get_rdtsc
-    #define get_rdtsc() __builtin_ia32_rdtsc()
-  #endif
+  /*
+   * Taken from:
+   *   http://stackoverflow.com/questions/9887839/clock-cycle-count-wth-gcc
+   */
+  W32_GCC_INLINE uint64 get_rdtsc (void)
+  {
+    unsigned hi, lo;
+    __asm__ __volatile__ (
+              "rdtsc" : "=a" (lo), "=d" (hi) );
+    return ( (uint64)lo) | ( ((uint64)hi) << 32 );
+  }
 
 #elif defined(WATCOM386)
   /*
