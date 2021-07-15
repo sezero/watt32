@@ -239,7 +239,8 @@ make.exe -s -f ../util/pkg-conf.mak cygwin64_pkg
 echo Run GNU make to make target(s):
 echo   E.g. "make -f Cygwin_32.mak"
 echo     or "make -f Cygwin_64.mak"
-echo Depending on which gcc.exe (32 or 64-bit) is first on your PATH, use the correct 'Cygwin_32.mak' or 'Cygwin_64.mak'.
+echo Depending on which gcc.exe (32 or 64-bit) is first on your PATH, use the
+echo correct 'Cygwin_32.mak' or 'Cygwin_64.mak'.
 goto next
 
 ::--------------------------------------------------------------------------
@@ -278,7 +279,7 @@ goto next
 ::--------------------------------------------------------------------------
 :clang
 ::
-echo Generating CLang-Win32 makefiles, directories, errnos and dependencies
+echo Generating 'clang-cl' makefiles, directories, errnos and dependencies
 %MKMAKE% -o clang-release_32.mak -d build\clang\32bit\release makefile.all CLANG WIN32 RELEASE
 %MKMAKE% -o clang-release_64.mak -d build\clang\64bit\release makefile.all CLANG WIN64 RELEASE
 %MKMAKE% -o clang-debug_32.mak   -d build\clang\32bit\debug   makefile.all CLANG WIN32 DEBUG
@@ -292,7 +293,8 @@ echo neterr.c: build/clang/syserr.c >> build\clang\watt32.dep
 echo Run GNU make to make target(s):
 echo   E.g. "make -f clang-release_32.mak"
 echo     or "make -f clang-release_64.mak"
-echo Depending on which clang-cl.exe (32 or 64-bit) is first on your PATH, use the correct 'clang-release_32.mak' or 'clang-release_64.mak'.
+echo Depending on which clang-cl.exe (32 or 64-bit) is first on your PATH, use the
+echo correct 'clang-release_32.mak' or 'clang-release_64.mak'.
 goto next
 
 ::--------------------------------------------------------------------------
