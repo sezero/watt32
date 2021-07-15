@@ -440,12 +440,12 @@ struct ip_mreq {
 #endif
 
 #ifndef IN6_ARE_ADDR_EQUAL
-#define IN6_ARE_ADDR_EQUAL(a,b) \
+#define IN6_ARE_ADDR_EQUAL(a, b) \
         (memcmp ((void*)a, (void*)b, sizeof(struct in6_addr)) == 0)
 #endif
 
 #ifndef IN6_ADDR_EQUAL
-#define IN6_ADDR_EQUAL(a,b) IN6_ARE_ADDR_EQUAL(a,b)
+#define IN6_ADDR_EQUAL(a, b) IN6_ARE_ADDR_EQUAL(a, b)
 #endif
 
 #ifndef IN6_IS_ADDR_MC_NODELOCAL

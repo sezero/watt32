@@ -497,7 +497,7 @@ good:
     {
       if (res)
          *res = sentinel.ai_next;
-      // dump_addrinfo (*res);
+   // dump_addrinfo (*res);
       return (0);   /* success */
     }
     error = EAI_FAIL;

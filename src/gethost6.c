@@ -210,7 +210,7 @@ struct hostent * W32_CALL gethostent6 (void)
 
   while (1)
   {
-    if (!fgets(buf,sizeof(buf),host6file))
+    if (!fgets(buf, sizeof(buf), host6file))
        return (NULL);
 
     tok = strltrim (buf);
@@ -311,7 +311,7 @@ static BOOL gethostbyname6_internal (const char *name, const char **alias,
   {
     int i;
 
-    if (h->h_name && !stricmp(h->h_name,name))
+    if (h->h_name && !stricmp(h->h_name, name))
     {
       /* if cached entry expired, do DNS lookup
        */
@@ -325,7 +325,7 @@ static BOOL gethostbyname6_internal (const char *name, const char **alias,
       return (TRUE);
     }
     for (i = 0; i < MAX_HOST_ALIASES && h->h_aliases[i]; i++)
-        if (!stricmp(name,h->h_aliases[i]))
+        if (!stricmp(name, h->h_aliases[i]))
         {
           if (h->h_timeout && now > h->h_timeout)
              goto expired;
@@ -341,7 +341,7 @@ static BOOL gethostbyname6_internal (const char *name, const char **alias,
   /* Not found in linked list (hosts6 file or cache). Check name
    * against our own host-name (short-name or FQDN)
    */
-  if (hostname[0] && !stricmp(name,hostname))
+  if (hostname[0] && !stricmp(name, hostname))
   {
     memcpy (&ret->h_address[0], &in6addr_my_ip, sizeof(ret->h_address[0]));
     ret->h_num_addr = 1;
@@ -349,7 +349,7 @@ static BOOL gethostbyname6_internal (const char *name, const char **alias,
     return (TRUE);
   }
 
-  if (!gethostname(our_name,sizeof(our_name)) && !stricmp(name,our_name))
+  if (!gethostname(our_name, sizeof(our_name)) && !stricmp(name, our_name))
   {
     memcpy (&ret->h_address[0], &in6addr_my_ip, sizeof(ret->h_address[0]));
     ret->h_num_addr = 1;
@@ -466,7 +466,7 @@ static BOOL gethostbyaddr6_internal (const char *addr, struct _hostent6 *ret)
 
   if ((IN6_ARE_ADDR_EQUAL(&ip, &in6addr_any) ||  /* :: -> in6addr_myip */
        IN6_IS_ADDR_LINKLOCAL(&ip)) &&            /* FE8/119 */
-      gethostname(name,sizeof(name)) == 0)
+      gethostname(name, sizeof(name)) == 0)
   {
     memcpy (&ret->h_address[0], &in6addr_my_ip, sizeof(ret->h_address[0]));
     ret->h_num_addr = 1;
@@ -477,9 +477,10 @@ static BOOL gethostbyaddr6_internal (const char *addr, struct _hostent6 *ret)
   now = time (NULL);
 
   for (h = host0; h; h = h->h_next)
-      /** \todo should check all addresses
+      /**
+       * \todo should check all addresses
        */
-      if (IN6_ARE_ADDR_EQUAL(&h->h_address[0],&ip))
+      if (IN6_ARE_ADDR_EQUAL(&h->h_address[0], &ip))
       {
         /* if cached entry expired, do a new reverse lookup
          */
@@ -573,7 +574,7 @@ static struct _hostent6 *add_hostent6 (
     if (h->h_aliases[0])
        free (h->h_aliases[0]);     /* !! max 1 alias */
     memset (&h->h_address[1], 0,   /* clear old addresses */
-            sizeof(h->h_address)-sizeof(ip6_address));
+            sizeof(h->h_address) - sizeof(ip6_address));
     h->h_aliases[0] = NULL;
   }
   else           /* create a new node */

@@ -229,7 +229,7 @@ struct hostent *W32_CALL gethostent (void)
 
   while (1)
   {
-    if (!fgets(buf,sizeof(buf),hostFile))
+    if (!fgets(buf,sizeof(buf), hostFile))
        return (NULL);
 
     tok = strltrim (buf);
@@ -246,7 +246,7 @@ struct hostent *W32_CALL gethostent (void)
      endhostent();
 
   memset (&h, 0, sizeof(h));
-  if (!strcmp(ip,"0.0.0.0"))   /* inet_addr() maps 0 -> INADDR_NONE */
+  if (!strcmp(ip, "0.0.0.0"))   /* inet_addr() maps 0 -> INADDR_NONE */
        h.h_address[0] = INADDR_ANY;
   else h.h_address[0] = inet_addr (ip);
 
@@ -341,7 +341,7 @@ static BOOL gethostbyname_internal (const char *name, const char **alias,
   {
     int i;
 
-    if (h->h_name && !stricmp(h->h_name,name))
+    if (h->h_name && !stricmp(h->h_name, name))
     {
       /* if cached entry expired, do DNS lookup
        */
@@ -352,7 +352,7 @@ static BOOL gethostbyname_internal (const char *name, const char **alias,
       return (h->h_address[0] != INADDR_NONE ? TRUE : FALSE);
     }
     for (i = 0; i < MAX_HOST_ALIASES && h->h_aliases[i]; i++)
-        if (!stricmp(name,h->h_aliases[i]))
+        if (!stricmp(name, h->h_aliases[i]))
         {
           if (h->h_timeout && now > h->h_timeout)
              goto expired;
@@ -367,7 +367,7 @@ static BOOL gethostbyname_internal (const char *name, const char **alias,
    * against our own host-name (short-name or FQDN).
    * \todo Should return all our addresses if we're multihomed.
    */
-  if (hostname[0] && !stricmp(name,hostname))
+  if (hostname[0] && !stricmp(name, hostname))
   {
     ret->h_num_addr   = 1;
     ret->h_address[0] = gethostid();
@@ -376,7 +376,7 @@ static BOOL gethostbyname_internal (const char *name, const char **alias,
     return (TRUE);
   }
 
-  if (!gethostname(our_name,sizeof(our_name)) && !stricmp(name,our_name))
+  if (!gethostname(our_name, sizeof(our_name)) && !stricmp(name, our_name))
   {
     ret->h_num_addr   = 1;
     ret->h_address[0] = gethostid();
@@ -537,7 +537,7 @@ static BOOL gethostbyaddr_internal (const char *addr_name, int len, int type,
 
   if ((addr == INADDR_ANY ||           /* 0.0.0.0 -> my_ip_addr */
        addr == (DWORD)gethostid()) &&
-      gethostname(name,sizeof(name)) == 0)
+      gethostname(name, sizeof(name)) == 0)
   {
     /** \todo Should return all our addresses if we're multihomed.
      */
@@ -580,7 +580,7 @@ static BOOL gethostbyaddr_internal (const char *addr_name, int len, int type,
            goto expired;
 
         *ret = *h;
-        if (!strcmp(h->h_name,"*unknown*"))
+        if (!strcmp(h->h_name, "*unknown*"))
            return (FALSE);
         return (TRUE);
       }
@@ -929,6 +929,7 @@ int main (void)
     fprintf (stderr, "gethostbyname() failed!. h_errno = %d\n", h_errno);
     return (1);
   }
+
   fprintf (stderr, "Waiting for cache-entry to timeout..");
   do_sleep (wait_time);
 

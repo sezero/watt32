@@ -58,14 +58,14 @@
 *.tr2
 *.txt
 *.upx
-*.wat
 *.win
 *.wo
 *.xml
 *.yam
 *.zip
 *._xe
-array-bounds.c
+watt-32.pc
+watt-32_64.pc
 watcom-arpa-test.*
 back.btm
 blkfile*

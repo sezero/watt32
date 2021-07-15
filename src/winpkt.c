@@ -357,8 +357,7 @@ static BOOL find_adapter (char *aname, size_t size)
   return (rc);
 }
 
-
-/*
+/**
  * Check receive-mode 'bits' for an illegal bit by turning all
  * legal bits off.
  */
@@ -388,7 +387,6 @@ static BOOL legal_recv_mode (WORD bits)
   return (bits == 0);
 }
 
-
 /**
  * Initialise one of WinPcap, SwsVpkt, Win10Pcap, NPcap or WanPacket
  * and return our MAC address.
@@ -400,7 +398,7 @@ int W32_CALL pkt_eth_init (mac_address *mac_addr)
   BOOL  is_up, unknown_driver;
   char  descr [512];
 
-  if (_watt_is_win9x)  /**< \todo Support Win-9x/ME/CE too */
+  if (_watt_is_win9x)
   {
     (*_printf) (_LANG("Only Win-NT+ is supported.\n"));
     _pkt_errno = PDERR_GEN_FAIL;
@@ -424,7 +422,7 @@ int W32_CALL pkt_eth_init (mac_address *mac_addr)
     const char *file = expand_var_str (dump_fname);
 
     _strlcpy (dump_fname, file, sizeof(dump_fname));
-    if (!strcmp(dump_fname,"-"))
+    if (!strcmp(dump_fname, "-"))
          trace_file = stdout;
     else trace_file = fopen_excl (file, "w+t");
   }
@@ -434,11 +432,11 @@ int W32_CALL pkt_eth_init (mac_address *mac_addr)
    */
   unknown_driver = (_pktdrvrname[0] == '\0');
 
-  _eth_SwsVpkt   = (strnicmp(_pktdrvrname,"\\\\.\\SwsVpkt",11) == 0);
-  _eth_winpcap   = (strnicmp(_pktdrvrname,"\\Device\\NPF_{",13) == 0);
-  _eth_npcap     = (strnicmp(_pktdrvrname,"\\Device\\NPCAP_{",13) == 0);
-  _eth_win10pcap = (strnicmp(_pktdrvrname,"\\Device\\WTCAP_A_{",15) == 0);
-  _eth_wanpacket = (strnicmp(_pktdrvrname,"\\Device\\NPF_Generic",19) == 0);
+  _eth_SwsVpkt   = (strnicmp(_pktdrvrname, "\\\\.\\SwsVpkt", 11) == 0);
+  _eth_winpcap   = (strnicmp(_pktdrvrname, "\\Device\\NPF_{", 13) == 0);
+  _eth_npcap     = (strnicmp(_pktdrvrname, "\\Device\\NPCAP_{", 13) == 0);
+  _eth_win10pcap = (strnicmp(_pktdrvrname, "\\Device\\WTCAP_A_{", 15) == 0);
+  _eth_wanpacket = (strnicmp(_pktdrvrname, "\\Device\\NPF_Generic", 19) == 0);
 
   if ((_eth_winpcap || _eth_npcap || _eth_win10pcap || unknown_driver) && !PacketInitModule())
   {
@@ -448,7 +446,7 @@ int W32_CALL pkt_eth_init (mac_address *mac_addr)
     return (WERR_PKT_ERROR);
   }
 
-  if (!_pktdrvrname[0] && !find_adapter(_pktdrvrname,sizeof(_pktdrvrname)))
+  if (!_pktdrvrname[0] && !find_adapter(_pktdrvrname, sizeof(_pktdrvrname)))
   {
     const char *problem = "";
     BOOL  env_ok = (getenv("WATTCP.CFG") || getenv("WATTCP_CFG"));
@@ -1154,7 +1152,7 @@ int W32_CALL pkt_get_stats (struct PktStats *stats, struct PktStats *total)
 {
   if (!_pkt_inf || !_pkt_inf->get_stats_op)
      return (0);
-  return (*_pkt_inf->get_stats_op) (_pkt_inf->adapter,stats,total);
+  return (*_pkt_inf->get_stats_op) (_pkt_inf->adapter, stats, total);
 }
 
 DWORD W32_CALL pkt_dropped (void)

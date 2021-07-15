@@ -134,8 +134,8 @@ enum ParseMode {
                                    val, low, high));                       \
           } while (0)
 #else
-  #define CONFIG_DBG_MSG(lvl, args)  ((void)0)
-  #define RANGE_CHECK(val,low,high)  ((void)0)
+  #define CONFIG_DBG_MSG(lvl, args)    ((void)0)
+  #define RANGE_CHECK(val, low, high)  ((void)0)
 #endif
 
 
@@ -241,7 +241,7 @@ const char *expand_var_str (const char *str)
   const  char *dollar = p;
   size_t i;
 
-  if (!p || strlen(p) < 4 || !strchr(p+3,')'))  /* minimum "$(x)" */
+  if (!p || strlen(p) < 4 || !strchr(p+3, ')'))  /* minimum "$(x)" */
      return (str);
 
   for (i = 0, p += 2; i < sizeof(env)-1; i++)
@@ -295,9 +295,9 @@ static BOOL set_value (BOOL is_hex, const char *value, void *arg, int size)
 
 #if (DOSX)
   if (is_hex)
-     ok = (sscanf(s,"0x%8lX",&val) == 1 || sscanf(s,"x%8lX",&val) == 1);
+     ok = (sscanf(s, "0x%8lX", &val) == 1 || sscanf(s, "x%8lX", &val) == 1);
   if (!ok)
-     ok = (sscanf(s,"%10ld",&val) == 1);   /* "2147483647"; 10 digits */
+     ok = (sscanf(s, "%10ld", &val) == 1);   /* "2147483647"; 10 digits */
 #else
   if (is_hex)
   {
@@ -315,7 +315,7 @@ static BOOL set_value (BOOL is_hex, const char *value, void *arg, int size)
     }
 
     ch = toupper (*s);
-    if (len > 0 && strchr(hex_chars_upper,ch))
+    if (len > 0 && strchr(hex_chars_upper, ch))
     {
       val = atox (s-2);
       if (strlen(s) >= 4)
@@ -352,7 +352,7 @@ static BOOL set_value (BOOL is_hex, const char *value, void *arg, int size)
     case 2:
 #if (DOSX == 0)
          RANGE_CHECK (val, INT_MIN, INT_MAX);
-         *(int*)arg = (int) min (max(val,INT_MIN), INT_MAX);
+         *(int*)arg = (int) min (max(val, INT_MIN), INT_MAX);
 #else
          RANGE_CHECK (val, 0, (int)USHRT_MAX);
          *(WORD*)arg = (WORD) min (val, USHRT_MAX);
@@ -364,7 +364,7 @@ static BOOL set_value (BOOL is_hex, const char *value, void *arg, int size)
 
     default:
 #if (DOSX)
-        if (!valid_addr(arg,sizeof(int)))
+        if (!valid_addr(arg, sizeof(int)))
         {
           CONFIG_DBG_MSG (0, ("Illegal `arg' addr %" ADDR_FMT "\n", ADDR_CAST(arg)));
           return (FALSE);
@@ -495,11 +495,11 @@ int W32_CALL parse_config_table (const struct config_table *tab,
 
 static void set_my_ip (const char *value)
 {
-  if (!stricmp(value,"bootp"))
+  if (!stricmp(value, "bootp"))
        _bootp_on = 1;
-  else if (!stricmp(value,"dhcp"))
+  else if (!stricmp(value, "dhcp"))
        _dhcp_on = 1;
-  else if (!stricmp(value,"rarp"))
+  else if (!stricmp(value, "rarp"))
        _rarp_on = 1;
   else my_ip_addr = resolve (value);
 }
@@ -691,7 +691,7 @@ const char *get_argv0 (void)
 
   _dx_config_inf (&cnf, (UCHAR*)&cnf);
 
-  if (_dx_ldt_rd(cnf.c_env_sel,(UCHAR*)&descr))
+  if (_dx_ldt_rd(cnf.c_env_sel, (UCHAR*)&descr))
      return (NULL);
 
   limit = descr.limit0_15 + ((descr.limit16_19 & 15) << 16);
@@ -760,94 +760,94 @@ static void set_recv_win (const char *value)
  * application.
  */
 static const struct config_table normal_cfg[] = {
-       { "MY_IP",         ARG_FUNC,   (void*)set_my_ip          },
-       { "HOSTNAME",      ARG_FUNC,   (void*)set_hostname       },
-       { "NETMASK",       ARG_ATOIP,  (void*)&sin_mask          },
-       { "GATEWAY",       ARG_FUNC,   (void*)set_gateway        },
-       { "NAMESERVER",    ARG_FUNC,   (void*)set_nameserv       },
-       { "COOKIE",        ARG_FUNC,   (void*)set_cookie         },
-       { "EADDR",         ARG_FUNC,   (void*)set_eaddr          },
-       { "ETHIP",         ARG_FUNC,   (void*)set_ethip          },
-       { "DEBUG",         ARG_FUNC,   (void*)set_debug_on       },
-       { "BOOTP",         ARG_RESOLVE,(void*)&_bootp_host       },
-       { "BOOTPTO",       ARG_ATOI,   (void*)&_bootp_timeout    },
-       { "BOOTP_TO",      ARG_ATOI,   (void*)&_bootp_timeout    },
-       { "SOCKDELAY",     ARG_ATOI,   (void*)&sock_delay        },
-       { "MSS",           ARG_ATOI,   (void*)&_mss              },
-       { "MTU",           ARG_ATOI,   (void*)&_mtu              },
+       { "MY_IP",          ARG_FUNC,   (void*)set_my_ip          },
+       { "HOSTNAME",       ARG_FUNC,   (void*)set_hostname       },
+       { "NETMASK",        ARG_ATOIP,  (void*)&sin_mask          },
+       { "GATEWAY",        ARG_FUNC,   (void*)set_gateway        },
+       { "NAMESERVER",     ARG_FUNC,   (void*)set_nameserv       },
+       { "COOKIE",         ARG_FUNC,   (void*)set_cookie         },
+       { "EADDR",          ARG_FUNC,   (void*)set_eaddr          },
+       { "ETHIP",          ARG_FUNC,   (void*)set_ethip          },
+       { "DEBUG",          ARG_FUNC,   (void*)set_debug_on       },
+       { "BOOTP",          ARG_RESOLVE,(void*)&_bootp_host       },
+       { "BOOTPTO",        ARG_ATOI,   (void*)&_bootp_timeout    },
+       { "BOOTP_TO",       ARG_ATOI,   (void*)&_bootp_timeout    },
+       { "SOCKDELAY",      ARG_ATOI,   (void*)&sock_delay        },
+       { "MSS",            ARG_ATOI,   (void*)&_mss              },
+       { "MTU",            ARG_ATOI,   (void*)&_mtu              },
 
-       { "DOMAIN.SUFFIX", ARG_FUNC,   (void*)set_domain         },
-       { "DOMAIN.TIMEOUT",ARG_ATOW,   (void*)&dns_timeout       },
-       { "DOMAIN.RECURSE",ARG_ATOI,   (void*)&dns_recurse       },
-       { "DOMAIN.IDNA",   ARG_ATOI,   (void*)&dns_do_idna       },
-       { "DOMAIN.DO_IPV6",ARG_ATOI,   (void*)&dns_do_ipv6       },
-       { "DOMAIN.WINDNS", ARG_ATOX_W, (void*)&dns_windns        },
+       { "DOMAIN.SUFFIX",  ARG_FUNC,   (void*)set_domain         },
+       { "DOMAIN.TIMEOUT", ARG_ATOW,   (void*)&dns_timeout       },
+       { "DOMAIN.RECURSE", ARG_ATOI,   (void*)&dns_recurse       },
+       { "DOMAIN.IDNA",    ARG_ATOI,   (void*)&dns_do_idna       },
+       { "DOMAIN.DO_IPV6", ARG_ATOI,   (void*)&dns_do_ipv6       },
+       { "DOMAIN.WINDNS",  ARG_ATOX_W, (void*)&dns_windns        },
 
        /* These are kept for backward compatability. Delete
         * them some day.
         */
-       { "DOMAINSLIST",   ARG_FUNC,   (void*)depr_set_domain1   },
-       { "DOMAIN_LIST",   ARG_FUNC,   (void*)depr_set_domain2   },
-       { "DOMAINTO",      ARG_FUNC,   (void*)depr_dns_timeout1  },
-       { "DOMAIN_TO",     ARG_FUNC,   (void*)depr_dns_timeout2  },
-       { "DOMAIN_RECURSE",ARG_FUNC,   (void*)depr_dns_recurse   },
+       { "DOMAINSLIST",    ARG_FUNC,   (void*)depr_set_domain1   },
+       { "DOMAIN_LIST",    ARG_FUNC,   (void*)depr_set_domain2   },
+       { "DOMAINTO",       ARG_FUNC,   (void*)depr_dns_timeout1  },
+       { "DOMAIN_TO",      ARG_FUNC,   (void*)depr_dns_timeout2  },
+       { "DOMAIN_RECURSE", ARG_FUNC,   (void*)depr_dns_recurse   },
 
-       { "MULTIHOMES",    ARG_ATOI,   (void*)&multihomes        },
-       { "ICMP_MASK_REQ", ARG_ATOI,   (void*)&_do_mask_req      },
-       { "DYNAMIC_HOST",  ARG_ATOI,   (void*)&dynamic_host      },
-       { "RAND_LPORT",    ARG_ATOI,   (void*)&use_rand_lport    },
-       { "REDIRECTS",     ARG_FUNC,   (void*)icmp_doredirect    },
-       { "PRINT",         ARG_FUNC,   (void*)do_print           },
-       { "INCLUDE",       ARG_FUNC,   (void*)do_include_file    },
+       { "MULTIHOMES",     ARG_ATOI,   (void*)&multihomes        },
+       { "ICMP_MASK_REQ",  ARG_ATOI,   (void*)&_do_mask_req      },
+       { "DYNAMIC_HOST",   ARG_ATOI,   (void*)&dynamic_host      },
+       { "RAND_LPORT",     ARG_ATOI,   (void*)&use_rand_lport    },
+       { "REDIRECTS",      ARG_FUNC,   (void*)icmp_doredirect    },
+       { "PRINT",          ARG_FUNC,   (void*)do_print           },
+       { "INCLUDE",        ARG_FUNC,   (void*)do_include_file    },
 #if defined(USE_PROFILER)
-       { "PROFILE.ENABLE",ARG_ATOI,   (void*)&profile_enable    },
-       { "PROFILE.FILE",  ARG_STRCPY, (void*)&profile_file      },
+       { "PROFILE.ENABLE", ARG_ATOI,   (void*)&profile_enable    },
+       { "PROFILE.FILE",   ARG_STRCPY, (void*)&profile_file      },
 #endif
 #if defined(USE_LANGUAGE)
-       { "LANGUAGE",      ARG_FUNC,   (void*)lang_init          },
+       { "LANGUAGE",       ARG_FUNC,   (void*)lang_init          },
 #endif
 #if defined(USE_BSD_API)
-       { "HOSTS",         ARG_FUNC,   (void*)_ReadHostsFile     },
+       { "HOSTS",          ARG_FUNC,   (void*)_ReadHostsFile     },
 #if defined(USE_IPV6)
-       { "HOSTS6",        ARG_FUNC,   (void*)_ReadHosts6File    },
+       { "HOSTS6",         ARG_FUNC,   (void*)_ReadHosts6File    },
 #endif
-       { "SERVICES",      ARG_FUNC,   (void*)_ReadServFile      },
-       { "PROTOCOLS",     ARG_FUNC,   (void*)_ReadProtoFile     },
-       { "NETWORKS",      ARG_FUNC,   (void*)_ReadNetworksFile  },
-       { "NETDB_ALIVE",   ARG_ATOI,   (void*)&netdbCacheLife    },
-       { "ETHERS",        ARG_FUNC,   (void*)_InitEthersFile    },
+       { "SERVICES",       ARG_FUNC,   (void*)_ReadServFile      },
+       { "PROTOCOLS",      ARG_FUNC,   (void*)_ReadProtoFile     },
+       { "NETWORKS",       ARG_FUNC,   (void*)_ReadNetworksFile  },
+       { "NETDB_ALIVE",    ARG_ATOI,   (void*)&netdbCacheLife    },
+       { "ETHERS",         ARG_FUNC,   (void*)_InitEthersFile    },
 #endif
-       { "IP.DEF_TTL",    ARG_ATOI,   (void*)&_default_ttl      },
-       { "IP.DEF_TOS",    ARG_ATOX_B, (void*)&_default_tos      },
-       { "IP.ID_INCR",    ARG_ATOI,   (void*)&_ip4_id_increment },
-       { "IP.DONT_FRAG",  ARG_ATOI,   (void*)&_ip4_dont_frag    },
-       { "IP.FRAG_REASM", ARG_ATOI,   (void*)&_ip4_frag_reasm   },
-       { "IP.LOOPBACK",   ARG_ATOX_W, (void*)&loopback_mode     },
+       { "IP.DEF_TTL",     ARG_ATOI,   (void*)&_default_ttl      },
+       { "IP.DEF_TOS",     ARG_ATOX_B, (void*)&_default_tos      },
+       { "IP.ID_INCR",     ARG_ATOI,   (void*)&_ip4_id_increment },
+       { "IP.DONT_FRAG",   ARG_ATOI,   (void*)&_ip4_dont_frag    },
+       { "IP.FRAG_REASM",  ARG_ATOI,   (void*)&_ip4_frag_reasm   },
+       { "IP.LOOPBACK",    ARG_ATOX_W, (void*)&loopback_mode     },
 #if !defined(USE_UDP_ONLY)
-       { "DATATIMEOUT",         ARG_ATOI, (void*)&sock_data_timeout }, /* EE Aug-99 */
-       { "INACTIVE",            ARG_ATOI, (void*)&sock_inactive     },
-       { "TCP.NAGLE",           ARG_ATOI, (void*)&tcp_nagle         },
-       { "TCP.OPT.TS",          ARG_ATOI, (void*)&tcp_opt_ts        },
-       { "TCP.OPT.SACK",        ARG_ATOI, (void*)&tcp_opt_sack      },
-       { "TCP.OPT.WSCALE",      ARG_ATOI, (void*)&tcp_opt_wscale    },
-       { "TCP.TIMER.OPEN_TO",   ARG_ATOI, (void*)&tcp_OPEN_TO       },
-       { "TCP.TIMER.CLOSE_TO",  ARG_ATOI, (void*)&tcp_CLOSE_TO      },
-       { "TCP.TIMER.RTO_ADD",   ARG_ATOI, (void*)&tcp_RTO_ADD       },
-       { "TCP.TIMER.RTO_BASE",  ARG_ATOI, (void*)&tcp_RTO_BASE      },
-       { "TCP.TIMER.RTO_SCALE", ARG_ATOI, (void*)&tcp_RTO_SCALE     },
-       { "TCP.TIMER.RESET_TO",  ARG_ATOI, (void*)&tcp_RST_TIME      },
-       { "TCP.TIMER.RETRAN_TO", ARG_ATOI, (void*)&tcp_RETRAN_TIME   },
-       { "TCP.TIMER.KEEPALIVE", ARG_ATOI, (void*)&tcp_keep_idle     },
-       { "TCP.TIMER.KEEPINTVL", ARG_ATOI, (void*)&tcp_keep_intvl    },
-       { "TCP.TIMER.MAX_IDLE",  ARG_ATOI, (void*)&tcp_max_idle      },
-       { "TCP.TIMER.MAX_VJSA",  ARG_ATOI, (void*)&tcp_MAX_VJSA      },
-       { "TCP.TIMER.MAX_VJSD",  ARG_ATOI, (void*)&tcp_MAX_VJSD      },
-       { "TCP.MTU_DISCOVERY",   ARG_ATOI, (void*)&mtu_discover      },
-       { "TCP.BLACKHOLE_DETECT",ARG_ATOI, (void*)&mtu_blackhole     },
-       { "TCP.RECV_WIN",        ARG_FUNC, (void*)set_recv_win       },
+       { "DATATIMEOUT",          ARG_ATOI, (void*)&sock_data_timeout },
+       { "INACTIVE",             ARG_ATOI, (void*)&sock_inactive     },
+       { "TCP.NAGLE",            ARG_ATOI, (void*)&tcp_nagle         },
+       { "TCP.OPT.TS",           ARG_ATOI, (void*)&tcp_opt_ts        },
+       { "TCP.OPT.SACK",         ARG_ATOI, (void*)&tcp_opt_sack      },
+       { "TCP.OPT.WSCALE",       ARG_ATOI, (void*)&tcp_opt_wscale    },
+       { "TCP.TIMER.OPEN_TO",    ARG_ATOI, (void*)&tcp_OPEN_TO       },
+       { "TCP.TIMER.CLOSE_TO",   ARG_ATOI, (void*)&tcp_CLOSE_TO      },
+       { "TCP.TIMER.RTO_ADD",    ARG_ATOI, (void*)&tcp_RTO_ADD       },
+       { "TCP.TIMER.RTO_BASE",   ARG_ATOI, (void*)&tcp_RTO_BASE      },
+       { "TCP.TIMER.RTO_SCALE",  ARG_ATOI, (void*)&tcp_RTO_SCALE     },
+       { "TCP.TIMER.RESET_TO",   ARG_ATOI, (void*)&tcp_RST_TIME      },
+       { "TCP.TIMER.RETRAN_TO",  ARG_ATOI, (void*)&tcp_RETRAN_TIME   },
+       { "TCP.TIMER.KEEPALIVE",  ARG_ATOI, (void*)&tcp_keep_idle     },
+       { "TCP.TIMER.KEEPINTVL",  ARG_ATOI, (void*)&tcp_keep_intvl    },
+       { "TCP.TIMER.MAX_IDLE",   ARG_ATOI, (void*)&tcp_max_idle      },
+       { "TCP.TIMER.MAX_VJSA",   ARG_ATOI, (void*)&tcp_MAX_VJSA      },
+       { "TCP.TIMER.MAX_VJSD",   ARG_ATOI, (void*)&tcp_MAX_VJSD      },
+       { "TCP.MTU_DISCOVERY",    ARG_ATOI, (void*)&mtu_discover      },
+       { "TCP.BLACKHOLE_DETECT", ARG_ATOI, (void*)&mtu_blackhole     },
+       { "TCP.RECV_WIN",         ARG_FUNC, (void*)set_recv_win       },
 #endif
-       { "MEMDBG.STACK_DUMP",   ARG_ATOI, (void*)&stkwalk_details   },  /* put this somewehere else */
-       { "MEMDBG.FORTIFY_FAIL", ARG_ATOI, (void*)&fortify_fail_rate },  /* put this somewehere else */
+       { "MEMDBG.STACK_DUMP",    ARG_ATOI, (void*)&stkwalk_details   },  /* put this somewehere else */
+       { "MEMDBG.FORTIFY_FAIL",  ARG_ATOI, (void*)&fortify_fail_rate },  /* put this somewehere else */
 
        { NULL, 0, NULL }
      };
@@ -1255,7 +1255,7 @@ long W32_CALL tcp_config (const char *path)
        goto not_found;
   }
 
-  if (!FOPEN_BIN(file,fname))  /* shouldn't happen */
+  if (!FOPEN_BIN(file, fname))  /* shouldn't happen */
      goto not_found;
 
   current_file = name;
@@ -1347,21 +1347,10 @@ void Usage (void)
   exit (0);
 }
 
-#ifdef __CYGWIN__
-  #include <sys/stat.h>
-  static long filelength (int fd)
-  {
-    struct stat st;
-    if (fstat(fd,&st) != 0)
-       return (-1);
-    return (st.st_size);
-  }
-#endif
-
 #if !defined(USE_BUFFERED_IO)
   #undef  fileno
-  #define fileno(file)   0
-  #define filelength(fd) 0
+  #define fileno(file)        0
+  #define watt_filelength(fd) 0
 #endif
 
 int main (int argc, char **argv)
@@ -1393,7 +1382,7 @@ int main (int argc, char **argv)
     cfg_file = *argv;
     if (FOPEN_BIN(cfg,cfg_file))
     {
-      file_len = filelength (fileno(cfg));
+      file_len = watt_filelength (fileno(cfg));
       FCLOSE (cfg);
     }
   }
