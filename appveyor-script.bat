@@ -494,6 +494,6 @@ exit /b 0
   echo services        = $(WATT_ROOT)\bin\services       >> %WATTCP_CFG%\wattcp.cfg
   echo protocols       = $(WATT_ROOT)\bin\protocol       >> %WATTCP_CFG%\wattcp.cfg
   echo networks        = $(WATT_ROOT)\bin\networks       >> %WATTCP_CFG%\wattcp.cfg
-  echo ethers          = $(WATT_ROOT)\ethers             >> %WATTCP_CFG%\wattcp.cfg
+  echo ethers          = $(WATT_ROOT)\bin\ethers         >> %WATTCP_CFG%\wattcp.cfg
   type %WATTCP_CFG%\wattcp.cfg
   exit /b
