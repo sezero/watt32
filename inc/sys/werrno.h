@@ -182,11 +182,13 @@ W32_FUNC char *W32_CALL strerror_s_ (int errnum);
 
 #elif !defined(_MSC_VER) && !defined(WIN32) && !defined(__WATCOMC__)
   #if !defined(_INC_STDLIB) && !defined(_STDLIB_H_) && !defined(_STDIO_H)
-  W32_FUNC void W32_CALL perror (const char *str);
+    #undef perror
+    W32_FUNC void W32_CALL perror (const char *str);
   #endif
 
   #if !defined(_INC_STRING) && !defined(_STRING_H) && !defined(_STRING_H_)
-  W32_FUNC char *W32_CALL strerror (int errnum);
+    #undef strerror
+    W32_FUNC char *W32_CALL strerror (int errnum);
   #endif
 #endif
 
