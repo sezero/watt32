@@ -919,8 +919,9 @@ W32_FUNC int         W32_CALL _w32_ffs (int i);
 #if defined(__HIGHC__)
   W32_FUNC int W32_CALL system (const char *cmd);
   pragma Alias (system, "_mw_watt_system");
+#endif
 
-#elif defined(__HIGHC__) || (defined(__DMC__) && defined(__MSDOS__))
+#if defined(__HIGHC__) || (defined(__DMC__) && defined(__MSDOS__))
   W32_FUNC void W32_CALL delay (unsigned int msec);
 #endif
 
@@ -931,13 +932,6 @@ W32_FUNC int         W32_CALL _w32_ffs (int i);
 
 W32_FUNC unsigned W32_CALL Random (unsigned a, unsigned b);
 W32_FUNC void     W32_CALL RandomWait (unsigned a, unsigned b);
-
-/*
- * Tracing to RS-232 serial port, by Gundolf von Bachhaus <GBachhaus@gmx.net>
- * Watt-32 library must be compiled with `USE_RS232_DBG' (see .\src\config.h)
- */
-W32_FUNC int W32_CALL   trace2com_init (WORD portAddress, DWORD baudRate);
-W32_FUNC int MS_CDECL __trace2com      (const char *fmt, ...)  W32_ATTR_PRINTF(1,2);
 
 #ifdef __cplusplus
 }
