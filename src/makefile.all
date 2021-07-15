@@ -1018,7 +1018,7 @@ $(OBJPATH)%.obj: %.cpp
 $(OBJPATH)%.obj: %.asm
 	$(AS) $(AFLAGS) -Fo./$@ -Fl./$(OBJPATH)$*.lst $<
 
-include build/clang/watt32.dep
+-include build/clang/watt32.dep
 
 clean:
 	- rm -f $(TARGETS) $(OBJPATH)*.obj $(OBJPATH)*.arg $(OBJPATH)cflags.h $(OBJPATH)cflagsbf.h $(RESOURCE)
@@ -1068,7 +1068,7 @@ $(OBJPATH)cpumodel.obj: cpumodel.asm
 $(OBJPATH)%.obj: %.c
 	$(CC) -c @$(C_ARGS) -o $@ $<
 
-include $(OBJPATH)watt32.dep
+-include $(OBJPATH)watt32.dep
 
 clean:
 	rm -f $(TARGETS) $(OBJPATH)*.obj $(OBJPATH)*.arg $(OBJPATH)*.h cpumodel.lst $(PKT_STUB)
@@ -1396,7 +1396,7 @@ $(OBJPATH)cpumodel.obj: cpumodel.asm
 	$(CC) -c $(CFLAGS) -Fo$*.obj $<
 
 .asm{$(OBJDIR)}.obj:
-	$(AS) $(AFLAGS) -Fo $*.obj -Fl $(OBJPATH)$*.lst $<
+	$(AS) $(AFLAGS) -Fo.\$*.obj -Fl.\$*.lst $<
 
 !include build\pellesc\watt32.dep
 
