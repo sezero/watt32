@@ -981,6 +981,23 @@ int W32_CALL watt_kbhit (void)
 #endif
 }
 
+/**
+ * `filelength()` is needed in `pcconfig.c` and some applications.
+ * So add this utility function here.
+ */
+long W32_CALL watt_filelength (int fd)
+{
+#ifdef __CYGWIN__
+  struct stat st;
+
+  if (fstat(fd, &st) != 0)
+     return (-1);
+  return (st.st_size);
+#else
+  return filelength (fd);
+#endif
+}
+
 #if defined(USE_DEBUG)
 /**
  * Search 'list' for 'type' and return it's name.
@@ -1513,7 +1530,7 @@ BOOL shell_exec (const char *cmd)
 
 
 /**
- * Microsoft/Digital Mars doesn't have intr() so we make our own.
+ * Microsoft/Digital Mars doesn't have `intr()` so we make our own.
  */
 #if (defined(_MSC_VER) || defined(__DMC__)) && (DOSX == 0)
 #undef intr

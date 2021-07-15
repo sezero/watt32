@@ -97,10 +97,6 @@
 #include <io.h>
 #include <tcp.h>
 
-#ifdef __CYGWIN__
-#include <sys/stat.h>
-#endif
-
 #define SHORT_LIST 3
 #define LONG_LIST  4
 #define MFCF_COUNT 5
@@ -226,14 +222,7 @@ static int lpr (char *localhostname, char *printer,  char *rhostname,
 
   /* printer is accepted, printing file
    */
-#ifdef __CYGWIN__
-  struct stat st;
-
-  if (fstat (fileno(f), &st) == 0)
-     filesize = st.st_size;
-#else
-  filesize = filelength (fileno(f));
-#endif
+  filesize = (DWORD) watt_filelength (fileno(f));
 
   sprintf (buffer, "\3%ld d%s\n", filesize, remotename);
   sock_puts (s, (const BYTE*)buffer);

@@ -204,10 +204,11 @@ W32_FUNC int W32_CALL tcp_established (const tcp_Socket *s);
 /*
  * Less general functions
  */
-W32_FUNC int   W32_CALL tcp_cbreak (int mode);
-W32_FUNC char *W32_CALL rip        (char *s);
-W32_FUNC int   W32_CALL watt_kbhit (void);
-W32_FUNC int   W32_CALL priv_addr  (DWORD ip);
+W32_FUNC int   W32_CALL tcp_cbreak      (int mode);
+W32_FUNC char *W32_CALL rip             (char *s);
+W32_FUNC int   W32_CALL watt_kbhit      (void);
+W32_FUNC long  W32_CALL watt_filelength (int fd);
+W32_FUNC int   W32_CALL priv_addr       (DWORD ip);
 
 /**
  * Some deprecated functions.
