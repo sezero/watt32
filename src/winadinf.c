@@ -3186,7 +3186,9 @@ static const char *get_phy_types (DWORD num, const DOT11_PHY_TYPE *phy)
 
 static const char *get_ssid (const DOT11_SSID *ssid)
 {
-  SNPRINTF (work_buf, sizeof(work_buf), "%.*s", (int)ssid->uSSIDLength, ssid->ucSSID);
+  if (ssid->uSSIDLength == 0 || !isprint(ssid->ucSSID[0]))
+       strncpy (work_buf, "<none>", sizeof(work_buf));
+  else SNPRINTF (work_buf, sizeof(work_buf), "%.*s", (int)ssid->uSSIDLength, ssid->ucSSID);
   return (work_buf);
 }
 
@@ -3591,6 +3593,7 @@ static void print_wlan_bss_list (const WLAN_BSS_LIST *bss_list)
     ie_end = ie_start + bss->ulIeSize;
     print_wlan_elements (ie_start, ie_end);
 #endif
+    (*_printf) ("\n");
   }
 }
 
