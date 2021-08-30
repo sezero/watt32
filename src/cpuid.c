@@ -47,13 +47,13 @@
   #include <intrin.h>
 #endif
 
-static int trace_level (void);
+static int trace_level = 0;
 
 #define TRACE(level, fmt, ...)                          \
         do {                                            \
-          if (trace_level() >= level) {                 \
-            if (trace_level() >= 2)                     \
-               printf ("%s:%4u: ", __FILE__, __LINE__); \
+          if (trace_level >= level) {                   \
+            if (trace_level >= 2)                       \
+               printf ("%s(%u): ", __FILE__, __LINE__); \
             printf (fmt, ##__VA_ARGS__);                \
           }                                             \
         } while (0)
@@ -124,14 +124,12 @@ static unsigned int get_cpuid2 (int level, void *result)
   msvc_cpuid (level, &eax, &ebx, &ecx, &edx);
 #endif
 
-  if (trace_init() >= 1)
-  {
-    TRACE (1, "\nFrom %s (0x%08X):\n", cpuid_func, level);
-    print_reg (eax, "EAX");
-    print_reg (ebx, "EBX");
-    print_reg (ecx, "ECX");
-    print_reg (edx, "EDX");
-  }
+  TRACE (1, "\nFrom %s (0x%08X):\n", cpuid_func, level);
+  print_reg (eax, "EAX");
+  print_reg (ebx, "EBX");
+  print_reg (ecx, "ECX");
+  print_reg (edx, "EDX");
+
   res[0] = ebx;
   res[1] = edx;  /* Not a typo; we want EDX into 'res[1]' */
   res[2] = ecx;
@@ -316,7 +314,7 @@ const char *cpu_get_model (void)
   TRACE (1, "Found model:         %d.\n", model);
   TRACE (1, "Found stepping:      %d.\n", stepping);
 
-  if (!strcmp(vendor_string,"GenuineIntel"))
+  if (!strcmp(vendor_string, "GenuineIntel"))
      return get_Intel_model (type, model, &features);
 
   if (!strcmp(vendor_string, "AuthenticAMD"))
@@ -350,29 +348,17 @@ const char *cpu_get_freq_info (void)
   return (result);
 }
 
-static int t_level = 0;
-
-static int trace_level (void)
-{
-  const char *env;
-  static int done = 0;
-
-  if (done)
-     return (t_level);
-
-  env = getenv("CPU_TRACE");
-  if (env)
-     t_level = *env - '0';
-  done = 1;
-  return (t_level);
-}
-
 int main (int argc, char **argv)
 {
   const char *cpu, *freq;
 
-  if (argc > 1 && !strcmp(argv[1],"-d"))
-     t_level = 1;
+  if (argc > 1)
+  {
+    if (!strcmp(argv[1], "-d"))
+       trace_level = 1;
+    if (!strcmp(argv[1], "-dd"))
+       trace_level = 2;
+ }
 
   cpu = cpu_get_model();
   printf ("CPU-model:    %s\n", cpu ? cpu : "<unknown>");
