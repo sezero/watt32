@@ -966,7 +966,7 @@ uint64 win_get_perf_count (void)
   if (num_cpus > 1)
   {
     cthread = GetCurrentThread();
-    mask = SetThreadAffinityMask (ct, 1);
+    mask = SetThreadAffinityMask (cthread, 1);
   }
   QueryPerformanceCounter (&rc);
 
