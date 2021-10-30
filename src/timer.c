@@ -125,6 +125,9 @@ void init_timers (void)
 #endif
     GetSystemInfo (&sys_info);
 
+  if (sys_info.dwNumberOfProcessors == 0)  /* The above could fail for some reason */
+     sys_info.dwNumberOfProcessors = 1;
+
   num_cpus = sys_info.dwNumberOfProcessors;
   clocks_per_usec = (DWORD) (get_cpu_speed() / S64_SUFFIX(1000000));
 
@@ -957,34 +960,35 @@ uint64 get_cpu_speed (void)
 uint64 win_get_perf_count (void)
 {
   LARGE_INTEGER rc;
-  DWORD  am = 0UL;
-  HANDLE ct = INVALID_HANDLE_VALUE;
+  DWORD  mask = 0UL;
+  HANDLE cthread = INVALID_HANDLE_VALUE;
 
   if (num_cpus > 1)
   {
-    ct = GetCurrentThread();
-    am = SetThreadAffinityMask (ct, 1);
+    cthread = GetCurrentThread();
+    mask = SetThreadAffinityMask (ct, 1);
   }
   QueryPerformanceCounter (&rc);
-  if (num_cpus > 1)
-     SetThreadAffinityMask (ct, am);
+
+  if (num_cpus > 1 && mask)
+     SetThreadAffinityMask (cthread, mask);
   return (rc.QuadPart);
 }
 
 /*
- * Make sure RDTSC is returned from the 1st CPU on a multi (or hyper-threading)
- * CPU system.
+ * Make sure RDTSC is returned from the 1st CPU on a
+ * multi (or hyper-threading) CPU system.
  */
 uint64 win_get_rdtsc (void)
 {
-  DWORD  am = 0UL;
-  HANDLE ct = INVALID_HANDLE_VALUE;
+  DWORD  mask = 0UL;
+  HANDLE cthread = INVALID_HANDLE_VALUE;
   uint64 rc;
 
   if (num_cpus > 1)
   {
-    ct = GetCurrentThread();
-    am = SetThreadAffinityMask (ct, 1);
+    cthread = GetCurrentThread();
+    mask = SetThreadAffinityMask (cthread, 1);
   }
 
 #if defined(__BORLANDC__) || defined(__WATCOMC__)
@@ -993,8 +997,8 @@ uint64 win_get_rdtsc (void)
   rc = __rdtsc();
 #endif
 
-  if (num_cpus > 1)
-     SetThreadAffinityMask (ct, am);
+  if (num_cpus > 1 && mask)
+     SetThreadAffinityMask (cthread, mask);
   return (rc);
 }
 #endif  /* __MSDOS__ */
