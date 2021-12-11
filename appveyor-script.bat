@@ -63,7 +63,7 @@ set CI_ROOT=%APPVEYOR_BUILD_FOLDER%\CI-temp
 md %CI_ROOT% 2> NUL
 
 ::
-:: Since only 'watcom' has a '%MODEL%' set in 'appveoyr.yml'
+:: Since only 'watcom' has a '%MODEL%' set in 'appveyor.yml'
 ::
 if %BUILDER%. == watcom. (
   %_ECHO% "\e[1;33mDoing '%1' for 'BUILDER=%BUILDER%', 'MODEL=%MODEL%'.\e[0m"
