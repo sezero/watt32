@@ -346,6 +346,7 @@ exit /b 0
 :run_bin
   cd bin
   if exist tcpinfo.exe (
+    set WATTCP_CFG=c:\projects\watt-32
     %_ECHO% "\e[1;33mRunning test 'tcpinfo.exe -d' ---------------------------------------------------------------\e[0m"
     tcpinfo.exe -d
   )
