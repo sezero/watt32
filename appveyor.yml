@@ -45,7 +45,7 @@ matrix:
   allow_failures:
      - BUILDER: mingw64
      - BUILDER: cygwin
-     - BUILDER: clang
+     - BUILDER: borland
 
 install:
   #
