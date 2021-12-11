@@ -108,7 +108,7 @@ static BOOL get_win_version (WORD *ver, BOOL *is_win9x)
 
   *is_win9x = (os_ver >= 0x80000000 && major_ver >= 4);
 
-  memset (&ovi, 0, sizeof(ovi));
+  memset (&ovi, '\0', sizeof(ovi));
   ovi.dwOSVersionInfoSize = sizeof(ovi);
 
   /* We only support Win-NT style OSes.
@@ -170,7 +170,7 @@ int MS_CDECL gui_printf (const char *fmt, ...)
 
   s = (char*) get_argv0();
 #if 0
-  if ((prog_name = strrchr(s,'\\')) == NULL &&
+  if ((prog_name = strrchr(s, '\\')) == NULL &&
       (prog_name = strrchr(s, ':')) == NULL)
        prog_name = s;
   else prog_name++;
@@ -319,7 +319,7 @@ static void MS_CDECL new_abort_handler (int sig)
 {
   CONTEXT ctx;
 
-  memset (&ctx, 0, sizeof(ctx));
+  memset (&ctx, '\0', sizeof(ctx));
   ctx.ContextFlags = CONTEXT_FULL;
   RtlCaptureContext (&ctx);
 
@@ -420,10 +420,13 @@ BOOL init_win_misc (void)
   InitializeCriticalSection (&_watt_crit_sect);
 #endif
 
-  if ((GetEnvironmentVariableA("WATT32-NOEXC", env, sizeof(env)) ||
-       GetEnvironmentVariableA("WATT32-NOEXCEPT", env, sizeof(env))) &&
-      env[0] != '0')
-     _watt_use_bugtrap = FALSE;
+  env[0] = '\0';
+  if (GetEnvironmentVariableA("WATT32-NOEXC", env, sizeof(env)) ||
+      GetEnvironmentVariableA("WATT32-NOEXCEPT", env, sizeof(env)))
+  {
+    if (env[0] != '0')
+       _watt_use_bugtrap = FALSE;
+  }
 
   _watt_is_gui_app = is_gui_app();
 
@@ -613,7 +616,7 @@ BOOL WinDnsCachePut_A4 (const char *name, DWORD ip4)
       !(dns_windns & WINDNS_CACHEPUT_A4))
      return (FALSE);
 
-  memset (&rr, 0, sizeof(rr));
+  memset (&rr, '\0', sizeof(rr));
   rr.pName = strdup (name);
 
   rr.wType = DNS_TYPE_A;
@@ -863,7 +866,7 @@ static int is_real_key (const INPUT_RECORD *k)
       case VK_SHIFT:
       case VK_CONTROL:
       case VK_MENU:       /* Alt */
-           return(0);
+           return (0);
     }
     return (1);
   }
