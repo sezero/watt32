@@ -156,7 +156,7 @@ VPATH  = ..
 W32_CFLAGS = -DWATT32 -DTEST_PROG -DWATT32_STATIC -I.. -I../../inc
 
 #
-# Used for all non-Watt-32 test programs (uses Winsock):
+# Used for all non-Watt-32 test programs (uses Winsock2):
 #
 NO_W32_CFLAGS = -D_Windows
 
