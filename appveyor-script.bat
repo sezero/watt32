@@ -349,6 +349,7 @@ exit /b 0
     %_ECHO% "\e[1;33mRunning test 'tcpinfo.exe -d' ---------------------------------------------------------------\e[0m"
     tcpinfo.exe -d
   )
+  exit /b
 
 ::
 :: Build and run some test programs in './src/tests'.
