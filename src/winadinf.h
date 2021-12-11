@@ -205,7 +205,7 @@
 
 #elif defined(__BORLANDC__) && (__BORLANDC__ >= 0x0700)
   /*
-   * A recent version (__BORLANDC__>= 0x0700?) of CodeGearC or Embarcadero
+   * A recent version (__BORLANDC__ >= 0x0700?) of CodeGearC or Embarcadero
    * should be able to compile winadinf.c.
    */
   #include <wtypes.h>

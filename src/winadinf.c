@@ -1425,10 +1425,6 @@ static const struct search_list neighbour_states[] = {
 
 #define SMI_IETF 0
 
-#if defined(__BORLANDC__)
- // #define HAVE_OUI_GENERATED_C  // A test
-#endif
-
 #if defined(HAVE_OUI_GENERATED_C)
   #include "oui-generated.c"
 #endif
@@ -1686,59 +1682,59 @@ GET_ADDRESSES (get_dns_server_addrs, IP_ADAPTER_DNS_SERVER_ADDRESS, dns)
 #if defined(ON_WIN_VISTA)
   GET_ADDRESSES (get_wins_addrs,     IP_ADAPTER_WINS_SERVER_ADDRESS, wins)
   GET_ADDRESSES (get_gateway_addrs,  IP_ADAPTER_GATEWAY_ADDRESS, gw)
-#endif
 
-/**
- * We need the `row.Metric` from `print_ip_interface_details()` to
- * get the true Metric for the route. Hence store 'addr->Ipv4Metric' or
- * 'addr->Ipv6Metric' in a local LUID-cache below.
- *
- * Ref:
- *   https://docs.microsoft.com/en-us/windows/win32/api/netioapi/ns-netioapi-mib_ipforward_row2
- *
- * Quote:
- *   Note the actual route metric used to compute the route preference is the summation of
- *   interface metric specified in the Metric member of the MIB_IPINTERFACE_ROW structure
- *   and the route metric offset specified in this member.
- */
-typedef struct luid_metrics {
-        ULONG64 luid_value;
-        ULONG   metric;
-        int     family;
-      } luid_metrics;
+  /**
+   * We need the `row.Metric` from `print_ip_interface_details()` to
+   * get the true Metric for the route. Hence store 'addr->Ipv4Metric' or
+   * 'addr->Ipv6Metric' in a local LUID-cache below.
+   *
+   * Ref:
+   *   https://docs.microsoft.com/en-us/windows/win32/api/netioapi/ns-netioapi-mib_ipforward_row2
+   *
+   * Quote:
+   *   Note the actual route metric used to compute the route preference is the summation of
+   *   interface metric specified in the Metric member of the MIB_IPINTERFACE_ROW structure
+   *   and the route metric offset specified in this member.
+   */
+  typedef struct luid_metrics {
+          ULONG64 luid_value;
+          ULONG   metric;
+          int     family;
+        } luid_metrics;
 
-static struct luid_metrics metrics_cache [40];
+  static struct luid_metrics metrics_cache [40];
 
-static BOOL iface_store_metric (const NET_LUID *luid, DWORD metric, int family)
-{
-  luid_metrics *lm = metrics_cache + 0;
-  int  i;
-
-  for (i = 0; i < DIM(metrics_cache); i++, lm++)
+  static BOOL iface_store_metric (const NET_LUID *luid, DWORD metric, int family)
   {
-    if (lm->luid_value == 0)
+    luid_metrics *lm = metrics_cache + 0;
+    int  i;
+
+    for (i = 0; i < DIM(metrics_cache); i++, lm++)
     {
-      lm->luid_value = luid->Value;
-      lm->metric = metric;
-      lm->family = family;
-      return (TRUE);
+      if (lm->luid_value == 0)
+      {
+        lm->luid_value = luid->Value;
+        lm->metric = metric;
+        lm->family = family;
+        return (TRUE);
+      }
     }
+    return (FALSE);  /* All buckets full */
   }
-  return (FALSE);  /* All buckets full */
-}
 
-static DWORD iface_lookup_metric (const NET_LUID *luid, int family)
-{
-  const luid_metrics *lm = metrics_cache + 0;
-  int   i;
-
-  for (i = 0; i < DIM(metrics_cache); i++, lm++)
+  static DWORD iface_lookup_metric (const NET_LUID *luid, int family)
   {
-    if (lm->luid_value == luid->Value && lm->family == family)
-       return (lm->metric);
+    const luid_metrics *lm = metrics_cache + 0;
+    int   i;
+
+    for (i = 0; i < DIM(metrics_cache); i++, lm++)
+    {
+      if (lm->luid_value == luid->Value && lm->family == family)
+         return (lm->metric);
+    }
+    return (0);  /* not found!? */
   }
-  return (0);  /* not found!? */
-}
+#endif  /* ON_WIN_VISTA */
 
 /**
  * \todo: print these too:
@@ -2329,12 +2325,12 @@ static int _pkt_win_print_GetAdaptersAddresses (void)
     (*_printf) ("    DNS Servers:         %s\n", format_line(get_dns_server_addrs(addr->FirstDnsServerAddress), 24));
     (*_printf) ("    DNS Suffix:          %" WIDESTR_FMT "\n", addr->DnsSuffix[0] ? addr->DnsSuffix : NONE_STR_W);
 
+#if defined(ON_WIN_VISTA)
     if (addr->Flags & IP_ADAPTER_IPV6_ENABLED)
          iface_store_metric (&addr->Luid, addr->Ipv6Metric, AF_INET6);
     else if (addr->Flags & IP_ADAPTER_IPV4_ENABLED)
          iface_store_metric (&addr->Luid, addr->Ipv4Metric, AF_INET);
 
-#if defined(ON_WIN_VISTA)
     if (_watt_os_ver < 0x0601)
        (*_printf) ("    Not Win-Vista SP1+\n");
     else
@@ -2551,7 +2547,11 @@ static void print_mib_ipforward_row2 (DWORD index, const MIB_IPFORWARD_ROW2 *row
   const char              *luid   = "   LUID:   ";
   const IP_ADDRESS_PREFIX *prefix = &row->DestinationPrefix;
   int                      size   = (family == AF_INET) ? 15 : 35;
-  DWORD                    true_metric = row->Metric + iface_lookup_metric (&row->InterfaceLuid, family);
+  DWORD                    true_metric = row->Metric;
+
+#if defined(ON_WIN_VISTA)
+  true_metric += iface_lookup_metric (&row->InterfaceLuid, family);
+#endif
 
   common_fmt = "  %2lu   %2lu     %3lu     %-3s       %-3s   %-3s  %10s  %d     ";
   header_fmt = "  %s  %s  %s  %s  %s  %s  %s        %s  %-*s  %-*s\n";
