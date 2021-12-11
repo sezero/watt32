@@ -145,6 +145,7 @@ if %CPU%. == x64. set BITS=64
 if %1. == build_src.   goto :build_src
 if %1. == build_bin.   goto :build_bin
 if %1. == build_tests. goto :build_tests
+if %1. == run_bin.     goto :run_bin
 
 echo Usage: %~dp0%0 ^[build_src ^| build_bin ^| build_tests^]
 exit /b 1
@@ -338,6 +339,16 @@ if %BUILDER%. == watcom. (
 
 %_ECHO% "\e[1;31m[%CPU%]: No 'build_bin' for 'BUILDER=%BUILDER%' yet.\e[0m"
 exit /b 0
+
+::
+:: Run the './bin/tcpinfo.exe' program if it exists.
+::
+:run_bin
+  cd bin
+  if exist tcpinfo.exe (
+    %_ECHO% "\e[1;33mRunning test 'tcpinfo.exe -d' ---------------------------------------------------------------\e[0m"
+    tcpinfo.exe -d
+  )
 
 ::
 :: Build and run some test programs in './src/tests'.
