@@ -12,6 +12,7 @@ set URL_DJ_WIN_ZIP=http://www.watt-32.net/CI/dj-win.zip
 set URL_WATCOM_ZIP=http://www.watt-32.net/CI/watcom20.zip
 set URL_BORLAND_ZIP=http://www.watt-32.net/CI/borland.zip
 set URL_WINPCAP_EXE=https://www.winpcap.org/install/bin/WinPcap_4_1_3.exe
+set URL_NPCAP_EXE=https://github.com/UAVCAN/pyuavcan/blob/master/.test_deps/npcap-0.96.exe
 set URL_LLVM_EXE=https://prereleases.llvm.org/win-snapshots/LLVM-10.0.0-e20a1e486e1-win32.exe
 
 ::
@@ -342,8 +343,10 @@ exit /b 0
 
 ::
 :: Run the './bin/tcpinfo.exe' program if it exists.
-::
+:: But try to install NPcap first.
+
 :run_programs
+  call :install_npcap
   cd bin
   if exist tcpinfo.exe (
     set WATTCP_CFG=c:\projects\watt-32
@@ -486,6 +489,20 @@ exit /b 0
     exit /b
   )
   %CI_ROOT%\WinPcap_4_1_3.exe
+  exit /b
+
+::
+:: Download and install the NPcap silent installer.
+::
+:install_npcap
+  if exist "C:\Program Files\NPcap\Uninstall.exe" exit /b
+  %_ECHO% "\e[1;33mDownloading NPcap 0.96:\e[0m"
+  curl -# -o %CI_ROOT%\npcap-0.96.exe %URL_NPCAP_EXE%
+  if not errorlevel == 0 (
+    %_ECHO% "\e[1;31mThe curl download failed!\e[0m"
+    exit /b
+  )
+  %CI_ROOT%\npcap-0.96.exe /loopback_support=yes /winpcap_mode=yes /S
   exit /b
 
 ::

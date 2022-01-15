@@ -49,9 +49,22 @@ matrix:
 
 install:
   #
-  # Try to install WinPcap
+  # Try to install and configure Npcap
   #
-  # - cinst winpcap
+  # - cmd: CI-temp\npcap-1.60.exe /loopback_support=yes /winpcap_mode=yes /S
+  #
+  # Installation of the NDIS filter driver from Npcap may have disrupted network connectivity, as explained in
+  # https://github.com/nmap/npcap/issues/215. Also, a restart appears to be necessary to enable the NPF service.
+  # Therefore, we restart the VM as suggested in https://github.com/appveyor/ci/issues/3491.
+  #
+  # - cmd: shutdown /r /f /t 5
+  # - cmd: timeout 30            # Boot-up delay. This should be sufficient for the VM to get ready.
+  # - cmd: route print & ipconfig /all
+  #
+  # Due to the above reboot, all volatile configuration like environment variables is lost here. We need to set it up now.
+  #
+  # - cmd: set PATH=%PYTHON%;%PYTHON%\Scripts;%PATH%
+  # - cmd: echo PATH: %PATH%
 
   #
   # Prepend the PATH for 'make' + 'sh' used by 'MinGW', 'djgpp', 'CygWin' etc.
@@ -78,7 +91,7 @@ build_script:
     - cmd: appveyor-script.bat build_bin
 
 test_script:
-#    - cmd: set PATH=c:\Python34;%PATH% & set USE_CURL=1 & python.exe appveyor-script.py build_tests
+   # - cmd: set PATH=c:\Python34;%PATH% & set USE_CURL=1 & python.exe appveyor-script.py build_tests
      - cmd: appveyor-script.bat build_tests
      - cmd: appveyor-script.bat run_programs
 
