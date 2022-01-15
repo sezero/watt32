@@ -722,8 +722,10 @@ clean: .SYMBOLIC
 # Note: 'cdecl' (-Gd) is default. Check if '__fastcall' (-Gr) in '_DEBUG' mode
 #       is possible.
 #
-# The Microsoft Macro Assembler (ml and ml64) is available here:
-#   http://www.microsoft.com/en-us/download/details.aspx?id=12654
+# The Microsoft Macro Assembler (ml and ml64) is no longer available as
+# a separate download. It must be downloaded as part of "Visual Studio"
+# or the "Build Tools for Visual Studio":
+#   https://visualstudio.microsoft.com/downloads/#build-tools-for-visual-studio-2022
 #
 CFLAGS = -nologo -Zi -W3 -DWATT32_BUILD -D_WIN32_WINNT=0x0601 -I. -I../inc
 
