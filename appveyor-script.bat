@@ -142,10 +142,10 @@ if %BUILDER%. == . (
 set BITS=32
 if %CPU%. == x64. set BITS=64
 
-if %1. == build_src.   goto :build_src
-if %1. == build_bin.   goto :build_bin
-if %1. == build_tests. goto :build_tests
-if %1. == run_bin.     goto :run_bin
+if %1. == build_src.    goto :build_src
+if %1. == build_bin.    goto :build_bin
+if %1. == build_tests.  goto :build_tests
+if %1. == run_programs. goto :run_programs
 
 echo Usage: %~dp0%0 ^[build_src ^| build_bin ^| build_tests^]
 exit /b 1
@@ -343,7 +343,7 @@ exit /b 0
 ::
 :: Run the './bin/tcpinfo.exe' program if it exists.
 ::
-:run_bin
+:run_programs
   cd bin
   if exist tcpinfo.exe (
     set WATTCP_CFG=c:\projects\watt-32
