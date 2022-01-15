@@ -3731,9 +3731,10 @@ static void print_mib_ipnet_row2 (DWORD index, const MIB_IPNET_ROW2 *row)
                  "  ----------------------------------------------------------------------------------------------------\n");
 
   if (row->State != NlnsUnreachable)
-     (*_printf) ("  %2lu    %d        %-10s    %-36.36s %-17.17s     %s\n",
-                 row->InterfaceIndex, row->IsRouter, last_reach,
-                 nw_addr, mac_addr, _list_lookup(row->State, neighbour_states, DIM(neighbour_states)));
+  {
+    (*_printf) ("  %2lu    %d        %-10s    %-36.36s", row->InterfaceIndex, row->IsRouter, last_reach, nw_addr);
+    (*_printf) (" %-17.17s     %s\n", mac_addr, _list_lookup(row->State, neighbour_states, DIM(neighbour_states)));
+  }
 }
 
 /*
