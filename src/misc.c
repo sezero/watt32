@@ -17,9 +17,11 @@
 
 #if defined(__HIGHC__)
   #include <init.h>  /* _mwlsl(), _msgetcs() */
-#endif
 
-#if defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(__CYGWIN__)
+#elif defined(__DJGPP__)
+  #include <io.h>    /* filelength() */
+
+#elif defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(__CYGWIN__)
   #include <io.h>
   #include <fcntl.h>
 
