@@ -2172,6 +2172,15 @@ static __inline int tcp_opt_timestamp (_tcp_Socket *s, BYTE *opt, DWORD ts_echo)
  */
 static BYTE *sign_opt;
 
+/*
+ * Make this 'gcc' warning go away:
+ *  In function 'tcp_opt_md5_sign',
+ *    pctcp.c:2177:10: warning: writing 1 byte into a region of size 0 [-Wstringop-overflow=]
+ */
+
+W32_GCC_PRAGMA (GCC diagnostic push) \
+W32_GCC_PRAGMA (GCC diagnostic ignored "-Wstringop-overflow=")
+
 static __inline int tcp_opt_md5_sign (BYTE *opt)
 {
   *opt++ = TCPOPT_SIGNATURE;  /* option: 19,length,MD5-signature,NOP,NOP */
@@ -2182,6 +2191,8 @@ static __inline int tcp_opt_md5_sign (BYTE *opt)
   *opt++ = TCPOPT_NOP;
   return (4+TCPOPT_SIGN_LEN);
 }
+
+W32_GCC_PRAGMA (GCC diagnostic pop)
 
 static __inline void finalise_md5_sign (const in_Header *ip,
                                         const tcp_Header *tcp,
