@@ -56,7 +56,7 @@ W32_FUNC unsigned short cdecl _w32_intel16 (unsigned short x);
   * Ref: https://github.com/gvanem/Watt-32/issues/61
   */
   #if defined(__DJGPP__)
-    #include <ia32intrin.h>
+    #include <x86intrin.h>
   #else
     #include <intrin.h>
   #endif
