@@ -122,19 +122,19 @@ endif
 
 @ifdef DJGPP
   ifeq ($(OS),Windows_NT)
-    ifneq ($(DJ_PREFIX),)
+    ifneq ($(DJGPP_PREFIX),)
       #
       # Windows hosted djgpp cross compiler. Get it from:
       #   https://github.com/andrewwutw/build-djgpp/releases
       #
-      # Define an env-var 'DJ_PREFIX=f:/gv/djgpp/bin/i586-pc-msdosdjgpp-'
+      # Define an env-var 'DJGPP_PREFIX=f:/gv/djgpp/bin/i586-pc-msdosdjgpp'
       # Thus the full path to 'gcc' becomes:
-      #   $(DJ_PREFIX)gcc.exe
+      #   $(DJGPP_PREFIX)-gcc.exe
       #
       # If not building on Windows, the '$(BIN_PREFIX)gcc' should simply become
       # 'gcc' and GNU-make should find that on %PATH.
       #
-      BIN_PREFIX = $(DJ_PREFIX)
+      BIN_PREFIX = $(DJGPP_PREFIX)-
 
       ifeq ($(wildcard $(BIN_PREFIX)gcc.exe),)
         $(error Failed to find 'i586-pc-msdosdjgpp-gcc.exe'.)
