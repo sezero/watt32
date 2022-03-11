@@ -2178,8 +2178,10 @@ static BYTE *sign_opt;
  *    pctcp.c:2177:10: warning: writing 1 byte into a region of size 0 [-Wstringop-overflow=]
  */
 
-W32_GCC_PRAGMA (GCC diagnostic push) \
-W32_GCC_PRAGMA (GCC diagnostic ignored "-Wstringop-overflow=")
+#if !defined(__clang__)
+  W32_GCC_PRAGMA (GCC diagnostic push) \
+  W32_GCC_PRAGMA (GCC diagnostic ignored "-Wstringop-overflow=")
+#endif
 
 static __inline int tcp_opt_md5_sign (BYTE *opt)
 {
@@ -2192,7 +2194,9 @@ static __inline int tcp_opt_md5_sign (BYTE *opt)
   return (4+TCPOPT_SIGN_LEN);
 }
 
-W32_GCC_PRAGMA (GCC diagnostic pop)
+#if !defined(__clang__)
+  W32_GCC_PRAGMA (GCC diagnostic pop)
+#endif
 
 static __inline void finalise_md5_sign (const in_Header *ip,
                                         const tcp_Header *tcp,
