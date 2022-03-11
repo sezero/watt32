@@ -212,7 +212,7 @@ BOOL _sock_dos_fd (int s)
 
 #if defined(WIN32)
   {
-    HANDLE hnd = (HANDLE) (s > 0 ? _get_osfhandle (s) : INVALID_HANDLE_VALUE);
+    HANDLE hnd = (s > 0 ? (HANDLE)_get_osfhandle (s) : INVALID_HANDLE_VALUE);
     if (hnd != INVALID_HANDLE_VALUE)
     {
       CloseHandle (hnd);
