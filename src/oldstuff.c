@@ -162,12 +162,20 @@ W32_GCC_PRAGMA (GCC diagnostic ignored "-Wmissing-prototypes")
 
 DWORD intel (DWORD val)
 {
+#ifdef W32_GCC_USING_BSWAP
+  return __builtin_bswap32 (val);
+#else
   return __NtoHL (val);
+#endif
 }
 
 WORD intel16 (WORD val)
 {
+#ifdef W32_GCC_USING_BSWAP
+  return __builtin_bswap16 (val);
+#else
   return __NtoHS (val);
+#endif
 }
 #endif  /* WATT32_NO_INLINE_INTEL */
 

@@ -50,7 +50,18 @@ W32_FUNC unsigned short cdecl _w32_intel16 (unsigned short x);
 #define ntohl(x)  intel(x)
 #define htonl(x)  intel(x)
 
-#if defined(__GNUC__) && defined(__i386__) && !defined(__NO_INLINE__) /* gcc -O0 on 'x86' */
+#if defined(__GNUC__)
+ /*
+  * The below AT&T syntax breaks any code compiled with 'gcc -masm=intel'
+  * Ref: https://github.com/gvanem/Watt-32/issues/61
+  */
+  #include <intrin.h>
+
+  #define intel(x)   __builtin_bswap32 (x)
+  #define intel16(x) __builtin_bswap16 (x)
+  #define W32_GCC_USING_BSWAP  /* for 'src/oldstuff.c' */
+
+#elif defined(__GNUC__) && defined(__i386__) && !defined(__NO_INLINE__)  /* gcc -O0 on 'x86' */
   #define intel(x)   __NtoHL(x)
   #define intel16(x) __NtoHS(x)
 
