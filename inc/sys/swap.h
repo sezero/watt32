@@ -55,7 +55,11 @@ W32_FUNC unsigned short cdecl _w32_intel16 (unsigned short x);
   * The below AT&T syntax breaks any code compiled with 'gcc -masm=intel'
   * Ref: https://github.com/gvanem/Watt-32/issues/61
   */
-  #include <intrin.h>
+  #if defined(__DJGPP__)
+    #include <ia32intrin.h>
+  #else
+    #include <intrin.h>
+  #endif
 
   #define intel(x)   __builtin_bswap32 (x)
   #define intel16(x) __builtin_bswap16 (x)
