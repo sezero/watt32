@@ -764,6 +764,7 @@ W32_FUNC int W32_CALL watt_getopt (int argc, char *const *argv, const char *opt_
 
 #if defined(WATT32_ON_WINDOWS)
   /** \todo
+   * Add some internal aliases for getopt processing
    */
   W32_DATA wchar_t *    _w_watt_optarg;
   W32_DATA wchar_t *    _w_watt_optswchar;
