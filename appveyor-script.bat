@@ -344,7 +344,7 @@ exit /b 0
 ::
 :: Run the './bin/tcpinfo.exe' program if it exists.
 :: But try to install NPcap first.
-
+::
 :run_programs
   call :install_npcap
   cd bin
@@ -366,9 +366,7 @@ exit /b 0
   if %LOCAL_TEST%. == 0. (
     set WATTCP_CFG=c:/projects/watt-32
     %_ECHO% "\e[1;33mGenerating '%WATTCP_CFG%/wattcp.cfg'.\e[0m"
-    @echo on
     call :generate_wattcp_cfg
-    @echo off
   )
 
   cd src\tests
@@ -527,5 +525,5 @@ exit /b 0
   echo protocols       = $(WATT_ROOT)\bin\protocol       >> %WATTCP_CFG%/wattcp.cfg
   echo networks        = $(WATT_ROOT)\bin\networks       >> %WATTCP_CFG%/wattcp.cfg
   echo ethers          = $(WATT_ROOT)\bin\ethers         >> %WATTCP_CFG%/wattcp.cfg
-  type %WATTCP_CFG%\wattcp.cfg
+  type "%WATTCP_CFG%\wattcp.cfg"
   exit /b
