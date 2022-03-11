@@ -366,7 +366,9 @@ exit /b 0
   if %LOCAL_TEST%. == 0. (
     set WATTCP_CFG=c:/projects/watt-32
     %_ECHO% "\e[1;33mGenerating '%WATTCP_CFG%/wattcp.cfg'.\e[0m"
+    @echo on
     call :generate_wattcp_cfg
+    @echo off
   )
 
   cd src\tests
