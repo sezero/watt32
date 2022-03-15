@@ -45,6 +45,8 @@
 #include <sys/cdefs.h>
 #endif
 
+#include <sys/wtypes.h>
+
 /*
  * A Link-Level Sockaddr may specify the interface in one of two
  * ways: either by means of a system-provided index number (computed

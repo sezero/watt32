@@ -37,6 +37,9 @@
 
 #ifndef __NET_ROUTE_H
 #define __NET_ROUTE_H
+
+#include <sys/socket.h>
+
 /*
  * Kernel resident routing tables.
  *

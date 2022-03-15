@@ -19,6 +19,8 @@
 #ifndef __NET_IF_TUN_H
 #define __NET_IF_TUN_H
 
+#include <net/if.h>
+
 struct tun_softc {
     u_short tun_flags;      /* misc flags */
 #define TUN_OPEN    0x0001

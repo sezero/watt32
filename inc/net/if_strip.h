@@ -12,6 +12,8 @@
 #ifndef __NET_IF_STRIP_H
 #define __NET_IF_STRIP_H
 
+#include <net/if.h>
+
 struct strip_softc {
     struct  ifnet sc_if;        /* network-visible interface */
     int sc_unit;                /* XXX unit number */

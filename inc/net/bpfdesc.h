@@ -44,6 +44,8 @@
 #ifndef __NET_BPF_DESC_H
 #define __NET_BPF_DESC_H
 
+#include <sys/wtypes.h>
+
 /*
  * Descriptor associated with each open bpf file.
  */

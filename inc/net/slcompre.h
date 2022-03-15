@@ -45,6 +45,9 @@
 #ifndef __NET_SLCOMPRESS_H
 #define __NET_SLCOMPRESS_H
 
+#include <sys/cdefs.h>
+#include <sys/wtypes.h>
+
 #ifndef __SYS_MBUF_H
 #include <sys/mbuf.h>
 #endif

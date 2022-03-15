@@ -39,6 +39,8 @@
 #ifndef __NET_IF_ARC_H
 #define __NET_IF_ARC_H
 
+#include <net/if.h>
+
 #ifndef __SYS_MBUF_H
 #include <sys/mbuf.h>
 #endif

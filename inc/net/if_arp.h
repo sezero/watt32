@@ -37,6 +37,9 @@
 
 #ifndef __NET_IF_ARP_H
 #define __NET_IF_ARP_H
+
+#include <net/if.h>
+
 /*
  * Address Resolution Protocol.
  *

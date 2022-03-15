@@ -51,6 +51,8 @@
 #include <net/if_arp.h>
 #endif
 
+#include <sys/wtypes.h>
+
 W32_CLANG_PACK_WARN_OFF()
 
 #include <sys/pack_on.h>

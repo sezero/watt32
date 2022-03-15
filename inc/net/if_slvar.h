@@ -37,6 +37,8 @@
 #ifndef __NET_IF_SLVAR_H
 #define __NET_IF_SLVAR_H
 
+#include <net/if.h>
+
 /*
  * Definitions for SLIP interface data structures
  *

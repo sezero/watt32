@@ -32,6 +32,8 @@
 #ifndef __NET_PPP_DEFS_H
 #define __NET_PPP_DEFS_H
 
+#include <time.h>
+
 /*
  * The basic PPP frame.
  */

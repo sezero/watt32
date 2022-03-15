@@ -38,6 +38,9 @@
 #ifndef __NET_RAW_CB_H
 #define __NET_RAW_CB_H
 
+#include <sys/socket.h>
+#include <sys/queue.h>
+
 /*
  * Raw protocol interface control block.  Used
  * to tie a socket to the generic raw interface.

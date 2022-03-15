@@ -38,6 +38,8 @@
 #ifndef __NET_IF_H
 #define __NET_IF_H
 
+#include <sys/socket.h>
+
 #ifndef __SYS_QUEUE_H
 #include <sys/queue.h>
 #endif

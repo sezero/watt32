@@ -38,6 +38,8 @@
 #ifndef __NETINET_IP_H
 #define __NETINET_IP_H
 
+#include <netinet/in.h>
+
 #ifndef __NETINET_IN_SYSTM_H
 #include <netinet/in_systm.h>
 #endif

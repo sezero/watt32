@@ -37,6 +37,9 @@
 #ifndef __NET_IF_LLC_H
 #define __NET_IF_LLC_H
 
+#include <sys/cdefs.h>
+#include <sys/wtypes.h>
+
 /*
  * IEEE 802.2 Link Level Control headers, for use in conjunction with
  * 802.{3,4,5} media access control methods.

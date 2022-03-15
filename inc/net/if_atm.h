@@ -35,6 +35,9 @@
 #ifndef __NET_IF_ATM_H
 #define __NET_IF_ATM_H
 
+#include <sys/cdefs.h>
+#include <sys/wtypes.h>
+
 #if defined(__NetBSD__) || defined(__OpenBSD__) || defined(__bsdi__)
   #define RTALLOC1(A,B)       rtalloc1((A),(B))
 #elif defined(__FreeBSD__)

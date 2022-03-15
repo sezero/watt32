@@ -47,6 +47,9 @@
 #ifndef __NET_IF_PPPVAR_H
 #define __NET_IF_PPPVAR_H
 
+#include <net/if.h>
+#include <net/ppp_defs.h>
+
 #ifndef __SYS_MBUF_H
 #include <sys/mbuf.h>
 #endif
