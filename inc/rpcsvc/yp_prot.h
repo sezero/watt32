@@ -34,6 +34,8 @@
 #ifndef __RPCSVC_YP_PROT_H
 #define __RPCSVC_YP_PROT_H
 
+#include <rpc/clnt.h>
+
 /*
  * YPSERV PROTOCOL:
  *
