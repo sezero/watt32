@@ -46,6 +46,9 @@
 #include <sys/mbuf.h>
 #endif
 
+#include <netinet/in.h>
+#include <net/route.h>
+
 /*
  * Definitions for IP multicast forwarding.
  *

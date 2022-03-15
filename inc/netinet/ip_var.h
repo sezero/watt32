@@ -38,6 +38,8 @@
 #ifndef __NETINET_IP_VAR_H
 #define __NETINET_IP_VAR_H
 
+#include <netinet/in.h>
+
 W32_CLANG_PACK_WARN_OFF()
 
 #include <sys/pack_on.h>

@@ -38,6 +38,7 @@
 #ifndef __NETINET_TCP_DEBUG_H
 #define __NETINET_TCP_DEBUG_H
 
+#include <netinet/in_systm.h>
 #include <netinet/tcp_var.h>
 
 struct tcp_debug {

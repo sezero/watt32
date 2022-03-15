@@ -20,6 +20,9 @@
 #ifndef __NETINET_TCP_SCOREBOARD_H
 #define __NETINET_TCP_SCOREBOARD_H
 
+#include <netinet/tcp.h>
+#include <sys/queue.h>
+
 /**********************************************************************
  *
  *  Scoreboard module headers:

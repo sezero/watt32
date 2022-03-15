@@ -38,6 +38,8 @@
 #ifndef __NETINET_ICMP_VAR_H
 #define __NETINET_ICMP_VAR_H
 
+#include <sys/wtypes.h>
+
 #ifndef ICMP_MAXTYPE
 #define ICMP_MAXTYPE  18
 #endif

@@ -38,6 +38,9 @@
 #ifndef __NETINET_TCPIP_H
 #define __NETINET_TCPIP_H
 
+#include <netinet/tcp.h>
+#include <netinet/ip_var.h>
+
 W32_CLANG_PACK_WARN_OFF()
 
 #include <sys/pack_on.h>

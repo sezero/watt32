@@ -38,6 +38,8 @@
 #ifndef __NETINET_UDP_VAR_H
 #define __NETINET_UDP_VAR_H
 
+#include <sys/wtypes.h>
+
 /*
  * UDP kernel structures and variables.
  */

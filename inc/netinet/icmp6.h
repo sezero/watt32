@@ -75,6 +75,8 @@
 #include <sys/mbuf.h>
 #endif
 
+#include <netinet/in.h>
+
 #define ICMPV6_PLD_MAXLEN       1232    /* IPV6_MMTU - sizeof(struct ip6_hdr)
                                            - sizeof(struct icmp6_hdr) */
 W32_CLANG_PACK_WARN_OFF()

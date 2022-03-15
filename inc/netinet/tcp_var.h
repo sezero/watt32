@@ -46,6 +46,8 @@
 #include <netinet/tcp_time.h>
 #endif
 
+#include <netinet/tcpip.h>
+
 /*
  * Kernel variables for tcp.
  */

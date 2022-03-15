@@ -27,6 +27,9 @@
 #ifndef __NETINET_IP_FW_H
 #define __NETINET_IP_FW_H
 
+#include <netinet/in.h>
+#include <sys/queue.h>
+
 struct ip_fw {
     u_long fw_pcnt,fw_bcnt;             /* Packet and byte counters */
     struct in_addr fw_src, fw_dst;      /* Source and destination IP addr */

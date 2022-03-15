@@ -42,6 +42,8 @@
 #ifndef __NETINET_IGMP_VAR_H
 #define __NETINET_IGMP_VAR_H
 
+#include <sys/wtypes.h>
+
 /*
  * Internet Group Management Protocol (IGMP),
  * implementation-specific definitions.

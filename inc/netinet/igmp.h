@@ -42,6 +42,8 @@
 #ifndef __NETINET_IGMP_H
 #define __NETINET_IGMP_H
 
+#include <netinet/in.h>
+
 /*
  * Internet Group Management Protocol (IGMP) definitions.
  *

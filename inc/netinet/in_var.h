@@ -39,6 +39,8 @@
 #define __NETINET_IN_VAR_H
 
 #include <sys/queue.h>
+#include <netinet/in.h>
+#include <net/if.h>
 
 /*
  * Interface address, Internet version.  One of these structures

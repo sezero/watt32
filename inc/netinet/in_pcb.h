@@ -46,6 +46,9 @@
 #include <sys/queue.h>
 #endif
 
+#include <netinet/ip.h>
+#include <net/route.h>
+
 /*
  * Common structure pcb for internet protocol implementation.
  * Here are stored pointers to local and foreign host table
