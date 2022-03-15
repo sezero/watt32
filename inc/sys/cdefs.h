@@ -139,20 +139,23 @@
 #endif
 
 #if defined(__CCDL__)    /* LadSoft compiler */
-  #define cdecl _cdecl
+  #define W32_CDECL _cdecl
 
-#elif !defined(cdecl) && (defined(__MINGW32__) || defined(__CYGWIN__))
-  #define cdecl __attribute__((__cdecl__))
+#elif defined(__MINGW32__) || defined(__CYGWIN__)
+  #if defined(cdecl)
+    #define W32_CDECL cdecl
+  #else
+    #define W32_CDECL __attribute__((__cdecl__))
+  #endif
 #endif
 
 #if defined(_MSC_VER) || defined(__POCC__)
-  #undef cdecl
   #if (_MSC_VER <= 600) && !defined(__POCC__)
-    #define cdecl _cdecl
+    #define W32_CDECL _cdecl
     #undef  __STDC__
     #define __STDC__ 1
   #else
-    #define cdecl __cdecl
+    #define W32_CDECL __cdecl
   #endif
   #define NO_ANSI_KEYWORDS
 
@@ -161,8 +164,8 @@
   /* e.g. int NO_UNDERSCORE foo (void); */
 #endif
 
-#ifndef cdecl
-#define cdecl
+#ifndef W32_CDECL
+#define W32_CDECL
 #endif
 
 /*
@@ -193,19 +196,15 @@
    * Ref. the use of 'WINAPIV' in the Windows SDKs.
    *
    * But Watcom's register call doesn't need this. (wcc386 -ecf)
+   *
+   * See <sys/w32api.h> for the rationale behind 'W32_CALL'. It's
+   * currently forced to 'cdecl' on Windows. Thus 'MS_CDECL' should be
+   * important for MSVC users on Windows only. But I'm not sure....
    */
   #undef  MS_CDECL
-  #define MS_CDECL   cdecl
-
-  /* See <sys/w32api.h> for the rationale behind 'W32_CALL'. It's
-   * currently forced to 'cdecl' on Windows. Thus 'W32_CDECL' and 'MS_CDECL'
-   * should be important for MSVC users on Windows only. But I'm not
-   * sure....
-   */
-  #define W32_CDECL  cdecl
+  #define MS_CDECL   W32_CDECL
 #else
   #define MS_CDECL
-  #define W32_CDECL
 #endif
 
 

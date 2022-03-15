@@ -170,7 +170,7 @@ STATIC void test_stk_check (void)
  * Convert 32-bit big-endian (network order) to intel (host order) format.
  * Or vice-versa. These are cdecl incase we patch them.
  */
-unsigned long cdecl _w32_intel (unsigned long val)
+unsigned long W32_CDECL _w32_intel (unsigned long val)
 {
   return ((val & 0x000000FFU) << 24) |
          ((val & 0x0000FF00U) <<  8) |
@@ -182,7 +182,7 @@ unsigned long cdecl _w32_intel (unsigned long val)
  * Convert 16-bit big-endian (network order) to intel (host order) format.
  * Or vice-versa
  */
-unsigned short cdecl _w32_intel16 (unsigned short val)
+unsigned short W32_CDECL _w32_intel16 (unsigned short val)
 {
   return ((val & 0x00FF) << 8) | ((val & 0xFF00) >> 8);
 }

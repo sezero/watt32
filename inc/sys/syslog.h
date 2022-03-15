@@ -150,7 +150,7 @@ W32_FUNC void  W32_CALL  closelog   (void);
 W32_FUNC void  W32_CALL  openlog    (const char *, int, int);
 W32_FUNC int   W32_CALL  setlogmask (int);
 W32_FUNC char *W32_CALL  setlogtag  (char *new_tag); /* non-standard */
-W32_FUNC void  W32_CDECL syslog     (int, const char *, ...);
+W32_FUNC void  MS_CDECL  syslog     (int, const char *, ...);
 W32_FUNC void  W32_CALL  vsyslog    (int, const char *, va_list);
 
 __END_DECLS

@@ -112,7 +112,7 @@ CODE facilitynames[] = {
  * syslog, vsyslog --
  *   print message on log file; output is intended for syslogd(8).
  */
-void W32_CDECL syslog (int pri, const char *fmt, ...)
+void MS_CDECL syslog (int pri, const char *fmt, ...)
 {
   va_list args;
   va_start (args, fmt);

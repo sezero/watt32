@@ -38,8 +38,8 @@ __BEGIN_DECLS
   W32_FUNC unsigned long  W32_CALL htonl (unsigned long);
 #endif
 
-W32_FUNC unsigned long  cdecl _w32_intel   (unsigned long x);
-W32_FUNC unsigned short cdecl _w32_intel16 (unsigned short x);
+W32_FUNC unsigned long  W32_CDECL _w32_intel   (unsigned long x);
+W32_FUNC unsigned short W32_CDECL _w32_intel16 (unsigned short x);
 
 #undef  ntohs
 #undef  htons
@@ -216,8 +216,8 @@ W32_FUNC unsigned short cdecl _w32_intel16 (unsigned short x);
 
   #define WATT32_NO_INLINE_INTEL
 
-  W32_FUNC unsigned long  cdecl intel   (unsigned long x);
-  W32_FUNC unsigned short cdecl intel16 (unsigned short x);
+  W32_FUNC unsigned long  W32_CDECL intel   (unsigned long x);
+  W32_FUNC unsigned short W32_CDECL intel16 (unsigned short x);
 
 #elif (defined(__BORLANDC__) && defined(__FLAT__)) ||  /* bcc32 (flat/win32) */ \
       (defined(__DMC__) && (__INTSIZE==4))             /* dmc -mx */
@@ -302,8 +302,8 @@ W32_FUNC unsigned short cdecl _w32_intel16 (unsigned short x);
 
   #define WATT32_NO_INLINE_INTEL
 
-  W32_FUNC unsigned long  cdecl intel   (unsigned long x);
-  W32_FUNC unsigned short cdecl intel16 (unsigned short x);
+  W32_FUNC unsigned long  W32_CDECL intel   (unsigned long x);
+  W32_FUNC unsigned short W32_CDECL intel16 (unsigned short x);
 #endif
 
 __END_DECLS
