@@ -58,6 +58,7 @@
 
 #if defined(__DJGPP__) && !defined(WATT32_DJGPP_MINGW)
   #include <machine/endian.h>
+  #include <sys/version.h>      /* for DJGPP_MINOR */
 #endif
 
 #if defined(__MINGW32__) || (defined(__DJGPP__) && DJGPP_MINOR >= 4) || \
