@@ -52,6 +52,8 @@
 #include <sys/cdefs.h>
 #endif
 
+#include <rpc/auth.h>
+
 /*
  * This interface must manage two items concerning remote procedure calling:
  *

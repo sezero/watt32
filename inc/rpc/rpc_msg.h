@@ -41,7 +41,7 @@
 #ifndef __RPC_RPC_MSG_H
 #define __RPC_RPC_MSG_H
 
-#include <sys/cdefs.h>
+#include <rpc/auth.h>
 
 #define RPC_MSG_VERSION    ((u_long) 2)
 #define RPC_SERVICE_PORT   ((u_short) 2048)

@@ -63,7 +63,8 @@
 #ifndef __RPC_PMAP_CLIENT_H
 #define __RPC_PMAP_CLIENT_H
 
-#include <sys/cdefs.h>
+#include <netinet/in.h>
+#include <rpc/xdr.h>
 
 __BEGIN_DECLS
 

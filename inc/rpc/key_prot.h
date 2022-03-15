@@ -11,6 +11,8 @@
 #ifndef __KEY_PROT_H
 #define __KEY_PROT_H
 
+#include <rpc/auth.h>
+
 /*
  * Copyright (c) 1988 by Sun Microsystems, Inc.
  */

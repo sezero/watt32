@@ -52,9 +52,7 @@
 #include <sys/socket.h>
 #endif
 
-#ifndef __RPC_TYPES_H
 #include <rpc/xdr.h>
-#endif
 
 #define MAX_AUTH_BYTES  400
 #define MAXNETNAMELEN   255 /* maximum length of network user's name */

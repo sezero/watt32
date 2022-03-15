@@ -40,6 +40,9 @@
 #ifndef __RPC_SVC_AUTH_H
 #define __RPC_SVC_AUTH_H
 
+#include <rpc/rpc_msg.h>
+#include <rpc/svc.h>
+
 /*
  * Server side authenticator
  */

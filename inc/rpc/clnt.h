@@ -42,7 +42,7 @@
 
 #include <sys/cdefs.h>
 #include <rpc/types.h>
-#include <rpc/xdr.h>
+#include <rpc/auth.h>
 
 /*
  * Rpc calls return an enum clnt_stat.  This should be looked at more,

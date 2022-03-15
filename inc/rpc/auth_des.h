@@ -40,6 +40,8 @@
 #ifndef __AUTH_DES_H
 #define __AUTH_DES_H
 
+#include <rpc/auth.h>
+
 /*
  * There are two kinds of "names": fullnames and nicknames
  */

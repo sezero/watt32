@@ -41,7 +41,7 @@
 #ifndef __RPC_PMAP_REMOTE_H
 #define __RPC_PMAP_REMOTE_H
 
-#include <sys/cdefs.h>
+#include <rpc/xdr.h>
 
 struct rmtcallargs {
        u_long    prog, vers, proc, arglen;
