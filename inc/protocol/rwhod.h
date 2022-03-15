@@ -39,6 +39,8 @@
 #ifndef __PROTOCOL_RWHOD_H
 #define __PROTOCOL_RWHOD_H
 
+#include <sys/wtypes.h>
+
 #include <sys/pack_on.h>
 
 /*

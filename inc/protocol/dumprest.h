@@ -43,6 +43,8 @@
 #ifndef __PROTOCOL_DUMPRESTORE_H
 #define __PROTOCOL_DUMPRESTORE_H
 
+#include <sys/wtypes.h>
+
 /*
  * TP_BSIZE is the size of file blocks on the dump tapes.
  * Note that TP_BSIZE must be a multiple of DEV_BSIZE.

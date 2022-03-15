@@ -38,6 +38,8 @@
 #ifndef __PROTOCOL_ROUTED_H
 #define __PROTOCOL_ROUTED_H
 
+#include <sys/wtypes.h>
+
 /*
  * Routing Information Protocol
  *

@@ -38,6 +38,9 @@
 #ifndef __PROTOCOL_TIMED_H
 #define __PROTOCOL_TIMED_H
 
+#include <sys/wtypes.h>
+#include <sys/param.h>
+
 /*
  * Time Synchronization Protocol
  */

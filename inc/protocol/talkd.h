@@ -38,6 +38,8 @@
 #ifndef __PROTOCOL_TALKD_H
 #define __PROTOCOL_TALKD_H
 
+#include <sys/wtypes.h>
+
 /*
  * This describes the protocol used by the talk server and clients.
  *
