@@ -113,7 +113,7 @@ void usage (void)
   exit (3);
 }
 
-int cdecl main (int argc, char **argv)
+int W32_CDECL main (int argc, char **argv)
 {
   char  *user   = NULL;
   char  *server = "@localhost";

@@ -529,7 +529,7 @@ DWORD new_resolve (const char *name)
 }
 
 
-int cdecl main (int argc, char **argv)
+int W32_CDECL main (int argc, char **argv)
 {
   char *name;
   DWORD host;
