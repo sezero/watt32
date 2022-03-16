@@ -269,7 +269,8 @@ struct msghdr {
 /* CMSG_DATA clashes with <wincrypt.h>
  */
 #if (defined(WIN32) || defined(_WIN32)) && !defined(__CYGWIN__) && \
-    !defined(_WINDOWS_H) && !defined(_INC_WINDOWS) && !defined(__windows_h__)
+    !defined(_WINDOWS_H) && !defined(_INC_WINDOWS) && !defined(__windows_h__) && \
+    !defined(_GNU_H_WINDOWS_H)
   #error Include <windows.h> before this point.
 #endif
 
