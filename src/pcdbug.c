@@ -1387,8 +1387,8 @@ static int icmp6_dump (const in6_Header *ip)
                                "       reach-time %lu, retrans-time %lu",
                             icmp->radvert.hop_limit, icmp->radvert.managed,
                             intel16(icmp->radvert.lifetime),
-                            intel(icmp->radvert.reach_time),
-                            intel(icmp->radvert.retrans_time));
+                            (u_long)intel(icmp->radvert.reach_time),
+                            (u_long)intel(icmp->radvert.retrans_time));
          else p += sprintf (p, ", short packet");
          break;
 
