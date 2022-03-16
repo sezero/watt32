@@ -1056,8 +1056,8 @@ clean:
 
 @elifdef LADSOFT
 
-CC        = cc386
-CFLAGS    = -I. -I..\inc +v -O+a -O+i -C+N -DWATT32_BUILD
+CC        = $(LADSOFT)\bin\cc386
+CFLAGS    = -I. -I..\inc /9 +v -O+a -O+i -C+N -DWATT32_BUILD
 AR        = xlib
 AS        = tasm32
 AFLAGS    = -DDOSX -DDOS4GW -mx -m2 -t -l
@@ -1080,8 +1080,11 @@ $(STAT_LIB): $(OBJS)
 $(OBJPATH)cpumodel.obj: cpumodel.asm
 
 .c.obj:
-	$(CC) -c $(CFLAGS) $*.c -o$(OBJPATH)$*.asm
-	$(W32_NASM) -s -f obj -l $(OBJPATH)$*.lst -o $(OBJPATH)$*.obj $(OBJPATH)$*.asm
+	$(CC) -c $(CFLAGS) $*.c -o$(OBJPATH)$*.obj
+
+# .c.obj:
+# 	$(CC) -c $(CFLAGS) $*.c -o$(OBJPATH)$*.asm
+# 	$(W32_NASM) -s -f obj -l $(OBJPATH)$*.lst -o $(OBJPATH)$*.obj $(OBJPATH)$*.asm
 
 .asm.obj:
 	$(AS) $(AFLAGS) $*.asm, $(OBJPATH)$*.obj
@@ -1093,7 +1096,9 @@ clean:
 	- @del $(OBJPATH)*.asm
 	- @del $(OBJPATH)*.lst
 	- @del $(TARGETS)
+!ifdef PKT_STUB
 	- @del $(PKT_STUB)
+!endif
 	@echo Cleaning done
 
 ########################################################################
