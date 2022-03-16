@@ -242,3 +242,5 @@ src/watt-doc-sphinx
 src/watt-doc/
 src/watt-doc2
 
+util/*.s
+util/*/*.s
