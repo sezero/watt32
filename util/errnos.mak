@@ -30,6 +30,7 @@ WIN_PROGRAMS = win32/clang_err.exe \
                win32/bcc_err.exe   \
                win32/dj_err.exe    \
                win32/dm_err.exe    \
+               win32/ls_err.exe    \
                win32/vc_err.exe    \
              # win32/hc_err.exe
 
@@ -85,8 +86,7 @@ mw_err.exe: errnos.c
 #       your PATH, put it after Ladsoft's .'\bin' dir.
 #
 win32/ls_err.exe: errnos.c
-	cl386 /E0 /I..\inc /e=win32\ls_err.exe errnos.c
-    # cl386 /L$(LADSOFT)\lib /E0 /I..\inc /e=ls_err.exe -$$D=DOS32A errnos.c
+	$(LADSOFT)\bin\cl386 -v+ -9 -E0 -I../inc -W32CON -e=win32\ls_err.exe errnos.c
 
 lcc_err.exe: errnos.c
 	lcc -I..\inc -A errnos.c
