@@ -31,6 +31,7 @@ WIN_PROGRAMS = win32/clang_err.exe \
                win32/dj_err.exe    \
                win32/dm_err.exe    \
                win32/ls_err.exe    \
+               win32/oc_err.exe    \
                win32/vc_err.exe    \
              # win32/hc_err.exe
 
@@ -80,6 +81,16 @@ mw64_err.exe: errnos.c
 
 mw_err.exe: errnos.c
 	gcc -s -I../inc -o mw_err.exe errnos.c
+
+#
+# Orange-C compiler
+# Refs:
+#   https://orangec.readthedocs.io/en/latest/Tools/
+#   https://github.com/LADSoft/OrangeC/
+#
+win32/oc_err.exe::
+	$(ORANGEC)\bin\occ -! -Wc -1 -I../inc -owin32/oc_err.exe errnos.c
+	- rm -f errnos.o
 
 #
 # Note: 'cl386' is LadSoft's compiler. If you have <WATCOM_ROOT\binnt>' in

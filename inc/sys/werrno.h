@@ -114,6 +114,9 @@
 #elif defined(__CCDL__)                       /* LadSoft's cc386.exe */
   #include <sys/ladsoft.err>
 
+#elif defined(__ORANGEC__)                    /* David Lindauer's OrangeC compiler (father of LadSoft) */
+  #include <sys/orangec.err>
+
 #elif defined(__LCC__)
   #include <sys/lcc.err>
 
