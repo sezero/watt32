@@ -41,6 +41,10 @@
   #include <errno.h>
 #endif
 
+#if defined(__ORANGEC__)
+  #include <c/errno.h>
+#endif
+
 #if defined(__CYGWIN__)
   /*
    * Since CygWin's <sys/errno.h> provided all the errno-values
@@ -316,7 +320,7 @@ static const char *VendorVersion (void)
   sprintf (buf, "%d.%d", __CCDL__/100, __CCDL__ % 100);
 
 #elif defined(__ORANGEC__) /* https://orangec.readthedocs.io/en/latest/occ/OCC%20Defining%20Macros/ */
-  sprintf (buf, "%d.%d.%d", __ORANGEC_MAJOR__, __ORANGEC_MINOR__, __ORANGEC_PATCHLEVEL__);
+  sprintf (buf, "%s", __VERSION__);
 
 #elif defined(__LCC__)
 /*sprintf (buf, "%d.%d", __LCC__/100, __LCC__ % 100); doesn't work */
@@ -1036,7 +1040,7 @@ static void process (void)
   NEW_ERRNO (81);
 #endif
 
-#ifdef EDEADLOCK
+#if defined(EDEADLOCK) // && !defined(__ORANGEC__) /* 'EDEADLOCK == EDEADLK' on Orange-C */
   ADD_ERRNO (EDEADLOCK);
 #else
   NEW_ERRNO (82);
@@ -1174,8 +1178,8 @@ static void add_errno (int errnum, const char *errnum_str, const char *strerr)
  /* Since Turbo-C's strerror() is buggy
   */
 #if defined(__TURBOC__) && !defined(__BORLANDC__)
-  if ((errnum_str && sscanf(errnum_str,"%d",&dummy)) == 1 ||
-      !strncmp(strerr,"-1",2))
+  if ((errnum_str && sscanf(errnum_str, "%d", &dummy)) == 1 ||
+      !strncmp(strerr, "-1", 2))
      return;
 #endif
 

@@ -201,6 +201,7 @@ src/build/ladsoft
 src/build/lcc
 src/build/MinGW32
 src/build/MinGW64
+src/build/orangec
 src/build/pellesc
 src/build/visualc
 src/build/watcom

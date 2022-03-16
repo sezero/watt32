@@ -312,7 +312,7 @@
 #endif
 
 #if (defined(__BORLANDC__) && (__BORLANDC__ < 0x5600)) || \
-     defined(__SALFORDC__) || defined(__DMC__)
+     defined(__SALFORDC__) || defined(__DMC__) || defined(__ORANGEC__)
   #undef HAVE_WINDNS_H
 #endif
 

@@ -31,7 +31,6 @@
 
 #include <windows.h>
 #include <windowsx.h>       /* GlobalAllocPtr() */
-#include <winsvc.h>         /* SERVICE_ALL_ACCESS... */
 #include <sys/socket.h>     /* AF_INET etc. */
 #include <process.h>
 
@@ -48,6 +47,13 @@
 #include "packet32.h"
 #include "winpkt.h"
 #include "win_dll.h"
+
+#if !defined(__ORANGEC__)
+  #include <winsvc.h>         /* SERVICE_ALL_ACCESS... */
+#else
+  #define HandleToULong(h)  ((ULONG)(ULONG_PTR)(h))
+
+#endif
 
 /**
  * Current NPF.SYS version.
@@ -480,7 +486,7 @@ static BOOL PacketSetReadEvt4xx (ADAPTER *AdapterObject)
     return (FALSE);
   }
 
-  WINPKT_TRACE ("event-handle %lu\n", (u_long)HandleToUlong(hEvent));
+  WINPKT_TRACE ("event-handle %lu\n", (u_long)HandleToULong(hEvent));
 
   AdapterObject->ReadEvent = hEvent;
   AdapterObject->ReadTimeOut = 0;

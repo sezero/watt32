@@ -65,6 +65,7 @@ if %1.==cygwin.   goto cygwin
 if %1.==djgpp.    goto djgpp
 if %1.==ladsoft.  goto ladsoft
 if %1.==lcc.      goto lcc
+if %1.==orangec.  goto orangec
 if %1.==pellesc.  goto pellesc
 if %1.==highc.    goto highc
 if %1.==visualc.  goto visualc
@@ -151,6 +152,21 @@ echo neterr.c: build\ladsoft\syserr.c >> build\ladsoft\watt32.dep
 
 echo Run a Borland compatible make to make target:
 echo   "maker -f ladsoft.mak"
+goto next
+
+::--------------------------------------------------------------------------
+:orangec
+::
+echo Generating Orange-C makefile, directory, errnos and dependencies
+%MKMAKE% -o orangec.mak -d build\orangec makefile.all ORANGEC WIN32
+%MKDEP%  -s.obj -p$(OBJDIR)\ *.c *.h   > build\orangec\watt32.dep
+echo neterr.c: build\orangec\syserr.c >> build\orangec\watt32.dep
+
+..\util\win32\oc_err -s > build\orangec\syserr.c
+..\util\win32\oc_err -e > ..\inc\sys\orangec.err
+
+echo Run GNU-make to make target:
+echo   "make -f orangec.mak"
 goto next
 
 ::--------------------------------------------------------------------------
@@ -309,7 +325,7 @@ echo Unknown option '%1'.
 ::
 echo Configuring Watt-32 tcp/ip targets.
 echo Usage: %0 {borland, clang, cygwin, djgpp, highc, ladsoft,
-echo                      mingw32, mingw64, pellesc, visualc, watcom, all, clean}
+echo                      mingw32, mingw64, orangec, pellesc, visualc, watcom, all, clean}
 goto quit
 
 ::--------------------------------------------------------------------------
@@ -327,6 +343,7 @@ del visualc-debug_64.mak
 del MinGW32.mak
 del MinGW64_32.mak
 del MinGW64_64.mak
+del orangec.mak
 del Cygwin_32.mak
 del Cygwin_64.mak
 del watcom_w.mak
@@ -346,6 +363,7 @@ del build\visualc\watt32.dep
 del build\clang\watt32.dep
 del build\MinGW32\watt32.dep
 del build\MinGW64\watt32.dep
+del build\orangec\watt32.dep
 del build\Cygwin\watt32.dep
 del build\pellesc\watt32.dep
 del build\highc\watt32.dep
@@ -360,6 +378,7 @@ del build\visualc\syserr.c
 del build\watcom\syserr.c
 del build\MinGW32\syserr.c
 del build\MinGW64\syserr.c
+del build\orange\syserr.c
 del build\pellesc\syserr.c
 del build\highc\syserr.c
 del build\lcc\syserr.c
@@ -373,6 +392,7 @@ del ..\inc\sys\visualc.err
 del ..\inc\sys\clang.err
 del ..\inc\sys\mingw32.err
 del ..\inc\sys\mingw64.err
+del ..\inc\sys\orangec.err
 del ..\inc\sys\pellesc.err
 del ..\inc\sys\highc.err
 del ..\inc\sys\lcc.err
@@ -389,6 +409,7 @@ call %0 ladsoft   %2
 call %0 visualc   %2
 call %0 mingw32   %2
 call %0 mingw64   %2
+call %0 orangec   %2
 call %0 cygwin    %2
 call %0 watcom    %2
 call %0 lcc       %2

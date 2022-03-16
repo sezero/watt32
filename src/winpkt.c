@@ -742,6 +742,11 @@ void W32_CALL pkt_free_pkt (const void *pkt)
   q = &_pkt_inf->pkt_queue;
   pkt_drop_cnt = q->num_drop;
 
+#ifdef __ORANGEC__    /* Problem with 'offsetof()' ? */
+  #undef  RX_ELEMENT_HEAD_SIZE
+  #define RX_ELEMENT_HEAD_SIZE  (2*8+2)
+#endif
+
   q_tail = (const char*)pkt - _pkt_ip_ofs - RX_ELEMENT_HEAD_SIZE;
   delta  = q_tail - pktq_out_buf (q);
   if (delta)

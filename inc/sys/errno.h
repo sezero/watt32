@@ -14,10 +14,10 @@
 #endif
 
 /*
- * This file shadows CygWin's <sys/errno.h>. This hack pulls
+ * This file shadows CygWin's or Orange-C's <sys/errno.h>. This hack pulls
  * in the default <sys/errno.h>
  */
-#ifdef __CYGWIN__
+#if defined(__CYGWIN__) || defined(__ORANGEC__)
 #include_next <sys/errno.h>
 #endif
 

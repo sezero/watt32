@@ -66,6 +66,8 @@
 /*
  * If 'COMPILE_WINADINF_C' was defined in "winadinf.h", then the rest of this file
  * is code for MSVC, OpenWatcom, MinGW/MinGW-w64 or a recent __BORLANDC__ compiler.
+ *
+ * But Orange-C is not even able to parse 'winadinf.h'.
  */
 #if defined(COMPILE_WINADINF_C)
 

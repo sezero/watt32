@@ -62,7 +62,7 @@
 /**<\typedef 64-bit types (compiler dependent).
  */
 #if defined(__HIGHC__) || defined(__GNUC__) || defined(__CCDL__) || \
-    defined(__LCC__)   || defined(__POCC__)
+    defined(__LCC__)   || defined(__POCC__) || defined(__ORANGEC__)
   typedef unsigned long long  uint64;  /**< our unsigned "long long" type */
   typedef long long           int64;   /**< our signed "long long" type */
   #define HAVE_UINT64                  /**< have a compiler with 64-bit ints */

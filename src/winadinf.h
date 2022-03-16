@@ -19,7 +19,7 @@
 #ifndef _w32_WINADINF_H
 #define _w32_WINADINF_H
 
-#if (defined(WIN32) || defined(_WIN32) || defined(__CYGWIN__)) && !defined(__DMC__)
+#if (defined(WIN32) || defined(_WIN32) || defined(__CYGWIN__)) && !defined(__DMC__) && !defined(__ORANGEC__)
 
 #define __NETINET_IN_H           /* Don't pull in these in "../inc/" */
 #define __SYS_SOCKET_H
@@ -1126,5 +1126,5 @@
   #endif
 
 #endif  /* INSIDE_WINADINF_C && COMPILE_WINADINF_C */
-#endif  /* (WIN32 || _WIN32 || __CYGWIN__) && !__DMC__ */
+#endif  /* (WIN32 || _WIN32 || __CYGWIN__) && !__DMC__ && !__ORANGEC__ */
 #endif  /* _w32_WINADINF_H */

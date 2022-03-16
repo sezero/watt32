@@ -115,6 +115,7 @@
   #include <sys/ladsoft.err>
 
 #elif defined(__ORANGEC__)                    /* David Lindauer's OrangeC compiler (father of LadSoft) */
+  #undef EDEADLK
   #include <sys/orangec.err>
 
 #elif defined(__LCC__)

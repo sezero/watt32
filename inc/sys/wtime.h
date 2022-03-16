@@ -109,6 +109,9 @@
 
 #elif defined(__MINGW32__)              /* MinGW 3.21 + */
   #define W32_HAVE_STRUCT_TIMESPEC
+
+#elif defined(__ORANGEC__)              /* Orange-C */
+  #define W32_HAVE_STRUCT_TIMESPEC
 #endif
 
 #if !defined(W32_HAVE_STRUCT_TIMESPEC)

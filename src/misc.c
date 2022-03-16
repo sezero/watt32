@@ -24,12 +24,17 @@
 #elif defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(__CYGWIN__)
   #include <io.h>
   #include <fcntl.h>
+  #include <sys/stat.h>
 
   #if !defined(__CYGWIN__) && !defined(__POCC__)
     #include <share.h>
   #endif
 
-  #include <sys/stat.h>
+  #if defined(__ORANGEC__)
+    #ifndef _O_APPEND
+    #define _O_APPEND O_APPEND
+    #endif
+  #endif
 #endif
 
 #include "wattcp.h"
@@ -1217,8 +1222,10 @@ BOOL valid_addr (const void *addr, unsigned len)
    */
   BOOL bad;
 
+#if !defined(__ORANGEC__)
   if (_watt_crit_sect.SpinCount == (ULONG_PTR)-1) /* DeleteCriticalSection() was called!? */
      return (FALSE);
+#endif
 
   ENTER_CRIT();
   bad = IsBadWritePtr ((void*)addr,len) || IsBadReadPtr (addr,len);

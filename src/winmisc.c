@@ -198,7 +198,10 @@ static void W32_CALL win32_exit (void)
 #else
   DeleteCriticalSection (&_watt_crit_sect);
 #endif
+
+#if !defined(__ORANGEC__)
   _watt_crit_sect.SpinCount = -1;
+#endif
 }
 
 /**

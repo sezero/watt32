@@ -88,8 +88,8 @@ mw_err.exe: errnos.c
 #   https://orangec.readthedocs.io/en/latest/Tools/
 #   https://github.com/LADSoft/OrangeC/
 #
-win32/oc_err.exe::
-	$(ORANGEC)\bin\occ -! -Wc -1 -I../inc -owin32/oc_err.exe errnos.c
+win32/oc_err.exe: errnos.c
+	$(ORANGEC)\bin\occ --nologo -Wc -1 -I..\inc -I$(ORANGEC)\include -owin32/oc_err.exe errnos.c
 	- rm -f errnos.o
 
 #
@@ -125,6 +125,6 @@ win32/dj_err.exe::
 clean:
 	@del bcc_err.exe win32\clang_err.exe wc_err.exe hc_err.exe \
          tcc_err.exe dj_err.exe mw_err.exe mw64_err.exe win32\ls_err.exe \
-         lcc.exe po_err.exe win32\vc_err.exe win32\wc_err.exe \
+         lcc.exe win32\oc_err.exe po_err.exe win32\vc_err.exe win32\wc_err.exe \
          win32\bcc_err.exe win32\hc_err.exe errnos.obj
 

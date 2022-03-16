@@ -257,7 +257,7 @@
  * Macros for gcc 4.6+ Pragmas. Ref.:
  * http://gcc.gnu.org/onlinedocs/gcc/Diagnostic-Pragmas.html
  */
-#if (W32_GCC_VERSION >= 40600) || defined(__clang__)
+#if (W32_GCC_VERSION >= 40600) || defined(__clang__) || defined(__ORANGEC__)
   #define W32_GCC_PRAGMA(x)  _Pragma (#x)
 #else
   #define W32_GCC_PRAGMA(x)

@@ -140,6 +140,12 @@
 
   #include "build/lcc/syserr.c"     /* @NO_DEP */
 
+#elif defined(__ORANGEC__)
+  #define SYS_ERRLIST sys_errlist
+  #define SYS_NERR    sys_nerr
+
+  #include "build/orangec/syserr.c" /* @NO_DEP */
+
 #elif defined(__CYGWIN__)
   #define SYS_ERRLIST _sys_errlist
   #define SYS_NERR    _sys_nerr
@@ -254,6 +260,13 @@ void __stdcall WSASetLastError (int err)
 #elif defined(_MSC_VER) || defined(__DMC__)
   #if defined(_DLL) || defined(_MT)
     *_errno() = err;
+  #else
+    errno = err;
+  #endif
+
+#elif defined(__ORANGEC__)
+  #if defined(_DLL) || defined(_MT)
+    *__errno() = err;
   #else
     errno = err;
   #endif

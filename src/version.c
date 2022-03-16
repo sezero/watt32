@@ -242,6 +242,9 @@ const char * W32_CALL wattcpVersion (void)
 #elif defined(__LCC__) && defined(WIN32)
   p += sprintf (p, "lcc-win32, ");
 
+#elif defined(__ORANGEC__)   /* https://orangec.readthedocs.io/en/latest/occ/OCC%20Defining%20Macros/ */
+  sprintf (buf, "Orange-C %s", __VERSION__);
+
 #elif defined(__ICC__)
  /*
   * The old ICC Intel compiler is completely untested.
@@ -431,6 +434,12 @@ const char * W32_CALL wattcpVersion (void)
       #define CFLAGS_BUF   "build/clang/32bit/release/cflagsbf.h"
     #endif
   #endif
+
+#elif defined(__ORANGEC__)  /* Win32 only */
+  #define CC_DEFINE        "__ORANGEC__"
+  #define CC_PROG          "occ"
+  #define CFLAGS           "build/orangec/cflags.h"
+  #define CFLAGS_BUF       "build/orangec/cflagsbf.h"
 
 #elif defined(__HIGHC__)   /* Pharlap only */
   #define CC_DEFINE        "__HIGHC__"
