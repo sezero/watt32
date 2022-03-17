@@ -285,16 +285,16 @@ LIB_ARGS = $(OBJPATH)ar.arg
 
 TARGETS = $(STAT_LIB)
 
-all: $(C_ARGS) $(PKT_STUB) $(OBJPATH)cflags.h $(TARGETS)
+all: $(PKT_STUB) $(OBJPATH)cflags.h $(TARGETS)
 	@echo All done
 
 $(STAT_LIB): $(OBJS) $(LIB_ARGS)
 	$(AR) $@ @$(LIB_ARGS)
 
-$(OBJPATH)%.o: %.c
+$(OBJPATH)%.o: %.c $(C_ARGS)
 	$(CC) -c @$(C_ARGS) -o $@ $<
 
-$(OBJPATH)%.o: %.S
+$(OBJPATH)%.o: %.S $(C_ARGS)
 	$(CC) -E @$(C_ARGS) $< > $(OBJPATH)$*.iS
 	$(AS) $(AFLAGS) $(OBJPATH)$*.iS -o $@
 
@@ -620,7 +620,7 @@ TARGETS = $(STAT_LIB) $(IMP_LIB) $(WATT_DLL)
 TARGETS = $(STAT_LIB)
 @endif
 
-all: $(PKT_STUB) $(C_ARGS) $(OBJPATH)cflags.h $(OBJPATH)cflagsbf.h $(TARGETS)
+all: $(PKT_STUB) $(OBJPATH)cflags.h $(OBJPATH)cflagsbf.h $(TARGETS)
 
 @ifdef WIN32
 $(IMP_LIB): $(WATT_DLL)
@@ -637,7 +637,7 @@ $(OBJPATH)language.obj: language.c lang.c
 $(OBJPATH)asmpkt.obj:   asmpkt.asm
 $(OBJPATH)cpumodel.obj: cpumodel.asm
 
-.c{$(OBJDIR)}.obj:  .AUTODEPEND
+.c{$(OBJDIR)}.obj:  .AUTODEPEND $(C_ARGS)
 	$(CC) $[@ @$(C_ARGS) -fo=$^@
 
 .asm{$(OBJDIR)}.obj:  .AUTODEPEND
@@ -974,7 +974,7 @@ export CL=
 
 TARGETS = $(STAT_LIB) $(IMP_LIB) $(WATT_DLL)
 
-all: $(C_ARGS) $(OBJPATH)cflags.h $(OBJPATH)cflagsbf.h $(TARGETS)
+all: $(OBJPATH)cflags.h $(OBJPATH)cflagsbf.h $(TARGETS)
 	@echo All done
 
 #
@@ -993,10 +993,10 @@ $(WATT_DLL): $(OBJS) $(RESOURCE) $(LINK_ARGS)
 	cat link.tmp >> $(WATT_DLL:.dll=.map)
 	rm -f $(IMP_LIB:.lib=.exp)
 
-$(OBJPATH)%.obj: %.c
+$(OBJPATH)%.obj: %.c $(C_ARGS)
 	$(CC) -c @$(C_ARGS) -Fo./$@ $<
 
-$(OBJPATH)%.obj: %.cpp
+$(OBJPATH)%.obj: %.cpp $(C_ARGS)
 	$(CC) -c -TP -EHsc @$(C_ARGS) -Fo./$@ $<
 
 $(OBJPATH)%.obj: %.asm
@@ -1038,7 +1038,7 @@ AR     = 386lib -nobanner
 
 TARGETS = $(STAT_LIB)
 
-all: $(PKT_STUB) $(C_ARGS) $(OBJPATH)cflags.h $(OBJPATH)cflagsbf.h $(TARGETS)
+all: $(PKT_STUB) $(OBJPATH)cflags.h $(OBJPATH)cflagsbf.h $(TARGETS)
 	@echo All done
 
 $(STAT_LIB): $(OBJS)
@@ -1049,7 +1049,7 @@ $(STAT_LIB): $(OBJS)
 $(OBJPATH)cpumodel.obj: cpumodel.asm
 	$(AS) $(AFLAGS) $<, $(OBJDIR_)\cpumodel.obj
 
-$(OBJPATH)%.obj: %.c
+$(OBJPATH)%.obj: %.c $(C_ARGS)
 	$(CC) -c @$(C_ARGS) -o $@ $<
 
 -include $(OBJPATH)watt32.dep
@@ -1135,7 +1135,7 @@ RESOURCE  = $(OBJPATH)watt-32.res
 
 TARGETS = $(STAT_LIB) $(IMP_LIB) $(WATT_DLL)
 
-all: $(C_ARGS) $(OBJPATH)cflags.h $(OBJPATH)cflagsbf.h $(TARGETS)
+all: $(OBJPATH)cflags.h $(OBJPATH)cflagsbf.h $(TARGETS)
 	@echo All done
 
 $(STAT_LIB): $(OBJS)
@@ -1148,10 +1148,10 @@ $(WATT_DLL): $(OBJS) $(RESOURCE) $(LINK_ARGS)
 
 $(OBJDIR)/cpumodel.obj: cpumodel.nas
 
-$(OBJDIR)/%.obj: %.c
+$(OBJDIR)/%.obj: %.c $(C_ARGS)
 	$(CC) -c @$(C_ARGS) $*.c -o $@
 
-$(OBJDIR)/%.obj: %.cpp
+$(OBJDIR)/%.obj: %.cpp $(C_ARGS)
 	$(CC) -c @$(C_ARGS) -wd110 $*.cpp -o $@
 
 $(OBJDIR)/%.obj: %.nas
@@ -1227,7 +1227,7 @@ LINK_ARGS = $(OBJPATH)ld.arg
 
 TARGETS = $(STAT_LIB) $(IMP_LIB) $(WATT_DLL)
 
-all: $(C_ARGS) $(OBJPATH)cflags.h $(OBJPATH)cflagsbf.h $(TARGETS)
+all: $(OBJPATH)cflags.h $(OBJPATH)cflagsbf.h $(TARGETS)
 	@echo All done
 
 $(STAT_LIB): $(OBJS) $(LIB_ARGS)
@@ -1240,10 +1240,10 @@ $(WATT_DLL): $(OBJS) $(RESOURCE) $(LINK_ARGS)
 
 $(OBJPATH)cpumodel.o: cpumodel.S
 
-$(OBJPATH)%.o: %.c
+$(OBJPATH)%.o: %.c $(C_ARGS)
 	$(CC) -c @$(C_ARGS) -o $@ $<
 
-$(OBJPATH)%.o: %.S
+$(OBJPATH)%.o: %.S $(C_ARGS)
 	$(CC) -E @$(C_ARGS) $< > $(OBJPATH)$*.iS
 	$(AS) $(AFLAGS) $(OBJPATH)$*.iS -o $@
 
@@ -1313,7 +1313,7 @@ LINK_ARGS = $(OBJPATH)ld.arg
 
 TARGETS = $(STAT_LIB) $(IMP_LIB) $(WATT_DLL)
 
-all: $(C_ARGS) $(OBJPATH)cflags.h $(OBJPATH)cflagsbf.h $(TARGETS)
+all: $(OBJPATH)cflags.h $(OBJPATH)cflagsbf.h $(TARGETS)
 	@echo All done
 
 $(STAT_LIB): $(OBJS) $(LIB_ARGS)
@@ -1326,10 +1326,10 @@ $(WATT_DLL): $(OBJS) $(RESOURCE) $(LINK_ARGS)
 
 $(OBJPATH)cpumodel.o: cpumodel.S
 
-$(OBJPATH)%.o: %.c
+$(OBJPATH)%.o: %.c $(C_ARGS)
 	$(CC) -c @$(C_ARGS) -o $@ $<
 
-$(OBJPATH)%.o: %.S
+$(OBJPATH)%.o: %.S $(C_ARGS)
 	$(CC) -E @$(C_ARGS) $< > $(OBJPATH)$*.iS
 	$(AS) $(AFLAGS) $(OBJPATH)$*.iS -o $@
 
@@ -1369,7 +1369,7 @@ LINK_ARGS = $(OBJPATH)ld.arg
 
 TARGETS = $(STAT_LIB) $(IMP_LIB) $(WATT_DLL)
 
-all: $(C_ARGS) $(OBJPATH)cflags.h $(OBJPATH)cflagsbf.h $(TARGETS)
+all: $(OBJPATH)cflags.h $(OBJPATH)cflagsbf.h $(TARGETS)
 	@echo All done
 
 $(STAT_LIB): $(OBJS) $(LIB_ARGS)
@@ -1382,10 +1382,10 @@ $(WATT_DLL): $(OBJS) $(RESOURCE) $(LINK_ARGS)
 
 $(OBJPATH)cpumodel.o: cpumodel.S
 
-$(OBJPATH)%.o: %.c
+$(OBJPATH)%.o: %.c $(C_ARGS)
 	$(CC) -c @$(C_ARGS) -o $@ $<
 
-$(OBJPATH)%.o: %.S
+$(OBJPATH)%.o: %.S $(C_ARGS)
 	$(CC) -E @$(C_ARGS) $< > $(OBJPATH)$*.iS
 	$(AS) $(AFLAGS) $(OBJPATH)$*.iS -o $@ > $(OBJPATH)$*.lst
 
