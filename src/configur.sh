@@ -31,9 +31,10 @@ esac
 # target triplet for cross-djgpp toolchain:
 #
 if [ -z "$DJGPP_PREFIX" ]; then
-  for i in i{3..7}86-pc-msdosdjgpp; do
-    if which $i-gcc 2>&1 > /dev/null; then
-      DJGPP_PREFIX=$i
+  for i in $(seq 3 7); do
+    prefix=i${i}86-pc-msdosdjgpp
+    if which $prefix-gcc > /dev/null 2>&1; then
+      DJGPP_PREFIX=$prefix
       break
     fi
   done
