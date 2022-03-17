@@ -35,7 +35,8 @@
 #elif defined(__MINGW32__) || defined(__WATCOMC__)
   #include <unistd.h>
 
-#elif defined(__CYGWIN__) || defined(__unix__) || defined(__linux__)
+#elif defined(__CYGWIN__) || defined(__unix__) || defined(__linux__) || \
+      defined(__APPLE__)
   #include <unistd.h>
 
   /* Cross compiling from Linux->DOS (assume gcc used)
