@@ -19,6 +19,9 @@ APPICON ICON "watt-32.ico"
 #elif defined(__MINGW32__)
   #define BUILDER  "MinGW"
 
+#elif defined(__ORANGEC__)
+  #define BUILDER  "Orange-C"
+
 #elif defined(__POCC__)
   #define BUILDER  "PellesC"
 
@@ -26,7 +29,7 @@ APPICON ICON "watt-32.ico"
   #define BUILDER  "Borland"
 
 #elif defined(__clang__)
-  #define BUILDER  "Clang-CL"
+  #define BUILDER  "clang-cl"
 
 #elif defined(_MSC_VER)
   #define BUILDER  "Visual-C"
@@ -90,9 +93,9 @@ VS_VERSION_INFO VERSIONINFO
   PRODUCTVERSION  RC_VERSION
   FILEFLAGSMASK   0x3FL
 #if defined(DEBUG) && (DEBUG > 0)
-  FILEFLAGS 1
+  FILEFLAGS   1
 #else
-  FILEFLAGS 0
+  FILEFLAGS   0
 #endif
   FILEOS      VOS__WINDOWS32
   FILETYPE    VFT_DLL
