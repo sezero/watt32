@@ -688,16 +688,13 @@ udp_test_w.exe: sysdep.h
 # A 'USE_ASTYLE_FORMAT = 1' needs 'astyle.exe' on PATH and a '%HOME/.astylerc'.
 #
 ifeq ($(USE_ASTYLE_FORMAT),1)
-  ASTYLE_TMP = $(realpath $(TEMP))/astyle-in-file.c
-
   define C_preprocess
     $(file  > $(3),/* The preprocessed and AStyle'd output of '$(strip $(2))':)
     $(file >> $(3), * $(CC) -E)
     @$(foreach f, $(1), $(file >> $(3), * $(f)))
     $(file >> $(3), *---------------------------------------------------------)
     $(file >> $(3), */)
-    $(CC) -E $(1) $(2) | $(PYTHON) cpp_filter.py > $(ASTYLE_TMP)
-    astyle < $(ASTYLE_TMP) >> $(3)
+    $(CC) -E $(1) $(2) | $(PYTHON) cpp_filter.py | astyle >> $(3)
     @echo
   endef
 
