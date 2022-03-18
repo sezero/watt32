@@ -151,7 +151,7 @@ int main (int argc, char **argv)
 {
   int i, ch;
 
-  while ((ch = getopt(argc,argv,"?o:d:vw")) != EOF)
+  while ((ch = getopt(argc, argv, "?o:d:vw")) != EOF)
      switch (ch)
      {
        case 'o': out_makefile = optarg;
