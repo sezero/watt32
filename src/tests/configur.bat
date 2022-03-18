@@ -20,6 +20,7 @@ if %1.==all.      goto all
 if %1.==clean.    goto clean
 if %1.==-h.       goto usage
 if %1.==-?.       goto usage
+if %1.==.         goto usage
 if not %1.==.     goto bad_usage
 goto quit
 
