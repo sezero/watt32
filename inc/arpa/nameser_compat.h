@@ -31,8 +31,8 @@
  *  $BINDId: nameser_compat.h,v 8.11 1999/01/02 08:00:58 vixie Exp $
  */
 
-#ifndef _ARPA_NAMESER_COMPAT_
-#define _ARPA_NAMESER_COMPAT_
+#ifndef _ARPA_NAMESER_COMPAT_H_
+#define _ARPA_NAMESER_COMPAT_H_
 
 #ifndef __SYS_WTYPES_H
 #include <sys/socket.h>
@@ -187,5 +187,5 @@ typedef struct {
 #define PUTSHORT         NS_PUT16
 #define PUTLONG          NS_PUT32
 
-#endif /* _ARPA_NAMESER_COMPAT_ */
+#endif /* _ARPA_NAMESER_COMPAT_H_ */
 

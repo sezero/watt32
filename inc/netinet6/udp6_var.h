@@ -77,4 +77,4 @@ int  udp6_input (struct mbuf **, int *, int);
 int  udp6_output (struct inpcb *inp, struct mbuf *m, struct sockaddr *addr, struct mbuf *control, struct thread *td);
 #endif
 
-#endif /*_NETINET6_UDP6_VAR_H_*/
+#endif /*_NETINET6_UDP6_VAR_H_ */
