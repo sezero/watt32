@@ -139,7 +139,7 @@ echo Unknown option '%1'.
 :usage
 ::
 echo Configuring Watt-32 tcp/ip targets.
-echo Usage: %0 {watcom, borland, highc, djgpp, mingw64, cygwin32, cygwin64, visualc, clang, all, clean}
+echo Usage: %0 {watcom, borland, highc, djgpp, mingw64, cygwin, visualc, clang, all, clean}
 goto quit
 
 ::--------------------------------------------------------------------------
@@ -158,15 +158,14 @@ goto next
 ::------------------------------------------------------------
 :all
 ::
-call %0 djgpp    %2
-call %0 clang    %2
-call %0 visualc  %2
-call %0 mingw64  %2
-call %0 cygwin32 %2
-call %0 cygwin64 %2
-call %0 watcom   %2
-call %0 borland  %2
-call %0 highc    %2
+call %0 djgpp   %2
+call %0 clang   %2
+call %0 visualc %2
+call %0 mingw64 %2
+call %0 cygwin  %2
+call %0 watcom  %2
+call %0 borland %2
+call %0 highc   %2
 :next
 shift
 echo.
