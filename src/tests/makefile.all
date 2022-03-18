@@ -175,11 +175,13 @@ NO_W32_CFLAGS = -D_Windows
   endif
 
   define compile_and_link
-    $(CC) $(W32_CFLAGS) $(COMMON_CFLAGS) $(LDFLAGS) -o $(1) $(2) $(TINY_C) $(WATT_LIB) > $(1:.exe=.map)
+    $(call create_response_file,$(notdir $(CC)).arg, $(W32_CFLAGS) $(COMMON_CFLAGS) $(LDFLAGS) $(2) $(TINY_C) $(WATT_LIB))
+    $(CC) -o $(strip $(1)) @$(notdir $(CC)).arg > $(1:.exe=.map)
   endef
 
   define compile_and_link_ws2
-    $(CC) $(NO_W32_CFLAGS) $(COMMON_CFLAGS) $(LDFLAGS) -o $(1) $(2) $(WS2_32_LIB) > $(1:.exe=.map)
+    $(call create_response_file, $(CC).arg, $(NO_W32_CFLAGS) $(COMMON_CFLAGS) $(LDFLAGS) $(2) $(WS2_32_LIB))
+    $(CC) -o $(strip $(1)) @$(CC).arg > $(1:.exe=.map)
   endef
 
 @elifdef VISUALC CLANG
@@ -252,6 +254,12 @@ NO_W32_CFLAGS = -D_Windows
   #
   export CL=
 
+  #
+  # Same for MinGW include paths.
+  #
+  export C_INCLUDE_PATH=
+  export CPLUS_INCLUDE_PATH=
+
   CC             = clang-cl
   COMMON_CFLAGS += -Wno-unused-function -Wno-unused-variable -Wno-unused-value
   WATT_LIB       = $(LIB_DIR)/wattcp_clang.lib
@@ -285,15 +293,19 @@ NO_W32_CFLAGS = -D_Windows
 
 @elifdef VISUALC CLANG
   define compile_and_link
-    $(CC) -c $(COMMON_CFLAGS) $(W32_CFLAGS) $(2) -Fo.\\
-    link -out:$(strip $(1)) $(LDFLAGS) $(notdir $(2:.c=.obj)) $(WATT_LIB) user32.lib advapi32.lib > link.tmp
+    $(call create_response_file, $(CC).arg, -c $(COMMON_CFLAGS) $(W32_CFLAGS) -Fo.\\)
+    $(CC) @$(CC).arg $(strip $(2))
+    $(call create_response_file, link.arg, $(LDFLAGS) $(notdir $(2:.c=.obj)) $(WATT_LIB) user32.lib advapi32.lib)
+    link -out:$(strip $(1)) @link.arg > link.tmp
     cat link.tmp >> $(1:.exe=.map)
     rm -f $(1:.exe=.lib) $(1:.exe=.exp) link.tmp
   endef
 
   define compile_and_link_ws2
-    $(CC) -c $(COMMON_CFLAGS) $(NO_W32_CFLAGS) $(2) -Fo.\\
-    link -out:$(strip $(1)) $(LDFLAGS) $(notdir $(2:.c=.obj)) user32.lib advapi32.lib $(WS2_32_LIB) > link.tmp
+    $(call create_response_file, $(CC).arg, -c $(COMMON_CFLAGS) $(NO_W32_CFLAGS) -Fo.\\)
+    $(CC) @$(CC).arg $(strip $(2))
+    $(call create_response_file, link.arg, $(LDFLAGS) $(notdir $(2:.c=.obj)) user32.lib advapi32.lib $(WS2_32_LIB))
+    link -out:$(strip $(1)) @link.arg > link.tmp
     cat link.tmp >> $(1:.exe=.map)
     rm -f $(1:.exe=.lib) $(1:.exe=.exp) link.tmp
   endef
@@ -331,11 +343,10 @@ NO_W32_CFLAGS = -D_Windows
   LDFLAGS += -pack                       # pack BSS segment
 
   define compile_and_link
-    echo '$(COMMON_CFLAGS) $(W32_CFLAGS)' > highc.arg
-    echo '$(LDFLAGS)'                     > 386link.arg
-    $(CC) -c @highc.arg -o $(1:.c=.obj) $(1)
-    386link @386link.arg $(1:.c=.obj) -exe $(2)
-    rm -f highc.arg 386link.arg
+    $(call create_response_file, highc.arg, $(COMMON_CFLAGS) $(W32_CFLAGS))
+    echo '$(LDFLAGS)' > 386link.arg
+    $(CC) -c @$(CC).arg -o $(strip $(1:.c=.obj) $(1))
+    386link @386link.arg $(1:.c=.obj) -exe $(strip $(2))
   endef
 
 @elifdef WATCOM
@@ -375,7 +386,7 @@ NO_W32_CFLAGS = -D_Windows
     $(error Unknown WATCOM model. Only 'SMALL', 'LARGE', 'FLAT' and 'WIN32'.)
   @endif
 
-  COMMON_CFLAGS += -zq -wx -zm -d1 -I$(WATCOM)\h -I$(WATCOM)\h\nt
+  COMMON_CFLAGS += -zq -wx -zm -d1 -fr=NUL -I$(WATCOM)\h -I$(WATCOM)\h\nt
 
   #
   # Watcom does not like '/' in it's arguments.
@@ -385,13 +396,17 @@ NO_W32_CFLAGS = -D_Windows
   # But the .exe-file seems to run fine.
   #
   define compile_and_link
-    $(CC) $(subst /,\, $(COMMON_CFLAGS) $(W32_CFLAGS)) $(subst /,\,$(2))
-    wlink $(LDFLAGS) library $(WATT_LIB) name $(1) file $(notdir $(2:.c=.obj))
+    $(call create_response_file, $(CC).arg, $(subst /,\, $(COMMON_CFLAGS) $(W32_CFLAGS)) $(subst /,\,$(2)))
+    $(CC) @$(CC).arg
+    $(call create_response_file2, wlink.arg, $(LDFLAGS) library $(WATT_LIB) file $(notdir $(2:.c=.obj)))
+    wlink name $(strip $(1)) @wlink.arg
   endef
 
   define compile_and_link_ws2
-    $(CC) $(subst /,\, $(COMMON_CFLAGS) $(NO_W32_CFLAGS)) $(subst /,\,$(2))
-    wlink $(LDFLAGS) library $(WS2_32_LIB) name $(1) file $(notdir $(2:.c=.obj))
+    $(call create_response_file, $(CC).arg, $(subst /,\, $(COMMON_CFLAGS) $(NO_W32_CFLAGS)) $(subst /,\,$(2)))
+    $(CC) @$(CC).arg
+    $(call create_response_file2, wlink.arg, $(LDFLAGS) library $(WS2_32_LIB) file $(notdir $(2:.c=.obj)))
+    wlink name $(strip $(1)) @wlink.arg
   endef
 
 @elifdef BORLAND
@@ -424,12 +439,14 @@ NO_W32_CFLAGS = -D_Windows
   COMMON_CFLAGS += -j5 -a- -DBUILD_WINDOWS
 
   define compile_and_link
-    $(CC) $(COMMON_CFLAGS) $(W32_CFLAGS) -o $(1) $(2) $(LDFLAGS) -l $(WATT_LIB)
+    $(call create_response_file, $(CC).arg, $(COMMON_CFLAGS) $(W32_CFLAGS) $(2) $(LDFLAGS) -l $(WATT_LIB))
+    $(CC) -o $(strip $(1)) @$(CC).arg
     rm -f $(1:.exe=.tds)
   endef
 
   define compile_and_link_ws2
-    $(CC) $(COMMON_CFLAGS) $(NO_W32_CFLAGS) -o $(1) $(2) $(LDFLAGS) -l $(WS2_32_LIB)
+    $(call create_response_file, $(CC).arg, $(COMMON_CFLAGS) $(NO_W32_CFLAGS) $(2) $(LDFLAGS) -l $(WS2_32_LIB))
+    $(CC) -o $(strip $(1)) @$(CC).arg
     rm -f $(1:.exe=.tds)
   endef
 @endif
@@ -473,6 +490,7 @@ udp_test_w.o: udp_test.c
 clean realclean vclean:
 	rm -f $(PROGRAMS) $(PROGRAMS:.exe=.obj) $(PROGRAMS:.exe=.map) echo.obj listen.obj cyg_kbhit.o
 	rm -f $(PROGRAMS:.exe=.pdb) vc1*.pdb highc.arg 386link.arg fsext.exe fsext.map link.tmp cpp_filter.py
+	rm -f link.arg wlink.arg cl.arg clang-cl.arg bcc32.arg bcc32c.arg wcc.arg wcc386.arg gcc.arg $(BIN_PREFIX)gcc.arg
 	@echo 'Cleaning done.'
 
 #
@@ -687,6 +705,44 @@ udp_test_w.exe: sysdep.h
 #
 # A 'USE_ASTYLE_FORMAT = 1' needs 'astyle.exe' on PATH and a '%HOME/.astylerc'.
 #
+# Use as e.g.
+#   make -f clang_32.mak cpu.i
+#
+# to see the gory details of what gets compiled.
+#
+udp_srv_w.i: udp_srv.c cpp_filter.py FORCE
+	$(call C_preprocess, $(COMMON_CFLAGS) $(NO_W32_CFLAGS), $<, $@)
+
+udp_test_w.i: udp_test.c cpp_filter.py FORCE
+	$(call C_preprocess, $(COMMON_CFLAGS) $(NO_W32_CFLAGS), $<, $@)
+
+%.i: %.c cpp_filter.py FORCE
+	$(call C_preprocess, $(COMMON_CFLAGS) $(W32_CFLAGS), $<, $@)
+
+FORCE:
+
+cpp_filter.py: $(MAKEFILE_LIST)
+	$(info Generating $@)
+	$(file  > $@,#!/usr/env/python)
+	$(file >> $@,from __future__ import print_function)
+	$(file >> $@,if 1:)
+	$(file >> $@,$(CPP_FILTER_PY))
+
+#
+# More GNU-make macros:
+#
+define create_response_file
+  $(file > $(1))
+  $(foreach w, $(2), $(file >> $(1),$(strip $(w))) )
+endef
+
+#
+# For 'wlink' only
+#
+define create_response_file2
+  $(file > $(1), $(2))
+endef
+
 ifeq ($(USE_ASTYLE_FORMAT),1)
   define C_preprocess
     $(file  > $(3),/* The preprocessed and AStyle'd output of '$(strip $(2))':)
@@ -721,24 +777,6 @@ else
   endef
 endif
 
-udp_srv_w.i: udp_srv.c cpp_filter.py FORCE
-	$(call C_preprocess, $(COMMON_CFLAGS) $(NO_W32_CFLAGS), $<, $@)
-
-udp_test_w.i: udp_test.c cpp_filter.py FORCE
-	$(call C_preprocess, $(COMMON_CFLAGS) $(NO_W32_CFLAGS), $<, $@)
-
-%.i: %.c cpp_filter.py FORCE
-	$(call C_preprocess, $(COMMON_CFLAGS) $(W32_CFLAGS), $<, $@)
-
-FORCE:
-
-cpp_filter.py: $(MAKEFILE_LIST)
-	$(info Generating $@)
-	$(file  > $@,#!/usr/env/python)
-	$(file >> $@,from __future__ import print_function)
-	$(file >> $@,if 1:)
-	$(file >> $@,$(CPP_FILTER_PY))
-
 #
 # A Python "C-preprocess filter".
 #
@@ -760,14 +798,6 @@ define CPP_FILTER_PY
   def _win32_abspath (path):
     path = ntpath.abspath (path)
     return path.replace ('\\', '/')
-
-  def skip_cwd (s1, s2):
-    ''' Skip the leading part that is in common with s1 and s2
-    '''
-    i = 0
-    while i < len(s1) and s1[i] == s2[i]:
-       i += 1
-    return s2[i:]
 
   cwd = _win32_abspath (os.getcwd()) + '/'
 
@@ -800,6 +830,5 @@ define CPP_FILTER_PY
     last_line = line
 
   if empty_lines > 0:
-    sys.stderr.write ("Removed %d empty lines.\n" % empty_lines)
-
+    print ("Removed %d empty lines." % empty_lines, file=sys.stderr)
 endef
