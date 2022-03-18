@@ -34,7 +34,7 @@
 #ifndef _ARPA_NAMESER_COMPAT_H_
 #define _ARPA_NAMESER_COMPAT_H_
 
-#ifndef __SYS_WTYPES_H
+#ifndef __SYS_SOCKET_H
 #include <sys/socket.h>
 #endif
 

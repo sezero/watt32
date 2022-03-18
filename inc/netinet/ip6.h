@@ -72,7 +72,7 @@
  * RFC 2460
  */
 
-#ifndef __SYS_WTYPES_H
+#ifndef __SYS_SOCKET_H
 #include <sys/socket.h>
 #endif
 
