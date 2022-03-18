@@ -145,14 +145,15 @@ goto quit
 ::--------------------------------------------------------------------------
 :clean
 ::
-del djgpp.mak
-del highc.mak
-del clang_32.mak   clang_64.mak
-del visualc_32.mak visualc_64.mak
-del MinGW64_32.mak MinGW64_64.mak
-del Cygwin_32.mak  Cygwin_64.mak
-del watcom_?.mak
-del bcc_?.mak
+del /Q djgpp.mak
+del /Q highc.mak
+del /Q clang_32.mak   clang_64.mak
+del /Q visualc_32.mak visualc_64.mak
+del /Q MinGW64_32.mak MinGW64_64.mak
+del /Q Cygwin_32.mak  Cygwin_64.mak
+del /Q watcom_?.mak
+del /Q bcc_?.mak
+echo 'clean' done.
 goto next
 
 ::------------------------------------------------------------
