@@ -5,10 +5,6 @@
 #define SWIG
 #endif
 
-#ifndef WATT32_BUILD
-#define WATT32_BUILD
-#endif
-
 /* Don't prefix so callers may do e.g.
  * "cvar.watt32.debug_on=1" from Python.
  */
@@ -16,9 +12,28 @@
 #define WATT32_NO_NAMESPACE
 #endif
 
+#ifndef _WINSOCKAPI_
+#define _WINSOCKAPI_
+#endif
+
+#ifndef _WINSOCK2API_
+#define _WINSOCK2API_
+#endif
+
 #define W32_NAMESPACE(func) func
 
 %{
+  #include <stdio.h>
+  #include <stdlib.h>
+  #include <signal.h>
+  #include <setjmp.h>
+  #include <limits.h>
+  #include <float.h>
+  #include <math.h>
+  #include <time.h>
+  #include <io.h>
+  #include <sys/w32api.h>
+
   #include "wattcp.h"
   #include "sock_ini.h"
   #include "pcdbug.h"
@@ -26,28 +41,30 @@
   #include "pcdns.h"
   #include "pctcp.h"
   #include "misc.h"
-//#include "misc.c" /* Because misc.c must be compiled without__declspec(thread) */
+  #include "misc.c" /* Because misc.c must be compiled without '__declspec(thread)' */
 %}
-
 
 #define WINWATT   64
 #define DOSX      64
 #define MS_CDECL
 
-#define W32_DATA
-#define W32_FUNC
-#define W32_CALL
-#define W32_ATTR_PRINTF(_1,_2)
-#define W32_ATTR_SCANF(_1,_2)
-#define W32_ATTR_NORETURN()
-#define W32_ATTR_NOINLINE()
-#define W32_ARG_NONNULL(_1)
+#if !defined(WATT32_STATIC) || 1
+  #define W32_DATA
+  #define W32_FUNC
+  #define W32_CALL
 
-%include "wattcp.h"
+  // #define W32_ATTR_PRINTF(_1, _2)
+  // #define W32_ATTR_SCANF(_1, _2)
+  // #define W32_ATTR_NORETURN()
+  // #define W32_ATTR_NOINLINE()
+  // #define W32_ARG_NONNULL(_1)
+#endif
+
+// %include "wattcp.h"
 %include "sock_ini.h"
 %include "pcdbug.h"
-%include "pcicmp.h"
-%include "pcdns.h"
+// %include "pcicmp.h"
+// %include "pcdns.h"
 %include "pctcp.h"
 %include "misc.h"
 
@@ -61,5 +78,17 @@
   %include "pyrun.swg"
 #endif
 
-//extern int sock_init (void);
+// extern int sock_init (void);
 
+W32_FUNC void        W32_CALL dbug_init (void);
+W32_FUNC DWORD       W32_CALL lookup_host (const char *host, char *ip_str);
+W32_FUNC int         W32_CALL _ping     (DWORD host, DWORD num, const BYTE *pattern, size_t len);
+W32_FUNC DWORD       W32_CALL _chk_ping (DWORD host, DWORD *ping_num);
+W32_FUNC void        W32_CALL add_ping  (DWORD host, DWORD tim, DWORD number);
+W32_FUNC WORD        W32_CALL tcp_tick  (sock_type *s);
+
+W32_FUNC const char *W32_CALL wattcpVersion (void);      /* Watt-32 target version/date */
+W32_FUNC const char *W32_CALL wattcpCapabilities (void); /* what features was been compiled in */
+W32_FUNC const char *W32_CALL wattcpBuildCC (void);      /* what is the compiler __VENDOR__ nane */
+W32_FUNC const char *W32_CALL wattcpBuildCCexe (void);   /* what is the compiler name */
+W32_FUNC const char *W32_CALL wattcpBuildCflags (void);  /* what CFLAGS were used */

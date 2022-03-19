@@ -2,26 +2,27 @@
 
 from __future__ import print_function
 
-import sys, inspect
-
-from watt32   import *
+import sys, inspect, argparse
 from win32api import Sleep
+
+if 1:
+  import watt32 as w32
+else:
+  from watt32 import *
+
+class Colour():
+  WHITE = YELLOW = RESET = ""
 
 try:
   from colorama import init, Fore, Style
   init()
-  FG_BRIGHTRED = Style.BRIGHT + Fore.RED
-  FG_YELLOW    = Style.BRIGHT + Fore.YELLOW
-  FG_NORMAL    = Style.RESET_ALL
-
+  Colour.WHITE  = Style.BRIGHT + Fore.WHITE
+  Colour.YELLOW = Style.BRIGHT + Fore.YELLOW
+  Colour.RESET  = Style.RESET_ALL
 except ImportError:
-  print ("Failed to import colorama: %s" % e)
-  FG_BRIGHTRED = ''
-  FG_YELLOW    = ''
-  FG_NORMAL    = ''
+  pass
 
-debug = 0
-host_to_ping = "www.google.com"
+opt = None
 
 def __LINE__():
   try:
@@ -34,140 +35,100 @@ def __FILE__():
 
 def ping (host):
   idx = 100
-  ip = lookup_host (host, None)
+  ip  = w32.lookup_host (host, None)
   num = 0
   if ip == 0:
-    err = cvar.dom_errno
-    print ('%sUnknown host %s, dom_errno: %d: %s%s' % (FG_YELLOW, host, err, dom_strerror(err), FG_NORMAL))
-    return
+     err = w32.cvar.dom_errno
+     print ("%sUnknown host %s, dom_errno: %d: %s%s" % (Colour.YELLOW, host, err, dom_strerror(err), Colour.RESET))
+     return
 
   while num < 5:
-    if _ping(ip, idx, None, 0):
-      print ("sent PING # %lu " % idx)
+    try:
+      if w32._ping (ip, idx, None, 0):
+         print ("sent PING # %lu " % idx)
+    except TypeError as e:
+       print ("except: %s " % e)
     idx += 1
     num += 1
-    tcp_tick (None)
-    if _chk_ping(ip,None) != -1:
-      print ('%sGot ICMP echo%s' % (FG_YELLOW, FG_NORMAL))
+    w32.tcp_tick (None)
+    if w32._chk_ping (ip, None) != -1:
+       print ("%sGot ICMP echo%s" % (Colour.YELLOW, Colour.RESET))
     Sleep (1000)
 
-def show_version (details = 0):
-  if details:
-    show_content()
-  print ("Version:   %s"        % wattcpVersion())
-  print ("$(CC):     %s (-D%s)" % (wattcpBuildCCexe(), wattcpBuildCC()))
-  print ("$(CFLAGS): %s"        % wattcpBuildCflags())
+#
+# Show the contents of '_watt32.pyd'
+#
+def show_content (opt):
+  print ("%s%s contains:%s" % (Colour.YELLOW, w32.__file__, Colour.WHITE))
+  for s1 in dir(w32):
+    if opt.version < 2 and s1.startswith("_swig"):
+       continue
+    print (" ", s1)
+    if opt.version >= 3:
+       for s2 in dir(s1):
+           if not (s2.startswith("__") and s2.endswith("__")):
+              print ("   ", s2)
+  print (Colour.RESET)
 
-  capa = wattcpCapabilities().split('/')
+def show_version (opt):
+  if opt.version >= 2:
+     show_content (opt)
+  print ("Version:   %s"        % w32.wattcpVersion())
+  print ("$(CC):     %s (-D%s)" % (w32.wattcpBuildCCexe(), w32.wattcpBuildCC()))
+  print ("$(CFLAGS): %s"        % w32.wattcpBuildCflags())
+
+  features = w32.wattcpCapabilities().split ("/")
   length = 0
-  print ("Features: ", end="")
-  for c in capa[1:]:
-    print (c, end="")
-    length += len(c)
+  print ("Features:  ", end="")
+  for f in features[1:]:
+    print (f + " ", end="")
+    length += len(f)
     if length > 60:
        length = 0
-       print ('\n', ' '*10, end="")
+       print ("\n", " "*10, end="")
   sys.exit (0)
 
 def show_help():
-  print ('''Usage: %s [-dN] [-v] [-h] host to ping
-    -d: sets debug level 1.
-    -d1: sets debug level 1.
-    -d2: sets debug level 2.
-    -d3: sets debug level 3.
-    -d4: sets debug level 4.
-    -v:  show version info and exit.''' % sys.argv[0])
-  sys.exit(0)
+  print ("""Usage: %s [-d] [-v] [-h] <host to ping>
+    -d:  sets debug level 1.
+    -dd: sets debug level 2 etc.
+    -v:  show simple version info and exit.
+    -vv: show detailed version info and exit.""" % sys.argv[0])
+  sys.exit (0)
 
-def set_debug():
-  global debug
-  print ('set_debug()')
-  debug = 1
-
-def set_debug2():
-  global debug
-  print ('set_debug2()')
-  debug = 2
-
-def set_debug3():
-  global debug
-  print ('set_debug3()')
-  debug = 3
-
-def set_debug4():
-  global debug
-  print ('set_debug4()')
-  debug = 4
-
-
-#
-# Parse command-line. '-dN' -> sets debug level.
-#                     '-v'  -> show version info and exit.
-#                     '-h'  -> show short help and exit.
 def parse_cmdline():
-  global host_to_ping
-
-  ARGS = { '-d'  : set_debug,
-           '-d1' : set_debug,
-           '-d2' : set_debug2,
-           '-d3' : set_debug3,
-           '-d4' : set_debug4,
-           '-v'  : show_version,
-           '-h'  : show_help }
-
   if len(sys.argv) < 2:
-    return
+     show_help()
+  print ("%s (%u): sys.argv[1]: %s" % (__FILE__(), __LINE__(), sys.argv[1]))
 
-  print ('%s (%u): sys.argv[1]: %s' % (__FILE__(), __LINE__(), sys.argv[1]))
+  parser = argparse.ArgumentParser (add_help = False)
+  parser.add_argument ("-d", dest = "debug",   action="count", default=0)
+  parser.add_argument ("-v", dest = "version", action="count")
+  parser.add_argument ("-h", dest = "help",    action="store_true")
+  parser.add_argument ("host_to_ping", nargs = "?", default = None )
+  opt = parser.parse_args()
+  if opt.help:
+     show_help()
 
-  # exec (ARGS [sys.argv[1]])
+  if opt.version:
+     show_version (opt)
+  if not opt.host_to_ping:
+     opt.host_to_ping = "www.google.com"
 
-  if sys.argv[1] == '-v':
-    show_version ()
-  if sys.argv[1] == '-v2':
-    show_version (1)
-  elif sys.argv[1] == '-h':
-    show_help()
-  elif sys.argv[1] == '-d':
-    set_debug()
-  elif sys.argv[1] == '-d1':
-    set_debug()
-  elif sys.argv[1] == '-d2':
-    set_debug2()
-  elif sys.argv[1] == '-d3':
-    set_debug3()
-  elif sys.argv[1] == '-d4':
-    set_debug4()
-
-  if len(sys.argv) >= 2:
-     host_to_ping = sys.argv[2]
-
-#
-# Show the contents of _watt32.pyd
-#
-def show_content():
-  print ("s%s contains" % (FG_YELLOW, watt32._watt32.__file__))
-  for s in dir(watt32):
-    if debug < 2 and s.startswith('_swig'):
-       continue
-    print (s)
-    if debug > 2:
-      if s.startswith('__') and s.endswith('__'):
-        print (dir(s))
-  print (FG_NORMAL)
+  return opt
 
 #
 # Our main() function
 #
 def main():
-  parse_cmdline()
-  print ('%s (%u): debug %d:' % (__FILE__(), __LINE__(), debug))
+  opt = parse_cmdline()
+  print ("%s (%u): opt.debug %d:" % (__FILE__(), __LINE__(), opt.debug))
 
-  if debug > 0:
-    watt32.cvar.debug_on = debug
-    dbug_init()
-  sock_init()
-  ping (host_to_ping)
+  if opt.debug > 0:
+     w32.cvar.debug_on = opt.debug
+     w32.dbug_init()
+  w32.sock_init()
+  ping (opt.host_to_ping)
 
-if __name__ == '__main__':
+if __name__ == "__main__":
   main()

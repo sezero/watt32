@@ -139,9 +139,13 @@ extern WORD    _watt_os_ver;
 extern char    _watt_assert_buf[256];
 
 extern void     Wait         (unsigned msec);
-extern BOOL     is_in_stack  (const void *ptr);
-extern unsigned used_stack   (void);
 extern BOOL     valid_addr   (const void *addr, unsigned len);
+
+#if !defined(SWIG)
+  extern BOOL     is_in_stack  (const void *ptr);
+  extern unsigned used_stack   (void);
+  extern unsigned _get_frame_size (const char *x);
+#endif
 
 extern void     os_yield     (void);
 extern void     assert_fail  (const char *file, unsigned line, const char *what);
@@ -153,7 +157,6 @@ extern   FILE  *fopen_excl       (const char *file, const char *mode);
 
 extern void     unfinished      (const char *func, const char *file, unsigned line);
 extern void     unimplemented   (const char *func, const char *file, unsigned line);
-extern unsigned _get_frame_size (const char *x);
 
 #define UNFINISHED()    unfinished (__FUNCTION__, __FILE__, __LINE__)
 #define UNIMPLEMENTED() unimplemented (__FUNCTION__, __FILE__, __LINE__)
