@@ -1479,8 +1479,7 @@ lang.c: lang.l
   # One word from $(2) per line into $(1).
   #
   define create_response_file
-    $(file > $(1))
-    $(foreach f, $(2), $(file >> $(1),$(strip $(f))) )
+    rm -f $(1) ; $(foreach f, $(2), echo $(strip $(f)) >> $(1) ;)
   endef
 
 $(C_ARGS): $(MAKEFILE_LIST)
