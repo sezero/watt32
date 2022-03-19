@@ -596,10 +596,27 @@ const char * W32_CALL wattcpBuildCC (void)
 
     if (!done)
     {
-      done = 1;
+#if 0
+      char       *to   = buf;
+      const char *from = w32_cflags2;
+      size_t      i;
+
+      for (i = 0; i < sizeof(w32_cflags2); i++)
+      {
+        if (*from == '\r' || *from == '\n' || *from == '\0')
+           continue;
+        if (*from == '\\')
+             *to++ = '/';
+        else *to++ = *from;
+        from++;
+      }
+      *to = '\0';
+#else
       strreplace ('\n', 0, w32_cflags2);
       strreplace ('\\','/', w32_cflags2);
       strtrim (w32_cflags2, buf, sizeof(buf));
+#endif
+      done = 1;
     }
     return (buf);
   }
