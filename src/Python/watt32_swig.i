@@ -41,24 +41,16 @@
   #include "pcdns.h"
   #include "pctcp.h"
   #include "misc.h"
-  #include "misc.c" /* Because misc.c must be compiled without '__declspec(thread)' */
+  #include "misc.c"   /* Because misc.c must be compiled without '__declspec(thread)' */
 %}
 
 #define WINWATT   64
 #define DOSX      64
 #define MS_CDECL
 
-#if !defined(WATT32_STATIC) || 1
-  #define W32_DATA
-  #define W32_FUNC
-  #define W32_CALL
-
-  // #define W32_ATTR_PRINTF(_1, _2)
-  // #define W32_ATTR_SCANF(_1, _2)
-  // #define W32_ATTR_NORETURN()
-  // #define W32_ATTR_NOINLINE()
-  // #define W32_ARG_NONNULL(_1)
-#endif
+#define W32_DATA
+#define W32_FUNC
+#define W32_CALL
 
 // %include "wattcp.h"
 %include "sock_ini.h"

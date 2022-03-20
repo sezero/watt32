@@ -8,56 +8,95 @@
 define Usage
 
   Usage:
-    make CC=[cl | clang-cl | gcc] <PYTHON="py -2.x" | "py -3.x"> <STATIC=1> [all | clean | vclean]'
+    make CC=[cl | clang-cl | gcc] <PYTHON="py -2.x" | "py -3.x"> <WATT32_STATIC=1> [all | clean | vclean]'
       CC=gcc      - use MinGW
       CC=cl       - use MSVC
       CC=clang-cl - use clang-cl
 endef
 
 #
+# Using the Python Launcher argument 'PYTHON="py -x.y"', in a 'make py_info'
+# invokations, things could look like this:
+#
+#   %WATT_ROOT%\src\Python> make CC=cl PYTHON="py -2" py_info
+#   PY_ROOT:      F:/ProgramFiler/Python27.
+#   PY_MAJOR_VER: 2.
+#   PY_MINOR_VER: 7.
+#
+#   %WATT_ROOT%\src\Python> make CC=cl PYTHON="py -3.6" py_info
+#   PY_ROOT:      f:/ProgramFiler/Python36.
+#   PY_MAJOR_VER: 3.
+#   PY_MINOR_VER: 6.
+#
+#   %WATT_ROOT%\src\Python> make CC=cl PYTHON="py -3.9" py_info
+#   PY_ROOT:      f:/ProgramFiler/Python36.
+#   PY_MAJOR_VER: 3.
+#   PY_MINOR_VER: 9.
+#
+#   %WATT_ROOT%\src\Python> make CC=cl PYTHON="py -3" py_info
+#   PY_ROOT:      F:/ProgramFiler/Python39.
+#   PY_MAJOR_VER: 3.
+#   PY_MINOR_VER: 9.
+#
+# A 'PYTHON="py -3"', reporting Python 3.9 just means that the default
+# Python version 3 is '3.9'. Allthough one have a version 3.6 installed
+# as non-default.
+#
+
+#
 # This assumes you have a MSys/Cygwin's 'echo.exe' program with ANSI colour support.
 #
 BRIGHT_GREEN = \e[1;32m
 BRIGHT_WHITE = \e[1;37m
-
-green_msg = @echo -e "$(BRIGHT_GREEN)$(strip $(1))\e[0m"
+green_msg    = @echo -e "$(BRIGHT_GREEN)$(1)\e[0m"
 
 export CL=
 
-STATIC ?= 1
+#
+# The only option at the moment:
+#
+WATT32_STATIC ?= 1
+
+#
+# Could be set in envronment of on the cmd-line:
+#
 PYTHON ?= py -3
 
-PYTHON_ROOT = $(realpath  $(shell $(PYTHON) -c "import sys; print(sys.prefix)"))
-PYTHON_VER  = $(shell $(PYTHON) -c "import os,sys; print('%c%c' % (sys.version[0], sys.version[2]))")
+PY_ROOT      = $(realpath  $(shell $(PYTHON) -c "import sys; print (sys.prefix)"))
+PY_MAJOR_VER = $(shell $(PYTHON) -c "import sys; print (sys.version[0])")
+PY_MINOR_VER = $(shell $(PYTHON) -c "import sys; print (sys.version[2])")
 
 ifeq ($(CC),cl)
-  CFLAGS  = -nologo -MD -Ox -EHsc -Zi -W3
+  CFLAGS  = -nologo -MD -Ox -Zi -W3
   RCFLAGS = -nologo -D_MSC_VER
-  LDFLAGS = -nologo -debug -dll -map -verbose -incremental:no -nodefaultlib:uuid.lib
-  EX_LIBS = $(PYTHON_ROOT)/libs/python$(PYTHON_VER).lib
+  LDFLAGS = -nologo -debug -dll -map -verbose -incremental:no -nodefaultlib:uuid.lib -libpath:$(PY_ROOT)/libs
+  EX_LIBS = $(PY_ROOT)/libs/python$(PY_MAJOR_VER).lib
 
 else ifeq ($(CC),clang-cl)
-  CFLAGS  = -nologo -MD -Ox -EHsc -Zi -W3
+  CFLAGS  = -nologo -MD -Ox -Zi -W3
   RCFLAGS = -nologo -D__clang__
-  LDFLAGS = -nologo -debug -dll -map -verbose -incremental:no -nodefaultlib:uuid.lib
-  EX_LIBS = $(PYTHON_ROOT)/libs/python$(PYTHON_VER).lib
+  LDFLAGS = -nologo -debug -dll -map -verbose -incremental:no -nodefaultlib:uuid.lib -libpath:$(PY_ROOT)/libs
+  EX_LIBS = $(PY_ROOT)/libs/python$(PY_MAJOR_VER).lib
 
 else ifeq ($(CC),gcc)
   CFLAGS =  -m32 -Wall -O2 -s
-  RCFLAGS = -O COFF -D__MINGW32__
-  LDFLAGS = -m32 -s -shared -Wl,--print-map,--sort-common,--cref
-  EX_LIBS  = $(PYTHON_ROOT)/libs/libpython$(PYTHON_VER).a
+  RCFLAGS = -O COFF --target=pe-i386 -D__MINGW32__
+  LDFLAGS = -m32 -s -shared -static-libgcc -Wl,--print-map
+  EX_LIBS  = $(PY_ROOT)/libs/libpython$(PY_MAJOR_VER).a
 
 else
   $(error $(Usage))
 endif
 
-CFLAGS  += -I.. -I../../inc \
-           -I$(PYTHON_ROOT)/include
+RCFLAGS += -I../../inc \
+           -I$(PY_ROOT)/include
 
-# CFLAGS  += -DSWIG_LINK_RUNTIME
+CFLAGS  += -I.. -I../../inc     \
+           -I$(PY_ROOT)/include \
+           -DPy_ENABLE_SHARED
 
-# CFLAGS += -DSWIGRUNTIME_DEBUG
+# CFLAGS += -DSWIG_LINK_RUNTIME \
+#           -DSWIGRUNTIME_DEBUG
 
 #
 # Without a '-DSWIG_PYTHON_SILENT_MEMLEAK', there is this exception:
@@ -66,15 +105,14 @@ CFLAGS  += -I.. -I../../inc \
 #
 CFLAGS += -DSWIG_PYTHON_SILENT_MEMLEAK
 
-ifeq ($(CC),clang-cl)
+ifneq ($(CC),cl)
   CFLAGS += -Wno-unused-function \
             -Wno-visibility
 endif
 
-RCFLAGS += -I../../inc -DRC_PY_VER=\"$(PYTHON_VER)\"
-
-ifeq ($(STATIC),1)
+ifeq ($(WATT32_STATIC),1)
   CFLAGS += -DWATT32_STATIC
+
   ifeq ($(CC),cl)
     EX_LIBS += ../../lib/x86/wattcpvc.lib
   else ifeq ($(CC),clang-cl)
@@ -84,13 +122,14 @@ ifeq ($(STATIC),1)
   endif
 
   ifeq ($(CC),gcc)
-    SYS_LIBS += -luser32 -ladvapi32
+    SYS_LIBS = -luser32 -ladvapi32
   else
-    SYS_LIBS += user32.lib advapi32.lib
+    SYS_LIBS = user32.lib advapi32.lib
   endif
 
 else
-  CFLAGS += -DWATT32_BUILD
+  CFLAGS  += -DWATT32_BUILD
+  SYS_LIBS =
 
   ifeq ($(CC),cl)
     EX_LIBS += ../../lib/x86/wattcpvc_imp.lib
@@ -103,32 +142,31 @@ endif
 
 SWIG_FLAGS = -macroerrors -Wall -python $(filter -D% -I%, $(CFLAGS)) # -nodefaultctor -nodefaultdtor -debug-symbols
 
-# SWIG_FLAGS += -v -v
-
 GENERATED = watt32_swig_wrap.c watt32.py check-for-unused-libs.py
 
 all: py_info _watt32.pyd epilogue
 
 epilogue:
-	$(call green_msg, Do a $(BRIGHT_WHITE)$(PYTHON) ./runme.py -d www.google.com $(BRIGHT_GREEN)to test it.)
+	$(call green_msg,Do a $(BRIGHT_WHITE)$(PYTHON) ./runme.py -d www.google.com $(BRIGHT_GREEN)to test it.)
 
 py_info:
-	@echo '$$(PYTHON_ROOT): $(PYTHON_ROOT).'
-	@echo '$$(PYTHON_VER):  $(PYTHON_VER).'
+	$(call green_msg,Detected Python variables:)
+	$(call green_msg,  PY_ROOT:      $(BRIGHT_WHITE)$(PY_ROOT).)
+	$(call green_msg,  PY_MAJOR_VER: $(BRIGHT_WHITE)$(PY_MAJOR_VER).)
+	$(call green_msg,  PY_MINOR_VER: $(BRIGHT_WHITE)$(PY_MINOR_VER).)
 
 install: _watt32.pyd watt32.py
-	cp --update _watt32.pyd $(PYTHON_ROOT)/DLLs
-	cp --update watt32.py   $(PYTHON_ROOT)/Lib/site-packages
+	cp --update _watt32.pyd $(PY_ROOT)/DLLs
+	cp --update watt32.py   $(PY_ROOT)/Lib/site-packages
 
 uninstall:
-	rm -f $(PYTHON_ROOT)/dlls/_watt32.pyd
-	rm -f $(PYTHON_ROOT)/Lib/site-packages/watt32.py
+	rm -f $(PY_ROOT)/dlls/_watt32.pyd
+	rm -f $(PY_ROOT)/Lib/site-packages/watt32.py
 
 ifeq ($(CC),gcc)
   _watt32.pyd: watt32_swig_wrap.o _watt32.res $(EX_LIBS)
-	$(call green_msg, Linking $@)
-	$(CC) $(LDFLAGS) $^ -o $@ $(SYS_LIBS) > _watt32.map
-	@rm -f _watt32.pyc
+	$(call green_msg,Linking $@)
+	$(CC) -o $@ $(LDFLAGS) $^ $(SYS_LIBS) > _watt32.map
 	@echo
 
   _watt32.res: _watt32.rc
@@ -137,7 +175,7 @@ ifeq ($(CC),gcc)
 
 else
   _watt32.pyd: watt32_swig_wrap.obj _watt32.res  $(EX_LIBS) | check-for-unused-libs.py
-	$(call green_msg, Linking $@)
+	$(call green_msg,Linking $@)
 	link $(LDFLAGS) $^ -out:$@ $(SYS_LIBS) > link.tmp
 	@cat link.tmp >> _watt32.map
 	@rm -f _watt32.exp _watt32.lib
@@ -151,15 +189,15 @@ endif
 watt32.py: watt32_swig_wrap.c
 
 watt32_swig_wrap.c: watt32_swig.i
-	$(call green_msg, Gerating Swig wrapper $@)
+	$(call green_msg,Generating Swig wrapper $@)
 	swig $(SWIG_FLAGS) -o $@ watt32_swig.i
 	@echo
 
 #
 # The dependency must be updated by hand.
 #
-watt32_swig_wrap.c: ../wattcp.h ../sock_ini.h ../pcdbug.h \
-                    ../pcdns.h  ../pctcp.h    ../misc.h
+watt32_swig_wrap.c: ../../inc/sys/w32api.h ../wattcp.h ../sock_ini.h ../pcdbug.h ../pcicmp.h \
+                    ../pcdns.h ../pctcp.h ../misc.h ../misc.c
 
 %.o: %.c
 	$(CC) $(CFLAGS) -DSWIG -c $<
@@ -171,12 +209,13 @@ watt32_swig_wrap.c: ../wattcp.h ../sock_ini.h ../pcdbug.h \
 
 clean:
 	rm -f *.obj *.o *.pdb *.pyc *.res vc1*.pdb link.tmp $(GENERATED)
+	rm -fr __pycache__
 
 vclean realclean: clean
-	rm -f _watt32.pyd _watt32.res _watt32.exp _watt32.lib _watt32.map watt32.pyo
+	rm -f _watt32.pyd _watt32.res _watt32.exp _watt32.lib _watt32.map watt32.pyo _watt32.pyc
 
 check-for-unused-libs.py: Makefile
-	$(call green_msg, Generating $@)
+	$(call green_msg,Generating $@)
 	$(file >  $@,#!/usr/env/python)
 	$(file >> $@,if 1:)
 	$(file >> $@,$(check_for_unused_libs_PY))
