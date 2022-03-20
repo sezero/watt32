@@ -47,7 +47,6 @@
   #define TRACE(x)  ((void)0)
 #endif
 
-
 /*
  * Error codes private to this file:
  */
@@ -100,7 +99,7 @@ static char *tftp_boot_remote_file = NULL;
 static char *tftp_boot_local_file  = NULL;
 static char *tftp_openmode         = NULL;
 
-/*
+/**
  * Send a tftp request packet
  */
 static void send_req (char request, const char *fname)
@@ -131,8 +130,7 @@ static void send_req (char request, const char *fname)
   sock_fastwrite (sock, (BYTE*)outbuf, len);
 }
 
-
-/*
+/**
  * Send a tftp acknowledge packet
  */
 static void send_ack (WORD block)
@@ -145,7 +143,7 @@ static void send_ack (WORD block)
 }
 
 #if defined(USE_DEBUG)
-/*
+/**
  * Return error string for 'th_code'
  */
 static const char *tftp_strerror (int code)
@@ -167,8 +165,7 @@ static const char *tftp_strerror (int code)
 }
 #endif
 
-
-/*
+/**
  * Watch out for "ICMP port unreachable".
  */
 static void udp_callback (_udp_Socket *s, int icmp_type, int icmp_code)
@@ -185,7 +182,7 @@ static void udp_callback (_udp_Socket *s, int icmp_type, int icmp_code)
   ARGSUSED (icmp_code);
 }
 
-/*
+/**
  * Receive a TFTP data packet
  */
 static int recv_packet (DWORD block)
@@ -263,7 +260,7 @@ sock_err:
   if (status == -1)
   {
     if (debug_on)
-       (*_outch) ('T');
+       outs ("Timeout");
 
     tftp_errno = ERR_TIMEOUT;
     return (-1);
@@ -276,8 +273,7 @@ sock_err:
   return (-1);
 }
 
-
-/*
+/**
  * Open a TFTP connection on a random local port (our transaction ID).
  * Send the request, wait for first data block and send the first ACK.
  */
@@ -347,7 +343,7 @@ static int tftp_open (DWORD server, const char *fname)
   return (0);
 }
 
-/*
+/**
  * Close the TFTP connection
  */
 static void tftp_close (void)
@@ -367,7 +363,7 @@ static void tftp_close (void)
   DO_FREE (outbuf);
 }
 
-/*
+/**
  * Set the name of TFTP server
  */
 char *tftp_set_server (const char *name, int len)
@@ -376,7 +372,7 @@ char *tftp_set_server (const char *name, int len)
   return _strlcpy (tftp_server_name, name, len);
 }
 
-/*
+/**
  * Set the name of remote/local file to load from TFTP server.
  * Format is "tftp.boot_file = remote [local].
  * Note: `remote' name cannot contain spaces.
@@ -402,7 +398,7 @@ char *tftp_set_boot_fname (const char *name, int len)
   return (tftp_boot_remote_file);
 }
 
-/*
+/**
  * Set the mode used for transfer
  */
 static char *tftp_set_xfer_mode (const char *name)
@@ -410,7 +406,7 @@ static char *tftp_set_xfer_mode (const char *name)
   return _strlcpy (tftp_xfer_mode, name, sizeof(tftp_xfer_mode));
 }
 
-/*
+/**
  * Read the next data packet from a TFTP connection
  */
 static int tftp_get_block (const char **buf)
@@ -460,7 +456,7 @@ static int tftp_get_block (const char **buf)
   return (-1);
 }
 
-/*
+/**
  * Load the BOOT-file from TFTP server
  */
 int tftp_boot_load (void)
@@ -515,7 +511,7 @@ int tftp_boot_load (void)
       rc = 0;
       break;
     }
-    if (size > 0 && (*_tftp_write)(buf,size) < 0)
+    if (size > 0 && (*_tftp_write)(buf, size) < 0)
     {
       rc = -1;     /* writer failed, errno set */
       break;
@@ -530,7 +526,7 @@ int tftp_boot_load (void)
   return (rc);
 }
 
-/*
+/**
  * Config-file handler for TFTP-client
  */
 static void (W32_CALL *prev_hook) (const char*, const char*) = NULL;
@@ -576,7 +572,7 @@ int tftp_init (void)
 #endif  /* USE_TFTP */
 
 /*
- * A small test program, for djgpp/Watcom only
+ * A small test program.
  */
 #if defined(TEST_PROG)
 #if !defined(USE_TFTP)
@@ -605,7 +601,7 @@ static int W32_CALL close_func (void)
   if (file && fname)
   {
     time_t now = time (NULL);
-    double  speed;
+    double speed;
 
     if (now == start)
        now++;
@@ -677,7 +673,7 @@ void usage (char *argv0)
 
 int main (int argc, char **argv)
 {
-  eth_address eth = { 1,2,3,4,5,6 };
+  eth_address eth = { 1, 2, 3, 4, 5, 6 };
   int a_flag = 0;
   int h_flag = 0;
   int i_flag = 0;
