@@ -146,9 +146,10 @@ if %CPU%. == x64. set BITS=64
 if %1. == build_src.    goto :build_src
 if %1. == build_bin.    goto :build_bin
 if %1. == build_tests.  goto :build_tests
+if %1. == build_python. goto :build_python
 if %1. == run_programs. goto :run_programs
 
-echo Usage: %~dp0%0 ^[build_src ^| build_bin ^| build_tests^]
+echo Usage: %~dp0%0 ^[build_src ^| build_bin ^| build_tests ^| build_python ^]
 exit /b 1
 
 :build_src
@@ -400,6 +401,30 @@ exit /b 0
   chksum.exe -s
 
 :no_tests
+  exit /b 0
+
+::
+:: Try to build the '_watt32.pyd' module for 32-bit
+::
+:build_python
+  cd src\Python
+
+  if %BUILDER%-%CPU%. == visualc-x86.  (
+    %_ECHO% "\e[1;33m[%CPU%]: Building 'build_python' for 'BUILDER=visualc'.\e[0m"
+    make PYTHON="py -3" CC=cl
+
+  ) else if %BUILDER%-%CPU%. == clang-x86. (
+    %_ECHO% "\e[1;33m[%CPU%]: Building 'build_python' for 'BUILDER=clang-cl'.\e[0m"
+    make PYTHON="py -3" CC=clang-cl (
+
+  ) else if %BUILDER%-%CPU%. == mingw64-x86. (
+    %_ECHO% "\e[1;33m[%CPU%]: Building 'build_python' for 'BUILDER=MinGW64'.\e[0m"
+    make PYTHON="py -3" CC=gcc
+
+  ) else (
+    %_ECHO% "\e[1;33m[%CPU%]Not doing 'build_python' for 'BUILDER=%BUILDER%'.\e[0m"
+  )
+
   exit /b 0
 
 ::
