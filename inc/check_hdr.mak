@@ -3,17 +3,20 @@
 #
 # Does not work with '_KERNEL' defined.
 #
+USE_CPP_MODE ?= 1
+
 export CL=
 
-NO_WARN = -Wno-reserved-id-macro  \
-          -Wno-strict-prototypes  \
-          -Wno-undef              \
-          -Wno-zero-length-array  \
-          -Wno-nonportable-system-include-path
+CFLAGS = -Wall -I.                \
+         -ferror-limit=5          \
+         -DSTRUCT_IFPREFIX_NEEDED \
+         -DBSD=199103             \
+       # -DKERNEL                 \
+       # -D_KERNEL
 
-CFLAGS = -Wall -I. -ferror-limit=3 $(NO_WARN) -DSTRUCT_IFPREFIX_NEEDED
-
-CFLAGS += -DBSD=199103 # -DKERNEL -D_KERNEL
+ifeq ($(USE_CPP_MODE),1)
+  CFLAGS += -TC
+endif
 
 all: check_hdr.c
 	clang-cl -c $(CFLAGS) check_hdr.c
@@ -32,6 +35,17 @@ clean:
 # The meat of 'check_hdr.c':
 #
 define check_hdr_c
+  #if defined(__clang__)
+    #pragma clang diagnostic ignored "-Wreserved-id-macro"
+    #pragma clang diagnostic ignored "-Wstrict-prototypes"
+//  #pragma clang diagnostic ignored "-Wzero-length-array"
+    #pragma clang diagnostic ignored "-Wnonportable-system-include-path"
+
+    #if (__clang_major__ >= 13)
+    #pragma clang diagnostic ignored "-Wreserved-identifier"
+    #endif
+  #endif
+
   #include <tcp.h>
 
   W32_GCC_PRAGMA (clang diagnostic ignored  "-Wvisibility")

@@ -105,7 +105,7 @@
  * It is only secure if you trust the remote host to restrict these ports.
  * The range is IPPORT_RESERVEDMIN to IPPORT_RESERVEDMAX.
  */
-#if __BSD_VISIBLE
+#if defined(__BSD_VISIBLE) && (__BSD_VISIBLE != 0)
 #define IPV6PORT_RESERVED      1024
 #define IPV6PORT_ANONMIN      49152
 #define IPV6PORT_ANONMAX      65535
@@ -143,7 +143,7 @@
 /*
  * Socket address for IPv6
  */
-#if __BSD_VISIBLE
+#if defined(__BSD_VISIBLE) && (__BSD_VISIBLE != 0)
 #define SIN6_LEN
 #endif
 
@@ -210,7 +210,7 @@ struct sockaddr_in6 {
   /*
    * Definition of some useful macros to handle IP6 addresses
    */
-  #if __BSD_VISIBLE
+  #if defined(__BSD_VISIBLE) && (__BSD_VISIBLE != 0)
     #define IN6ADDR_ANY_INIT \
              {{{ 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, \
                  0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 }}}
@@ -410,7 +410,7 @@ struct sockaddr_in6 {
 #define IPV6_UNICAST_HOPS    4  /* int; IP6 hops */
 #define IPV6_V6ONLY         27 /* bool; only bind INET6 at wildcard bind */
 
-#if __BSD_VISIBLE
+#if defined(__BSD_VISIBLE) && (__BSD_VISIBLE != 0)
 /* no hdrincl */
 #if 0 /* the followings are relic in IPv4 and hence are disabled */
 #define IPV6_OPTIONS        1  /* buf/ip6_opts; set/get IP6 options */

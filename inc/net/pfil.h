@@ -35,11 +35,9 @@
 
 /* note: this file needs <net/if.h> and <sys/mbuf.h> */
 
-#if NIPFILTER > 0
-#ifdef PFIL_HOOKS
+#if defined(NIPFILTER) && (NIPFILTER > 0)
 #undef PFIL_HOOKS
-#endif
 #define PFIL_HOOKS
-#endif /* NIPFILTER */
+#endif
 
 #endif

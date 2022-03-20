@@ -91,6 +91,10 @@
 #include <sys/cdefs.h>
 #endif
 
+#ifndef __SYS_CDEFS_H
+#include <sys/w32api.h>
+#endif
+
 
 /*
  * Structures returned by network data base library.  All addresses are

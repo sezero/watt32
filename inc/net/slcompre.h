@@ -124,6 +124,7 @@
 
 #define TCP_PUSH_BIT 0x10
 
+__BEGIN_DECLS
 
 /*
  * "state" data for each active tcp conversation on the wire.  This is
@@ -174,5 +175,7 @@ void  sl_compress_setup (struct slcompress *, int);
 u_int sl_compress_tcp (struct mbuf *, struct ip *, struct slcompress *, int);
 int   sl_uncompress_tcp (u_char **, int, u_int, struct slcompress *);
 int   sl_uncompress_tcp_core (u_char *, int, int, u_int, struct slcompress *, u_char **, u_int *);
+
+__END_DECLS
 
 #endif

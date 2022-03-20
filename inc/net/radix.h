@@ -50,6 +50,8 @@
 #include <sys/cdefs.h>
 #endif
 
+__BEGIN_DECLS
+
 /*
  * Radix search tree node layout.
  */
@@ -104,7 +106,7 @@ struct radix_mask {
        int                   rm_refs;      /* # of references to this struct */
      };
 
-extern struct radix_mask *rn_mkfreelist;
+W32_DATA struct radix_mask *rn_mkfreelist; /* not present */
 
 #define rm_mask rm_rmu.rmu_mask
 #define rm_leaf rm_rmu.rmu_leaf     /* extra field would make 32 bytes */
@@ -152,8 +154,6 @@ struct radix_node_head {
 #define Bzero(p,n)      memset ((void*)(p),0,(int)(n));
 #define R_Malloc(p,t,n) (p = (t) malloc((unsigned int)(n)))
 #define Free(p)         free ((void*)p);
-
-__BEGIN_DECLS
 
 W32_FUNC void W32_CALL rn_init     (void);
 W32_FUNC int  W32_CALL rn_inithead (void **, int);
