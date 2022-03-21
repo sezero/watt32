@@ -1475,12 +1475,28 @@ lang.c: lang.l
   DATE = $(shell date +%d-%B-%Y)
 
   #
-  # Create a response file $(1).
-  # One word from $(2) per line into $(1).
+  # Extract the GNU-make major version number:
   #
-  define create_response_file
-    rm -f $(1) ; $(foreach f, $(2), echo $(strip $(f)) >> $(1) ;)
-  endef
+  MAKE_MAJOR_VER = $(word 1, $(subst ., ,$(MAKE_VERSION)))
+
+  ifeq ($(MAKE_MAJOR_VER),4)
+    #
+    # Create a response file $(1) for GNU-make ver 4.x.
+    # One word from $(2) per line into $(1).
+    #
+    define create_response_file
+      $(file > $(1))
+      $(foreach f, $(2), $(file >> $(1),$(strip $(f))) )
+    endef
+
+    else
+    #
+    # For a buggy (?) GNU-make. E.g. on MacOS:
+    #
+    define create_response_file
+      rm -f $(1) ; $(foreach f, $(2), echo $(strip $(f)) >> $(1) ;)
+    endef
+  endif
 
 $(C_ARGS): $(MAKEFILE_LIST)
 	$(call create_response_file, $@, $(CFLAGS))
