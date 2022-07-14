@@ -70,19 +70,19 @@ ifeq ($(CC),cl)
   CFLAGS  = -nologo -MD -Ox -Zi -W3
   RCFLAGS = -nologo -D_MSC_VER
   LDFLAGS = -nologo -debug -dll -map -verbose -incremental:no -nodefaultlib:uuid.lib -libpath:$(PY_ROOT)/libs
-  EX_LIBS = $(PY_ROOT)/libs/python$(PY_MAJOR_VER).lib
+  EX_LIBS = $(wildcard $(PY_ROOT)/libs/python$(PY_MAJOR_VER)*.lib)
 
 else ifeq ($(CC),clang-cl)
   CFLAGS  = -nologo -MD -Ox -Zi -W3
   RCFLAGS = -nologo -D__clang__
   LDFLAGS = -nologo -debug -dll -map -verbose -incremental:no -nodefaultlib:uuid.lib -libpath:$(PY_ROOT)/libs
-  EX_LIBS = $(PY_ROOT)/libs/python$(PY_MAJOR_VER).lib
+  EX_LIBS = $(wildcard $(PY_ROOT)/libs/python$(PY_MAJOR_VER)*.lib)
 
 else ifeq ($(CC),gcc)
   CFLAGS =  -m32 -Wall -O2 -s
   RCFLAGS = -O COFF --target=pe-i386 -D__MINGW32__
   LDFLAGS = -m32 -s -shared -static-libgcc -Wl,--print-map
-  EX_LIBS  = $(PY_ROOT)/libs/libpython$(PY_MAJOR_VER).a
+  EX_LIBS  = $(wildcard $(PY_ROOT)/libs/libpython$(PY_MAJOR_VER)*.a)
 
 else
   $(error $(Usage))

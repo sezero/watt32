@@ -5,10 +5,7 @@ from __future__ import print_function
 import sys, inspect, argparse
 from win32api import Sleep
 
-if 1:
-  import watt32 as w32
-else:
-  from watt32 import *
+import watt32 as w32
 
 class Colour():
   WHITE = YELLOW = RESET = ""
@@ -19,7 +16,7 @@ try:
   Colour.WHITE  = Style.BRIGHT + Fore.WHITE
   Colour.YELLOW = Style.BRIGHT + Fore.YELLOW
   Colour.RESET  = Style.RESET_ALL
-except ImportError:
+except:
   pass
 
 opt = None
@@ -86,6 +83,7 @@ def show_version (opt):
     if length > 60:
        length = 0
        print ("\n", " "*10, end="")
+  print ("")
   sys.exit (0)
 
 def show_help():
