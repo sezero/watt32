@@ -63,8 +63,9 @@
 
 #if defined(__MINGW32__) || (defined(__DJGPP__) && DJGPP_MINOR >= 4) || \
     (defined(__WATCOMC__) && __WATCOMC__ >= 1230) ||  /* OW 1.3+ */     \
-    defined(__POCC__) ||                              /* PellesC */     \
-    defined(__ORANGEC__)                              /* Orange-C */
+    defined(__POCC__)    ||                           /* PellesC */     \
+    defined(__ORANGEC__) ||                           /* Orange-C */    \
+    defined(__AVR__)                                  /* Atmel gcc */
   #undef  W32_HAVE_STDINT_H
   #define W32_HAVE_STDINT_H 1
   #include <stdint.h>   /* doesn't define 'u_char' etc. */

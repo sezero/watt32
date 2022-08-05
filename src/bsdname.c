@@ -416,6 +416,9 @@ int _get_machine_name (char *buf, int size)
   reg.r_ds = _watt_dosTbSeg;
   reg.r_dx = 0;
 
+#elif (DOSX & ATMEL)
+  return (-1);  /** \todo */
+
 #elif (DOSX == 0)
   reg.r_ds = FP_SEG (dosBuf);
   reg.r_dx = FP_OFF (dosBuf);

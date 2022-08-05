@@ -76,6 +76,15 @@ extern "C" {
 
   /* Use kbhit(), getch() below
    */
+#elif defined(__AVR__)
+  /*
+   * Some AVR quirks.
+   */
+  #include <string.h>
+
+  #define stricmp(s1, s2)        strcasecmp (s1, s2)
+  #define strnicmp(s1, s2, len)  strncasecmp (s1, s2, len)
+
 #else                            /* no other option */
   #include <conio.h>
 #endif
@@ -645,8 +654,16 @@ extern const char *short_strerror (int errnum);
     #define GEN_INTERRUPT(_i, _r)  intr ((int)(_i), (struct REGPACK*)(_r))
   #endif
 
+#elif (DOSX & ATMEL)
+  /**
+   * \todo This depends heavily on the chosen hardware
+   */
+  #define GEN_INTERRUPT(_i, _r)  ((void)0)
+
 #elif (DOSX & WINWATT)
-  /* No interrupts on Win32 */
+  /*
+   * No interrupts on Win32
+   */
 
 #else
   #error Help, unknown target.

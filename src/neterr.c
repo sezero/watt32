@@ -165,6 +165,7 @@
 #else
   #error Unknown target!
 #endif
+
 /*
  * A hack for Watcom.
  */

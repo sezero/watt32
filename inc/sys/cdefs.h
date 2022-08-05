@@ -207,7 +207,7 @@
   #define MS_CDECL
 #endif
 
-
+#if !defined(__AVR__)
 /*
  * The __CONCAT macro is used to concatenate parts of symbol names, e.g.
  * with "#define OLD(foo) __CONCAT(old,foo)", OLD(foo) produces oldfoo.
@@ -251,6 +251,7 @@
     #endif
   #endif  /* !__GNUC__ */
 #endif    /* (__STDC__ || __cpluplus) && !__CYGWIN__ */
+#endif    /* !__AVR__ */
 
 
 /*

@@ -19,6 +19,7 @@
 #define POWERPAK     16            /**< Borland's PowerPak DOS extender       */
 #define X32VM        32            /**< FlashTek X-32/X-32VM extender         */
 #define WINWATT      64            /**< Windows (32/64-bit) using WinPcap     */
+#define ATMEL       128            /**< Atmel MCU using a TBD driver          */
 #define PHARLAP_DLL (0x80|PHARLAP) /**< PharLap DLL version target (not yet)  */
 #define DOS4GW_DLL  (0x80|DOS4GW)  /**< DOS4GW DLL version target (possible?) */
 #define DJGPP_DXE   (0x80|DJGPP)   /**< djgpp DXE target (not yet)            */
@@ -193,6 +194,10 @@
   #endif
 #endif
 
+#if defined(__AVR__)
+  #define DOSX ATMEL
+#endif
+
 #if defined(__CYGWIN__) && defined(_REENT_ONLY) && defined(WATT32_BUILD)
   #error "CygWin with _REENT_ONLY is not supported."
 #endif
@@ -209,7 +214,7 @@
   #error __MSDOS__ not defined for a real-mode DOS compiler!?
 #endif
 
-#if (DOSX & WINWATT) == 0 && !defined(__MSDOS__)
+#if (DOSX & (ATMEL | WINWATT)) == 0 && !defined(__MSDOS__)
   #define __MSDOS__
 #endif
 
@@ -344,6 +349,11 @@
   #undef  BOOL
   #define BOOL int
 
+#elif (DOSX & ATMEL)   /* ATX &/ ATmel MCU targets */
+  /*
+   * todo
+   */
+
 #elif !(DOSX & WINWATT)   /* All real-mode and non-Windows targets */
   #include <dos.h>
   #define  BOOL           int
@@ -385,7 +395,7 @@
  * Macros and hacks depending on compiler.
  */
 
-#if defined(__POCC__)
+#if defined(__POCC__) || defined(__AVR__)
   #include <string.h>
   #include <stdlib.h>
 

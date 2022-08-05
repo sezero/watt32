@@ -43,6 +43,14 @@
   * '#include_next <sys/errno.h>' in our '<sys/errno.h>'.
   */
 
+#elif defined(__AVR__)
+  /**
+   * \todo Support Atmel AVX
+   */
+  #ifndef ESOCKTNOSUPPORT
+  #define ESOCKTNOSUPPORT   54
+  #endif
+
 #elif defined(WATT32_DJGPP_MINGW)
   /*
    * Just a C preprocess test using TDM-gcc with djgpp headers.

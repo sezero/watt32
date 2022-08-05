@@ -65,7 +65,7 @@
   #define _timezone timezone
 #elif defined(__TURBOC__) && (__TURBOC__ <= 0x410)  /* TCC/BCC <= 3.1 */
   #define _timezone timezone
-#elif defined(__POCC__)
+#elif defined(__POCC__) || defined(__AVR__)
   #define _timezone 0
 #elif defined(_MSC_VER) && (_MSC_VER <= 600)
   #define _timezone timezone
@@ -178,7 +178,7 @@ void set_utc_offset (void)
 {
   struct timezone tz = { 0, 0 };
 
-#if !defined(__POCC__)
+#if !defined(__POCC__) && !defined(__AVR__)
   tzset();
 #endif
   get_zone (&tz, time(NULL));

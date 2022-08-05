@@ -167,7 +167,7 @@ void _sock_dbug_open (void)
   dbg_file = fopen_excl (dbg_fname, dbg_omode);
   if (dbg_file)
   {
-#if !defined(__BORLANDC__)  /* buggy output with this */
+#if !defined(__BORLANDC__) && !defined(__AVR__) /* buggy output with this */
     static char buf [1024];
     setvbuf (dbg_file, buf, _IOLBF, sizeof(buf));
 #endif

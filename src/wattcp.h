@@ -254,8 +254,10 @@ struct ulong_long {
 #define ARCNET_IPX        250
 #define ARCNET_LANSOFT    251
 
-
-#if (DOSX)
+#if (DOSX & ATMEL)        /* An 8-bit MCU is highly limited on data */
+  #define MAX_FRAGMENTS   1UL
+  #define MAX_WINDOW      (32*1024U)
+#elif (DOSX)
   #define MAX_FRAGMENTS   45UL
   #define MAX_WINDOW      (64*1024U)   /**< max TCP window */
 #else
