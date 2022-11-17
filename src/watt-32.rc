@@ -59,11 +59,11 @@ APPICON ICON "watt-32.ico"
   #endif
 #endif
 
-#ifndef BITS
-#define BITS 32
+#ifndef RC_BITS
+#define RC_BITS 32
 #endif
 
-#if (BITS == 32)
+#if (RC_BITS == 32)
   #define BITS_STR  " (32-bit)"
   #define DLL_NAME  "watt-32" DBG ".dll"
 #else
@@ -97,7 +97,7 @@ VS_VERSION_INFO VERSIONINFO
 #else
   FILEFLAGS   0
 #endif
-  FILEOS      VOS__WINDOWS32
+  FILEOS      VOS_NT_WINDOWS32    /* There is no 'VOS_NT_WINDOWS64' */
   FILETYPE    VFT_DLL
   FILESUBTYPE 0x0L
 
@@ -114,7 +114,7 @@ BEGIN
       VALUE "ProductName",      "Watt-32 tcp/ip stack" RC_DATE2
       VALUE "ProductVersion",   WATTCP_VER_STRING " (" BUILDER ")"
       VALUE "LegalCopyright",   "This library carries a BSD-style licence.\r\n"
-                                "\t\t\tCopyright 1997-2021, Gisle Vanem <gvanem@yahoo.no>."
+                                "\t\t\tCopyright 1997-2022, Gisle Vanem <gvanem@yahoo.no>."
     END
   END
 

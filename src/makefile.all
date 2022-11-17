@@ -752,6 +752,13 @@ MAKE_FILE = visualc-release_$(BITS).mak
 
 OBJPATH = $(OBJDIR)\ #
 
+#
+# TODO:
+#   Use 'CC=$(VCToolkitInstallDir)\bin\Hostx86\$(CPU)\cl.exe'
+#   Use 'LDFLAGS=-libpath:$(VCToolkitInstallDir)\lib\$(CPU) \
+#                -libpath:$(WindowsSdkDir)\lib\$(TargetPlatformVersion)\ucrt\$(CPU) \
+#                -libpath:$(WindowsSdkDir)\lib\$(TargetPlatformVersion)\um\$(CPU)'
+#
 CC      = cl
 LDFLAGS = -dll -nologo -map -debug -debugtype:cv -incremental:no -verbose $(LDFLAGS)
 
@@ -1575,7 +1582,7 @@ $(RESOURCE): watt-32.rc
 
 @elifdef CLANG
 $(RESOURCE): watt-32.rc
-	rc -nologo -DRC_DATE="$(DATE)" -DDEBUG=$(DEBUGRC) -D__clang__ -DBITS=$(BITS) -Fo $(RESOURCE) watt-32.rc
+	rc -nologo -DRC_DATE="$(DATE)" -DDEBUG=$(DEBUGRC) -D__clang__ -DRC_BITS=$(BITS) -Fo $(RESOURCE) watt-32.rc
 
 @elifdef LCC
 $(RESOURCE): watt-32.rc
@@ -1588,26 +1595,26 @@ $(RESOURCE): watt-32.rc
 @elifdef MINGW64
 $(RESOURCE): watt-32.rc
   @ifdef WIN64
-	windres -DRC_DATE="$(DATE)" -DBITS=64 --target=pe-x86-64 -D__MINGW64__ -DDEBUG=0 -O coff -o $@ -i watt-32.rc
+	windres -DRC_DATE="$(DATE)" -DRC_BITS=64 --target=pe-x86-64 -D__MINGW64__ -DDEBUG=0 -O coff -o $@ -i watt-32.rc
   @else
-	windres -DRC_DATE="$(DATE)" -DBITS=32 --target=pe-i386 -D__MINGW64__ -DDEBUG=0 -O coff -o $@ -i watt-32.rc
+	windres -DRC_DATE="$(DATE)" -DRC_BITS=32 --target=pe-i386 -D__MINGW64__ -DDEBUG=0 -O coff -o $@ -i watt-32.rc
   @endif
 
 @elifdef CYGWIN
 $(RESOURCE): watt-32.rc
-	windres -DRC_DATE="$(DATE)" -DBITS=$(BITS) -I../inc -DDEBUG=0 -D__CYGWIN__ -O coff -o $@ -i watt-32.rc
+	windres -DRC_DATE="$(DATE)" -DRC_BITS=$(BITS) -I../inc -DDEBUG=0 -D__CYGWIN__ -O coff -o $@ -i watt-32.rc
 
 @elifdef ORANGEC
 $(RESOURCE): watt-32.rc
-	$(RC) --nologo -DDEBUG=$(DEBUGRC) -D__ORANGEC__ -DBITS=$(BITS) -o $(RESOURCE) watt-32.rc
+	$(RC) --nologo -DDEBUG=$(DEBUGRC) -D__ORANGEC__ -DRC_BITS=$(BITS) -I..\inc -o $(RESOURCE) watt-32.rc
 
 @elifdef PELLESC
 $(RESOURCE): watt-32.rc
-	porc -DDEBUG=0 -D__POCC__ -DBITS=$(BITS) -I..\inc -Fo$(RESOURCE) watt-32.rc
+	porc -DDEBUG=0 -D__POCC__ -DRC_BITS=$(BITS) -I..\inc -Fo$(RESOURCE) watt-32.rc
 
 @elifdef VISUALC
 $(RESOURCE): watt-32.rc
-	rc -nologo -DDEBUG=$(DEBUGRC) -D_MSC_VER -DBITS=$(BITS) -Fo $(RESOURCE) watt-32.rc
+	rc -nologo -DDEBUG=$(DEBUGRC) -D_MSC_VER -DRC_BITS=$(BITS) -Fo $(RESOURCE) watt-32.rc
 
 @elifdef WATCOM
 $(RESOURCE): watt-32.rc
