@@ -72,19 +72,19 @@ ifeq ($(CC),cl)
   CFLAGS  = -nologo -MD -Ox -Zi -W3
   RCFLAGS = -nologo -D_MSC_VER
   LDFLAGS = -nologo -debug -dll -map -verbose -incremental:no -nodefaultlib:uuid.lib -libpath:$(PY_ROOT)/libs
-  EX_LIBS = $(wildcard $(PY_ROOT)/libs/python$(PY_MAJOR_VER)*.lib)
+  EX_LIBS = $(wildcard $(PY_ROOT)/libs/python$(PY_MAJOR_VER).lib)
 
 else ifeq ($(CC),clang-cl)
   CFLAGS  = -nologo -MD -Ox -Zi -W3
   RCFLAGS = -nologo -D__clang__
   LDFLAGS = -nologo -debug -dll -map -verbose -incremental:no -nodefaultlib:uuid.lib -libpath:$(PY_ROOT)/libs
-  EX_LIBS = $(wildcard $(PY_ROOT)/libs/python$(PY_MAJOR_VER)*.lib)
+  EX_LIBS = $(wildcard $(PY_ROOT)/libs/python$(PY_MAJOR_VER).lib)
 
 else ifeq ($(CC),gcc)
   CFLAGS =  -m32 -Wall -O2 -s
   RCFLAGS = -O COFF --target=pe-i386 -D__MINGW32__
   LDFLAGS = -m32 -s -shared -static-libgcc -Wl,--print-map
-  EX_LIBS  = $(wildcard $(PY_ROOT)/libs/libpython$(PY_MAJOR_VER)*.a)
+  EX_LIBS  = $(wildcard $(PY_ROOT)/libs/libpython$(PY_MAJOR_VER).a)
 
 else
   $(error $(Usage))
@@ -143,6 +143,7 @@ else
 endif
 
 SWIG_FLAGS = -macroerrors -Wall -python $(filter -D% -I%, $(CFLAGS)) # -nodefaultctor -nodefaultdtor -debug-symbols
+SWIG_FLAGS += -w454
 
 GENERATED = watt32_swig_wrap.c watt32.py check-for-unused-libs.py
 
@@ -150,20 +151,13 @@ all: py_info _watt32.pyd epilogue
 
 epilogue:
 	$(call green_msg,Do a $(BRIGHT_WHITE)$(PYTHON) ./runme.py -d www.google.com $(BRIGHT_GREEN)to test it.)
+	$(call green_msg,Do a $(BRIGHT_WHITE)make CC=$(CC) install $(BRIGHT_GREEN)to install it.)
 
 py_info:
 	$(call green_msg,Detected Python variables:)
 	$(call green_msg,  PY_ROOT:      $(BRIGHT_WHITE)$(PY_ROOT).)
 	$(call green_msg,  PY_MAJOR_VER: $(BRIGHT_WHITE)$(PY_MAJOR_VER).)
 	$(call green_msg,  PY_MINOR_VER: $(BRIGHT_WHITE)$(PY_MINOR_VER).)
-
-install: _watt32.pyd watt32.py
-	cp --update _watt32.pyd $(PY_ROOT)/DLLs
-	cp --update watt32.py   $(PY_ROOT)/Lib/site-packages
-
-uninstall:
-	rm -f $(PY_ROOT)/dlls/_watt32.pyd
-	rm -f $(PY_ROOT)/Lib/site-packages/watt32.py
 
 ifeq ($(CC),gcc)
   _watt32.pyd: watt32_swig_wrap.o _watt32.res $(EX_LIBS)
@@ -175,18 +169,30 @@ ifeq ($(CC),gcc)
 	windres -o $@ $(RCFLAGS) $<
 	@echo
 
+  install: _watt32.pyd watt32.py
+	cp --update _watt32.pyd  $(PY_ROOT)/DLLs
+	cp --update watt32.py    $(PY_ROOT)/Lib/site-packages
+
 else
   _watt32.pyd: watt32_swig_wrap.obj _watt32.res  $(EX_LIBS) | check-for-unused-libs.py
 	$(call green_msg,Linking $@)
 	link $(LDFLAGS) $^ -out:$@ $(SYS_LIBS) > link.tmp
 	@cat link.tmp >> _watt32.map
-	@rm -f _watt32.exp _watt32.lib
+	@rm -f _watt32.{exp,lib}
 	@$(PYTHON) check-for-unused-libs.py link.tmp
 
   _watt32.res: _watt32.rc
 	rc -Fo $@ $(RCFLAGS) $<
 	@echo
+
+  install: _watt32.pyd watt32.py
+	cp --update _watt32.{pyd,pdb} $(PY_ROOT)/DLLs
+	cp --update watt32.py         $(PY_ROOT)/Lib/site-packages
 endif
+
+uninstall:
+	rm -f $(PY_ROOT)/dlls/_watt32.{pyd,pdb}
+	rm -f $(PY_ROOT)/Lib/site-packages/watt32.py
 
 watt32.py: watt32_swig_wrap.c
 
@@ -228,6 +234,9 @@ define check_for_unused_libs_PY
   #
   import os, sys
 
+  map_file    = sys.argv[1]
+  ignore_libs = [ ]
+
   class State():
     IDLE   = 0
     UNUSED = 1
@@ -244,40 +253,32 @@ define check_for_unused_libs_PY
   except:
     pass
 
-  ignore_libs = [ ]
-
-  def report (map_file, unused):
+  def report (unused):
     num = len(unused)
     plural = [ "library", "libraries" ]
     if num > 0:
-      print ("%s%d unused %s in %s:%s" % (Color.RED, num, plural[num > 1], map_file, Color.RESET))
-      for u in sorted(unused):
-        print ("  " + u)
+       print ("%s%d unused %s in %s:%s" % (Color.RED, num, plural[num > 1], map_file, Color.RESET))
+       for u in sorted(unused):
+           print ("  " + u)
     print ("%sDone%s\n" % (Color.WHITE, Color.RESET))
 
-  def process_map (file, state):
+  def process_map (state):
     unused_libs = []
-    f = open (file, "rt")
-    try:
-      lines = f.readlines()
-    except IOError:
-      return []
-    finally:
-      f.close()
-
+    f = open (map_file, "rt")
+    lines = f.readlines()
+    f.close()
     for l in lines:
       l = l.strip()
       if l == "Unused libraries:":
-        state = State.UNUSED
-        continue
+         state = State.UNUSED
+         continue
       if state == State.UNUSED:
-        if l == "":
-          break
-        if os.path.basename (l).lower() not in ignore_libs:
-          unused_libs.append (l)
+         if l == "":
+            break
+         if os.path.basename (l).lower() not in ignore_libs:
+            unused_libs.append (l)
     return unused_libs
 
-  map_file = sys.argv[1]
-  report (map_file, process_map(map_file, State.IDLE))
+  report (process_map(State.IDLE))
 endef
 

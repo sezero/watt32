@@ -16,7 +16,7 @@
   #define BUILDER  "MinGW"
 
 #else
-  #error Who are you?
+  #error "Unsupported compiler"
 #endif
 
 VS_VERSION_INFO VERSIONINFO
