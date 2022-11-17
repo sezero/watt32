@@ -205,6 +205,8 @@ echo neterr.c:  build\visualc\syserr.c                            >> build\visua
 echo Run nmake to make target(s):
 echo   E.g. "nmake -f visualc-release_32.mak"
 echo     or "nmake -f visualc-release_64.mak"
+echo Depending on which cl.exe (32 or 64-bit) is first on your PATH, use the
+echo correct 'visualc-release_32.mak' or 'visualc-release_64.mak'.
 goto next
 
 ::--------------------------------------------------------------------------
