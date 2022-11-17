@@ -52,6 +52,8 @@ green_msg    = @echo -e "$(BRIGHT_GREEN)$(1)\e[0m"
 
 export CL=
 
+CPU ?= x86
+
 #
 # The only option at the moment:
 #
@@ -114,11 +116,11 @@ ifeq ($(WATT32_STATIC),1)
   CFLAGS += -DWATT32_STATIC
 
   ifeq ($(CC),cl)
-    EX_LIBS += ../../lib/x86/wattcpvc.lib
+    EX_LIBS += ../../lib/$(CPU)/wattcpvc.lib
   else ifeq ($(CC),clang-cl)
-    EX_LIBS += ../../lib/x86/wattcp_clang.lib
+    EX_LIBS += ../../lib/$(CPU)/wattcp_clang.lib
   else
-    EX_LIBS += ../../lib/x86/libwatt32.a
+    EX_LIBS += ../../lib/$(CPU)/libwatt32.a
   endif
 
   ifeq ($(CC),gcc)
@@ -132,11 +134,11 @@ else
   SYS_LIBS =
 
   ifeq ($(CC),cl)
-    EX_LIBS += ../../lib/x86/wattcpvc_imp.lib
+    EX_LIBS += ../../lib/$(CPU)/wattcpvc_imp.lib
   else ifeq ($(CC),clang-cl)
-    EX_LIBS += ../../lib/x86/wattcp_clang_imp.lib
+    EX_LIBS += ../../lib/$(CPU)/wattcp_clang_imp.lib
   else
-    EX_LIBS += ../../lib/x86/libwatt32.dll.a
+    EX_LIBS += ../../lib/$(CPU)/libwatt32.dll.a
   endif
 endif
 
