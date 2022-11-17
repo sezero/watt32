@@ -14,10 +14,6 @@
 struct internal_state   { int dummy; }; /* for buggy compilers */
 #endif
 
-#ifndef STDC
-extern void exit OF((int));
-#endif
-
 const char * const z_errmsg[10] = {
 "need dictionary",     /* Z_NEED_DICT       2  */
 "stream end",          /* Z_STREAM_END      1  */
@@ -92,30 +88,18 @@ uLong ZEXPORT zlibCompileFlags (void)
 #ifdef FASTEST
     flags += 1 << 21;
 #endif
-#ifdef STDC
-#  ifdef NO_vsnprintf
-        flags += 1 << 25;
-#    ifdef HAS_vsprintf_void
-        flags += 1 << 26;
-#    endif
-#  else
-#    ifdef HAS_vsnprintf_void
-        flags += 1 << 26;
-#    endif
+
+#ifdef NO_vsnprintf
+      flags += 1 << 25;
+#  ifdef HAS_vsprintf_void
+      flags += 1 << 26;
 #  endif
 #else
-        flags += 1 << 24;
-#  ifdef NO_snprintf
-        flags += 1 << 25;
-#    ifdef HAS_sprintf_void
-        flags += 1 << 26;
-#    endif
-#  else
-#    ifdef HAS_snprintf_void
-        flags += 1 << 26;
-#    endif
+#  ifdef HAS_vsnprintf_void
+      flags += 1 << 26;
 #  endif
 #endif
+
     return flags;
 }
 
@@ -288,12 +272,6 @@ void  zcfree (voidpf opaque, voidpf ptr)
 
 
 #ifndef MY_ZCALLOC /* Any system without a special alloc function */
-
-#ifndef STDC
-extern voidp  malloc OF((uInt size));
-extern voidp  calloc OF((uInt items, uInt size));
-extern void   free   OF((voidpf ptr));
-#endif
 
 voidpf zcalloc (voidpf opaque, unsigned items, unsigned size)
 {

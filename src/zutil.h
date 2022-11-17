@@ -16,11 +16,10 @@
 #define ZLIB_INTERNAL
 #include "zlib.h"
 
-#ifdef STDC
-#  include <stddef.h>
-#  include <string.h>
-#  include <stdlib.h>
-#endif
+#include <stddef.h>
+#include <string.h>
+#include <stdlib.h>
+
 #ifdef NO_ERRNO_H
     extern int errno;
 #else
@@ -77,7 +76,7 @@ extern const char * const z_errmsg[10]; /* indexed by 2-zlib_error */
 #if defined(MSDOS) || (defined(WINDOWS) && !defined(_WIN32))
 #  define OS_CODE  0x00
 #  if defined(__TURBOC__) || defined(__BORLANDC__)
-#    if(__STDC__ == 1) && (defined(__LARGE__) || defined(__COMPACT__))
+#    if defined(__LARGE__) || defined(__COMPACT__)
        /* Allow compilation with ANSI keywords only enabled */
        void _Cdecl farfree( void *block );
        void *_Cdecl farmalloc( unsigned long nbytes );
@@ -165,11 +164,13 @@ extern const char * const z_errmsg[10]; /* indexed by 2-zlib_error */
 #    define HAVE_VSNPRINTF
 #  endif
 #endif
+
 #if defined(__CYGWIN__)
 #  ifndef HAVE_VSNPRINTF
 #    define HAVE_VSNPRINTF
 #  endif
 #endif
+
 #ifndef HAVE_VSNPRINTF
 #  ifdef MSDOS
      /* vsnprintf may exist on some MS-DOS compilers (DJGPP?),
@@ -191,7 +192,7 @@ extern const char * const z_errmsg[10]; /* indexed by 2-zlib_error */
 #endif
 
 #ifdef HAVE_STRERROR
-   extern char *strerror OF((int));
+   extern char *strerror (int);
 #  define zstrerror(errnum) strerror(errnum)
 #else
 #  define zstrerror(errnum) ""
@@ -207,9 +208,11 @@ extern const char * const z_errmsg[10]; /* indexed by 2-zlib_error */
   */
 #  define NO_MEMCPY
 #endif
-#if defined(STDC) && !defined(HAVE_MEMCPY) && !defined(NO_MEMCPY)
+
+#if !defined(HAVE_MEMCPY) && !defined(NO_MEMCPY)
 #  define HAVE_MEMCPY
 #endif
+
 #ifdef HAVE_MEMCPY
 #  ifdef SMALL_MEDIUM /* MSDOS small or medium model */
 #    define zmemcpy _fmemcpy
@@ -221,16 +224,16 @@ extern const char * const z_errmsg[10]; /* indexed by 2-zlib_error */
 #    define zmemzero(dest, len) memset(dest, 0, len)
 #  endif
 #else
-   extern void zmemcpy  OF((Bytef* dest, const Bytef* source, uInt len));
-   extern int  zmemcmp  OF((const Bytef* s1, const Bytef* s2, uInt len));
-   extern void zmemzero OF((Bytef* dest, uInt len));
+   extern void zmemcpy  (Bytef* dest, const Bytef* source, uInt len);
+   extern int  zmemcmp  (const Bytef* s1, const Bytef* s2, uInt len);
+   extern void zmemzero (Bytef* dest, uInt len);
 #endif
 
 /* Diagnostic functions */
 #ifdef DEBUG
 #  include <stdio.h>
    extern int z_verbose;
-   extern void z_error    OF((char *m));
+   extern void z_error    (char *m);
 #  define Assert(cond,msg) {if(!(cond)) z_error(msg);}
 #  define Trace(x) {if (z_verbose>=0) fprintf x ;}
 #  define Tracev(x) {if (z_verbose>0) fprintf x ;}
@@ -247,8 +250,8 @@ extern const char * const z_errmsg[10]; /* indexed by 2-zlib_error */
 #endif
 
 
-voidpf zcalloc OF((voidpf opaque, unsigned items, unsigned size));
-void   zcfree  OF((voidpf opaque, voidpf ptr));
+voidpf zcalloc (voidpf opaque, unsigned items, unsigned size);
+void   zcfree  (voidpf opaque, voidpf ptr);
 
 #define ZALLOC(strm, items, size) \
            (*((strm)->zalloc))((strm)->opaque, (items), (size))

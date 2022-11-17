@@ -125,44 +125,9 @@
 #  define UNALIGNED_OK
 #endif
 
-#ifdef __STDC_VERSION__
-#  ifndef STDC
-#    define STDC
-#  endif
-#  if __STDC_VERSION__ >= 199901L
-#    ifndef STDC99
-#      define STDC99
-#    endif
-#  endif
-#endif
-
-#if !defined(STDC) && (defined(__STDC__) || defined(__cplusplus))
-#  define STDC
-#endif
-
-#if !defined(STDC) && (defined(__GNUC__) || defined(__BORLANDC__))
-#  define STDC
-#endif
-
-#if !defined(STDC) && (defined(MSDOS) || defined(WINDOWS) || defined(_WIN32))
-#  define STDC
-#endif
-
-#if !defined(STDC) && (defined(OS2) || defined(__HOS_AIX__))
-#  define STDC
-#endif
-
-#if !defined(STDC) && defined(__POCC__)
-#  define STDC
-#endif
-
-#if defined(__OS400__) && !defined(STDC)    /* iSeries (formerly AS/400). */
-#  define STDC
-#endif
-
-#ifndef STDC
-#  ifndef const /* cannot use !defined(STDC) && !defined(const) on Mac */
-#    define const       /* note: need a more gentle solution here */
+#if defined(__STDC_VERSION__) && (__STDC_VERSION__ >= 199901L)
+#  ifndef STDC99
+#    define STDC99
 #  endif
 #endif
 
@@ -203,14 +168,6 @@
 */
 
                         /* Type declarations */
-
-#ifndef OF /* function prototypes */
-#  ifdef STDC
-#    define OF(args)  args
-#  else
-#    define OF(args)  ()
-#  endif
-#endif
 
 /* The following definitions for FAR are needed only for MSDOS mixed
  * model programming (small or medium model with some far allocations).
@@ -315,15 +272,9 @@ typedef int   FAR intf;
 typedef uInt  FAR uIntf;
 typedef uLong FAR uLongf;
 
-#ifdef STDC
-   typedef void const *voidpc;
-   typedef void FAR   *voidpf;
-   typedef void       *voidp;
-#else
-   typedef Byte const *voidpc;
-   typedef Byte FAR   *voidpf;
-   typedef Byte       *voidp;
-#endif
+typedef void const *voidpc;
+typedef void FAR   *voidpf;
+typedef void       *voidp;
 
 #ifndef SEEK_SET
 #  define SEEK_SET        0       /* Seek from beginning of file.  */

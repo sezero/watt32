@@ -28,7 +28,7 @@
 #endif
 
 /* function prototypes */
-local void fixedtables OF((struct inflate_state FAR *state));
+local void fixedtables (struct inflate_state FAR *state);
 
 /*
    strm provides memory allocation functions in zalloc and zfree, or
@@ -37,12 +37,11 @@ local void fixedtables OF((struct inflate_state FAR *state));
    windowBits is in the range 8..15, and window is a user-supplied
    window and output buffer that is 2**windowBits bytes.
  */
-int ZEXPORT inflateBackInit_(strm, windowBits, window, version, stream_size)
-z_stream FAR *strm;
-int windowBits;
-unsigned char FAR *window;
-const char *version;
-int stream_size;
+int ZEXPORT inflateBackInit_ (z_stream FAR      *strm,
+                              int                windowBits,
+                              unsigned char FAR *window,
+                              const char        *version,
+                              int                stream_size)
 {
     struct inflate_state FAR *state;
 
@@ -81,8 +80,7 @@ int stream_size;
    used for threaded applications, since the rewriting of the tables and virgin
    may not be thread-safe.
  */
-local void fixedtables(state)
-struct inflate_state FAR *state;
+local void fixedtables (struct inflate_state FAR *state)
 {
 #ifdef BUILDFIXED
     static int virgin = 1;
@@ -249,12 +247,11 @@ struct inflate_state FAR *state;
    inflateBack() can also return Z_STREAM_ERROR if the input parameters
    are not correct, i.e. strm is Z_NULL or the state was not initialized.
  */
-int ZEXPORT inflateBack(strm, in, in_desc, out, out_desc)
-z_stream FAR *strm;
-in_func in;
-void FAR *in_desc;
-out_func out;
-void FAR *out_desc;
+int ZEXPORT inflateBack (z_stream FAR *strm,
+                         in_func       in,
+                         void FAR     *in_desc,
+                         out_func      out,
+                         void FAR     *out_desc)
 {
     struct inflate_state FAR *state;
     unsigned char FAR *next;    /* next input */
@@ -619,8 +616,7 @@ void FAR *out_desc;
     return ret;
 }
 
-int ZEXPORT inflateBackEnd(strm)
-z_stream FAR *strm;
+int ZEXPORT inflateBackEnd (z_stream FAR *strm)
 {
     if (strm == Z_NULL || strm->state == Z_NULL || strm->zfree == (free_func)0)
         return Z_STREAM_ERROR;

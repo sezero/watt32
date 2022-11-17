@@ -274,13 +274,11 @@ typedef struct internal_state {
  */
 
         /* in trees.c */
-void _tr_init         OF((deflate_state *s));
-int  _tr_tally        OF((deflate_state *s, unsigned dist, unsigned lc));
-void _tr_flush_block  OF((deflate_state *s, charf *buf, ulg stored_len,
-                          int eof));
-void _tr_align        OF((deflate_state *s));
-void _tr_stored_block OF((deflate_state *s, charf *buf, ulg stored_len,
-                          int eof));
+void _tr_init         (deflate_state *s);
+int  _tr_tally        (deflate_state *s, unsigned dist, unsigned lc);
+void _tr_flush_block  (deflate_state *s, charf *buf, ulg stored_len, int eof);
+void _tr_align        (deflate_state *s);
+void _tr_stored_block (deflate_state *s, charf *buf, ulg stored_len, int eof);
 
 #define d_code(dist) \
    ((dist) < 256 ? _dist_code[dist] : _dist_code[256+((dist)>>7)])
@@ -292,13 +290,8 @@ void _tr_stored_block OF((deflate_state *s, charf *buf, ulg stored_len,
 #ifndef DEBUG
 /* Inline versions of _tr_tally for speed: */
 
-#if defined(GEN_TREES_H) || !defined(STDC)
-  extern uch _length_code[];
-  extern uch _dist_code[];
-#else
-  extern const uch _length_code[];
-  extern const uch _dist_code[];
-#endif
+extern const uch _length_code[];
+extern const uch _dist_code[];
 
 # define _tr_tally_lit(s, c, flush) \
   { uch cc = (c); \
