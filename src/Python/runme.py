@@ -1,4 +1,4 @@
-#! /usr/bin/env python
+#!/usr/bin/env python
 
 from __future__ import print_function
 
@@ -53,7 +53,7 @@ def ping (host):
     Sleep (1000)
 
 #
-# Show the contents of '_watt32.pyd'
+# Show the contents of 'watt32.py' (or 'watt32.pyo')
 #
 def show_content (opt):
   print ("%s%s contains:%s" % (Colour.YELLOW, w32.__file__, Colour.WHITE))

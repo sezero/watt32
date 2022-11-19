@@ -34,9 +34,9 @@ endef
 #   PY_MINOR_VER: 9.
 #
 #   %WATT_ROOT%\src\Python> make CC=cl PYTHON="py -3" py_info
-#   PY_ROOT:      F:/ProgramFiler/Python39.
+#   PY_ROOT:      F:/ProgramFiler/Python310.
 #   PY_MAJOR_VER: 3.
-#   PY_MINOR_VER: 9.
+#   PY_MINOR_VER: 10.
 #
 # A 'PYTHON="py -3"', reporting Python 3.9 just means that the default
 # Python version 3 is '3.9'. Allthough one have a version 3.6 installed
@@ -52,6 +52,11 @@ green_msg    = @echo -e "$(BRIGHT_GREEN)$(1)\e[0m"
 
 export CL=
 
+#
+# The 'CPU' MUST match the bitness of chosen 'PYTHON'.
+# E.g. if you run 'make CC=cl PYTHON="py -2"' and your Python 2.x is 32-bit,
+# call the 'vcvarsall.bat x86' first.
+#
 CPU ?= x86
 
 #
@@ -65,8 +70,8 @@ WATT32_STATIC ?= 1
 PYTHON ?= py -3
 
 PY_ROOT      = $(realpath  $(shell $(PYTHON) -c "import sys; print (sys.prefix)"))
-PY_MAJOR_VER = $(shell $(PYTHON) -c "import sys; print (sys.version[0])")
-PY_MINOR_VER = $(shell $(PYTHON) -c "import sys; print (sys.version[2])")
+PY_MAJOR_VER = $(shell $(PYTHON) -c "import sys; print(sys.version_info.major)" )
+PY_MINOR_VER = $(shell $(PYTHON) -c "import sys; print(sys.version_info.minor)" )
 
 ifeq ($(CC),cl)
   CFLAGS  = -nologo -MD -Ox -Zi -W3
@@ -142,8 +147,8 @@ else
   endif
 endif
 
-SWIG_FLAGS = -macroerrors -Wall -python $(filter -D% -I%, $(CFLAGS)) # -nodefaultctor -nodefaultdtor -debug-symbols
-SWIG_FLAGS += -w454
+SWIG_FLAGS = -macroerrors -python $(filter -D% -I%, $(CFLAGS)) # -nodefaultctor -nodefaultdtor -debug-symbols
+SWIG_FLAGS += -w451 -w454
 
 GENERATED = watt32_swig_wrap.c watt32.py check-for-unused-libs.py
 
