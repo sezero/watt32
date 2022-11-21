@@ -291,8 +291,8 @@ NO_W32_CFLAGS = -D_Windows
     $(CC) @$(CC).arg $(strip $(2))
     $(call create_response_file, link.arg, $(LDFLAGS) $(notdir $(2:.c=.obj)) $(WATT_LIB) user32.lib advapi32.lib)
     link -out:$(strip $(1)) @link.arg > link.tmp
-    @cat link.tmp >> $(1:.exe=.map)
-    @rm -f $(1:.exe=.lib) $(1:.exe=.exp) link.tmp
+    cat link.tmp >> $(1:.exe=.map)
+    rm -f $(1:.exe=.lib) $(1:.exe=.exp) link.tmp
   endef
 
   define compile_and_link_ws2
@@ -300,8 +300,8 @@ NO_W32_CFLAGS = -D_Windows
     $(CC) @$(CC).arg $(strip $(2))
     $(call create_response_file, link.arg, $(LDFLAGS) $(notdir $(2:.c=.obj)) user32.lib advapi32.lib $(WS2_32_LIB))
     link -out:$(strip $(1)) @link.arg > link.tmp
-    @cat link.tmp >> $(1:.exe=.map)
-    @rm -f $(1:.exe=.lib) $(1:.exe=.exp) link.tmp
+    cat link.tmp >> $(1:.exe=.map)
+    rm -f $(1:.exe=.lib) $(1:.exe=.exp) link.tmp
   endef
 
 @elifdef HIGHC
