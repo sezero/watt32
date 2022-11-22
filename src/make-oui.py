@@ -11,12 +11,12 @@ PY3 = (sys.version_info[0] >= 3)
 
 def info (s):
   if PY3:
-     os.write (2, bytes(s,"UTF-8"))
+     os.write (2, bytes(s, "UTF-8"))
   else:
      os.write (2, s)
 
 OUI_URL = "http://standards-oui.ieee.org/oui.txt"
-OUI_TXT = 'oui.txt'
+OUI_TXT = "oui.txt"
 
 OUI_HEAD = r"""/*
  * "Organizationally Unique Identifier" list
@@ -68,7 +68,7 @@ const char *oui_val_to_name (unsigned oui)
 def write_oui_data (f):
   f.write (OUI_HEAD % (OUI_URL, __file__, time.ctime()))
 
-  for p in sorted(prefixes):
+  for p in sorted (prefixes):
     try:
       f.write ("    { 0x%.2s%.2s%.2s, \"%s\" },\n" % (p[0:], p[3:], p[6:], prefixes[p]))
     except UnicodeEncodeError:
@@ -110,19 +110,21 @@ def parse_oui_txt (lines):
   # We want to parse only "(hex)" lines.
   #
   for line in lines:
-    line = line.rstrip()
-    if not re.match("^[0-9A-F]{2}-[0-9A-F]{2}-[0-9A-F]{2}[\t ]*\(hex\)[\t ]*", line):
-       continue
-    prefix = line [0:8]
-    vendor = line [line.rindex('(hex)')+5:].lstrip()
-    prefixes [prefix] = vendor
+      line = line.rstrip()
+      if not re.match ("^[0-9A-F]{2}-[0-9A-F]{2}-[0-9A-F]{2}[\t ]*\(hex\)[\t ]*", line):
+         continue
+      prefix = line [0:8]
+      vendor = line [line.rindex ("(hex)")+5:].lstrip()
+      prefixes [prefix] = vendor
 
 #
 # Check if a local 'fname' exist. Otherwise download it from 'url'.
 # Return the contents as a list.
 #
+# TODO: check if a local 'fname' is too old. If it is, download it again.
+#
 def get_local_file_or_download (fname, url):
-  if os.path.exists(fname):
+  if os.path.exists (fname):
      info ("A local %s already exist.\n" % fname)
   else:
      try:
@@ -136,12 +138,12 @@ def get_local_file_or_download (fname, url):
 
   # Now read 'fname' and return it as a list.
   #
-  data = codecs.open (fname, 'rb', 'UTF-8')
+  data  = codecs.open (fname, "rb", "UTF-8")
   lines = data.read().splitlines()
   data.close()
   return lines
 
-def usage (err=""):
+def usage (err = ""):
   info ("%s%s [-h | --help] > file:\n" % (err, os.path.realpath(sys.argv[0])))
   info (r"""  This script generates a 'oui_values[]' array from a local %s file or from one downloaded from here:
   %s""" % (OUI_TXT, OUI_URL))
