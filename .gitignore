@@ -217,7 +217,6 @@ src/ideas/
 src/lang.c
 src/netinet.bsd/
 src/OLD/
-src/oui-generated.c
 src/pkt_stub.h
 src/Python/watt32_swig_wrap.c
 src/reconn.udp
