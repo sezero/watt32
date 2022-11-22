@@ -1461,17 +1461,31 @@ static const char *get_phys_address (const void *a, ULONG len, BOOL show_manuf)
    * \todo Get addresses such as 00:FF:DB:EF:7D:48 from a
    *       "Well Known Address" source.
    *       Ref. Wireshark's 'wka' file.
+   *
+   * Handle "Locally Administered" addresses too. Like in the case:
+   *   SSID:          Chromecast6998.v
+   *   Quality:       -60 dBm
+   *   MAC-address:   FA:8F:CA:88:0C:A6 (Unknown OUI)
+   *
+   * Turning bit 7 off in 'FA:8F:CA:88:0C:A6' (becoming 'F8:8F:CA:88:0C:A6')
+   * shows that 'F8:8F:CA' belongs to Google.
+   *
+   * Ref. https://www.reddit.com/r/Chromecast/comments/2wjpo8/weird_google_fiber_hotspots_with_no_ssid_that/
    */
   if (show_manuf)
   {
-    DWORD oui = (addr[0] << 16) + (addr[1] << 8) + addr[2];
+    DWORD       oui = (addr[0] << 16) + (addr[1] << 8) + addr[2];
+    const char *comment = "";
+    const char *rc      = oui_val_to_name (oui);
 
-    *p++ = ' ';
-    *p++ = '(';
-    _strlcpy (p, oui_val_to_name(oui), p_max-p);
-    p = strchr (p, '\0');
-    *p++ = ')';
-    *p++ = '\0';
+    if (!strcmp(rc, "Unknown OUI"))
+    {
+      oui = ((addr[0] & ~2) << 16) + (addr[1] << 8) + addr[2];
+      rc = oui_val_to_name (oui);
+      if (strcmp(rc, "Unknown OUI"))  /* found it */
+         comment = ", Locally Administered";
+    }
+    snprintf (p, p_max - p, " (%s%s)", rc, comment);
   }
 #endif
   return (work_buf);
@@ -2035,7 +2049,7 @@ static void print_mib_if_row2 (DWORD index, const MIB_IF_ROW2 *row)
   (*_printf) ("  GUID:           %s\n", get_guid_str(&row->InterfaceGuid));
   (*_printf) ("    Alias:        %.*" WIDESTR_FMT "\n", IF_MAX_STRING_SIZE, row->Alias);
   (*_printf) ("    Description:  %.*" WIDESTR_FMT "\n", IF_MAX_STRING_SIZE, row->Description);
-  (*_printf) ("    MAC-address:  %s\n", get_phys_address(&row->PhysicalAddress,row->PhysicalAddressLength,TRUE));
+  (*_printf) ("    MAC-address:  %s\n", get_phys_address(&row->PhysicalAddress,row->PhysicalAddressLength, TRUE));
   (*_printf) ("    MTU:          %lu\n", row->Mtu);
   (*_printf) ("    Type:         %s (%lu)\n", get_if_type(row->Type), row->Type);
 
@@ -2370,7 +2384,7 @@ static int _pkt_win_print_GetAdaptersAddresses (void)
 
     if (!(flags & GAA_FLAG_SKIP_FRIENDLY_NAME))
       (*_printf) ("    Friendly name:       %s\n", wstring_utf8(addr->FriendlyName));
-    (*_printf) ("    MAC-address:         %s\n", get_phys_address(&addr->PhysicalAddress,addr->PhysicalAddressLength,TRUE));
+    (*_printf) ("    MAC-address:         %s\n", get_phys_address(&addr->PhysicalAddress,addr->PhysicalAddressLength, TRUE));
     (*_printf) ("    Flags:               %s\n", get_address_flags(addr->Flags));
     (*_printf) ("    MTU:                 %s\n", dword_str(addr->Mtu));
 
@@ -3361,7 +3375,7 @@ static void print_wlan_current_connection (const WLAN_CONNECTION_ATTRIBUTES *att
               indent, "", _list_lookup(assoc->dot11BssType, bss_types, DIM(bss_types)));
 
   (*_printf) ("%*sBSSID:            %s\n",
-              indent, "", get_phys_address(&assoc->dot11Bssid,DIM(assoc->dot11Bssid),TRUE));
+              indent, "", get_phys_address(&assoc->dot11Bssid,DIM(assoc->dot11Bssid), TRUE));
 
   (*_printf) ("%*sPhysical type:    %s\n",
               indent, "", _list_lookup(assoc->dot11PhyType, dot11_phy_types, DIM(dot11_phy_types)));
@@ -3622,7 +3636,7 @@ static void print_wlan_bss_list (const WLAN_BSS_LIST *bss_list)
                 i, get_ssid(&bss->dot11Ssid), dBm);
 
     (*_printf) ("        MAC-address:      %s\n",
-                get_phys_address(&bss->dot11Bssid, DIM(bss->dot11Bssid),TRUE));
+                get_phys_address(&bss->dot11Bssid, DIM(bss->dot11Bssid), TRUE));
 
     (*_printf) ("        Phy:              %lu\n"
                 "        BSS Network type: %s\n",
