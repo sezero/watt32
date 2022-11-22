@@ -38,7 +38,7 @@ set    DJ_ERR=..\util\dj_err.exe
 :: Check for env-var %OS%.
 :: Ass-u-me, if set to anything (normally 'OS=Windows_NT'), we are on Windows.
 ::
-if %OS%. ==. goto is_dos
+if %OS%. == . goto is_dos
 
 ::
 :: Use these programs under all versions of Windows.

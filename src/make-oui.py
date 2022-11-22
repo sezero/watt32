@@ -11,9 +11,9 @@ PY3 = (sys.version_info[0] >= 3)
 
 def info (s):
   if PY3:
-    os.write (2, bytes(s,"UTF-8"))
+     os.write (2, bytes(s,"UTF-8"))
   else:
-    os.write (2, s)
+     os.write (2, s)
 
 OUI_URL = "http://standards-oui.ieee.org/oui.txt"
 OUI_TXT = 'oui.txt'
@@ -84,9 +84,9 @@ def write_oui_data (f):
 #
 def url_progress (blocks, block_size, total_size):
   if blocks:
-    percent = 100 * (blocks * block_size) / total_size
-    kBbyte_so_far = (blocks * block_size) / 1024
-    info ("Got %d kBytes (%u%%)\r" % (kBbyte_so_far, percent))
+     percent = 100 * (blocks * block_size) / total_size
+     kBbyte_so_far = (blocks * block_size) / 1024
+     info ("Got %d kBytes (%u%%)\r" % (kBbyte_so_far, percent))
 
 #
 # Parse the lines from the download 'oui-generated.txt' file.
@@ -112,7 +112,7 @@ def parse_oui_txt (lines):
   for line in lines:
     line = line.rstrip()
     if not re.match("^[0-9A-F]{2}-[0-9A-F]{2}-[0-9A-F]{2}[\t ]*\(hex\)[\t ]*", line):
-      continue
+       continue
     prefix = line [0:8]
     vendor = line [line.rindex('(hex)')+5:].lstrip()
     prefixes [prefix] = vendor
@@ -123,16 +123,16 @@ def parse_oui_txt (lines):
 #
 def get_local_file_or_download (fname, url):
   if os.path.exists(fname):
-    info ("A local %s already exist.\n" % fname)
+     info ("A local %s already exist.\n" % fname)
   else:
-    try:
-      from urllib import urlretrieve as url_get
-    except ImportError:
-      from urllib.request import urlretrieve as url_get
+     try:
+       from urllib import urlretrieve as url_get
+     except ImportError:
+       from urllib.request import urlretrieve as url_get
 
-    info ("Downloading %s from %s\n" % (fname, url))
-    url_get (url, filename = fname, reporthook = url_progress)
-    info ("\n")
+     info ("Downloading %s from %s\n" % (fname, url))
+     url_get (url, filename = fname, reporthook = url_progress)
+     info ("\n")
 
   # Now read 'fname' and return it as a list.
   #
@@ -157,7 +157,7 @@ except getopt.GetoptError as e:
 
 for o, a in opts:
   if o in ["-h", "-?", "--help"]:
-    usage()
+     usage()
 
 l = get_local_file_or_download (OUI_TXT, OUI_URL)
 parse_oui_txt (l)
