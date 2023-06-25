@@ -393,4 +393,13 @@
   #endif
 #endif
 
-#endif
+#else /* __SYS_CDEFS_H */
+
+  /*
+   * Handle recursive include_next.
+   */
+  #if defined(__DJGPP__) || defined(__CYGWIN__) || defined(__MINGW64__)
+    #include_next <sys/cdefs.h>
+  #endif
+
+#endif /* __SYS_CDEFS_H */
