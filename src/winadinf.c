@@ -4005,7 +4005,7 @@ static int compare_ipnetrow (const void *_a, const void *_b)
   const MIB_IPNETROW *b = (const MIB_IPNETROW*)_b;
 
   if (a->dwType == b->dwType)
-     return (int)(ntohl(a->dwAddr) - ntohl(b->dwAddr));
+     return (int)(intel(a->dwAddr) - intel(b->dwAddr));
 
   return (int) (a->dwType - b->dwType);
 }
