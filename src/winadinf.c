@@ -2157,7 +2157,7 @@ static int _pkt_win_print_GetIfTable2Ex (void)
 /*
  * Use GetIpNetTable() and dump ARP information from MIB.
  * IPv4 addresses only.
- * Sort on Type ('arp_types[]').
+ * Sort on Type ('arp_types[]') then on dwAddr.
  */
 static int _pkt_win_print_GetIpNetTable (void)
 {
@@ -2195,7 +2195,8 @@ static int _pkt_win_print_GetIpNetTable (void)
 /*
  * Use GetIpNetTable2() and dump ARP information from MIB.
  * IPv4 + IPv6 addresses.
- * Sort on State (neighbour_state).
+ * Sort on State (neighbour_state) and then on
+ * 'row->ReachabilityTime.LastReachable'.
  */
 static int _pkt_win_print_GetIpNetTable2 (void)
 {
@@ -4003,6 +4004,9 @@ static int compare_ipnetrow (const void *_a, const void *_b)
   const MIB_IPNETROW *a = (const MIB_IPNETROW*)_a;
   const MIB_IPNETROW *b = (const MIB_IPNETROW*)_b;
 
+  if (a->dwType == b->dwType)
+     return (int)(ntohl(a->dwAddr) - ntohl(b->dwAddr));
+
   return (int) (a->dwType - b->dwType);
 }
 
@@ -4011,6 +4015,12 @@ static int compare_ipnetrow2 (const void *_a, const void *_b)
   const MIB_IPNET_ROW2 *a = (const MIB_IPNET_ROW2*)_a;
   const MIB_IPNET_ROW2 *b = (const MIB_IPNET_ROW2*)_b;
 
+  if (a->State == b->State)
+  {
+    if (a->ReachabilityTime.LastReachable < b->ReachabilityTime.LastReachable)
+       return (-1);
+    return (1);
+  }
   return (a->State - b->State);
 }
 
