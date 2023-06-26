@@ -113,6 +113,10 @@
 #define MAXRESOLVSORT           10      /* number of net to sort on */
 #define RES_MAXNDOTS            15      /* should reflect bit field size */
 
+#ifndef MAXDNAME
+#define MAXDNAME              1025     /* maximum domain name */
+#endif
+
 struct  __res_sort {
         struct in_addr addr;
         u_long         mask;
