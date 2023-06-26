@@ -56,9 +56,8 @@ BOOL        _ip_recursion  = FALSE;  /**< avoid recursion in arp_resolve() */
 BOOL        _eth_ndis3pkt  = FALSE;  /**< for DOS-programs only */
 BOOL        _eth_SwsVpkt   = FALSE;  /**< for DOS *and* Win32 programs */
 BOOL        _eth_wanpacket = FALSE;  /**< for Win32 using an WanPacket adapter */
-BOOL        _eth_npcap     = FALSE;  /**< for Win32 using an NPcap adapter */
 BOOL        _eth_win10pcap = FALSE;  /**< for Win32 using an Win10Pcap adapter */
-BOOL        _eth_winpcap   = FALSE;  /**< for Win32 using an WinPcap adapter (default) */
+BOOL        _eth_winpcap   = FALSE;  /**< for Win32 using an WinPcap or NPcap adapter (default) */
 
 const char *_eth_not_init = "Packet driver not initialised";
 

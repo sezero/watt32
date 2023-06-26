@@ -56,9 +56,10 @@
 #endif
 
 /**
- * Current NPF.SYS version.
+ * Current NPF.SYS / NPcap.sys version.
  */
-static char npf_drv_ver[64] = "Unknown npf.sys version";
+static char npf_drv_ver[64]   = "Unknown npf.sys version";
+static char npcap_drv_ver[64] = "Unknown npcap.sys version";
 
 /**
  * Name constants (NPF).
@@ -71,14 +72,25 @@ static const char NPF_driver_path[]       = "system32\\drivers\\npf.sys";
 static const char NPF_virtual_path[]      = "sysnative\\drivers\\npf.sys";
 
 /**
+ * Name constants (NPcap).
+ */
+static const char NPCAP_service_name[]      = "NPCap";
+static const char NPCAP_service_descr[]     = "Npcap Packet Driver";
+static const char NPCAP_registry_location[] = "SYSTEM\\CurrentControlSet\\Services\\npcap";
+static const char NPCAP_registry_params[]   = "SYSTEM\\CurrentControlSet\\Services\\npcap\\Parameters";
+static const char NPCAP_prefix[]            = "\\Device\\NPCAP_";   // or "\\\\.\\Global\\NPCAP_" ?
+static const char NPCAP_driver_path[]       = "system32\\drivers\\npcap.sys";
+static const char NPCAP_virtual_path[]      = "sysnative\\drivers\\npcap.sys";
+
+/**
  * Name constants (Win10Pcap).
  */
-static const char Win10Pcap_service_name[]       = "Win10Pcap";
-static const char Win10Pcap_service_descr[]      = "Win10Pcap Packet Capture Driver";
-static const char Win10Pcap_registry_location[]  = "SYSTEM\\ControlSet\\Services\\Win10Pcap";
-static const char Win10Pcap_prefix[]             = "\\Device\\WTCAP_A_";
-static const char Win10Pcap_driver_path[]        = "system32\\drivers\\win10pcap.sys";
-static const char Win10Pcap_virtual_path[]       = "sysnative\\drivers\\win10pcap.sys";
+static const char Win10Pcap_service_name[]      = "Win10Pcap";
+static const char Win10Pcap_service_descr[]     = "Win10Pcap Packet Capture Driver";
+static const char Win10Pcap_registry_location[] = "SYSTEM\\ControlSet\\Services\\Win10Pcap";
+static const char Win10Pcap_prefix[]            = "\\Device\\WTCAP_A_";
+static const char Win10Pcap_driver_path[]       = "system32\\drivers\\win10pcap.sys";
+static const char Win10Pcap_virtual_path[]      = "sysnative\\drivers\\win10pcap.sys";
 
 /**
  * Defaults to NPF.
@@ -132,6 +144,16 @@ static HANDLE adapters_mutex = INVALID_HANDLE_VALUE;
  */
 static BOOL use_wanpacket = FALSE;
 
+/**
+ * Do we have a NPcap-driver in WinPcap compatibilty mode?
+ */
+static BOOL have_npcap = FALSE;
+
+/**
+ * Do we have a Win10Pcap-driver?
+ */
+static BOOL have_win10pcap = FALSE;
+
 static BOOL PopulateAdaptersInfoList (void);
 static BOOL FreeAdaptersInfoList (void);
 
@@ -139,7 +161,10 @@ static void set_char_pointers (const char *adapter)
 {
   size_t len = strlen (Win10Pcap_prefix);
 
-  if (!strnicmp(adapter,Win10Pcap_prefix,len))
+  if (!strnicmp(adapter, Win10Pcap_prefix, len))
+     have_win10pcap = TRUE;
+
+  if (have_win10pcap)
   {
     service_name      = Win10Pcap_service_name;
     service_descr     = Win10Pcap_service_descr;
@@ -147,6 +172,15 @@ static void set_char_pointers (const char *adapter)
     driver_prefix     = Win10Pcap_prefix;
     driver_path       = Win10Pcap_driver_path;
     virtual_path      = Win10Pcap_virtual_path;
+  }
+  else if (have_npcap)
+  {
+    service_name      = NPCAP_service_name;
+    service_descr     = NPCAP_service_descr;
+    registry_location = NPCAP_registry_location;
+    driver_prefix     = NPCAP_prefix;
+    driver_path       = NPCAP_driver_path;
+    virtual_path      = NPCAP_virtual_path;
   }
   else
   {
@@ -183,6 +217,20 @@ static void set_char_pointers (const char *adapter)
 #endif
 
 /*
+ * Allow 64-bit applications to access redirected keys in the 32-bit registry view.
+ * Ref: https://learn.microsoft.com/en-us/windows/win32/winprog64/accessing-an-alternate-registry-view
+ */
+static REGSAM reg_read_access (void)
+{
+  REGSAM access = KEY_READ;
+
+#ifdef _WIN64
+  access |= KEY_WOW64_32KEY;
+#endif
+  return (access);
+}
+
+/*
  * The get_file_version() fails under Win-Vista+ since files under
  * '"%SystemRoot%\system32\drivers' are hidden from non-admin users.
  * So this function is used instead. I assume the true file-version of
@@ -198,16 +246,59 @@ static BOOL get_npf_ver_from_registry (char *ret_ver, size_t ver_size)
 
   status = RegOpenKeyEx (HKEY_LOCAL_MACHINE,
                          "SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\WinPcapInst",
-                         0, KEY_READ, &key);
+                         0, reg_read_access(), &key);
 
   /* Note: WinPcap may be installed and working even though this key doesn't exist.
    */
   if (status != ERROR_SUCCESS)
-     goto fail;
+  {
+    WINPKT_TRACE ("status: %d; %s\n", status, win_strerror(GetLastError()));
+    goto fail;
+  }
 
   status = RegQueryValueEx (key, "DisplayVersion", NULL, NULL, (BYTE*)&str, &size);
   if (status != ERROR_SUCCESS)
-     goto fail;
+  {
+    WINPKT_TRACE ("status: %d; %s\n", status, win_strerror(GetLastError()));
+    goto fail;
+  }
+
+  _strlcpy (ret_ver, str, ver_size);
+  rc = TRUE;
+
+fail:
+  if (key)
+     RegCloseKey (key);
+  return (rc);
+}
+
+/*
+ * Similar to `get_npf_ver_from_registry()`. But for a NPcap installation.
+ */
+static BOOL get_npcap_ver_from_registry  (char *ret_ver, size_t ver_size)
+{
+  char  str[100];
+  BOOL  rc = FALSE;
+  DWORD size = sizeof(str);
+  HKEY  key = NULL;
+  LONG  status;
+
+  status = RegOpenKeyEx (HKEY_LOCAL_MACHINE,
+                         "SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\NpcapInst",
+                         0, reg_read_access(), &key);
+
+  if (status != ERROR_SUCCESS)
+  {
+    WINPKT_TRACE ("status: %d; %s\n", status, win_strerror(GetLastError()));
+    goto fail;
+  }
+
+  status = RegQueryValueEx (key, "DisplayVersion", NULL, NULL, (BYTE*)&str, &size);
+  if (status != ERROR_SUCCESS)
+  {
+    WINPKT_TRACE ("status: %d; %s\n", status, win_strerror(GetLastError()));
+    goto fail;
+  }
 
   _strlcpy (ret_ver, str, ver_size);
   rc = TRUE;
@@ -259,8 +350,7 @@ BOOL PacketInitModule (void)
   {
     /* dump a bunch of registry keys
      */
-    PacketDumpRegistryKey (
-      "HKEY_LOCAL_MACHINE" ADAPTER_KEY_CLASS, "adapters.reg");
+    PacketDumpRegistryKey ("HKEY_LOCAL_MACHINE" ADAPTER_KEY_CLASS, "adapters.reg");
     PacketDumpRegistryKey ("HKEY_LOCAL_MACHINE\\SYSTEM\\CurrentControlSet"
                            "\\Services\\Tcpip", "tcpip.reg");
     PacketDumpRegistryKey ("HKEY_LOCAL_MACHINE\\SYSTEM\\CurrentControlSet"
@@ -317,12 +407,23 @@ BOOL PacketInitModule (void)
                   rc, npf_drv_ver);
   }
 
+  /* Check for a NPcap.sys installation
+   */
+  if (!rc)
+  {
+    rc = get_npcap_ver_from_registry (npcap_drv_ver, sizeof(npcap_drv_ver));
+    WINPKT_TRACE ("get_npcap_ver_from_registry(): rc=%d, npcap_drv_ver=\"%s\"\n",
+                  rc, npcap_drv_ver);
+    if (rc)
+       have_npcap = TRUE;
+  }
+
   /* Populate the 'adapters_list' list.
    */
   rc = PopulateAdaptersInfoList();
 
   winpkt_trace_func = "PacketInitModule";
-  WINPKT_TRACE ("Known WinPcap adapters:\n");
+  WINPKT_TRACE ("Known adapters:\n");
 
   for (ai = PacketGetAdInfo(); ai; ai = ai->Next)
   {
@@ -560,7 +661,7 @@ static BOOL PacketInstallDriver (SC_HANDLE ascmHandle, SC_HANDLE *srvHandle)
 }
 
 /**
- * Opens an adapter using the NPF or Win10Pcap controlling service.
+ * Opens an adapter using the NPF, NPcap or Win10Pcap controlling service.
  *
  * \param AdapterName A string containing the name of the device to open.
  * \return If the function succeeds, the return value is the pointer
@@ -599,20 +700,53 @@ static ADAPTER *PacketOpenAdapterNPF (const char *AdapterName)
   }
   else
   {
-    /* Check if the NPF registry key is already present.
+    /* Check if the service registry key is already present.
      * This means that the driver is already installed and that
-     * we don't need to call PacketInstallDriver
+     * we don't need to call PacketInstallDriver().
      */
-    KeyRes = RegOpenKeyExA (HKEY_LOCAL_MACHINE, registry_location,
-                            0, KEY_READ, &PathKey);
+    KeyRes = RegOpenKeyExA (HKEY_LOCAL_MACHINE, registry_location, 0, KEY_READ, &PathKey);
+    RegCloseKey (PathKey);
+
+    WINPKT_TRACE ("RegOpenKeyExA (\"HKLM\\%s\") -> KeyRes: %lu\n", registry_location, KeyRes);
+
     if (KeyRes != ERROR_SUCCESS)
     {
       Result = PacketInstallDriver (scmHandle, &svcHandle);
     }
     else
     {
+      if (have_npcap)
+      {
+        DWORD AdminOnly         = (DWORD)-1;
+        DWORD LoopbackSupport   = (DWORD)-1;
+        DWORD WinPcapCompatible = (DWORD)-1;
+        DWORD regType = (DWORD)-1;;
+        DWORD bufLen;
+        DWORD status;
+        HKEY  params;
+
+        status = RegOpenKeyExA (HKEY_LOCAL_MACHINE, NPCAP_registry_params, 0, KEY_READ, &params);
+
+        WINPKT_TRACE ("RegOpenKeyExA (\"HKLM\\%s\") -> status: %lu\n", NPCAP_registry_params, status);
+        if (status == ERROR_SUCCESS)
+        {
+          bufLen = sizeof(AdminOnly);
+          status = RegQueryValueExA (PathKey, "AdminOnly", NULL,
+                                     &regType, (BYTE*)&AdminOnly, &bufLen);
+
+          bufLen = sizeof(WinPcapCompatible);
+          status = RegQueryValueExA (PathKey, "WinPcapCompatible", NULL,
+                                     &regType, (BYTE*)&WinPcapCompatible, &bufLen);
+
+          bufLen = sizeof(LoopbackSupport);
+          status = RegQueryValueExA (PathKey, "LoopbackSupport", NULL,
+                                     &regType, (BYTE*)&LoopbackSupport, &bufLen);
+          RegCloseKey (params);
+          WINPKT_TRACE ("AdminOnly: %lu, LoopbackSupport: %lu, WinPcapCompatible: %lu\n",
+                        AdminOnly, LoopbackSupport, WinPcapCompatible);
+        }
+      }
       Result = TRUE;
-      RegCloseKey (PathKey);
     }
 
     winpkt_trace_func = "PacketOpenAdapterNPF";
@@ -710,7 +844,7 @@ static ADAPTER *PacketOpenAdapterNPF (const char *AdapterName)
   /* skip "\Device" to create a symlink name
    */
   prefix_len = strlen (DEVICE_PREFIX);
-  if (strnicmp(AdapterName,driver_prefix,prefix_len))
+  if (strnicmp(AdapterName, driver_prefix, prefix_len))
   {
     WINPKT_TRACE ("Unexpected prefix for adapter \"%s\". Expected prefix: \"%s\"\n",
                   AdapterName, driver_prefix);
@@ -740,7 +874,7 @@ static ADAPTER *PacketOpenAdapterNPF (const char *AdapterName)
     if (!PacketSetReadEvt(lpAdapter))
     {
       error = GetLastError();
-      (void) GlobalFreePtr (lpAdapter);
+      GlobalFreePtr (lpAdapter);
       WINPKT_TRACE ("failed; %s\n", win_strerror(error));
       SetLastError (error);
       return (NULL);
@@ -754,7 +888,7 @@ static ADAPTER *PacketOpenAdapterNPF (const char *AdapterName)
   }
 
   error = GetLastError();
-  (void) GlobalFreePtr (lpAdapter);
+  GlobalFreePtr (lpAdapter);
   WINPKT_TRACE ("CreateFileA (%s) failed; \n%-49s%s\n",
                 SymbolicLink, "", win_strerror(error));
   SetLastError (error);
@@ -862,7 +996,7 @@ BOOL PacketCloseAdapter (ADAPTER *adapter)
 
   SetEvent (adapter->ReadEvent);   /* might already be set */
   CloseHandle (adapter->ReadEvent);
-  (void) GlobalFreePtr (adapter);
+  GlobalFreePtr (adapter);
 
   WINPKT_TRACE ("CloseHandle() rc %d: %s\n",
                 rc, !rc ? win_strerror(err) : "okay");
@@ -2162,7 +2296,7 @@ quit:
   if (adapter)
      PacketCloseAdapter (adapter);
   if (!rc && TmpAdInfo)
-     (void) GlobalFreePtr (TmpAdInfo);
+     GlobalFreePtr (TmpAdInfo);
   ReleaseMutex (adapters_mutex);
   return (rc);
 }
@@ -2183,7 +2317,7 @@ static BOOL PacketGetAdapters (void)
   char  TName[256];
   char  TAName[256];
   char  AdapName[256];
-  const char *guid, *err;
+  const char *guid, *err, *prefix = (have_npcap ? NPCAP_prefix : NPF_prefix);
   LONG  Status;
   int   i = 0;
 
@@ -2200,7 +2334,7 @@ static BOOL PacketGetAdapters (void)
     goto nt4;
   }
 
-  WINPKT_TRACE ("cycling through the adapters:\n");
+  WINPKT_TRACE ("cycling through the adapters: (have_npcap: %d)\n", have_npcap);
 
   /* Cycle through the entries inside the ADAPTER_KEY_CLASS key
    * to get the names of the adapters
@@ -2256,7 +2390,7 @@ static BOOL PacketGetAdapters (void)
 
     /* Put the \Device\NPF_ string at the beginning of the name
      */
-    SNPRINTF (TAName, sizeof(TAName), "\\Device\\NPF_%s", guid);
+    SNPRINTF (TAName, sizeof(TAName), "%s%s", prefix, guid);
 
     /* If the adapter is valid, add it to the list.
      */
@@ -2307,7 +2441,7 @@ nt4:
          guid;
          guid = strchr(guid+1,'{'))
     {
-      SNPRINTF (TAName, sizeof(TAName), "\\Device\\NPF_%s", guid);
+      SNPRINTF (TAName, sizeof(TAName), "%s%s", prefix, guid);
       AddAdapter (TAName);
       winpkt_trace_func = "PacketGetAdapters";
     }
@@ -2391,7 +2525,7 @@ static BOOL FreeAdaptersInfoList (void)
   for (ai = adapters_list; ai; ai = next)
   {
     next = ai->Next;
-    (void) GlobalFreePtr (ai);
+    GlobalFreePtr (ai);
   }
   adapters_list = NULL;
   return (TRUE);

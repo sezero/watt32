@@ -335,12 +335,6 @@ static BOOL find_adapter (char *aname, size_t size)
     return (TRUE);
   }
 #if 0  /* \to-do */
-  rc = find_npcap_adapter (aname, size);
-  if (rc)
-  {
-    _eth_npcap = TRUE;
-    return (TRUE);
-  }
   rc = find_win10pcap_adapter (aname, size);
   if (rc)
   {
@@ -434,11 +428,10 @@ int W32_CALL pkt_eth_init (mac_address *mac_addr)
 
   _eth_SwsVpkt   = (strnicmp(_pktdrvrname, "\\\\.\\SwsVpkt", 11) == 0);
   _eth_winpcap   = (strnicmp(_pktdrvrname, "\\Device\\NPF_{", 13) == 0);
-  _eth_npcap     = (strnicmp(_pktdrvrname, "\\Device\\NPCAP_{", 13) == 0);
   _eth_win10pcap = (strnicmp(_pktdrvrname, "\\Device\\WTCAP_A_{", 15) == 0);
   _eth_wanpacket = (strnicmp(_pktdrvrname, "\\Device\\NPF_Generic", 19) == 0);
 
-  if ((_eth_winpcap || _eth_npcap || _eth_win10pcap || unknown_driver) && !PacketInitModule())
+  if ((_eth_winpcap || _eth_win10pcap || unknown_driver) && !PacketInitModule())
   {
     (*_printf) (_LANG("Failed to initialise WinPcap.\n"));
     pkt_release();
@@ -453,7 +446,7 @@ int W32_CALL pkt_eth_init (mac_address *mac_addr)
 
     if (!env_ok)
        problem = "Seems you have not defined a valid %WATTCP.CFG%. Check the INSTALL instructions.\n";
-    (*_printf) (_LANG("No WinPcap or SwsVpkt driver found.\n%s"), problem);
+    (*_printf) (_LANG("No WinPcap, NPcap or SwsVpkt driver found.\n%s"), problem);
 
     _pkt_errno = PDERR_NO_DRIVER;
     return (WERR_NO_DRIVER);
@@ -464,7 +457,6 @@ int W32_CALL pkt_eth_init (mac_address *mac_addr)
   rc = _eth_SwsVpkt   ? open_swsvpkt_adapter   (_pktdrvrname) :
        _eth_wanpacket ? open_wanpacket_adapter (_pktdrvrname) :
        _eth_win10pcap ? open_win10pcap_adapter (_pktdrvrname) :
-       _eth_npcap     ? open_npcap_adapter     (_pktdrvrname) :
                         open_winpcap_adapter   (_pktdrvrname);
 
   if (rc != WERR_NO_ERROR)
@@ -1530,7 +1522,7 @@ W32_FUNC WORD W32_CALL pkt_get_drvr_class (void)
 }
 
 /**
- * Open the WinPcap device by 'name'.
+ * Open the WinPcap or NPcap device by 'name'.
  */
 static enum eth_init_result open_winpcap_adapter (const char *name)
 {
