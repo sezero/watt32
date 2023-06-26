@@ -39,7 +39,7 @@ MINGW64_DIR  = $(realpath $(MINGW64))/lib/pkgconfig
 all:
 	@echo 'Check: $$(WATT32_VERSION): $(WATT32_VERSION), $$(WATT32_ROOT): $(WATT32_ROOT)'
 	@echo 'Generate pkg-config file (watt-32.pc) for MinGW32, MinGW64-w64 or CygWin.'
-	@echo 'Usage: $(MAKE) -f $(THIS_FILE) mingw32_pkg | mingw64_pkg | cygwin_pkg'
+	@echo 'Usage: $(MAKE) -f $(THIS_FILE) mingw32_pkg | mingw64_pkg | cygwin32_pkg | cygwin64_pkg'
 
 mingw32_pkg:
 	@TARGET=$(MINGW32_DIR); WATT_LIB=libwatt32.dll.a; VENDOR="MinGW32"; \
@@ -51,7 +51,7 @@ mingw64_pkg:
 	export TARGET WATT_LIB VENDOR; \
 	$(MAKE) -f $(THIS_FILE) write_pkg_32 copy_pkg_32 write_pkg_64 copy_pkg_64
 
-cygwin_pkg:
+cygwin32_pkg:
 	@TARGET=$(CYGWIN_DIR); WATT_LIB=libwatt32-cygwin.dll.a; VENDOR="CygWin/Win32"; \
 	export TARGET WATT_LIB VENDOR; \
 	$(MAKE) -f $(THIS_FILE) write_pkg copy_pkg_32
@@ -66,17 +66,17 @@ cygwin64_pkg:
 #   $(1): either '/x86' or '/x64' for a MinGW64/CygWin32/CygWin64 .pc-file.
 #
 define WATT32_PACKAGE
-  prefix=$(WATT32_ROOT)
-  exec_prefix=$(WATT32_ROOT)
-  libdir=$${exec_prefix}/lib$(1)
-  includedir=$${exec_prefix}/inc
-  watt_module_version=$(WATT32_VERSION_2)
-  URL: http://www.watt-32.net
-  Name: Watt-32
-  Description: Watt-32 tcp/ip stack for $(VENDOR)
-  Version: $(WATT32_VERSION_2)
-  Cflags: -I$${includedir} -DWATT32
-  Libs: $${libdir}/$(WATT_LIB)
+prefix=$(WATT32_ROOT)
+exec_prefix=$(WATT32_ROOT)
+libdir=$${exec_prefix}/lib$(1)
+includedir=$${exec_prefix}/inc
+watt_module_version=$(WATT32_VERSION_2)
+URL: http://www.watt-32.net
+Name: Watt-32
+Description: Watt-32 tcp/ip stack for $(VENDOR)
+Version: $(WATT32_VERSION_2)
+Cflags: -I$${includedir} -DWATT32
+Libs: $${libdir}/$(WATT_LIB)
 endef
 
 .POSIX: write_pkg
