@@ -197,7 +197,7 @@ const char *cpu_get_model (int type, int model)
 
   if (!strncmp(x86_vendor_id, "Cyrix", 5))
      p = Cx86model();
-  else if (!strcmp(x86_vendor_id, "AuthenticAMD"))
+  else if (!strncmp(x86_vendor_id, "AuthenticAMD", 12))
      p = AMDmodel();
 #if 0
   else if (!strcmp(x86_vendor_id, "UMC UMC UMC "))
@@ -273,7 +273,7 @@ void print_cpu_info (void)
   CheckCpuType();
 
   printf ("CPU      : %d\n", x86_type);
-  printf ("model    : %s\n", x86_have_cpuid ? cpu_get_model(x86_type,x86_model) :
+  printf ("model    : %s\n", x86_have_cpuid ? cpu_get_model(x86_type, x86_model) :
                                               "unknown (no CPUID)");
   if (x86_vendor_id[0] == '\0')
      strcpy (x86_vendor_id, "unknown");
@@ -478,7 +478,7 @@ void get_cache_info (void)
     if (ebx)
        cache_sz = 8 * loBYTE (ebx >> 8);
   }
-  else if (!strcmp(x86_vendor_id, "AuthenticAMD"))
+  else if (!strncmp(x86_vendor_id, "AuthenticAMD", 12))
   {
     get_cpuid (0x80000005, &eax, &ebx, &ecx, &edx);
     if (ecx)
