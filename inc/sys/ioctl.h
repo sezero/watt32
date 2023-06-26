@@ -129,15 +129,11 @@
 #define SIOCGLOWAT  _IOR('s',  3, int)    /* get low watermark */
 #define SIOCATMARK  _IOR('s',  7, int)    /* at oob mark? */
 
+#endif /* !__SYS_IOCTL_H */
+
 /* Since this file shadows the normal djgpp <sys/ioctl.h>, we include
  * that last.
  */
 #if defined(__DJGPP__)
-  #if 0
-    #include "/dev/env/DJDIR/include/sys/ioctl.h"  /* ioctl() */
-  #else
-    #include_next <sys/ioctl.h>                    /* ioctl() */
-  #endif
+  #include_next <sys/ioctl.h>                    /* ioctl() */
 #endif
-
-#endif /* !__SYS_IOCTL_H */
