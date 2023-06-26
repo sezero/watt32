@@ -278,7 +278,7 @@ typedef struct Socket {
 #if defined(TARGET_IS_32BIT)
   #define VERIFY_RW(ptr,len)                    \
           do {                                  \
-            if (!valid_addr(ptr,len)) {         \
+            if (0 && !valid_addr(ptr,len)) {    \
                SOCK_DEBUGF ((", EFAULT "        \
                  "(buf %" ADDR_FMT ", len %d)", \
                  ADDR_CAST(ptr), (int)(len)));  \
