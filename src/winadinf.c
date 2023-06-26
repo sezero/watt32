@@ -339,11 +339,11 @@ struct one_addr {
 
 typedef char address_buf [MAX_IP6_SZ+1];
 
-W32_DATA int                  _w32_errno;
+W32_DATA int                      _w32_errno;
 W32_FUNC unsigned long  W32_CDECL _w32_intel (unsigned long x);
 W32_FUNC unsigned short W32_CDECL _w32_intel16 (unsigned short x);
-W32_FUNC const char *W32_CALL _w32_inet_ntop (int af, const void *src,
-                                              char *dst, size_t size);
+W32_FUNC const char *W32_CALL     _w32_inet_ntop (int af, const void *src,
+                                                  char *dst, size_t size);
 /*
  * Some of the values under the Registry key
  *   HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\Class\{4D36E972-E325-11CE-BFC1-08002BE10318}\000x
@@ -4005,7 +4005,7 @@ static int compare_ipnetrow (const void *_a, const void *_b)
   const MIB_IPNETROW *b = (const MIB_IPNETROW*)_b;
 
   if (a->dwType == b->dwType)
-     return (int)(intel(a->dwAddr) - intel(b->dwAddr));
+     return (int)(_w32_intel(a->dwAddr) - _w32_intel(b->dwAddr));
 
   return (int) (a->dwType - b->dwType);
 }
