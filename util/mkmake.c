@@ -83,10 +83,9 @@ void process_makefile (const char *in_fname, const char *out_fname)
   while (fgets(buf, sizeof(buf)-1, in))
   {
     p = buf;
-#if 1
     while (*p == ' ')
          p++;
-#endif
+
     if (!SLprep_line_ok(p, pt))
        continue;
 
