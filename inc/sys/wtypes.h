@@ -219,8 +219,8 @@
 #if !defined(IOVEC_DEFINED)
   #define IOVEC_DEFINED
   struct iovec {
-         void *iov_base;
-         int   iov_len;
+         void   *iov_base;
+         size_t  iov_len;
        };
 #endif
 
