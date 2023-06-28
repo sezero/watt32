@@ -251,7 +251,7 @@ int W32_CALL recvmsg (int s, struct msghdr *msg, int flags)
       break;
     }
     bytes += len;
-    if (len != iov[i].iov_len)  /* nothing more to read */
+    if ((unsigned)len != iov[i].iov_len)  /* nothing more to read */
        break;
   }
   SOCK_DEBUGF ((", total %d", bytes));
@@ -288,7 +288,7 @@ int W32_CALL readv_s (int s, const struct iovec *vector, size_t count)
       break;
     }
     bytes += len;
-    if (len != vector[i].iov_len)  /* nothing more to read */
+    if ((unsigned)len != vector[i].iov_len)  /* nothing more to read */
        break;
   }
   SOCK_DEBUGF ((", total %d", bytes));
