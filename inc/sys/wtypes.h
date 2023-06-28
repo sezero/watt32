@@ -61,6 +61,11 @@
   #include <sys/version.h>      /* for DJGPP_MINOR */
 #endif
 
+#if defined(__DJGPP__)
+  #include <sys/uio.h>          /* for struct iovec */
+  #define IOVEC_DEFINED
+#endif
+
 #if defined(__MINGW32__) || (defined(__DJGPP__) && DJGPP_MINOR >= 4) || \
     (defined(__WATCOMC__) && __WATCOMC__ >= 1230) ||  /* OW 1.3+ */     \
     defined(__POCC__)    ||                           /* PellesC */     \

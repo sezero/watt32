@@ -9,3 +9,7 @@
  */
 
 #endif
+
+#if defined(__DJGPP__)
+  #include_next <sys/uio.h>
+#endif
