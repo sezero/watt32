@@ -76,8 +76,9 @@ int W32_CALL writev_s (int s, const struct iovec *vector, size_t count)
 #if (DOSX)
     if (!valid_addr(vector[i].iov_base, vector[i].iov_len))
     {
-      SOCK_DEBUGF ((", EFAULT (iovec[%d] = %p, len %d)",
-                    i, vector[i].iov_base, vector[i].iov_len));
+      SOCK_DEBUGF ((", EFAULT (iovec[%d] = %p, len %lu)",
+                    i, vector[i].iov_base,
+                    (unsigned long)vector[i].iov_len));
       SOCK_ERRNO (EFAULT);
       return (-1);
     }
@@ -121,8 +122,9 @@ int W32_CALL sendmsg (int s, const struct msghdr *msg, int flags)
 #if (DOSX)
     if (!valid_addr(iov[i].iov_base, iov[i].iov_len))
     {
-      SOCK_DEBUGF ((", EFAULT (iovec[%d] = %p/%d)",
-                   (int)i, iov[i].iov_base, iov[i].iov_len));
+      SOCK_DEBUGF ((", EFAULT (iovec[%d] = %p/%lu)",
+                   (int)i, iov[i].iov_base,
+                   (unsigned long)iov[i].iov_len));
       SOCK_ERRNO (EFAULT);
       return (-1);
     }
