@@ -51,6 +51,9 @@
 #include <sys/w32api.h>
 #endif
 
+#define __need_size_t
+#include <stddef.h>
+
 #if defined(__DJGPP__) || defined(__DMC__) || \
     defined(__MINGW32__) || defined(__CYGWIN__) || defined(__POCC__)
   #include <sys/types.h>
