@@ -242,6 +242,14 @@ int W32_CALL recvmsg (int s, struct msghdr *msg, int flags)
     }
 #endif
 
+    if (iov[i].iov_len > (unsigned)INT_MAX)
+    {
+      SOCK_DEBUGF ((", EOVERFLOW (iovec[%d]: len %lu > INT_MAX)",
+                    i, (unsigned long)iov[i].iov_len));
+      SOCK_ERRNO (EOVERFLOW);
+      return (-1);
+    }
+
     len = receive (NULL, s, iov[i].iov_base, iov[i].iov_len,
                    msg->msg_flags, (struct sockaddr*)msg->msg_name,
                    (size_t*)&msg->msg_namelen);
@@ -279,6 +287,14 @@ int W32_CALL readv_s (int s, const struct iovec *vector, size_t count)
       return (-1);
     }
 #endif
+
+    if (vector[i].iov_len > (unsigned)INT_MAX)
+    {
+      SOCK_DEBUGF ((", EOVERFLOW (iovec[%d]: len %lu > INT_MAX)",
+                   (int)i, (unsigned long)vector[i].iov_len));
+      SOCK_ERRNO (EOVERFLOW);
+      return (-1);
+    }
 
     len = receive (NULL, s, vector[i].iov_base, vector[i].iov_len,
                    0, NULL, NULL);
