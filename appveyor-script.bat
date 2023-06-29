@@ -170,12 +170,13 @@ if %LOCAL_TEST% == 1 (
 ::
 :: Generate a 'src/oui-generated.c' file from 'src/oui.txt (do not download it every time).
 :: This is needed for many Win32 targets since it's mentioned in the 'build/*/watt32.dep' file.
-:: Otherwise some Make programs (Cbuilder make) exits.
+:: Otherwise some Make programs (Cbuilder make) will exit.
 ::
 set CL=
 %_ECHO% "\e[1;33mGenerating 'src/oui-generated.c'.\e[0m"
 python.exe make-oui.py > oui-generated.c
 if errorlevel 0 set CL=-DHAVE_OUI_GENERATED_C
+
 %_ECHO% "\e[1;33m--------------------------------------------------------------------------------------------------\e[0m"
 
 if %BUILDER%. == visualc. (
