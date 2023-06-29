@@ -17,6 +17,15 @@
 #define CRC_HIBIT   ((DWORD) (1L << (CRC_BITS-1)))
 #define CRC_SHIFTS  (CRC_BITS-8)
 
+/*
+ * When using UBSAN ("Undefined Behavior Sanitizer"):
+ *   crc.c:51:13: runtime error: left shift of 1 by 31 places cannot be represented in type 'long'
+ */
+#if defined(USE_UBSAN)
+  #undef  CRC_HIBIT
+  #define CRC_HIBIT  0x80000000
+#endif
+
 /* Our PRZ's 24-bit CRC generator polynomial. Ref:
  *   http://en.wikipedia.org/wiki/Cyclic_redundancy_check
  *   Section "Commonly used and standardized CRCs"
