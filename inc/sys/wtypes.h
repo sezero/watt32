@@ -51,6 +51,9 @@
 #include <sys/w32api.h>
 #endif
 
+#define __need_size_t
+#include <stddef.h>
+
 #if defined(__DJGPP__) || defined(__DMC__) || \
     defined(__MINGW32__) || defined(__CYGWIN__) || defined(__POCC__)
   #include <sys/types.h>
@@ -59,6 +62,11 @@
 #if defined(__DJGPP__) && !defined(WATT32_DJGPP_MINGW)
   #include <machine/endian.h>
   #include <sys/version.h>      /* for DJGPP_MINOR */
+#endif
+
+#if defined(__DJGPP__)
+  #include <sys/uio.h>          /* for struct iovec */
+  #define IOVEC_DEFINED
 #endif
 
 #if defined(__MINGW32__) || (defined(__DJGPP__) && DJGPP_MINOR >= 4) || \
@@ -214,8 +222,8 @@
 #if !defined(IOVEC_DEFINED)
   #define IOVEC_DEFINED
   struct iovec {
-         void *iov_base;
-         int   iov_len;
+         void   *iov_base;
+         size_t  iov_len;
        };
 #endif
 
