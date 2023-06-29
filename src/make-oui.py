@@ -26,6 +26,10 @@ OUI_HEAD = r"""/*
  * %s.
  * DO NOT EDIT!
  */
+#if defined(__clang__)
+#pragma clang diagnostic ignored "-Winvalid-source-encoding"
+#endif
+
 struct tok {
        unsigned    v;  /* value */
        const char *s;  /* string */
