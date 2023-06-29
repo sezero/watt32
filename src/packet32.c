@@ -52,7 +52,12 @@
   #include <winsvc.h>         /* SERVICE_ALL_ACCESS... */
 #else
   #define HandleToULong(h)  ((ULONG)(ULONG_PTR)(h))
+#endif
 
+#if 0
+  #define GlobalAllocPtr_FLAGS  (GMEM_MOVEABLE | GMEM_ZEROINIT)
+#else
+  #define GlobalAllocPtr_FLAGS  GPTR   /* == 'GMEM_FIXED | GMEM_ZEROINIT'. */
 #endif
 
 /**
@@ -252,14 +257,14 @@ static BOOL get_npf_ver_from_registry (char *ret_ver, size_t ver_size)
    */
   if (status != ERROR_SUCCESS)
   {
-    WINPKT_TRACE ("status: %d; %s\n", status, win_strerror(GetLastError()));
+    WINPKT_TRACE ("status: %ld; %s\n", status, win_strerror(GetLastError()));
     goto fail;
   }
 
   status = RegQueryValueEx (key, "DisplayVersion", NULL, NULL, (BYTE*)&str, &size);
   if (status != ERROR_SUCCESS)
   {
-    WINPKT_TRACE ("status: %d; %s\n", status, win_strerror(GetLastError()));
+    WINPKT_TRACE ("status: %ld; %s\n", status, win_strerror(GetLastError()));
     goto fail;
   }
 
@@ -289,14 +294,14 @@ static BOOL get_npcap_ver_from_registry  (char *ret_ver, size_t ver_size)
 
   if (status != ERROR_SUCCESS)
   {
-    WINPKT_TRACE ("status: %d; %s\n", status, win_strerror(GetLastError()));
+    WINPKT_TRACE ("status: %ld; %s\n", status, win_strerror(GetLastError()));
     goto fail;
   }
 
   status = RegQueryValueEx (key, "DisplayVersion", NULL, NULL, (BYTE*)&str, &size);
   if (status != ERROR_SUCCESS)
   {
-    WINPKT_TRACE ("status: %d; %s\n", status, win_strerror(GetLastError()));
+    WINPKT_TRACE ("status: %ld; %s\n", status, win_strerror(GetLastError()));
     goto fail;
   }
 
@@ -851,8 +856,7 @@ static ADAPTER *PacketOpenAdapterNPF (const char *AdapterName)
     return (NULL);
   }
 
-  lpAdapter = GlobalAllocPtr (GMEM_MOVEABLE | GMEM_ZEROINIT,
-                              sizeof(*lpAdapter));
+  lpAdapter = GlobalAllocPtr (GlobalAllocPtr_FLAGS, sizeof(*lpAdapter));
   if (!lpAdapter)
   {
     WINPKT_TRACE ("Failed to allocate the adapter structure\n");
@@ -2265,8 +2269,7 @@ static BOOL AddAdapter (const char *AdName)
   /* PacketOpenAdapter() was succesful. Consider this a valid adapter
    * and allocate an entry for it In the adapter list.
    */
-  TmpAdInfo = GlobalAllocPtr (GMEM_MOVEABLE | GMEM_ZEROINIT,
-                              sizeof(*TmpAdInfo));
+  TmpAdInfo = GlobalAllocPtr (GlobalAllocPtr_FLAGS, sizeof(*TmpAdInfo));
   if (!TmpAdInfo)
   {
     WINPKT_TRACE ("GlobalAllocPtr Failed\n");
@@ -2522,9 +2525,13 @@ static BOOL FreeAdaptersInfoList (void)
 
   WaitForSingleObject (adapters_mutex, INFINITE);
 
+  winpkt_trace_func = __FUNCTION__;
+  WINPKT_TRACE ("\n");
+
   for (ai = adapters_list; ai; ai = next)
   {
     next = ai->Next;
+    WINPKT_TRACE ("name: '%s', next: 0x%p\n", ai->Name, next);
     GlobalFreePtr (ai);
   }
   adapters_list = NULL;

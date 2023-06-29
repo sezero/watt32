@@ -1112,14 +1112,16 @@ const char *qword_str (uint64 val)
   len = sprintf (tmp, fmt, val);
 #endif
 
-  p = buf + len;
+  p = buf + sizeof(buf) - 1;
   *p-- = '\0';
 
+  /* Copy 'tmp[]' into 'buf[]' in reverse order. Add commas after each 3 digit.
+   */
   for (i = len, j = -1; i >= 0; i--, j++)
   {
     if (tmp[i] != '-' && j > 0 && (j % 3) == 0)
       *p-- = ',';
-    *p-- = tmp[i];
+    *p-- = tmp [i];
   }
   return (p+1);
 }

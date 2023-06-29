@@ -167,6 +167,7 @@ struct protoent * W32_CALL getprotoent (void)
 {
   static struct _protoent p;
   char  *proto, *name;
+  char   buf [2*MAX_NAMELEN], *tok, *tok_buf = NULL;
 
   if (!netdb_init() || !protoFile)
   {
@@ -184,9 +185,7 @@ struct protoent * W32_CALL getprotoent (void)
 
   while (1)
   {
-    char buf [2*MAX_NAMELEN], *tok, *tok_buf = NULL;
-
-    if (!fgets(buf,sizeof(buf),protoFile))
+    if (!fgets(buf, sizeof(buf), protoFile))
     {
       h_errno = NO_DATA;
       return (NULL);

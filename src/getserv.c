@@ -182,6 +182,7 @@ struct servent * W32_CALL getservent (void)
 {
   static struct _servent s;
   char  *name, *proto, *alias, *tok_buf = NULL;
+  char   buf [2*MAX_NAMELEN], *tok;
   WORD   port;
   int    i;
 
@@ -193,9 +194,7 @@ struct servent * W32_CALL getservent (void)
 
   while (1)
   {
-    char buf[2*MAX_NAMELEN], *tok;
-
-    if (!fgets(buf,sizeof(buf),servFile))
+    if (!fgets(buf, sizeof(buf), servFile))
     {
       h_errno = NO_DATA;
       return (NULL);
@@ -218,10 +217,11 @@ struct servent * W32_CALL getservent (void)
     tok  = strtok_r (NULL, "/ \t\n", &tok_buf);
     if (!tok)
        continue;
+
     port  = intel16 (atoi(tok));
     proto = strtok_r (NULL, " \t\n", &tok_buf);
     if (name && port && proto &&
-        (!stricmp(proto,"udp") || !stricmp(proto,"tcp")))
+        (!stricmp(proto, "udp") || !stricmp(proto, "tcp")))
        break;
   }
 

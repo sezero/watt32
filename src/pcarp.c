@@ -522,14 +522,13 @@ static void arp_move_entry (int to_index, int from_index)
 /**
  * Return start of arp_list[].
  *
- * \note Called need to inspect the '*rc->flags' for validity.
+ * \note Caller need to inspect the '*rc->flags' for validity.
  */
 int W32_CALL _arp_cache_get (const struct arp_entry **rc)
 {
   *rc = arp_list;
   return DIM(arp_list);
 }
-
 
 /**
  * Start a host lookup on the LAN.
@@ -1783,6 +1782,7 @@ void W32_CALL _arp_cache_dump (void)
   for (i = 0; i < max; i++, ae++)
   {
     const char *remain;
+    char        remain_buf [30];
 
     if (!(ae->flags & ARP_FLG_INUSE))
        continue;
@@ -1792,9 +1792,8 @@ void W32_CALL _arp_cache_dump (void)
     {
       if (ae->expiry > now)
       {
-        char buf[30];
-        sprintf (buf, "expires in %ss", time_str(ae->expiry-now));
-        remain = buf;
+        sprintf (remain_buf, "expires in %ss", time_str(ae->expiry-now));
+        remain = remain_buf;
       }
       else
         remain = "timed out";
@@ -1900,7 +1899,7 @@ void W32_CALL _arp_gateways_dump (void)
     int   padding, mlen = mask_len(mask);
 
     __get_ifname (ifname);
-    padding = 14 - strlen(subnet);
+    padding = 14 - strlen (subnet);
     if (mlen > 9)
        padding--;
 

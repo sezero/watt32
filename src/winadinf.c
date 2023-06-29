@@ -3010,7 +3010,9 @@ static BOOL wlan_query (HANDLE           client,
                 opcode, size, res);
     return (FALSE);
   }
-  memcpy (data, p, (size_t)size);
+
+  p_size = min (data_size, p_size);
+  memcpy (data, p, (size_t)p_size);
   (*p_WlanFreeMemory) (p);
 
   (void) &p_GetIfEntry;    /* Turn off some warnings */

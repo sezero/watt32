@@ -415,7 +415,8 @@ int W32_CALL pkt_eth_init (mac_address *mac_addr)
   {
     const char *file = expand_var_str (dump_fname);
 
-    _strlcpy (dump_fname, file, sizeof(dump_fname));
+    if (file != dump_fname)  /* not overlapping data */
+       _strlcpy (dump_fname, file, sizeof(dump_fname));
     if (!strcmp(dump_fname, "-"))
          trace_file = stdout;
     else trace_file = fopen_excl (file, "w+t");

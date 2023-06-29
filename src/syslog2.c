@@ -88,7 +88,7 @@ static void W32_CALL syslog2_init (const char *name, const char *value)
   static const struct config_table syslog_cfg[] = {
             { "FILE",  ARG_STRCPY, (void*)&syslog_file_name },
             { "HOST",  ARG_STRCPY, (void*)&syslog_host_name },
-            { "PORT",  ARG_ATOI,   (void*)&syslog_port      },
+            { "PORT",  ARG_ATOW,   (void*)&syslog_port      },
             { "LEVEL", ARG_FUNC,   (void*)set_syslog_mask   },
             { NULL,    0,          NULL                     }
           };
