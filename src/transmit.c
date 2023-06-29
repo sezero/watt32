@@ -67,17 +67,18 @@ int W32_CALL write_s (int s, const char *buf, int nbyte)
 
 int W32_CALL writev_s (int s, const struct iovec *vector, size_t count)
 {
-  int i, len, bytes = 0;
+  int len, bytes = 0;
+  size_t i, max = 0;
 
   SOCK_DEBUGF (("\nwritev_s:%d, iovecs=%lu", s, (u_long)count));
 
-  for (i = 0; i < (int)count; i++)
+  for (i = 0; i < count; ++i)
   {
 #if (DOSX)
     if (!valid_addr(vector[i].iov_base, vector[i].iov_len))
     {
-      SOCK_DEBUGF ((", EFAULT (iovec[%d] = %p, len %lu)",
-                    i, vector[i].iov_base,
+      SOCK_DEBUGF ((", EFAULT (iovec[%lu] = %p, len %lu)",
+                    (unsigned long)i, vector[i].iov_base,
                     (unsigned long)vector[i].iov_len));
       SOCK_ERRNO (EFAULT);
       return (-1);
@@ -86,12 +87,23 @@ int W32_CALL writev_s (int s, const struct iovec *vector, size_t count)
 
     if (vector[i].iov_len > (unsigned)INT_MAX)
     {
-      SOCK_DEBUGF ((", EOVERFLOW (iovec[%d]: len %lu > INT_MAX)",
-                    i, (unsigned long)vector[i].iov_len));
-      SOCK_ERRNO (EOVERFLOW);
+      SOCK_DEBUGF ((", EINVAL (iovec[%lu]: len %lu > INT_MAX)",
+                    (unsigned long)i, (unsigned long)vector[i].iov_len));
+      SOCK_ERRNO (EINVAL);
       return (-1);
     }
 
+    max += vector[i].iov_len;
+    if (max > (unsigned)INT_MAX)
+    {
+      SOCK_DEBUGF ((", EINVAL (max > INT_MAX)"));
+      SOCK_ERRNO (EINVAL);
+      return (-1);
+    }
+  }
+
+  for (i = 0; i < count; i++)
+  {
     len = transmit (NULL, s, vector[i].iov_base, vector[i].iov_len,
                     0, NULL, 0, FALSE);
     if (len < 0)
@@ -114,6 +126,7 @@ int W32_CALL sendmsg (int s, const struct msghdr *msg, int flags)
   const struct iovec *iov;
   int   count = msg->msg_iovlen;
   int   i, bytes, len;
+  size_t max = 0;
 
   SOCK_DEBUGF (("\nsendmsg:%d, iovecs=%d", s, count));
 
@@ -125,14 +138,13 @@ int W32_CALL sendmsg (int s, const struct msghdr *msg, int flags)
     return (-1);
   }
 
-  for (i = bytes = 0; i < count; i++)
+  for (i = 0; i < count; ++i)
   {
 #if (DOSX)
     if (!valid_addr(iov[i].iov_base, iov[i].iov_len))
     {
       SOCK_DEBUGF ((", EFAULT (iovec[%d] = %p/%lu)",
-                   (int)i, iov[i].iov_base,
-                   (unsigned long)iov[i].iov_len));
+                   i, iov[i].iov_base, (unsigned long)iov[i].iov_len));
       SOCK_ERRNO (EFAULT);
       return (-1);
     }
@@ -140,12 +152,23 @@ int W32_CALL sendmsg (int s, const struct msghdr *msg, int flags)
 
     if (iov[i].iov_len > (unsigned)INT_MAX)
     {
-      SOCK_DEBUGF ((", EOVERFLOW (iovec[%d]: len %lu > INT_MAX)",
+      SOCK_DEBUGF ((", EINVAL (iovec[%d]: len %lu > INT_MAX)",
                     i, (unsigned long)iov[i].iov_len));
-      SOCK_ERRNO (EOVERFLOW);
+      SOCK_ERRNO (EINVAL);
       return (-1);
     }
 
+    max += iov[i].iov_len;
+    if (max > (unsigned)INT_MAX)
+    {
+      SOCK_DEBUGF ((", EINVAL (max > INT_MAX)"));
+      SOCK_ERRNO (EINVAL);
+      return (-1);
+    }
+  }
+
+  for (i = bytes = 0; i < count; i++)
+  {
     len = transmit (NULL, s, iov[i].iov_base, iov[i].iov_len,
                     flags, (struct sockaddr*)msg->msg_name,
                     msg->msg_namelen, TRUE);
