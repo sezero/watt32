@@ -196,10 +196,23 @@ static int recv_packet (DWORD block)
    *
    * Note: 'block' is 32-bit, but 16-bit in tftp-header.
    *       We allow the header block-counter to wrap (allowing > 32MB files).
+   *
+   * And make gcc 10+ shut up about this warning:
+   *   tftp.c:201:31: warning: cast between incompatible function types from
+   *   'void (*)(_udp_Socket *, int,  int)' {aka 'void (*)(struct udp_Socket *,
+   *    int, int)'} to 'int (*)(void *, BYTE,  BYTE)' {aka 'int (*)(void *, unsigned char,  unsigned char)'}
+   *    [-Wcast-function-type]
+   *     201 |        sock->udp.icmp_callb = (icmp_upcall) udp_callback;
+   *         |                               ^
    */
+  W32_GCC_PRAGMA (GCC diagnostic push)
+  W32_GCC_PRAGMA (GCC diagnostic ignored "-Wcast-function-type")
+
   if (block == 1UL)
        sock->udp.icmp_callb = (icmp_upcall) udp_callback;
   else sock->udp.icmp_callb = NULL;
+
+  W32_GCC_PRAGMA (GCC diagnostic pop)
 
   /* Read packet with timeout
    */

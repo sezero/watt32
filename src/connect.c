@@ -338,10 +338,21 @@ static int tcp_connect (Socket *socket)
   /* Handle blocking stream socket connect.
    * Maybe we should use select_s() instead ?
    * Maybe set LF_NOCLOSE for all BSD sockets?
+   *
+   * And make gcc 10+ shut up about this warning:
+   *   connect.c:343:41: warning: cast between incompatible function types from
+   *   'int (*)(void)' to 'int (*)(void *)' [-Wcast-function-type]
+   *     343 |                        socket->timeout, (UserHandler)chk_signals,
+   *         |                                         ^
    */
+  W32_GCC_PRAGMA (GCC diagnostic push)
+  W32_GCC_PRAGMA (GCC diagnostic ignored "-Wcast-function-type")
+
   status = _ip_delay0 ((sock_type*)socket->tcp_sock,
                        socket->timeout, (UserHandler)chk_signals,
                        NULL);
+
+  W32_GCC_PRAGMA (GCC diagnostic pop)
 
   if (socket->so_error == EHOSTUNREACH)
   {

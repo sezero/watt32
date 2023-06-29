@@ -75,13 +75,13 @@ static void W32_CALL echo_config (const char *name, const char *value)
   static const struct config_table echo_cfg[] = {
             { "DAEMON", ARG_ATOI,    (void*)&do_echo   },
             { "HOST",   ARG_RESOLVE, (void*)&echo_host },
-            { "PORT",   ARG_ATOI,    (void*)&echo_port },
+            { "PORT",   ARG_ATOW,    (void*)&echo_port },
             { NULL,     0,           NULL              }
           };
   static const struct config_table disc_cfg[] = {
             { "DAEMON", ARG_ATOI,    (void*)&do_disc   },
             { "HOST",   ARG_RESOLVE, (void*)&disc_host },
-            { "PORT",   ARG_ATOI,    (void*)&disc_port },
+            { "PORT",   ARG_ATOW,    (void*)&disc_port },
             { NULL,     0,           NULL              }
           };
 
@@ -122,6 +122,18 @@ void echo_discard_init (void)
   tcp_echo_sock = tcp_disc_sock = NULL;
   RUNDOWN_ADD (echo_discard_exit, 258);
 }
+
+/**
+ * Make gcc 10+ shut up about this warning:
+ *  echo.c:143:19: warning: cast between incompatible function types from
+ *   'void (*)(union sock_type *, void *, int, const tcp_PseudoHeader *, const void *)' to
+ *   'int (*)(void *, const BYTE *, unsigned int,  const void *, const void *)'
+ *   {aka 'int (*)(void *, const unsigned char *, unsigned int,  const void *, const void *)'} [-Wcast-function-type]
+ *    143 |                   (ProtoHandler)udp_handler);
+ *        |                   ^
+ */
+W32_GCC_PRAGMA (GCC diagnostic push)
+W32_GCC_PRAGMA (GCC diagnostic ignored "-Wcast-function-type")
 
 /**
  * Starts the echo/discard services (udp/tcp).
@@ -173,6 +185,11 @@ void echo_discard_start (void)
   if (do_echo || do_disc)
      DAEMON_ADD (echo_discard_daemon);
 }
+
+/*
+ * Restore warning '-Wcast-function-type'
+ */
+W32_GCC_PRAGMA (GCC diagnostic pop)
 
 /**
  * "background" process handling echo + discard TCP sockets.
