@@ -1,6 +1,6 @@
 #
 #  GNU Makefile for some Waterloo TCP sample applications
-#  Gisle Vanem 2004 - 2018
+#  Gisle Vanem 2004 - 2023
 #
 #  Target:
 #    Clang-CL (Win32/Win64; depends on '%CPU%')
@@ -31,6 +31,16 @@ USE_STATIC_LIB ?= 0
 #
 GEOIP_LIB = 2
 
+#
+# Use "Address Sanitizer"?
+#
+USE_ASAN  ?= 0
+
+#
+# Use "Undefined Behavior Sanitizer (UBSan)"?
+#
+USE_UBSAN ?= 0
+
 CC = clang-cl
 
 ifeq ($(USE_DEBUG_LIB),1)
@@ -58,6 +68,39 @@ else
   WATT_LIB = ../lib/$(CPU)/wattcp_clang_imp$(LIB_SUFFIX).lib
   EX_LIBS  =
 endif
+
+ifeq ($(USE_ASAN),1)
+  CFLAGS += -fsanitize=address \
+            -fsanitize-recover=address
+endif
+
+ifeq ($(USE_UBSAN),1)
+  CFLAGS += -fsanitize=undefined
+endif
+
+ifneq ($(USE_ASAN)$(USE_UBSAN),00)
+  ifeq ($(CLANG_$(BITS)),)
+    $(error 'CLANG_32' or 'CLANG_64' must be set in your environment to point to the 32/64-bit root of your clang-cl installation.)
+  endif
+
+  ifeq ($(CLANG_MAJOR_VER),)
+    $(error 'CLANG_MAJOR_VER' must be set in your environment.)
+  endif
+
+  CLANG_ROOT = $(realpath $(CLANG_$(BITS)))
+
+  $(info Detected '$(CLANG_ROOT)' for 'USE_ASAN=$(USE_ASAN)' and 'USE_UBSAN=$(USE_UBSAN)'.)
+
+  #
+  # The default for 'x86 / Release' is 'clang_rt.asan_dynamic_runtime_thunk-i386.lib'
+  # (and clang_rt.asan_dbg_dynamic_runtime_thunk-i386.lib for 'x86 / Debug')
+  #
+  # Let the linker select the ASAN libraries.
+  #
+  LDFLAGS += -inferasanlibs \
+             -libpath:$(CLANG_ROOT)/lib/clang/$(CLANG_MAJOR_VER)/lib/windows
+endif
+
 
 PROGS = ping.exe     popdump.exe  rexec.exe    tcpinfo.exe  cookie.exe   \
         daytime.exe  dayserv.exe  finger.exe   host.exe     lpq.exe      \
