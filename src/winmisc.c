@@ -159,7 +159,7 @@ static BOOL is_gui_app (void)
  */
 int MS_CDECL gui_printf (const char *fmt, ...)
 {
-  char    buf[1024];
+  char    buf [1024];
   int     len;
   char   *prog_name, *s;
   DWORD   mb_flags;
@@ -211,8 +211,8 @@ static void W32_CALL win32_exit (void)
  */
 char * W32_CALL win_strerror (DWORD err)
 {
-  static char buf[512+20];
-  char   err_buf[512], *p;
+  static char buf [512+30];
+  char   err_buf [512], *p;
 
   if (!FormatMessageA(FORMAT_MESSAGE_FROM_SYSTEM, NULL, err,
                       LANG_NEUTRAL, err_buf, sizeof(err_buf)-1, NULL))

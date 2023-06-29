@@ -40,8 +40,17 @@ int test_timers (DWORD msec)
 
 int test_intel (void)
 {
-  printf ("intel  (11223344h) = %08lX\n", intel(0x11223344L));
-  printf ("intel16(1122h)     = %04X\n",intel16(0x1122));
+ /*
+  * I have no idea why some gcc bitches on this:
+  *   ttime.c:43:37: warning: format '%lX' expects argument of type 'long unsigned int',
+  *   but argument 2 has type 'unsigned int' [-Wformat=]
+  *      printf ("intel  (11223344h) = %08lX\n", intel(0x11223344L));
+  *                                    ~~~~^
+  *
+  * Just cast and hope the warning goes away.
+  */
+  printf ("intel  (11223344h) = %08lX\n", (DWORD) intel(0x11223344L));
+  printf ("intel16(1122h)     = %04X\n", intel16(0x1122));
   return (0);
 }
 

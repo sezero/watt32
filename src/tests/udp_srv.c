@@ -111,7 +111,12 @@ int main (int argc, char **argv)
 
       FD_ZERO (&fd);
       FD_SET (sockfd, &fd);
+#ifdef _Windows
       n = select (sockfd+1, &fd, NULL, NULL, (struct __ms_timeval*)&tv);
+#else
+      n = select_s (sockfd+1, &fd, NULL, NULL, &tv);
+#endif
+
       if (n < 0)
       {
         perror ("select");

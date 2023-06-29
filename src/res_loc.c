@@ -78,11 +78,11 @@ static unsigned long power_of_ten[10] = {
  */
 static const char *precsize_ntoa (BYTE prec)
 {
-  static char retbuf[sizeof("90000000.00")];
+  static char retbuf [sizeof("90000000000000.00")];
 
   int    mantissa = (int)((prec >> 4) & 0x0f) % 10;
   int    exponent = (int)((prec >> 0) & 0x0f) % 10;
-  u_long value    = mantissa * power_of_ten[exponent];
+  u_long value    = mantissa * power_of_ten [exponent];
 
   sprintf (retbuf, "%lu.%.2lu", value / 100, value % 100);
   return (retbuf);
@@ -354,7 +354,7 @@ int W32_CALL loc_aton (const char *ascii, u_char *binary)
  */
 char * W32_CALL loc_ntoa (const u_char *binary, char *ascii)
 {
-  static char  tmpbuf[255*3];
+  static char  tmpbuf [255*3];
   const  DWORD referencealt = 100000UL * 100UL;
   const  BYTE *rcp;
   char   *cp0, *cp;

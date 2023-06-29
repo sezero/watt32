@@ -899,7 +899,7 @@ static _udp_Socket *udp_demux (const in_Header *ip, BOOL ip_bcast,
       {
 #if defined(USE_IPV6)
         if (!is_ip4 &&
-            IN6_ARE_ADDR_EQUAL(&ip6_src,&s->his6addr))  /* !!mask */
+            IN6_ARE_ADDR_EQUAL(&ip6_src, &s->his6addr))  /* !!mask */
         {
           DEBUG_RX (s, ip);
           break;
@@ -1109,7 +1109,7 @@ _udp_Socket *_udp_handler (const in_Header *ip, BOOL broadcast)
 
 #if defined(USE_IPV6)
     if (!is_ip4 && !IN6_IS_ADDR_UNSPECIFIED(&in6addr_my_ip) &&
-        !memcmp(&in6addr_my_ip,&ip6_dst,sizeof(in6addr_my_ip)))
+        !memcmp(&in6addr_my_ip, &ip6_dst, sizeof(in6addr_my_ip)))
     {
       if (!ip_bcast && src_port != DOM_DST_PORT)
          icmp6_unreach (ip6, 3);

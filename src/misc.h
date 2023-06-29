@@ -37,6 +37,14 @@ extern "C" {
 #endif
 
 /*
+ * Hacks to shut-up Cygwin x64.
+ */
+#if !defined(__CYGWIN__) || !defined(__USE_W32_SOCKETS)
+  #define __ms_u_long   u_long
+//#define __ms_timeval  timeval
+#endif
+
+/*
  * Because kbhit() will pull in more conio function that we
  * really need, use the simple kbhit() variant (without ungetch()
  * option). This also prevents multiple definition trouble when

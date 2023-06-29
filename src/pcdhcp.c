@@ -225,7 +225,7 @@ static const char *state_name (void)
  */
 static const char *period (DWORD sec)
 {
-  static char buf[20];
+  static char buf [25];
   DWORD  hours = sec / 3600UL;
 
   if (sec < 60UL)
