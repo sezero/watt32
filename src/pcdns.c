@@ -100,7 +100,6 @@ DWORD dom_a4list [MAX_ADDRESSES+1];
 ip6_address dom_a6list [MAX_ADDRESSES+1];
 #endif
 
-
 /**
  * Initialise the query header and clear the alternate addr-list.
  */
@@ -201,7 +200,7 @@ static int send_query (sock_type *sock, struct DNS_query *q,
   BYTE *p;
   int   i;
 
-  if (!udp_open(&sock->udp,DOM_SRC_PORT,towho,DOM_DST_PORT,NULL))
+  if (!udp_open(&sock->udp, DOM_SRC_PORT, towho, DOM_DST_PORT, NULL))
   {
     dom_errno = DNS_CLI_SYSTEM;  /* errno ENETDOWN/EHOSTUNREACH etc. */
     if (debug_on)
@@ -300,7 +299,6 @@ static void extract_cname (const struct DNS_query *q, const char *src,
   *dest = '\0';
 }
 
-
 /**
  * Unpack a received compressed domain name. Handles pointers to
  * continuation domain names.
@@ -354,7 +352,6 @@ static int unpack_domain (const struct DNS_query *q,
      retval = src - start;
   return (retval);
 }
-
 
 /**
  * Extract the IPv4/v6 address from a response message (A or AAAA record).
@@ -534,7 +531,7 @@ static int lookup_domain (
    * Convert 'namebuf' to ACE form if needed
    */
   len = sizeof (namebuf);
-  if (dns_do_idna && !IDNA_convert_to_ACE(namebuf,&len))
+  if (dns_do_idna && !IDNA_convert_to_ACE(namebuf, &len))
   {
     dom_errno = DNS_CLI_ILL_IDNA;
     return (0);
@@ -550,7 +547,7 @@ static int lookup_domain (
       if (loc_domain)            /* there is a search list */
       {
         strcat (namebuf, ".");
-        strcat (namebuf, get_path(loc_domain,1));
+        strcat (namebuf, get_path(loc_domain, 1));
       }
     }
     else
@@ -575,7 +572,7 @@ static int lookup_domain (
 
     dom_sock = (sock_type*) &sock;
 
-    if (!send_query(dom_sock,q,namebuf,nameserver,qtype))
+    if (!send_query(dom_sock, q, namebuf, nameserver, qtype))
     {
       _resolve_timeout = TRUE;
       rc = 0;
@@ -635,7 +632,7 @@ again:
       dom_errno = DNS_CLI_ILL_RESP;
       rc = 0;
     }
-    else if (!legal_ident(reply.head.ident,id_cache,id_index))
+    else if (!legal_ident(reply.head.ident, id_cache, id_index))
     {
       *timedout = TRUE;
       goto again;
@@ -739,13 +736,12 @@ static const char *client_error (enum DNS_client_code err)
   return (NULL);
 }
 
-
 /**
  * Return text for error code (dom_errno).
  */
 const char *W32_CALL dom_strerror (int err)
 {
-  static char buf[80];
+  static char buf [80];
   const char *rc = err < DNS_SRV_MAX ? server_error (err) :
                    err < DNS_CLI_MAX ? client_error (err) : NULL;
   if (rc)

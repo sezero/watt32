@@ -75,7 +75,7 @@
 
 const char *tcpStateName (UINT state)
 {
-  static char  buf[20];
+  static char  buf [20];
   static const char *tcpStates[] = {
                     "LISTEN",   "RESOLVE", "SYNSENT", "SYNREC", "ESTAB",
                     "ESTCLOSE", "FINWT1",  "FINWT2",  "CLOSWT", "CLOSING",
@@ -223,24 +223,24 @@ void dbug_open (void)
      return;
 
 #if defined(__DJGPP__) && (DJGPP_MINOR >= 4) /* Just for testing */
-  if (!stricmp(dbg_name,"/dev/zero"))
+  if (!stricmp(dbg_name, "/dev/zero"))
      __install_dev_zero();
 
-  else if (!stricmp(dbg_name,"/dev/full"))
+  else if (!stricmp(dbg_name, "/dev/full"))
      __install_dev_full();
 #endif
 
   end = strchr (dbg_name, '\0');
-  use_gzip = (end && !stricmp(end-3,".gz"));
+  use_gzip = (end && !stricmp(end - 3, ".gz"));
 
-  if (!stricmp(dbg_name,"con") || !stricmp(dbg_name,"stdout"))
+  if (!stricmp(dbg_name, "con") || !stricmp(dbg_name, "stdout"))
      dbg_file.stream = stdout;
 
-  else if (!stricmp(dbg_name,"stderr"))
+  else if (!stricmp(dbg_name, "stderr"))
      dbg_file.stream = stderr;
 
 #if defined(_WIN32)
-  else if (!stricmp(dbg_name,"$ods"))
+  else if (!stricmp(dbg_name, "$ods"))
   {
     use_ods = TRUE;
     goto quit;
@@ -422,6 +422,8 @@ static __inline const char *do_check_sum (WORD value, const void *p, int len)
  */
 static __inline const char *link_protocol (WORD type)
 {
+  static char buf [30];
+
   switch (type)
   {
     case IP4_TYPE:
@@ -448,7 +450,7 @@ static __inline const char *link_protocol (WORD type)
  */
 static __inline const char *ip4_protocol (BYTE prot)
 {
-  static char buf[4];
+  static char buf [4];
 
   switch (prot)
   {
@@ -2647,9 +2649,9 @@ static void set_debug_file (const char *value)
 
 static void set_debug_mode (const char *value)
 {
-  if (!stricmp(value,"ALL"))
+  if (!stricmp(value, "ALL"))
      dbg_mode_all = 1;
-  if (!stricmp(value,"HEADER"))
+  if (!stricmp(value, "HEADER"))
      dbg_mode_all = 0;
 }
 
@@ -2673,13 +2675,13 @@ static void set_debug_filter (const char *value)
   else
   {
     filter.NONE  = FALSE;
-    filter.MAC   = (strstr(val,"ETH" )  != NULL) || (strstr(val,"MAC") != NULL);
-    filter.ARP   = (strstr(val,"ARP" )  != NULL);
-    filter.RARP  = (strstr(val,"RARP")  != NULL);
-    filter.IP    = (strstr(val,"IP"  )  != NULL);
-    filter.BCAST = (strstr(val,"BCAST") != NULL);
-    filter.MCAST = (strstr(val,"MCAST") != NULL);
-    filter.LOOP  = (strstr(val,"LOOP")  != NULL);
+    filter.MAC   = (strstr(val, "ETH" )  != NULL) || (strstr(val, "MAC") != NULL);
+    filter.ARP   = (strstr(val, "ARP" )  != NULL);
+    filter.RARP  = (strstr(val, "RARP")  != NULL);
+    filter.IP    = (strstr(val, "IP"  )  != NULL);
+    filter.BCAST = (strstr(val, "BCAST") != NULL);
+    filter.MCAST = (strstr(val, "MCAST") != NULL);
+    filter.LOOP  = (strstr(val, "LOOP")  != NULL);
   }
 }
 
@@ -2690,21 +2692,21 @@ static void set_debug_proto (const char *value)
   _strlcpy (val, value, sizeof(val));
   strupr (val);
 
-  if (!strcmp(val,"ALL"))
+  if (!strcmp(val, "ALL"))
      memset (&debug, 1, sizeof(debug));
   else
   {
     memset (&debug, 0, sizeof(debug));
-    debug.MAC  = (strstr(val,"ETH" ) != NULL) || (strstr(val,"MAC") != NULL);
-    debug.LLC  = (strstr(val,"LLC" ) != NULL);
-    debug.ARP  = (strstr(val,"ARP" ) != NULL);
-    debug.RARP = (strstr(val,"RARP") != NULL);
-    debug.IP   = (strstr(val,"IP"  ) != NULL);
-    debug.TCP  = (strstr(val,"TCP" ) != NULL);
-    debug.UDP  = (strstr(val,"UDP" ) != NULL);
-    debug.ICMP = (strstr(val,"ICMP") != NULL);
-    debug.IGMP = (strstr(val,"IGMP") != NULL);
-    debug.SCTP = (strstr(val,"SCTP") != NULL);
+    debug.MAC  = (strstr(val, "ETH" ) != NULL) || (strstr(val, "MAC") != NULL);
+    debug.LLC  = (strstr(val, "LLC" ) != NULL);
+    debug.ARP  = (strstr(val, "ARP" ) != NULL);
+    debug.RARP = (strstr(val, "RARP") != NULL);
+    debug.IP   = (strstr(val, "IP"  ) != NULL);
+    debug.TCP  = (strstr(val, "TCP" ) != NULL);
+    debug.UDP  = (strstr(val, "UDP" ) != NULL);
+    debug.ICMP = (strstr(val, "ICMP") != NULL);
+    debug.IGMP = (strstr(val, "IGMP") != NULL);
+    debug.SCTP = (strstr(val, "SCTP") != NULL);
   }
 }
 
