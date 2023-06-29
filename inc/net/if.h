@@ -125,6 +125,14 @@ TAILQ_HEAD(ifnet_head, ifnet);          /* the actual queue head */
 #define IF_NAMESIZE     IFNAMSIZ
 #endif
 
+struct ifqueue {
+       struct  mbuf *ifq_head;
+       struct  mbuf *ifq_tail;
+       int     ifq_len;
+       int     ifq_maxlen;
+       int     ifq_drops;
+     };
+
 struct ifnet {                                 /* and the entries */
     void                  *if_softc;           /* lower-level data for this if */
     TAILQ_ENTRY(ifnet)     if_list;            /* all struct ifnets are chained */
@@ -137,7 +145,8 @@ struct ifnet {                                 /* and the entries */
     short                  if_flags;           /* up/down, broadcast, etc. */
     short                  if__pad1;           /* be nice to m68k ports */
     struct  if_data        if_data;            /* statistics and other data about if */
-/* procedure handles */
+
+    /* procedure handles */
     int (*if_output)        /* output routine (enqueue) */
                 (struct ifnet *, struct mbuf *, struct sockaddr *,
                  struct rtentry *);
@@ -149,15 +158,9 @@ struct ifnet {                                 /* and the entries */
                 (struct ifnet *);
     void    (*if_watchdog)      /* timer routine */
                 (struct ifnet *);
-    struct  ifqueue {
-                  struct  mbuf *ifq_head;
-                  struct  mbuf *ifq_tail;
-                  int     ifq_len;
-                  int     ifq_maxlen;
-                  int     ifq_drops;
-                } if_snd;               /* output queue */
+    struct  ifqueue if_snd;          /* output queue */
     struct  sockaddr_dl *if_sadl;   /* pointer to our sockaddr_dl */
-    u_int8_t *if_broadcastaddr; /* linklevel broadcast bytestring */
+    u_int8_t *if_broadcastaddr;     /* linklevel broadcast bytestring */
 };
 
 #define if_mtu        if_data.ifi_mtu

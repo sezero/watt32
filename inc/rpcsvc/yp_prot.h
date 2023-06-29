@@ -71,7 +71,7 @@
  * YPPROC_MAPLIST   takes (char *), returns (struct ypmaplist *).
  */
 
-#ifndef BOOL_DEFINED
+#if !defined(BOOL_DEFINED) && !defined(__cplusplus)
 typedef u_int bool;
 #define BOOL_DEFINED
 #endif

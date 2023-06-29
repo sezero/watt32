@@ -59,7 +59,7 @@ struct llc {
         struct {
         u_int8_t control;
         u_int8_t format_id;
-        u_int8_t class;
+        u_int8_t class_id;
         u_int8_t window_x2;
         } type_u;
         struct {
@@ -109,7 +109,7 @@ W32_CLANG_PACK_WARN_DEF()
 #define llc_control          llc_un.type_u.control
 #define llc_control_ext      llc_un.type_raw.control_ext
 #define llc_fid              llc_un.type_u.format_id
-#define llc_class            llc_un.type_u.class
+#define llc_class            llc_un.type_u.class_id
 #define llc_window           llc_un.type_u.window_x2
 #define llc_frmrinfo         llc_un.type_frmr.frmr_rej_pdu0
 #define llc_frmr_pdu0        llc_un.type_frmr.frmr_rej_pdu0

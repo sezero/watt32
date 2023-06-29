@@ -275,26 +275,33 @@ struct in6_aliasreq {
 #define IN6_PREFIX_ND   1
 #define IN6_PREFIX_RR   2
 
+/* prefix "router advert" */
+struct prf_ra {
+       u_char onlink : 1;
+       u_char autonomous : 1;
+       u_char reserved : 6;
+     };
+
+/* prefix "router resource"? */
+struct prf_rr {
+       u_char decrvalid : 1;
+       u_char decrprefd : 1;
+       u_char reserved : 6;
+     };
+
 /*
  * prefix related flags passed between kernel(NDP related part) and
  * user land command(ifconfig) and daemon(rtadvd).
  */
 struct in6_prflags {
-    struct prf_ra {
-        u_char onlink : 1;
-        u_char autonomous : 1;
-        u_char reserved : 6;
-    } prf_ra;
-    u_char prf_reserved1;
-    u_short prf_reserved2;
+    struct prf_ra  prf_ra;
+    u_char         prf_reserved1;
+    u_short        prf_reserved2;
+
     /* want to put this on 4byte offset */
-    struct prf_rr {
-        u_char decrvalid : 1;
-        u_char decrprefd : 1;
-        u_char reserved : 6;
-    } prf_rr;
-    u_char prf_reserved3;
-    u_short prf_reserved4;
+    struct prf_rr  prf_rr;
+    u_char         prf_reserved3;
+    u_short        prf_reserved4;
 };
 
 struct  in6_prefixreq {

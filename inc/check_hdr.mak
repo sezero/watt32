@@ -15,7 +15,7 @@ CFLAGS = -Wall -I.                \
        # -D_KERNEL
 
 ifeq ($(USE_CPP_MODE),1)
-  CFLAGS += -TC
+  CFLAGS += -TP -Wno-old-style-cast
 endif
 
 all: check_hdr.c
@@ -38,11 +38,12 @@ define check_hdr_c
   #if defined(__clang__)
     #pragma clang diagnostic ignored "-Wreserved-id-macro"
     #pragma clang diagnostic ignored "-Wstrict-prototypes"
-//  #pragma clang diagnostic ignored "-Wzero-length-array"
+    #pragma clang diagnostic ignored "-Wzero-length-array"
     #pragma clang diagnostic ignored "-Wnonportable-system-include-path"
 
     #if (__clang_major__ >= 13)
-    #pragma clang diagnostic ignored "-Wreserved-identifier"
+      #pragma clang diagnostic ignored "-Wreserved-identifier"
+    //#pragma clang diagnostic ignored "-Wc2x-compat"
     #endif
   #endif
 

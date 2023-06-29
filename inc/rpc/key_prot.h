@@ -27,7 +27,7 @@ typedef enum keystatus {
           KEY_SUCCESS = 0,
           KEY_NOSECRET = 1,
           KEY_UNKNOWN = 2,
-          KEY_SYSTEMERR = 3,
+          KEY_SYSTEMERR = 3
       } keystatus;
 bool_t xdr_keystatus();
 
