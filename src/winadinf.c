@@ -1433,7 +1433,7 @@ static const struct search_list neighbour_states[] = {
 
 static const char *get_phys_address (const void *a, ULONG len, BOOL show_manuf)
 {
-  const UCHAR *addr = (const UCHAR*)a;
+  const UCHAR *addr = (const UCHAR*) a;
   char        *p, *p_max = work_buf + sizeof(work_buf) - 4;
   ULONG        i;
 
@@ -1446,7 +1446,7 @@ static const char *get_phys_address (const void *a, ULONG len, BOOL show_manuf)
   p = work_buf;
   for (i = 0; i < len && p < p_max; i++)
   {
-    UCHAR b = addr[i];
+    UCHAR b = addr [i];
 
     *p++ = hex_chars_upper [b >> 4];
     *p++ = hex_chars_upper [b & 0xf];
@@ -2045,11 +2045,13 @@ static const char *get_if_type (DWORD if_type)
 static void print_mib_if_row2 (DWORD index, const MIB_IF_ROW2 *row)
 {
   char speed [30];
+  BOOL is_teredo = (row->Type == _IF_TYPE_TUNNEL &&
+                    wcsncmp(row->Alias, L"Teredo", 6) == 0);
 
   (*_printf) ("  GUID:           %s\n", get_guid_str(&row->InterfaceGuid));
   (*_printf) ("    Alias:        %.*" WIDESTR_FMT "\n", IF_MAX_STRING_SIZE, row->Alias);
   (*_printf) ("    Description:  %.*" WIDESTR_FMT "\n", IF_MAX_STRING_SIZE, row->Description);
-  (*_printf) ("    MAC-address:  %s\n", get_phys_address(&row->PhysicalAddress,row->PhysicalAddressLength, TRUE));
+  (*_printf) ("    MAC-address:  %s\n", is_teredo ? NONE_STR "?" : get_phys_address(&row->PhysicalAddress, row->PhysicalAddressLength, TRUE));
   (*_printf) ("    MTU:          %lu\n", row->Mtu);
   (*_printf) ("    Type:         %s (%lu)\n", get_if_type(row->Type), row->Type);
 
@@ -2385,7 +2387,7 @@ static int _pkt_win_print_GetAdaptersAddresses (void)
 
     if (!(flags & GAA_FLAG_SKIP_FRIENDLY_NAME))
       (*_printf) ("    Friendly name:       %s\n", wstring_utf8(addr->FriendlyName));
-    (*_printf) ("    MAC-address:         %s\n", get_phys_address(&addr->PhysicalAddress,addr->PhysicalAddressLength, TRUE));
+    (*_printf) ("    MAC-address:         %s\n", get_phys_address(&addr->PhysicalAddress, addr->PhysicalAddressLength, TRUE));
     (*_printf) ("    Flags:               %s\n", get_address_flags(addr->Flags));
     (*_printf) ("    MTU:                 %s\n", dword_str(addr->Mtu));
 
@@ -3378,7 +3380,7 @@ static void print_wlan_current_connection (const WLAN_CONNECTION_ATTRIBUTES *att
               indent, "", _list_lookup(assoc->dot11BssType, bss_types, DIM(bss_types)));
 
   (*_printf) ("%*sBSSID:            %s\n",
-              indent, "", get_phys_address(&assoc->dot11Bssid,DIM(assoc->dot11Bssid), TRUE));
+              indent, "", get_phys_address(&assoc->dot11Bssid, DIM(assoc->dot11Bssid), TRUE));
 
   (*_printf) ("%*sPhysical type:    %s\n",
               indent, "", _list_lookup(assoc->dot11PhyType, dot11_phy_types, DIM(dot11_phy_types)));
