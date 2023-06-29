@@ -205,14 +205,13 @@ static int recv_packet (DWORD block)
    *     201 |        sock->udp.icmp_callb = (icmp_upcall) udp_callback;
    *         |                               ^
    */
-  W32_GCC_PRAGMA (GCC diagnostic push)
-  W32_GCC_PRAGMA (GCC diagnostic ignored "-Wcast-function-type")
+  W32_GCC_FUNC_TYPE_WARN_OFF()
 
   if (block == 1UL)
        sock->udp.icmp_callb = (icmp_upcall) udp_callback;
   else sock->udp.icmp_callb = NULL;
 
-  W32_GCC_PRAGMA (GCC diagnostic pop)
+  W32_GCC_FUNC_TYPE_WARN_DEF()
 
   /* Read packet with timeout
    */

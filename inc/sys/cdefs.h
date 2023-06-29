@@ -347,6 +347,31 @@
 #endif
 
 /*
+ * And make gcc 10+ shut up about warnings like this:
+ *   tftp.c:201:31: warning: cast between incompatible function types from
+ *   'void (*)(_udp_Socket *, int,  int)' {aka 'void (*)(struct udp_Socket *,
+ *    int, int)'} to 'int (*)(void *, BYTE,  BYTE)' {aka 'int (*)(void *, unsigned char,  unsigned char)'}
+ *    [-Wcast-function-type]
+ *     201 |        sock->udp.icmp_callb = (icmp_upcall) udp_callback;
+ *         |                               ^
+ *
+ * And to complicate things further, older clang compilers do not have
+ * '-Wcast-function-type'. Hence define it for gcc 10+ only.
+ */
+#if defined(__GNUC__) && (__GNUC__ >= 10)
+  #define W32_GCC_FUNC_TYPE_WARN_OFF()         \
+          W32_GCC_PRAGMA (GCC diagnostic push) \
+          W32_GCC_PRAGMA (GCC diagnostic ignored "-Wcast-function-type")
+
+  #define W32_GCC_FUNC_TYPE_WARN_DEF() \
+          W32_GCC_PRAGMA (GCC diagnostic pop)  /* restore the warning options */
+#else
+  #define W32_GCC_FUNC_TYPE_WARN_OFF()
+  #define W32_GCC_FUNC_TYPE_WARN_DEF()
+#endif
+
+
+/*
  * A simple compile-time assert() macro.
  * Use it like 'W32_COMPILE_TIME_ASSERT (some_typedef, sizeof(some_typedef) == 10);'
  *

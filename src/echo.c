@@ -132,8 +132,7 @@ void echo_discard_init (void)
  *    143 |                   (ProtoHandler)udp_handler);
  *        |                   ^
  */
-W32_GCC_PRAGMA (GCC diagnostic push)
-W32_GCC_PRAGMA (GCC diagnostic ignored "-Wcast-function-type")
+W32_GCC_FUNC_TYPE_WARN_OFF()
 
 /**
  * Starts the echo/discard services (udp/tcp).
@@ -189,7 +188,8 @@ void echo_discard_start (void)
 /*
  * Restore warning '-Wcast-function-type'
  */
-W32_GCC_PRAGMA (GCC diagnostic pop)
+W32_GCC_FUNC_TYPE_WARN_DEF()
+
 
 /**
  * "background" process handling echo + discard TCP sockets.
