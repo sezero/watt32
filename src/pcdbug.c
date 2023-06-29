@@ -422,8 +422,6 @@ static __inline const char *do_check_sum (WORD value, const void *p, int len)
  */
 static __inline const char *link_protocol (WORD type)
 {
-  static char buf [30];
-
   switch (type)
   {
     case IP4_TYPE:
