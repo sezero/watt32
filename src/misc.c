@@ -531,7 +531,7 @@ static void __cdecl crtdbg_dump (const void *buf, size_t len)
   size_t i;
   int    c;
 
-  fprintf (stderr, "dump: buf %p, %u bytes\n", buf, len);
+  fprintf (stderr, "dump: buf %p, %zu bytes\n", buf, len);
   len = min (len, 30);
   for (i = 0; i < len; i++)
   {
