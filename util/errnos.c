@@ -51,7 +51,7 @@
    * we need, there is no need to use util/errno.c to create new
    * one for CygWin. Simply pull in <sys/errno.h>.
    */
-  #error This program is not needed on CygWin
+  #error "This program is not needed on CygWin"
 #endif
 
 #if defined(__MSDOS__) || defined(__DOS__) || defined(__HIGHC__) || defined(WIN32) || defined(_WIN32)
@@ -169,7 +169,8 @@ static int    print_test    = 0;
 static fd_set errno_set;
 static const  char *prog_name;
 
-/* Quote from Linux's 'man sys_nerr':
+/*
+ * Quote from Linux's 'man sys_nerr':
  *   The global error list sys_errlist[] indexed by errno can be used to obtain the error
  *   message without the newline.
  *   The largest message number provided in the table is "sys_nerr-1".
@@ -529,6 +530,7 @@ static const char *err_tab[] = {
   "RVD related disk error (EVDBAD)",
   "Out of remote working directory stuctures (ENORMTWD)",    /* 94 */
   "Value too large (EOVERFLOW)",
+  "Operation canceled (ECANCELED)",                          /* 96 */
 };
 
 #define ADD_ERRNO(err_num)  add_errno (err_num, #err_num, strerror(err_num))
@@ -1110,6 +1112,12 @@ static void process (void)
   ADD_ERRNO (ENORMTWD);
 #else
   NEW_ERRNO (94);
+#endif
+
+#ifdef ECANCELED
+  ADD_ERRNO (ECANCELED);
+#else
+  NEW_ERRNO (96);
 #endif
 }
 
