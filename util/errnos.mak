@@ -13,12 +13,12 @@
 # be used with GNU-make.
 #
 PROGRAMS = bcc_err.exe  \
-           dm_err.exe   \
            tcc_err.exe  \
            wc_err.exe   \
            hc_err.exe   \
            dj_err.exe   \
-           lcc_err.exe
+           lcc_err.exe  \
+         # dm_err.exe
 
 #
 # These are the Windows version for some of the above;
@@ -29,10 +29,10 @@ WIN_PROGRAMS = win32/clang_err.exe \
                win32/wc_err.exe    \
                win32/bcc_err.exe   \
                win32/dj_err.exe    \
-               win32/dm_err.exe    \
                win32/ls_err.exe    \
                win32/oc_err.exe    \
                win32/vc_err.exe    \
+             # win32/dm_err.exe    \
              # win32/hc_err.exe
 
 all:   $(PROGRAMS) $(WIN_PROGRAMS)
