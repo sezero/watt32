@@ -10,6 +10,7 @@
 #   win32/dj_err.exe:
 #     A MinGW compiled version that can run under Windows.
 #
+MAKEFLAGS += --warn-undefined-variables
 
 default all:
 	@echo 'Usage: "make -f dj-errno.mak dj_err.exe"'
@@ -36,11 +37,33 @@ ifeq ($(OS),Windows_NT)
   endif
 endif
 
+#
+# Check for a windows hosted MinGW/gcc first on PATH.
+# And not a Cygwin gcc.
+#
+# Look for a 'xx-cygwin' suffix in 'gcc -dumpmachine'.
+# E.g. x86_64-pc-cygwin
+#
+is_cygwin = $(findstring -cygwin,$(shell gcc -dumpmachine))
+
+MINGW_PREFIX ?=
+
+check_cygwin:
+ifneq ($(is_cygwin),)
+  ifeq ($(MINGW_PREFIX),)
+	$(error Cygwin gcc detected which will not work. Define a 'MINGW_PREFIX' for a working MinGW gcc)
+  else ifeq ($(wildcard $(MINGW_PREFIX)gcc.exe),)
+	$(error Failed to find '$(MINGW_PREFIX)gcc.exe'.)
+  endif
+else
+	@echo 'A Cygwin gcc was not detected. Assuming a working MinGW gcc is first on PATH.'
+endif
+
 dj_err.exe: errnos.c
 	$(BIN_PREFIX)gcc -s -I../inc -o dj_err.exe errnos.c
 
 ifeq ($(BIN_PREFIX),)
-win32/dj_err.exe:
+  win32/dj_err.exe:
 	$(error Something wrong; cannot build $@ without 'i586-pc-msdosdjgpp-gcc.exe' and a MinGW gcc.)
 else
 
@@ -53,20 +76,14 @@ else
 #
 DJ_ROOT = $(subst /bin/i586-pc-msdosdjgpp-,,$(DJ_PREFIX))
 
-#
-# Make an env-var to suite your djgpp minor version.
-# Otherwise the latest (?) minor version is assumed.
-#
-__DJGPP_MINOR__ ?= 6
-
-DJ_ERR_CFLAGS = -m32 -s -DWATT32_DJGPP_MINGW  -D__DJGPP__=2 -D__DJGPP_MINOR__=$(__DJGPP_MINOR__)
+DJ_ERR_CFLAGS = -m32 -s -DWATT32_DJGPP_MINGW  -D__DJGPP__=2 -D__DJGPP_MINOR__=6
 
 #
 # Force including djgpp's <errno.h> and NOT MinGW's <errno.h>
 #
 DJ_ERR_CFLAGS += --include $(DJ_ROOT)/i586-pc-msdosdjgpp/sys-include/errno.h -D_ERRNO_H_ -D_INC_ERRNO
 
-win32/dj_err.exe: errnos.c errnos.mak
-	gcc $(DJ_ERR_CFLAGS) -I../inc -o win32/dj_err.exe errnos.c
+win32/dj_err.exe: errnos.c errnos.mak check_cygwin
+	$(MINGW_PREFIX)gcc $(DJ_ERR_CFLAGS) -I../inc -o win32/dj_err.exe errnos.c
 
 endif
