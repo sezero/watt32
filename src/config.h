@@ -7,7 +7,7 @@
 #define _w32_CONFIG_H
 
 #if defined(_w32_WATTCP_H) && !defined(_w32_TARGET_H)
-#error CONFIG.H must be included after TARGET.H
+#error "CONFIG.H must be included after TARGET.H"
 #endif
 
 /**
@@ -128,7 +128,6 @@
   #define USE_PROFILER
 #endif
 
-
 /*
  * SCTP needs gzip compress/uncompress.
  */
@@ -205,38 +204,38 @@
  */
 #if defined(USE_BSD_API)
   #if defined(USE_UDP_ONLY)
-    #error USE_UDP_ONLY and USE_BSD_API are meaningless
+    #error "USE_UDP_ONLY and USE_BSD_API are meaningless"
   #endif
 #else
   #if defined(USE_IPV6)
-    #error USE_IPV6 requires USE_BSD_API
+    #error "USE_IPV6 requires USE_BSD_API"
   #endif
 
   #if defined(USE_BIND)
-    #error USE_BIND requires USE_BSD_API
+    #error "USE_BIND requires USE_BSD_API"
   #endif
 #endif
 
 #if defined(USE_SCTP) && !defined(USE_IPV6)
-  #error USE_SCTP requires USE_IPV6
+  #error "USE_SCTP requires USE_IPV6"
 #endif
 
 #if defined(USE_UDP_ONLY) && defined(USE_DYNIP_CLI)
-  #error USE_UDP_ONLY and USE_DYNIP_CLI are meaningless
+  #error "USE_UDP_ONLY and USE_DYNIP_CLI are meaningless"
 #endif
 
 #if defined(USE_PROFILER) && (!DOSX || !defined(HAVE_UINT64))
-  #error Cannot define USE_PROFILER for this target
+  #error "Cannot define USE_PROFILER for this target"
 #endif
 
 #if defined(__TURBOC__) && (__TURBOC__ <= 0x301)
   #if defined(USE_BIND) || defined(USE_SOCKET) || defined(USE_STATISTICS)
-  #error tcc 2.0 cannot compile resolver, socket code or statistics
+  #error "tcc 2.0 cannot compile resolver, socket code or statistics"
   #endif
 #endif
 
 #if defined(USE_FORTIFY) && defined(USE_CRTDBG)
-  #error Cannot use both Fortify and CrtDebug.
+  #error "Cannot use both Fortify and CrtDebug."
 #endif
 
 /**
