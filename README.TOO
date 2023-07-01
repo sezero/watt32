@@ -84,10 +84,9 @@ hasn't been my main objective.  With the free djgpp environment there is
 no need to worry about memory constrains of old segmented DOS real-modes.
 
 Other compilers / DOS-extender combinations might be supported in the future.
-I was quite impressed by LADsoft's cc386, but it lacked too many functions
-to be useful at this point. The WDOSX extender (by Michael Tippach) also
-looks promising. Using WDOSX is simply a matter of running stubit.exe on
-the executable. The exe-file must have been built for DOS4GW target.
+The WDOSX extender (by Michael Tippach) also looks promising. Using WDOSX is
+simply a matter of running stubit.exe on the executable.
+The exe-file must have been built for DOS4GW target.
 Borland's PowerPak is not supported at the moment, but I urge someone to
 make a port for that combination.  Search the sources for `POWERPAK' and
 `UNFINISHED()'

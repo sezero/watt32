@@ -53,10 +53,10 @@
 #undef free
 #undef strdup
 
-#if (defined(_MSC_VER) && (_MSC_VER <= 600)) || defined(__CCDL__)
+#if defined(_MSC_VER) && (_MSC_VER <= 600)
   /*
    * MSC <= 6.0 has a identifier length of 32. Don't bother
-   * rewriting to supress warnings. LadSoft doesn't handle this either.
+   * rewriting to supress warnings.
    */
   #undef USE_FORTIFY
 #else   /* rest of file */
@@ -311,4 +311,4 @@ void  Fortify_free(void *uptr, const char *file, unsigned long line);
 #endif  /* USE_FORTIFY */
 #endif  /* __FORTIFY_C__ */
 #endif  /* __FORTIFY_H__ */
-#endif  /* _MSC_VER <= 6.0 || __CCDL__ */
+#endif  /* _MSC_VER <= 6.0 */

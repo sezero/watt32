@@ -172,15 +172,6 @@
 #endif
 
 /*
- * LadSoft (cc386 is rather buggy, so it's not really supported)
- */
-#if defined(__CCDL__) && defined(__386__)
-  #ifndef  DOSX
-    #define DOSX      DOS4GW
-  #endif
-#endif
-
-/*
  * Build for Windows (dll and static lib).
  */
 #if defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(__CYGWIN__)
@@ -282,10 +273,6 @@
   #if defined(__DJGPP__)
     #include <dpmi.h>
     #include <go32.h>
-
-  #elif defined(__CCDL__)
-    #include <dpmi.h>
-    #include <i86.h>
   #endif
 
   #include <dos.h>
@@ -586,13 +573,8 @@
 #if defined(WIN32) || defined(WIN64)
   extern CRITICAL_SECTION _watt_crit_sect;
 
-  #if defined(__LCC__)
-    #define ENTER_CRIT()  EnterCriticalSection ((struct _CRITICAL_SECTION*)&_watt_crit_sect)
-    #define LEAVE_CRIT()  LeaveCriticalSection ((struct _CRITICAL_SECTION*)&_watt_crit_sect)
-  #else
-    #define ENTER_CRIT()  EnterCriticalSection (&_watt_crit_sect)
-    #define LEAVE_CRIT()  LeaveCriticalSection (&_watt_crit_sect)
-  #endif
+  #define ENTER_CRIT()  EnterCriticalSection (&_watt_crit_sect)
+  #define LEAVE_CRIT()  LeaveCriticalSection (&_watt_crit_sect)
 
   #undef  DISABLE
   #undef  ENABLE
@@ -608,15 +590,6 @@
 
     #define ENABLE()        enable()
     #define DISABLE()       disable()
-
-  #elif defined(__CCDL__)
-    #include <string.h>
-    #include <dos.h>
-
-    #define cdecl           _cdecl
-    #define BOOL            int
-    #define ENABLE()        asm sti
-    #define DISABLE()       asm cli
   #endif
 
   #define ENTER_CRIT()    ((void)0)
@@ -651,7 +624,7 @@
 /*
  * C-99 (?) __FUNCTION__
  */
-#if defined(__LCC__) || defined(__POCC__)
+#if defined(__POCC__)
   #define __FUNCTION__  __func__
 
 #elif (defined(_MSC_VER) && (_MSC_VER >= 1300)) || defined(__DMC__)

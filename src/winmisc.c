@@ -193,11 +193,7 @@ static void W32_CALL win32_exit (void)
 
   unload_dynamic_table (dyn_funcs, dyn_funcs_num);
 
-#if defined(__LCC__)
-  DeleteCriticalSection ((struct _CRITICAL_SECTION*)&_watt_crit_sect);
-#else
   DeleteCriticalSection (&_watt_crit_sect);
-#endif
 
 #if !defined(__ORANGEC__)
   _watt_crit_sect.SpinCount = -1;
@@ -417,11 +413,7 @@ BOOL init_win_misc (void)
   BOOL wow64 = FALSE;
   BOOL rc = FALSE;
 
-#if defined(__LCC__)
-  InitializeCriticalSection ((struct _CRITICAL_SECTION*)&_watt_crit_sect);
-#else
   InitializeCriticalSection (&_watt_crit_sect);
-#endif
 
   env[0] = '\0';
   if (GetEnvironmentVariableA("WATT32-NOEXC", env, sizeof(env)) ||

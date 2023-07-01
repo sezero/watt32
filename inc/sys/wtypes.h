@@ -51,6 +51,7 @@
 #include <sys/w32api.h>
 #endif
 
+#undef  __need_size_t
 #define __need_size_t
 #include <stddef.h>
 
@@ -114,8 +115,7 @@
     #undef  HAVE_CADDR_T
     #define HAVE_CADDR_T
 
-  #elif defined(__HIGHC__) || defined(__GNUC__) || defined(__CCDL__) || \
-        defined(__LCC__)   || defined(__POCC__)
+  #elif defined(__HIGHC__) || defined(__GNUC__) || defined(__POCC__)
     typedef unsigned long long u_int64_t;
     #define HAVE_U_INT64_T
 

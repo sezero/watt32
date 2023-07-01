@@ -236,12 +236,6 @@ const char * W32_CALL wattcpVersion (void)
     strcpy (p, ", ");
   #endif
 
-#elif defined(__CCDL__)
-  p += sprintf (p, "LadSoft C %d.%d, ", __CCDL__/100, __CCDL__ % 100);
-
-#elif defined(__LCC__) && defined(WIN32)
-  p += sprintf (p, "lcc-win32, ");
-
 #elif defined(__ORANGEC__)   /* https://orangec.readthedocs.io/en/latest/occ/OCC%20Defining%20Macros/ */
   sprintf (buf, "Orange-C %s", __VERSION__);
 
@@ -381,7 +375,7 @@ const char * W32_CALL wattcpVersion (void)
     #define CFLAGS_BUF     "build/digmars/x32vm/cflagsbf.h"
 
   #else
-    #error What!?
+    #error "What!?"
   #endif
 
 #elif defined(__POCC__)    /* Win32 only */
@@ -395,18 +389,6 @@ const char * W32_CALL wattcpVersion (void)
     #define CFLAGS         "build/pellesc/32bit/cflags.h"
     #define CFLAGS_BUF     "build/pellesc/32bit/cflagsbf.h"
   #endif
-
-#elif defined(__LCC__)     /* Win32 only */
-  #define CC_DEFINE        "__LCC__"
-  #define CC_PROG          "lcc"
-  #define CFLAGS           "build/lcc/cflags.h"
-  #define CFLAGS_BUF       "build/lcc/cflagsbf.h"
-
-#elif defined(__CCDL__)    /* DOS4GW only */
-  #define CC_DEFINE        "__CCDL__"
-  #define CC_PROG          "cc386"
-  #define CFLAGS           "build/ladsoft/cflags.h"
-  #define CFLAGS_BUF       "build/ladsoft/cflagsbf.h"
 
 #elif defined(__ICC__)     /* Not yet */
   #define CC_DEFINE        "__ICC__"

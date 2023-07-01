@@ -61,8 +61,7 @@
 
 /**<\typedef 64-bit types (compiler dependent).
  */
-#if defined(__HIGHC__) || defined(__GNUC__) || defined(__CCDL__) || \
-    defined(__LCC__)   || defined(__POCC__) || defined(__ORANGEC__)
+#if defined(__HIGHC__) || defined(__GNUC__) || defined(__POCC__) || defined(__ORANGEC__)
   typedef unsigned long long  uint64;  /**< our unsigned "long long" type */
   typedef long long           int64;   /**< our signed "long long" type */
   #define HAVE_UINT64                  /**< have a compiler with 64-bit ints */
@@ -142,15 +141,9 @@ struct ulong_long {
 #define DIM(x)        (int) (sizeof(x) / sizeof((x)[0]))
 #define SIZEOF(x)     (int) sizeof(x)
 
-#if defined(__LCC__)  /* Lcc-win32 is a bit peculiar */
-  #define ARGSUSED(foo)  foo = foo
-  #define ATOI(x)        atoi ((char*)(x))
-  #define ATOL(x)        atol ((char*)(x))
-#else
-  #define ARGSUSED(foo)  (void)foo
-  #define ATOI(x)        atoi (x)
-  #define ATOL(x)        atol (x)
-#endif
+#define ARGSUSED(foo)  (void)foo
+#define ATOI(x)        atoi (x)
+#define ATOL(x)        atol (x)
 
 /**
  * Compiler and target definitions.
@@ -345,13 +338,8 @@ W32_CLANG_PACK_WARN_OFF()
  * The Internet (ip) Header.
  */
 typedef struct in_Header {
-#if defined(__CCDL__)
-        int    hdrlen : 4;
-        int    ver    : 4;
-#else
         BYTE   hdrlen : 4;     /* Watcom _requires_ BYTE here */
         BYTE   ver    : 4;
-#endif
         BYTE   tos;
         WORD   length;
         WORD   identification;
@@ -436,13 +424,8 @@ typedef struct tcp_Header {
         DWORD  seqnum;
         DWORD  acknum;
 
-#if defined(__CCDL__)
-        int    unused : 4;
-        int    offset : 4;
-#else
         BYTE   unused : 4;   /* Watcom _requires_ BYTE here */
         BYTE   offset : 4;
-#endif
         BYTE   flags;
         WORD   window;
         WORD   checksum;

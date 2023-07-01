@@ -877,8 +877,6 @@ int DTOR pkt_release (void)
 
 #if defined(__BORLANDC__)
   #pragma exit pkt_release 100
-#elif defined(__CCDL__)
-  #pragma rundown pkt_release 110
 #endif
 
 

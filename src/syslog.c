@@ -43,14 +43,6 @@
 
 #if defined(USE_BSD_API)
 
-#if defined(__CCDL__) && !defined(getpid)
-#define getpid()  0
-#endif
-
-#if defined(__LCCDL__)
-#define getpid()  _getpid()
-#endif
-
 #define INTERNALLOG  (LOG_ERR|LOG_CONS|LOG_PERROR|LOG_PID)
 
 static sock_type *log_sock   = NULL;     /* UDP socket for log */

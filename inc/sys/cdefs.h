@@ -138,10 +138,7 @@
   #endif
 #endif
 
-#if defined(__CCDL__)    /* LadSoft compiler */
-  #define W32_CDECL _cdecl
-
-#elif defined(__MINGW32__) || defined(__CYGWIN__)
+#if defined(__MINGW32__) || defined(__CYGWIN__)
   #if defined(cdecl)
     #define W32_CDECL cdecl
   #else

@@ -1470,11 +1470,6 @@ static const char *vendor_version (const char **vendor, const char **err_file)
   v = "__CYGWIN__";
   e = "";
 
-#elif defined(__CCDL__)
-  sprintf (buf, "%d.%d", __CCDL__/100, __CCDL__ % 100);
-  v = "__CCDL__";
-  e = "ladsoft.err";
-
 #else
   buf[0] = '\0';
 #endif

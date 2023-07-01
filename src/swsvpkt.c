@@ -32,12 +32,6 @@
 #include "w32_ndis.h"
 #include "swsvpkt.h"
 
-#if defined(__LCC__)
-  #define QueueUserAPC_4th_ARG  __int64 *
-#else
-  #define QueueUserAPC_4th_ARG  ULONG_PTR
-#endif
-
 static struct {
        uint64  rx_pkts;
        uint64  rx_bytes;
@@ -131,8 +125,7 @@ struct SwsVpktUsr *SwsVpktOpen (const char *szName,
 
   SetThreadPriority (pPacket->hWorker, THREAD_PRIORITY_ABOVE_NORMAL);
   ResumeThread (pPacket->hWorker);
-  QueueUserAPC (StartReceivingApc, pPacket->hWorker,
-                (QueueUserAPC_4th_ARG)pPacket);
+  QueueUserAPC (StartReceivingApc, pPacket->hWorker, (ULONG_PTR)pPacket);
   return (pPacket);
 }
 
@@ -370,7 +363,7 @@ static BOOL QueueBuffer (struct SwsVpktUsr *pPacket, struct SRxBuffer *pBuffer)
            break;
       default:
            /* Retry later */
-           QueueUserAPC (ResubmitRxBufferApc, pPacket->hWorker, (QueueUserAPC_4th_ARG)pBuffer);
+           QueueUserAPC (ResubmitRxBufferApc, pPacket->hWorker, (ULONG_PTR)pBuffer);
            break;
     }
     return (FALSE);

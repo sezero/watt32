@@ -50,9 +50,7 @@ Revision History:
     #pragma warning(disable:4103)
   #endif
 
-  #if defined(__CCDL__)
-    #pragma pack()
-  #elif defined(__HIGHC__)
+  #if defined(__HIGHC__)
     #pragma pop_align_members();
   #elif defined(__WATCOMC__) && (__WATCOMC__ >= 1000)
     #pragma pack(__pop);
@@ -60,7 +58,7 @@ Revision History:
         (defined(__GNUC__) && ((__GNUC__ > 2)              || \
               (__GNUC__ == 2 && __GNUC_MINOR__ > 95)))     || \
         (defined(__BORLANDC__) && (__BORLANDC__ >= 0x500)) || \
-         defined(__POCC__) || defined(__LCC__)
+         defined(__POCC__)
     #pragma pack(pop)
   #else
     #pragma pack()

@@ -73,7 +73,6 @@
   #define _WINSOCK2API_
   #define _WINSOCK_H        /* MinGW header guard names */
   #define _WINSOCK2_H
-  #define _GNU_H_WINDOWS32_SOCKETS  /* Ladsoft 4+ header guard name */
 
   #ifndef WATT32_ON_WINDOWS
   #define WATT32_ON_WINDOWS

@@ -63,8 +63,6 @@ if %1.==mingw64.  goto mingw64
 if %1.==borland.  goto borland
 if %1.==cygwin.   goto cygwin
 if %1.==djgpp.    goto djgpp
-if %1.==ladsoft.  goto ladsoft
-if %1.==lcc.      goto lcc
 if %1.==orangec.  goto orangec
 if %1.==pellesc.  goto pellesc
 if %1.==highc.    goto highc
@@ -137,21 +135,6 @@ echo neterr.c: build/highc/syserr.c >> build\highc\watt32.dep
 
 echo Run GNU make to make target:
 echo   "make -f highc.mak"
-goto next
-
-::--------------------------------------------------------------------------
-:ladsoft
-::
-echo Generating LADsoft makefile, directory, errnos and dependencies
-%MKMAKE% -o ladsoft.mak -d build\ladsoft makefile.all LADSOFT
-%MKDEP%  -s.obj -p$(OBJDIR)\ *.c *.h   > build\ladsoft\watt32.dep
-echo neterr.c: build\ladsoft\syserr.c >> build\ladsoft\watt32.dep
-
-..\util\win32\ls_err -s > build\ladsoft\syserr.c
-..\util\win32\ls_err -e > ..\inc\sys\ladsoft.err
-
-echo Run a Borland compatible make to make target:
-echo   "maker -f ladsoft.mak"
 goto next
 
 ::--------------------------------------------------------------------------
@@ -280,22 +263,6 @@ echo   E.g. "pomake -f pellesc_32.mak"
 echo     or "pomake -f pellesc_64.mak"
 goto next
 
-
-::--------------------------------------------------------------------------
-:lcc
-::
-echo Generating LCC-Win32 makefile, directory, errnos and dependencies
-%MKMAKE% -o lcc.mak -d build\lcc makefile.all LCC WIN32
-%MKDEP%  -s.obj -p$(OBJDIR)\ *.c *.h > build\lcc\watt32.dep
-echo neterr.c: build\lcc\syserr.c   >> build\lcc\watt32.dep
-
-..\util\lcc_err -s > build\lcc\syserr.c
-..\util\lcc_err -e > ..\inc\sys\lcc.err
-
-echo Run make to make target:
-echo   E.g. "maker -f lcc.mak"
-goto next
-
 ::--------------------------------------------------------------------------
 :clang
 ::
@@ -326,8 +293,8 @@ echo Unknown option '%1'.
 :usage
 ::
 echo Configuring Watt-32 tcp/ip targets.
-echo Usage: %0 {borland, clang, cygwin, djgpp, highc, ladsoft,
-echo                      mingw32, mingw64, orangec, pellesc, visualc, watcom, all, clean}
+echo Usage: %0 {borland, clang, cygwin, djgpp, highc, mingw32, mingw64,
+echo            orangec, pellesc, visualc, watcom, all, clean}
 goto quit
 
 ::--------------------------------------------------------------------------
@@ -337,7 +304,6 @@ del djgpp.mak
 del watcom_*.mak
 del bcc_*.mak
 del highc.mak
-del ladsoft.mak
 del visualc-release_32.mak
 del visualc-debug_32.mak
 del visualc-release_64.mak
@@ -352,7 +318,6 @@ del watcom_w.mak
 del pellesc_32.mak
 del pellesc_64.mak
 del highc.mak
-del lcc.mak
 del clang-release_32.mak
 del clang-debug_32.mak
 del clang-release_64.mak
@@ -360,7 +325,6 @@ del clang-debug_64.mak
 del build\djgpp\watt32.dep
 del build\borland\watt32.dep
 del build\highc\watt32.dep
-del build\ladsoft\watt32.dep
 del build\visualc\watt32.dep
 del build\clang\watt32.dep
 del build\MinGW32\watt32.dep
@@ -369,13 +333,11 @@ del build\orangec\watt32.dep
 del build\Cygwin\watt32.dep
 del build\pellesc\watt32.dep
 del build\highc\watt32.dep
-del build\lcc\watt32.dep
 del build\watcom\watt32.dep
 
 del build\djgpp\syserr.c
 del build\borland\syserr.c
 del build\highc\syserr.c
-del build\ladsoft\syserr.c
 del build\visualc\syserr.c
 del build\watcom\syserr.c
 del build\MinGW32\syserr.c
@@ -383,13 +345,11 @@ del build\MinGW64\syserr.c
 del build\orange\syserr.c
 del build\pellesc\syserr.c
 del build\highc\syserr.c
-del build\lcc\syserr.c
 del build\watcom\syserr.c
 
 del ..\inc\sys\djgpp.err
 del ..\inc\sys\borlandc.err
 del ..\inc\sys\highc.err
-del ..\inc\sys\ladsoft.err
 del ..\inc\sys\visualc.err
 del ..\inc\sys\clang.err
 del ..\inc\sys\mingw32.err
@@ -397,7 +357,6 @@ del ..\inc\sys\mingw64.err
 del ..\inc\sys\orangec.err
 del ..\inc\sys\pellesc.err
 del ..\inc\sys\highc.err
-del ..\inc\sys\lcc.err
 del ..\inc\sys\watcom.err
 goto next
 
@@ -407,14 +366,12 @@ goto next
 call %0 borland   %2
 call %0 watcom    %2
 call %0 djgpp     %2
-call %0 ladsoft   %2
 call %0 visualc   %2
 call %0 mingw32   %2
 call %0 mingw64   %2
 call %0 orangec   %2
 call %0 cygwin    %2
 call %0 watcom    %2
-call %0 lcc       %2
 call %0 clang     %2
 call %0 pellesc   %2
 call %0 highc     %2

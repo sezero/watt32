@@ -128,18 +128,6 @@
 
   #include "build/djgpp/syserr.c"   /* @NO_DEP */
 
-#elif defined(__CCDL__)
-  #define SYS_ERRLIST sys_errlist
-  #define SYS_NERR    sys_nerr
-
-  #include "build/ladsoft/syserr.c" /* @NO_DEP */
-
-#elif defined(__LCC__)
-  #define SYS_ERRLIST _w32_sys_errlist
-  #define SYS_NERR    _w32_sys_nerr
-
-  #include "build/lcc/syserr.c"     /* @NO_DEP */
-
 #elif defined(__ORANGEC__)
   #define SYS_ERRLIST sys_errlist
   #define SYS_NERR    sys_nerr
@@ -188,7 +176,7 @@ int pull_neterr_module = 0;
 #elif defined(__POCC__)
   int _w32_sys_nerr = 120; /* pocc bug */
 
-#elif defined(WIN32) && !defined(__LCC__) && !defined(__BORLANDC__)
+#elif defined(WIN32) && !defined(__BORLANDC__)
   #if defined(_MSC_VER) || defined(__WATCOMC__)
     int _w32_sys_nerr     = DIM(_w32_sys_errlist);
   #else
@@ -282,10 +270,6 @@ void __stdcall WSASetLastError (int err)
   int * _RTLENTRY _EXPFUNC __errno (void);
   *__errno() = err;
 
-#elif defined(__LCC__)
-  #undef errno
-  *errno() = err;
-
 #elif defined(__WATCOMC__)
   *__get_errno_ptr() = err;
   errno = err;
@@ -331,11 +315,7 @@ const char *short_strerror (int errnum)
  */
 void W32_CALL perror_s (const char *str)
 {
-#if defined(__LCC__)
-  perror ((char*)str);
-#else
   perror (str);
-#endif
 }
 
 char * W32_CALL strerror_s_ (int errnum)

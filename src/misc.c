@@ -83,16 +83,10 @@ int _w32_errno = 0;
   FARPTR _watt_dosFp; /* we have 48-bit far-pointers */
 #endif
 
-#if defined(__LCC__)
-  static _CPUID lcc_cpuid;
-  char          cdecl x86_type = 5;      /* !! */
-  char          cdecl x86_vendor_id[13];
-  DWORD         cdecl x86_capability;
-
-  /* The 64-bit gcc versions of these (i.e. MinGW64) are in cpumodel.S.
-   * But for other 64-bit targets, put this here for now.
-   */
-#elif defined(__x86_64__) || defined(_M_X64)
+/* The 64-bit gcc versions of these (i.e. MinGW64) are in cpumodel.S.
+ * But for other 64-bit targets, put this here for now.
+ */
+#if defined(__x86_64__) || defined(_M_X64)
   int   x86_have_cpuid = TRUE;  /* All 64-bit CPU's have CPUID */
   DWORD x86_capability;
   char  x86_type;
@@ -290,7 +284,7 @@ static BOOL RDTSC_enabled (void)
       (x86_capability & X86_CAPA_TSC) == 0)          /* RDTSC not supported */
      return (FALSE);
 
-#if (DOSX) && !defined(__LCC__)
+#if (DOSX)
   return ((Get_CR4() & CR4_TS_DISABLE) == 0);       /* True if not disabled */
 #else
   return (TRUE);   /* RDTSC never disabled in real-mode */
@@ -417,14 +411,7 @@ void W32_CALL init_misc (void)
    * it's not disabled. No CPU detection on big-endian machines yet.
    */
 #if (DOSX) && defined(__MSDOS__)
-#if defined(__LCC__)
-  if (_cpuidPresent())
-  {
-    _cpuid (&lcc_cpuid);
-    memcpy (&x86_vendor_id, &lcc_cpuid.Vendor, sizeof(x86_vendor_id));
-    x86_capability = X86_CAPA_TSC; /* !! this doesn't work: *(DWORD*) &lcc_cpuid.FpuPresent; */
-  }
-#elif !(defined(__BORLANDC__) && defined(WIN32))
+#if !(defined(__BORLANDC__) && defined(WIN32))
   CheckCpuType();
 #endif
 
@@ -1174,37 +1161,6 @@ DWORD get_ss_limit (void)
   asm mov res, eax
   return (res);
 }
-
-#elif defined(__CCDL__)
-DWORD get_ds_limit (void)
-{
-  asm {
-    mov ax, ds
-    and eax, 0xFFFF
-    lsl eax, eax
-  }
-  return (_EAX);
-}
-
-DWORD get_cs_limit (void)
-{
-  asm {
-    mov ax, cs
-    and eax, 0xFFFF
-    lsl eax, eax
-  }
-  return (_EAX);
-}
-
-DWORD get_ss_limit (void)
-{
-  asm {
-    mov ax, ss
-    and eax, 0xFFFF
-    lsl eax, eax
-  }
-  return (_EAX);
-}
 #endif /* BORLAND386 || DMC386 || MSC386 */
 
 /*
@@ -1321,23 +1277,14 @@ BOOL valid_addr (const void *addr, unsigned len)
   static void free_selector (void)
   {
     if (_watt_dosTbSel)
-  #ifdef __CCDL__
-       dpmi_free_selector (_watt_dosTbSel);
-  #else
        dpmi_real_free (_watt_dosTbSel);
-  #endif
     _watt_dosTbSel = 0;
   }
 
   static void setup_dos_xfer_buf (void)
   {
     _watt_dosTbSize = 1024;
-  #ifdef __CCDL__
-    if (dpmi_alloc_real_memory (&_watt_dosTbSel, &_watt_dosTbSeg, _watt_dosTbSize) >= 0)
-       _watt_dosTbSeg = 0;
-  #else
     _watt_dosTbSeg = dpmi_real_malloc (_watt_dosTbSize, &_watt_dosTbSel);
-  #endif
 
     if (!_watt_dosTbSeg)
          _watt_dosTbSize = 0;
@@ -1431,7 +1378,7 @@ int W32_CALL _w32_ffs (int i)
   };
   DWORD a, x;
 
-#if (DOSX) && !defined(__LCC__) && !(defined(__BORLANDC__) && defined(WIN32)) && !defined(__MINGW64__) && !defined(_M_X64)
+#if (DOSX) && !(defined(__BORLANDC__) && defined(WIN32)) && !defined(__MINGW64__) && !defined(_M_X64)
   if (x86_type >= 3)
      return asm_ffs (i);  /* BSF requires 386+ */
 #endif

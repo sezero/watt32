@@ -78,32 +78,30 @@ extern char  DATA_DECL x86_vendor_id[13];
 #define CR4_TS_DISABLE  0x004
 #define CR4_OSFXSR      0x100  /* ?? OS does FXSAVE/FXRSTOR on task switch */
 
-#if !defined(__LCC__)
-  #define CheckCpuType W32_NAMESPACE (CheckCpuType)
-  #define MY_CS        W32_NAMESPACE (MY_CS)
-  #define MY_DS        W32_NAMESPACE (MY_DS)
-  #define MY_ES        W32_NAMESPACE (MY_ES)
-  #define MY_SS        W32_NAMESPACE (MY_SS)
-  #define asm_ffs      W32_NAMESPACE (asm_ffs)
-  #define Get_CR4      W32_NAMESPACE (Get_CR4)
-  #define SelWriteable W32_NAMESPACE (SelWriteable)
-  #define SelReadable  W32_NAMESPACE (SelReadable)
-  #define get_cpuid    W32_NAMESPACE (get_cpuid)
-  #define get_rdtsc    W32_NAMESPACE (get_rdtsc)
-  #define get_rdtsc2   W32_NAMESPACE (get_rdtsc2)
+#define CheckCpuType W32_NAMESPACE (CheckCpuType)
+#define MY_CS        W32_NAMESPACE (MY_CS)
+#define MY_DS        W32_NAMESPACE (MY_DS)
+#define MY_ES        W32_NAMESPACE (MY_ES)
+#define MY_SS        W32_NAMESPACE (MY_SS)
+#define asm_ffs      W32_NAMESPACE (asm_ffs)
+#define Get_CR4      W32_NAMESPACE (Get_CR4)
+#define SelWriteable W32_NAMESPACE (SelWriteable)
+#define SelReadable  W32_NAMESPACE (SelReadable)
+#define get_cpuid    W32_NAMESPACE (get_cpuid)
+#define get_rdtsc    W32_NAMESPACE (get_rdtsc)
+#define get_rdtsc2   W32_NAMESPACE (get_rdtsc2)
 
-  extern void  SYSCALL cdecl CheckCpuType (void);
-  extern int   SYSCALL cdecl asm_ffs (int val);
+extern void  SYSCALL cdecl CheckCpuType (void);
+extern int   SYSCALL cdecl asm_ffs (int val);
 
-  extern WORD  SYSCALL cdecl MY_CS   (void);
-  extern WORD  SYSCALL cdecl MY_DS   (void);
-  extern WORD  SYSCALL cdecl MY_ES   (void);
-  extern WORD  SYSCALL cdecl MY_SS   (void);
-  extern DWORD SYSCALL cdecl Get_CR4 (void);
+extern WORD  SYSCALL cdecl MY_CS   (void);
+extern WORD  SYSCALL cdecl MY_DS   (void);
+extern WORD  SYSCALL cdecl MY_ES   (void);
+extern WORD  SYSCALL cdecl MY_SS   (void);
+extern DWORD SYSCALL cdecl Get_CR4 (void);
 
-  extern BOOL  SYSCALL cdecl SelWriteable (WORD sel);
-  extern BOOL  SYSCALL cdecl SelReadable (WORD sel);
-#endif
+extern BOOL  SYSCALL cdecl SelWriteable (WORD sel);
+extern BOOL  SYSCALL cdecl SelReadable (WORD sel);
 
 #if defined(__HIGHC__)
   #pragma alias (x86_type,         "x86_type")
@@ -237,10 +235,6 @@ extern char  DATA_DECL x86_vendor_id[13];
           "nop"           \
           "nop"           \
           __modify [__eax __edx];
-
-#elif defined(__LCC__)
-  #undef  get_rdtsc
-  #define get_rdtsc() _rdtsc() /* in  <intrinsics.h> */
 
 #else
   /*

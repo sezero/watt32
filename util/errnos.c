@@ -266,14 +266,8 @@ static const char *VendorName (void)
 #elif defined(__CYGWIN__)
   return ("__CYGWIN__");
 
-#elif defined(__CCDL__)
-  return ("__CCDL__");
-
 #elif defined(__ORANGEC__)
   return ("__ORANGEC__");
-
-#elif defined(__LCC__)
-  return ("__LCC__");
 
 #else
   return ("??__UNKNOWN__");
@@ -321,15 +315,8 @@ static const char *VendorVersion (void)
   sprintf (buf, "%d.%d.%d", CYGWIN_VERSION_DLL_MAJOR/1000, CYGWIN_VERSION_DLL_MAJOR % 1000,
            CYGWIN_VERSION_DLL_MINOR);
 
-#elif defined(__CCDL__)
-  sprintf (buf, "%d.%d", __CCDL__/100, __CCDL__ % 100);
-
 #elif defined(__ORANGEC__) /* https://orangec.readthedocs.io/en/latest/occ/OCC%20Defining%20Macros/ */
   sprintf (buf, "%s", __VERSION__);
-
-#elif defined(__LCC__)
-/*sprintf (buf, "%d.%d", __LCC__/100, __LCC__ % 100); doesn't work */
-  return (NULL);
 
 #else
   buf[0] = '\0';

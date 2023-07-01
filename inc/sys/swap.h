@@ -243,56 +243,6 @@ W32_FUNC unsigned short W32_CDECL _w32_intel16 (unsigned short x);
                        __emit__(0x86, 0xC4),       /* xchg ah, al  */ \
                        _EAX)
 
-#elif defined(__CCDL__) && defined(__386__)     /* LadSoft 386 */
-  #define intel(x)    __NtoHL(x)
-  #define intel16(x)  __NtoHS(x)
-
-  static unsigned long __NtoHL (unsigned long x)
-  {
-    asm { mov  eax, [x]
-          xchg al, ah
-          ror  eax, 16
-          xchg al, ah
-        }
-    return (_EAX);
-  }
-
-  static unsigned short __NtoHS (unsigned short x)
-  {
-    asm { mov  ax, [x]
-          xchg al, ah
-        }
-    return (unsigned short)_EAX;  /* LadSoft doesn't have _AX */
-  }
-
-  /* This crashes mysteriously if we use _bswap()
-   */
-#elif defined(__LCC__) && 0              /* LCC-Win32 */
-  #define intel(x)    __NtoHL(x)
-  #define intel16(x)  __NtoHS(x)
-
-  #if 0
-    #include <intrinsics.h>
-    #define W32_LCC_INTRINSICS_INCLUDED  /* header guard is missing */
-    #define __NtoHL(x)   (unsigned long) _bswap(x)
-    #define __NtoHS(x)  ((unsigned short) (_bswap(x) >> 16))
-
-  #else
-    unsigned long inline __declspec(naked) __NtoHL (unsigned long x)
-    {
-      _asm ("movl (%esp), %eax");
-      _asm ("xchg %ah, %al");
-      _asm ("rorl $16, %eax");
-      _asm ("xchg %ah, %al");
-    }
-
-    unsigned short inline __declspec(naked) __NtoHS (unsigned short x)
-    {
-      _asm ("movs (%esp), %ax");
-      _asm ("xchg %ah, %al");
-    }
-  #endif
-
 #else  /* no inlining possible (or worth the effort) */
 
   #if !defined(WATT32_NO_NAMESPACE)

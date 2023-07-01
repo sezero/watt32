@@ -232,7 +232,7 @@ static void pre_except_handler (const struct FAULT_STRUC *exc)
   longjmp (exc_jmp, SIGSEGV);
 }
 
-#if !defined(__CCDL__) && !defined(__BORLANDC__)
+#if !defined(__BORLANDC__)
 static void do_traceback (void)
 {
   _printk_safe = TRUE;
@@ -257,7 +257,7 @@ static void do_traceback (void)
     _printk_flush();
   }
 }
-#endif   /* !__CCDL__ && !__BORLANDC__ */
+#endif   /* !__BORLANDC__ */
 #endif   /* DOS4GW|X32VM */
 
 
@@ -341,7 +341,7 @@ static void except_handler (int sig, int code)
   if (sig == SIGSEGV)
   {
     outsnl (_LANG("Trapping SIGSEGV"));
-#if (DOSX & (DOS4GW|X32VM)) && !defined(__CCDL__) && !defined(__BORLANDC__)
+#if (DOSX & (DOS4GW|X32VM)) && !defined(__BORLANDC__)
     do_traceback();
 #endif
   }

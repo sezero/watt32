@@ -53,8 +53,8 @@
 #include "packet32.h"
 #include "swsvpkt.h"
 
-#if (defined(_DLL) && !defined(_MT)) && !defined(__LCC__)
-#error This file must be compiled for threads
+#if (defined(_DLL) && !defined(_MT))
+#error "This file must be compiled for threads"
 #endif
 
 #define AIR_ADAPTER ADAPTER   /* for the time being */

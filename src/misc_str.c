@@ -73,11 +73,6 @@ static int W32_CALL outch (char chr)
   asm mov ah, 2
   asm int 21h
 
-#elif defined(__CCDL__)
-  asm mov dl, [chr]
-  asm mov ah, 2
-  asm int 0x21
-
 #elif defined(__WATCOMC__)
   _outchar (chr);
 

@@ -17,7 +17,6 @@ PROGRAMS = bcc_err.exe  \
            wc_err.exe   \
            hc_err.exe   \
            dj_err.exe   \
-           lcc_err.exe  \
          # dm_err.exe
 
 #
@@ -29,7 +28,6 @@ WIN_PROGRAMS = win32/clang_err.exe \
                win32/wc_err.exe    \
                win32/bcc_err.exe   \
                win32/dj_err.exe    \
-               win32/ls_err.exe    \
                win32/oc_err.exe    \
                win32/vc_err.exe    \
              # win32/dm_err.exe    \
@@ -92,17 +90,6 @@ win32/oc_err.exe: errnos.c
 	$(ORANGEC)\bin\occ --nologo -Wc -1 -I..\inc -I$(ORANGEC)\include -owin32/oc_err.exe errnos.c
 	- rm -f errnos.o
 
-#
-# Note: 'cl386' is LadSoft's compiler. If you have <WATCOM_ROOT\binnt>' in
-#       your PATH, put it after Ladsoft's .'\bin' dir.
-#
-win32/ls_err.exe: errnos.c
-	$(LADSOFT)\bin\cl386 -v+ -9 -E0 -I../inc -W32CON -e=win32\ls_err.exe errnos.c
-
-lcc_err.exe: errnos.c
-	lcc -I..\inc -A errnos.c
-	lcclnk errnos.obj -o lcc_err.exe
-
 po_err.exe: errnos.c
 	pocc -Ze -c -I$(PELLESC)\include -I$(PELLESC)\include\win -I..\inc errnos.c
 	polink -out:$@ -libpath:$(PELLESC)\lib errnos.obj
@@ -124,7 +111,7 @@ win32/dj_err.exe::
 
 clean:
 	@del bcc_err.exe win32\clang_err.exe wc_err.exe hc_err.exe \
-         tcc_err.exe dj_err.exe mw_err.exe mw64_err.exe win32\ls_err.exe \
-         lcc.exe win32\oc_err.exe po_err.exe win32\vc_err.exe win32\wc_err.exe \
+         tcc_err.exe dj_err.exe mw_err.exe mw64_err.exe \
+         win32\oc_err.exe po_err.exe win32\vc_err.exe win32\wc_err.exe \
          win32\bcc_err.exe win32\hc_err.exe errnos.obj
 

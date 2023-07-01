@@ -29,10 +29,7 @@ extern "C" {
   #include <unistd.h>
 #endif
 
-#if defined(__LCC__) && !defined(W32_LCC_INTRINSICS_INCLUDED)
-  #include <intrinsics.h>
-
-#elif defined(__POCC__) || defined(__CYGWIN__) || defined(__MINGW64_VERSION_MAJOR)
+#if defined(__POCC__) || defined(__CYGWIN__) || defined(__MINGW64_VERSION_MAJOR)
   #include <intrin.h>
 #endif
 
@@ -345,7 +342,7 @@ extern const char *qword_str (uint64 val);
     #endif
 
   #elif defined(_MSC_VER) || defined(_MSC_EXTENSIONS) || \
-        defined(__WATCOMC__) || defined(__LCC__) || (defined(__BORLANDC__) && __BORLANDC__ < 0x0700)
+        defined(__WATCOMC__) || (defined(__BORLANDC__) && __BORLANDC__ < 0x0700)
     #define S64_FMT          "I64d"
     #define U64_FMT          "I64u"
     #define X64_FMT          "I64X"
@@ -583,20 +580,6 @@ extern const char *short_strerror (int errnum);
 #elif (DOSX & X32VM)
   #define IREGS      SWI_REGS           /* in "x32vm.h" */
 
-#elif defined(__CCDL__)
-  #define IREGS      union _dpmi_regs_  /* in <dpmi.h> */
-  #define r_flags    h.flags
-  #define r_ax       d.eax
-  #define r_bx       d.ebx
-  #define r_dx       d.edx
-  #define r_cx       d.ecx
-  #define r_si       d.esi
-  #define r_di       d.edi
-  #define r_ds       h.ds
-  #define r_es       h.es
-  #define r_fs       h.fs
-  #define r_gs       h.gs
-
 #elif (DOSX & (DOS4GW|POWERPAK))
   typedef struct DPMI_regs {
           DWORD  r_di;
@@ -644,9 +627,6 @@ extern const char *short_strerror (int errnum);
 
 #elif (DOSX & (PHARLAP|X32VM))
   #define GEN_INTERRUPT(_i, _r)   _dx_real_int ((UINT)(_i), _r)
-
-#elif defined(__CCDL__)
-  #define GEN_INTERRUPT(_i, _r)   dpmi_simulate_real_interrupt (_i, _r)
 
 #elif (DOSX & (DOS4GW|POWERPAK))
   #define GEN_INTERRUPT(_i, _r)   dpmi_real_interrupt ((_i), _r)
@@ -818,23 +798,6 @@ extern const char *short_strerror (int errnum);
   extern DWORD get_cs_limit (void);
   extern DWORD get_ss_limit (void);  /* only needed for X32 */
 
-#elif defined(__CCDL__)
-  #define STACK_SET(stk)  asm { mov  ax, ss;   \
-                                mov  ebx, esp; \
-                                mov  cx, ds;   \
-                                mov  ss, cx;   \
-                                mov  esp, stk; \
-                                push eax;      \
-                                push ebx       \
-                              }
-
-  #define STACK_RESTORE() asm lss esp, [esp]
-  #define PUSHF_CLI()     asm { pushfd; cli }
-  #define POPF()          asm popfd
-
-  extern DWORD get_ds_limit (void);
-  extern DWORD get_cs_limit (void);
-
 #elif defined(__HIGHC__)
   #define PUSHF_CLI()     _inline (0x9C,0xFA)  /* pushfd; cli */
   #define POPF()          _inline (0x9D)       /* popfd */
@@ -883,13 +846,6 @@ extern const char *short_strerror (int errnum);
                       sound (BEEP_FREQ); \
   /* delay() don't */ usleep (1000*BEEP_MSEC); \
   /* work under NT */ nosound(); \
-                    } while (0)
-
-#elif defined(__CCDL__)
-  #define BEEP()    do { \
-                      _sound (BEEP_FREQ); \
-                      _delay (BEEP_MSEC); \
-                      _nosound(); \
                     } while (0)
 
 #elif defined(__HIGHC__)   /* Limited <conio.h> */

@@ -71,10 +71,6 @@
   #define _timezone timezone
 #endif
 
-#if defined(__CCDL__)
-#define int386 _int386
-#endif
-
 #ifndef __inline
 #define __inline
 #endif
@@ -271,7 +267,7 @@ int W32_CALL W32_NAMESPACE (gettimeofday) (struct timeval *tv, struct timezone *
   return (0);
 }
 
-#elif defined(__MSDOS__) && (defined(WATCOM386) || defined(BORLAND386) || defined(__CCDL__))
+#elif defined(__MSDOS__) && (defined(WATCOM386) || defined(BORLAND386))
 int W32_CALL W32_NAMESPACE (gettimeofday) (struct timeval *tv, struct timezone *tz)
 {
   union  REGS reg;
