@@ -5,7 +5,6 @@
 #  Target:
 #    djgpp2/GNU-C running under plain DOS or Windows.
 #
-
 OBJ_DIR = djgpp.obj
 
 #
@@ -16,7 +15,12 @@ DPMI_STUB ?= 1
 #
 # Define 'MAKE_MAP = 1' if you like a .map-file
 #
-MAKE_MAP = 1
+MAKE_MAP ?= 1
+
+#
+# Use 'gcc -Wall'?
+#
+USE_Wall ?= 1
 
 #
 # Add support for Geo-location in the 'tracert.c' program:
@@ -25,10 +29,6 @@ MAKE_MAP = 1
 #   GEOIP_LIB = 0 ==> compile with neither.
 #
 GEOIP_LIB = 2
-
-INC_DIR = ../inc
-
-WATTLIB = ../lib/libwatt.a
 
 #
 # If building on Windows or Linux, '$(DJGPP_PREFIX)-gcc' should become
@@ -50,8 +50,12 @@ endif
 DJDIR ?= e:/djgpp
 
 CC      =  $(BIN_PREFIX)gcc
-CFLAGS  = -Wall -W -Wno-sign-compare -g -O2 -I$(INC_DIR)
+CFLAGS  = -g -O2 -I../inc
 LDFLAGS = -s
+
+ifeq ($(USE_Wall),1)
+  CFLAGS += -Wall -Wno-address -Wno-sign-compare -Wno-pointer-sign -Wno-implicit-fallthrough
+endif
 
 ifeq ($(MAKE_MAP),1)
   LDFLAGS += -Wl,--print-map,--sort-common,--cref
@@ -92,6 +96,7 @@ $(tracert_obj): CFLAGS += $(tracert_CFLAGS)
 
 $(OBJ_DIR)/%.o: %.c
 	$(CC) -c $(CFLAGS) -o $@ $<
+	@echo
 
 tracert.exe: $(tracert_obj)
 ifeq ($(DPMI_STUB),1)
@@ -113,8 +118,8 @@ else
 endif
 
 clean:
-	rm -f $(PROGRAMS:.exe=.map) $(OBJ_DIR)/*
-	-rmdir $(OBJ_DIR)
+	rm -f $(PROGRAMS:.exe=.map)
+	rm -fr $(OBJ_DIR)
 
 vclean realclean: clean
 	rm -f $(PROGRAMS)
@@ -124,12 +129,12 @@ vclean realclean: clean
 #
 ifeq ($(MAKE_MAP),1)
   define link_EXE
-    $(CC) $(LDFLAGS) -o $(1) $(2) $(WATTLIB) > $(3)
+    $(CC) $(LDFLAGS) -o $(1) $(2) ../lib/libwatt.a > $(3)
     @echo
   endef
 else
   define link_EXE
-    $(CC) $(LDFLAGS) -o $(1) $(2) $(WATTLIB)
+    $(CC) $(LDFLAGS) -o $(1) $(2) ../lib/libwatt.a
     @echo
   endef
 endif
