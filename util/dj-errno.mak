@@ -76,12 +76,17 @@ else
 #
 DJ_ROOT = $(subst /bin/i586-pc-msdosdjgpp-,,$(DJ_PREFIX))
 
-DJ_ERR_CFLAGS = -m32 -s -DWATT32_DJGPP_MINGW  -D__DJGPP__=2 -D__DJGPP_MINOR__=6
+DJ_ERR_CFLAGS = -m32 -s -DWATT32_DJGPP_MINGW
 
 #
 # Force including djgpp's <errno.h> and NOT MinGW's <errno.h>
 #
 DJ_ERR_CFLAGS += --include $(DJ_ROOT)/i586-pc-msdosdjgpp/sys-include/errno.h -D_ERRNO_H_ -D_INC_ERRNO
+
+#
+# Force including djgpp's <sys/version.h> to get the '__DJGPP__' and '__DJGPP_MINOR__' values.
+#
+DJ_ERR_CFLAGS += --include $(DJ_ROOT)/i586-pc-msdosdjgpp/sys-include/sys/version.h
 
 win32/dj_err.exe: errnos.c errnos.mak check_cygwin
 	$(MINGW_PREFIX)gcc $(DJ_ERR_CFLAGS) -I../inc -o win32/dj_err.exe errnos.c
