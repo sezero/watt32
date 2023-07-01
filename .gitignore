@@ -197,8 +197,6 @@ src/build/clang
 src/build/CygWin
 src/build/djgpp
 src/build/HighC
-src/build/ladsoft
-src/build/lcc
 src/build/MinGW32
 src/build/MinGW64
 src/build/orangec
