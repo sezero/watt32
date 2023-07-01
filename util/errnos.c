@@ -19,6 +19,10 @@
   #error "Add '-D_CRT_NO_POSIX_ERROR_CODES' to your CFLAGS."
 #endif
 
+#if defined(__DMC__) && !defined(__MSDOS__)
+  #define __MSDOS__
+#endif
+
 #if defined(__MSDOS__) || defined(WIN32) || defined(_WIN32)
   #include <io.h>
 #else /* assume building on unix for cross compilations (BROKEN!) */
