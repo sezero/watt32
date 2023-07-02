@@ -1075,8 +1075,8 @@ IMP_LIB   = ../lib/x86/wattcp_occ_imp.lib
 WATT_DLL  = ../bin/watt-32.dll
 EX_LIBS   = user32.lib advapi32.lib
 
-CFLAGS    = -! -I. -I../inc -9 +v -O+a -O+i -w+ -wd148 -DWATT32_BUILD
-LDFLAGS   = --nologo --shared -mx -l # -T:WIN32
+CFLAGS    = -I. -I../inc -9 +v -O+a -O+i -w+ -wd148 -DWATT32_BUILD
+LDFLAGS   = --shared -mx -l # --nologo -T:WIN32
 AS        = $(W32_NASM_)
 AFLAGS    = -DBITS_32 -f win32
 MAKE_FILE = orangec.mak
@@ -1090,39 +1090,34 @@ RESOURCE  = $(OBJPATH)watt-32.res
 TARGETS = $(STAT_LIB) $(IMP_LIB) $(WATT_DLL)
 
 all: $(OBJPATH)cflags.h $(OBJPATH)cflagsbf.h $(TARGETS)
-	@echo All done
+	@echo "All done"
 
 $(STAT_LIB): $(OBJS)
 	$(AR) --nologo $@ $(subst /,\,$(OBJPATH))*.obj
+	@echo
 
 $(IMP_LIB): $(WATT_DLL)
 
 $(WATT_DLL): $(OBJS) $(RESOURCE) $(LINK_ARGS)
 	$(OLINK) -o $@ $(LDFLAGS) @$(LINK_ARGS) > $(WATT_DLL:.dll=.map)
+	@echo
 
 $(OBJDIR)/cpumodel.obj: cpumodel.nas
 
-$(OBJDIR)/%.obj: %.c $(C_ARGS)
-	$(CC) @$(C_ARGS) $*.c -o $@
+$(OBJDIR)/%.obj: %.c | $(C_ARGS)
+	$(CC) --nologo @$(C_ARGS) $*.c -o $@
 
-$(OBJDIR)/%.obj: %.cpp $(C_ARGS)
-	$(CC) @$(C_ARGS) -wd110 $*.cpp -o $@
+$(OBJDIR)/%.obj: %.cpp | $(C_ARGS)
+	$(CC) --nologo @$(C_ARGS) -wd110 $*.cpp -o $@
 
 $(OBJDIR)/%.obj: %.nas
 	$(AS) $(AFLAGS) -l $(@:.obj=.lst) -o $@ $<
 
-# $(LINK_ARGS): $(MAKE_FILE)
-#	@echo $(OBJS) $(RESOURCE) $(EX_LIBS) > $@
-
 -include build/orangec/watt32.dep
 
 clean:
-	- @del $(OBJPATH)*.obj
-	- @del $(OBJPATH)*.asm
-	- @del $(OBJPATH)*.lst
-	- @del $(RESOURCE)
-	- @del $(TARGETS)
-	@echo Cleaning done
+	rm -f $(OBJDIR)/*.obj $(OBJDIR)/*.res $(TARGETS)
+	@echo "Cleaning done"
 
 ########################################################################
 
