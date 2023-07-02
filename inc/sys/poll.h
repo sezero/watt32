@@ -4,6 +4,7 @@
 #ifndef __SYS_POLL_H
 #define __SYS_POLL_H
 
+#include <sys/cdefs.h>
 #include <sys/w32api.h>  /* W32_FUNC, W32_DATA etc. */
 
 #define POLLIN   0x0001
@@ -19,6 +20,10 @@ struct pollfd {
        int revents;    /* out param: what events occured */
      };
 
+__BEGIN_DECLS
+
 W32_FUNC int W32_CALL poll (struct pollfd *p, int num, int timeout);
+
+__END_DECLS
 
 #endif
