@@ -43,7 +43,6 @@
 static int tcp_connect  (Socket *socket);
 static int udp_connect  (Socket *socket);
 static int raw_connect  (Socket *socket);
-static int nblk_connect (Socket *socket);
 
 /*
  * connect()
@@ -99,7 +98,24 @@ int W32_CALL connect (int s, const struct sockaddr *servaddr, socklen_t addrlen)
   {
     if ((socket->so_type == SOCK_STREAM) &&
         (socket->so_state & SS_NBIO))
-       return nblk_connect (socket);
+    {
+      tcp_tick (NULL);
+
+      if (_sock_pending_connect (socket))
+      {
+        SOCK_DEBUGF ((", EALREADY"));
+        SOCK_ERRNO (EALREADY);
+        return (-1);
+      }
+
+      if (socket->so_error != 0)
+      {
+        SOCK_DEBUGF ((", SO_ERROR: %s", short_strerror(socket->so_error)));
+        SOCK_ERRNO (socket->so_error);
+        socket->so_error = 0;
+        return (-1);
+      }
+    }
 
     SOCK_DEBUGF ((", connect already done!"));
     SOCK_ERRNO (EISCONN);
@@ -322,18 +338,21 @@ static int tcp_connect (Socket *socket)
    * (blocking or non-blocking socket).
    */
   socket->so_state |= SS_ISCONNECTING;
-  timeout = set_timeout (1000 * socket->timeout);
+  socket->so_error = 0;
 
   if (socket->so_state & SS_NBIO)
   {
-    /* if user calls getsockopt(SO_ERROR) before calling connect() again
+    /* Use default 'sock_delay' for timeout, since 'socket->timeout'
+     * will be 0 for non-blocking sockets.
      */
-    socket->so_error = EALREADY;
-    socket->nb_timer = timeout;
+    socket->nb_timer = set_timeout (1000 * sock_delay);
+
     SOCK_DEBUGF ((", EINPROGRESS (-1)"));
     SOCK_ERRNO (EINPROGRESS);
     return (-1);
   }
+
+  timeout = set_timeout (1000 * socket->timeout);
 
   /* Handle blocking stream socket connect.
    * Maybe we should use select_s() instead ?
@@ -392,60 +411,4 @@ static int tcp_connect (Socket *socket)
   return (0);
 }
 
-
-/*
- * Handle non-blocking SOCK_STREAM connection.
- * Only called on 2nd (3rd etc) time a non-blocking
- * connect() is called.
- */
-static int nblk_connect (Socket *socket)
-{
-  if (socket->so_state & SS_ISCONNECTED)
-  {
-    SOCK_DEBUGF ((", connected!"));
-    socket->so_error = 0;
-    return (0);
-  }
-
-  /* Don't let tcp_Retransmitter() timeout this socket
-   * (unless there is a ARP timeout etc.)
-   */
-  socket->tcp_sock->timeout = 0;
-
-  if ((socket->so_state & (SS_ISDISCONNECTING | SS_CONN_REFUSED)) ||
-      (socket->tcp_sock->state >= tcp_StateCLOSED))
-  {
-    if (socket->so_error != 0 && socket->so_error != EALREADY)
-    {
-      SOCK_DEBUGF ((", %s", short_strerror(socket->so_error)));
-      SOCK_ERRNO (socket->so_error);
-    }
-    else if (chk_timeout(socket->nb_timer))
-    {
-      socket->so_state &= ~SS_ISCONNECTING;
-      SOCK_DEBUGF ((", ETIMEDOUT (%s)", socket->tcp_sock->err_msg));
-      socket->so_error = ETIMEDOUT;
-      SOCK_ERRNO (ETIMEDOUT);
-    }
-    else
-    {
-      SOCK_DEBUGF ((", ECONNREFUSED"));
-      socket->so_error = ECONNREFUSED;
-      SOCK_ERRNO (ECONNREFUSED);       /* could also be ECONNRESET */
-    }
-    return (-1);
-  }
-
-  if (socket->so_state & SS_ISCONNECTING)
-  {
-    SOCK_DEBUGF ((", EALREADY"));
-    socket->so_error = EALREADY;       /* should be redundant */
-    SOCK_ERRNO (EALREADY);
-    return (-1);
-  }
-
-  SOCK_FATAL (("%s (%d) Fatal: Unhandled non-block event\n",
-              __FILE__, __LINE__));
-  return (-1);
-}
 #endif /* USE_BSD_API */
