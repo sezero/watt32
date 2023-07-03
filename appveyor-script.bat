@@ -104,22 +104,28 @@ set BCCDIR=%CI_ROOT%
 if %BUILDER%. == borland. set CBUILDER_IS_LLVM_BASED=1
 if %BUILDER%. == borland. set INCLUDE=%BCCDIR%\include\windows;%BCCDIR%\include\windows\sdk;%INCLUDE%
 
+::
+:: Make directory links (junctions) to these LLVM/clang directories
+:: already on AppVeyor:
+::   c:\Program Files (x86)\LLVM
+::   c:\Program Files\LLVM
+::
+:: since spaces in directories is a real PITA.
+::
+if %LOCAL_TEST% == 1 (
+  if %_cmdproc%. == .  (
+    mklink /D %CD%\CI\LLVM-32-bit %CLANG_32%
+    mklink /D %CD%\CI\LLVM-64-bit %CLANG_64%
+  )
+) else (
+  mklink /D %CD%\CI\LLVM-32-bit "c:\Program Files (x86)\LLVM"
+  mklink /D %CD%\CI\LLVM-64-bit "c:\Program Files\LLVM"
+)
+
+set CLANG_32=%CD%\CI\LLVM-32-bit
+set CLANG_64=%CD%\CI\LLVM-64-bit
+
 if %LOCAL_TEST% == 1 goto local_test_1
-
-::
-:: Shit for brains 'cmd' cannot have this inside a 'if x (' block since
-:: on a AppVeyor build several "c:\Program Files (x86)\Microsoft xxx" strings
-:: are in the 'PATH'.
-::
-:: This is the PATH to the 64-bit 'clang-cl' already on AppVeyor.
-::
-:: set PATH=%PATH%;c:\Program Files\LLVM\bin
-
-::
-:: These are needed by 'clang-release_32.mak' and 'clang-release_64.mak'
-::
-set CLANG_32="c:\Program Files (x86)\LLVM"
-set CLANG_64="c:\Program Files\LLVM"
 
 ::
 :: And append the '%WATCOM%\binnt' to the 'PATH' since Watcom has an 'cl.exe'
