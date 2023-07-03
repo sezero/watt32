@@ -13,7 +13,8 @@ set URL_WATCOM_ZIP=http://www.watt-32.net/CI/watcom20.zip
 set URL_BORLAND_ZIP=http://www.watt-32.net/CI/borland.zip
 set URL_WINPCAP_EXE=https://www.winpcap.org/install/bin/WinPcap_4_1_3.exe
 set URL_NPCAP_EXE=https://github.com/UAVCAN/pyuavcan/blob/master/.test_deps/npcap-0.96.exe
-set URL_LLVM_EXE=https://prereleases.llvm.org/win-snapshots/LLVM-10.0.0-e20a1e486e1-win32.exe
+set URL_CLANG_32_EXE=https://github.com/llvm/llvm-project/releases/download/llvmorg-16.0.0/LLVM-16.0.0-win32.exe
+set URL_CLANG_64_EXE=https://github.com/llvm/llvm-project/releases/download/llvmorg-16.0.0/LLVM-16.0.0-win32.exe
 
 ::
 :: D/L from MS's OneDrive instead with the below cryptic 'URL_x' strings.
@@ -104,28 +105,20 @@ set BCCDIR=%CI_ROOT%
 if %BUILDER%. == borland. set CBUILDER_IS_LLVM_BASED=1
 if %BUILDER%. == borland. set INCLUDE=%BCCDIR%\include\windows;%BCCDIR%\include\windows\sdk;%INCLUDE%
 
-::
-:: Make directory links (junctions) to these LLVM/clang directories
-:: already on AppVeyor:
-::   c:\Program Files (x86)\LLVM
-::   c:\Program Files\LLVM
-::
-:: since spaces in directories is a real PITA.
-::
-if %LOCAL_TEST% == 1 (
-  if %_cmdproc%. == .  (
-    mklink /D %CD%\CI\LLVM-32-bit %CLANG_32%
-    mklink /D %CD%\CI\LLVM-64-bit %CLANG_64%
-  )
-) else (
-  mklink /D %CD%\CI\LLVM-32-bit "c:\Program Files (x86)\LLVM"
-  mklink /D %CD%\CI\LLVM-64-bit "c:\Program Files\LLVM"
-)
-
-set CLANG_32=%CD%\CI\LLVM-32-bit
-set CLANG_64=%CD%\CI\LLVM-64-bit
-
 if %LOCAL_TEST% == 1 goto local_test_1
+
+::
+:: Shit for brains 'cmd' cannot have this inside a 'if x (' block since
+:: on a AppVeyor build several "c:\Program Files (x86)\Microsoft xxx" strings
+:: are in the 'PATH'.
+::
+:: This is the PATH to the 64-bit 'clang-cl' already on AppVeyor.
+:: set PATH=%PATH%;c:\Program Files\LLVM\bin
+::
+:: These are needed by 'clang-release_32.mak' and 'clang-release_64.mak'
+::
+set CLANG_32="c:\Program Files (x86)\LLVM"
+set CLANG_64="c:\Program Files\LLVM"
 
 ::
 :: And append the '%WATCOM%\binnt' to the 'PATH' since Watcom has an 'cl.exe'
@@ -189,9 +182,11 @@ if %LOCAL_TEST% == 1 (
 :: Otherwise some Make programs (Cbuilder make) will exit.
 ::
 set CL=
-%_ECHO% "\e[1;33mGenerating 'src/oui-generated.c'.\e[0m"
-python.exe make-oui.py > oui-generated.c
-if errorlevel 0 set CL=-DHAVE_OUI_GENERATED_C
+if %LOCAL_TEST% == 0 (
+   %_ECHO% "\e[1;33mGenerating 'src/oui-generated.c'.\e[0m"
+   python.exe make-oui.py > oui-generated.c
+   if errorlevel 0 set CL=-DHAVE_OUI_GENERATED_C
+)
 
 %_ECHO% "\e[1;33m--------------------------------------------------------------------------------------------------\e[0m"
 
@@ -205,10 +200,12 @@ if %BUILDER%. == visualc. (
 %_ECHO% "\e[1;33m[%CPU%]: call configur.bat %BUILDER%:\e[0m"
 
 ::
-:: Need to do 'call :install_LLVM' here to set the PATH for 'clang-cl.exe'!
+:: Need to do 'call :install_CLANG_%BITS%' here to set the PATH for 'clang-cl.exe'!
 ::
 if %BUILDER%. == clang. (
-  call :install_LLVM
+  cd ..
+  call :install_CLANG_%BITS%
+  cd src
   call configur.bat clang
   %_ECHO% "\e[1;33m[%CPU%]: Building release:\e[0m"
   make -f clang-release_%BITS%.mak
@@ -318,10 +315,12 @@ if %BUILDER%. == cygwin. (
 )
 
 ::
-:: Need to do 'call :install_LLVM' here to set the PATH for 'clang-cl.exe' again.
+:: Need to do 'call :install_CLANG_%BITS%' here to set the PATH for 'clang-cl.exe' again.
 ::
 if %BUILDER%. == clang. (
-  call :install_LLVM
+  cd ..
+  call :install_CLANG_%BITS%
+  cd bin
   %_ECHO% "\e[1;33m[%CPU%]: Building PROGS_CL=%PROGS_CL%:\e[0m"
   make -f clang.mak check_CPU %PROGS_CL%
   exit /b
@@ -385,13 +384,12 @@ exit /b 0
     set WATTCP_CFG=c:/projects/watt-32
     %_ECHO% "\e[1;33mGenerating '%%WATTCP_CFG%%/wattcp.cfg'.\e[0m"
     call :generate_wattcp_cfg
+    if %CPU%. == x86. set PATH=c:\Program Files (x86)\LLVM\bin;%PATH%
   )
 
   cd src\tests
 
   set USE_WSOCK_TRACE=0
-
-  if %CPU%. == x86. set PATH=c:\Program Files (x86)\LLVM\bin;%PATH%
 
   %_ECHO% "\e[1;33m[%CPU%]Configuring 'build_tests' for 'BUILDER=%BUILDER%'.\e[0m"
 
@@ -445,26 +443,53 @@ exit /b 0
   exit /b 0
 
 ::
-:: Download the '%CI_ROOT%\llvm-installer.exe' for 32-bit 'clang-cl'.
-:: A 200 MByte download which installs to "c:\Program Files (x86)\LLVM"
+:: Download the '%CI_ROOT%\LLVM-16.0.0-win32.exe' for 32-bit 'clang-cl'.
+:: A 300 MByte download which silently installs to "c:\Program Files (x86)\LLVM"
 ::
-:: And it's PATH must be prepended to the normal PATH.
-::
-:install_LLVM
-  if %CPU%. == x64. exit /b
-  set PATH=c:\Program Files (x86)\LLVM\bin;%PATH%
+:install_CLANG_32
+  if %LOCAL_TEST% == 1 exit /B
   if exist "c:\Program Files (x86)\LLVM\bin\clang-cl.exe" exit /b
-  if not exist %CI_ROOT%\llvm-installer.exe call :download_LLVM
+  if exist %CD%\CI\LLVM-32-bit\bin\clang-cl.exe           exit /b
 
-  %_ECHO% "\e[1;33mInstalling 32-bit LLVM...'.\e[0m"
-  start /wait %CI_ROOT%\llvm-installer.exe /S
-  clang-cl -v
+  if not exist %CI_ROOT%\LLVM-16.0.0-win32.exe call :download_CLANG_32
+
+  %_ECHO% "\e[1;33mInstalling 32-bit LLVM to 'c:\Program Files (x86)\LLVM' ...\e[0m"
+  start /wait %CI_ROOT%\LLVM-16.0.0-win32.exe /S
+
+  %CD%\CI\LLVM-32-bit\bin\clang-cl -v
   %_ECHO% "\e[1;33mDone\n--------------------------------------------------------\e[0m"
   exit /b
 
-:download_LLVM
+::
+:: Download the '%CI_ROOT%\LLVM-16.0.0-win64.exe' for 64-bit 'clang-cl'.
+:: A 300 MByte download which silently installs to "c:\Program Files\LLVM"
+::
+:install_CLANG_64
+  if %LOCAL_TEST% == 1 exit /B
+  if exist "c:\Program Files\LLVM\bin\clang-cl.exe" exit /b
+  if exist %CD%\CI\LLVM-64-bit\bin\clang-cl.exe     exit /b
+
+  if not exist %CI_ROOT%\LLVM-16.0.0-win64.exe call :download_CLANG_64
+
+  %_ECHO% "\e[1;33mInstalling 64-bit LLVM to 'c:\Program Files\LLVM' ...\e[0m"
+  start /wait %CI_ROOT%\LLVM-16.0.0-win64.exe /S
+
+  %CD%\CI\LLVM-64-bit\bin\clang-cl -v
+  %_ECHO% "\e[1;33mDone\n--------------------------------------------------------\e[0m"
+  exit /b
+
+:download_CLANG_32
   %_ECHO% "\e[1;33mDownloading 32-bit LLVM...'.\e[0m"
-  curl -# -o %CI_ROOT%\llvm-installer.exe %URL_LLVM_EXE%
+  curl -# -Lo %CI_ROOT%\LLVM-16.0.0-win32.exe %URL_CLANG_32_EXE%
+  if not errorlevel == 0 (
+    %_ECHO% "\e[1;31mThe curl download failed!\e[0m"
+    exit /b 1
+  )
+  exit /b
+
+:download_CLANG_64
+  %_ECHO% "\e[1;33mDownloading 64-bit LLVM...'.\e[0m"
+  curl -# -Lo %CI_ROOT%\LLVM-16.0.0-win64.exe %URL_CLANG_64_EXE%
   if not errorlevel == 0 (
     %_ECHO% "\e[1;31mThe curl download failed!\e[0m"
     exit /b 1
@@ -483,7 +508,7 @@ exit /b 0
 
 :download_djgpp
   %_ECHO% "\e[1;33mDownloading Andrew Wu's DJGPP cross compiler:\e[0m"
-  curl -# -o %CI_ROOT%\dj-win.zip %URL_DJ_WIN_ZIP%
+  curl -# -Lo %CI_ROOT%\dj-win.zip %URL_DJ_WIN_ZIP%
   if not errorlevel == 0 (
     %_ECHO% "\e[1;31mThe curl download failed!\e[0m"
     exit /b 1
@@ -496,7 +521,7 @@ exit /b 0
 :install_borland
   if exist %BCCDIR%\bin\make.exe exit /b
   %_ECHO% "\e[1;33mDownloading Borland:\e[0m"
-  curl -# -o %CI_ROOT%\borland.zip %URL_BORLAND_ZIP%
+  curl -# -Lo %CI_ROOT%\borland.zip %URL_BORLAND_ZIP%
   if not errorlevel == 0 (
     %_ECHO% "\e[1;31mThe curl download failed!\e[0m"
     exit /b
@@ -510,7 +535,7 @@ exit /b 0
 :install_watcom
   if exist %WATCOM%\binnt\wmake.exe exit /b
   %_ECHO% "\e[1;33mDownloading OpenWatcom 2.0:\e[0m"
-  curl -# -o %CI_ROOT%\watcom20.zip %URL_WATCOM_ZIP%
+  curl -# -Lo %CI_ROOT%\watcom20.zip %URL_WATCOM_ZIP%
   if not errorlevel == 0 (
     %_ECHO% "\e[1;31mThe curl download failed!\e[0m"
     exit /b
@@ -525,7 +550,7 @@ exit /b 0
 :install_winpcap
   if exist %CI_ROOT%\WinPcap\Uninstall.exe exit /b
   %_ECHO% "\e[1;33mDownloading WinPcap 4.1.3:\e[0m"
-  curl -# -o %CI_ROOT%\WinPcap_4_1_3.exe %URL_WINPCAP_EXE%
+  curl -# -Lo %CI_ROOT%\WinPcap_4_1_3.exe %URL_WINPCAP_EXE%
   if not errorlevel == 0 (
     %_ECHO% "\e[1;31mThe curl download failed!\e[0m"
     exit /b
@@ -539,7 +564,7 @@ exit /b 0
 :install_npcap
   if exist "C:\Program Files\NPcap\Uninstall.exe" exit /b
   %_ECHO% "\e[1;33mDownloading NPcap 0.96:\e[0m"
-  curl -# -o %CI_ROOT%\npcap-0.96.exe %URL_NPCAP_EXE%
+  curl -# -Lo %CI_ROOT%\npcap-0.96.exe %URL_NPCAP_EXE%
   if not errorlevel == 0 (
     %_ECHO% "\e[1;31mThe curl download failed!\e[0m"
     exit /b
