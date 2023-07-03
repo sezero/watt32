@@ -660,6 +660,9 @@ static const char *capabilities[] = {
 #if defined(USE_CRTDBG)
            "crt-dbg",
 #endif
+#if defined(USE_STACKWALKER)
+           "stkwalker",
+#endif
 #if defined(USE_FSEXT)
            "fsext",
 #endif
