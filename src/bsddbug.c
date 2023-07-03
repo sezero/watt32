@@ -263,18 +263,6 @@ static void show_local_ports_inuse (void)
   }
 }
 
-void bsd_fortify_print (const char *buf)
-{
-  if (dbg_file)
-  {
-#if (USE_PRINTK)
-    _fputsk (buf, dbg_file);
-#else
-    fputs (buf, dbg_file);
-#endif
-  }
-}
-
 #if defined(WIN32)
 /**
  * \todo: Needs to be rewritten to handle line-buffering. !!

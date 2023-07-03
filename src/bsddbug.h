@@ -21,8 +21,6 @@
   extern void  _sock_enter_scope (void);
   extern void  _sock_leave_scope (void);
 
-  extern void bsd_fortify_print (const char *buf);
-
   #define SOCK_DEBUGF(x)      _sock_debugf x
   #define SOCK_DBUG_FLUSH()   _sock_dbug_flush()
   #define SOCK_ENTER_SCOPE()  _sock_enter_scope()

@@ -31,7 +31,6 @@
 #undef USE_LANGUAGE    /* Include Language translation code */
 #undef USE_FRAGMENTS   /* Include IP-fragment handling */
 #undef USE_STATISTICS  /* Include protocol statistics count */
-#undef USE_FORTIFY     /* Use Fortify malloc-lib for allocations */
 #undef USE_STACKWALKER /* Use StackWalker for allocations and crash-dumps. */
 #undef USE_FSEXT       /* Use djgpp's File Extensions for file I/O functions */
 #undef USE_LOOPBACK    /* Use the simple loopback device */
@@ -113,11 +112,6 @@
 
 #if defined(__DJGPP__)
   #define USE_FSEXT
-/*#define USE_FORTIFY */
-#endif
-
-#if defined(__HIGHC__) || defined(__BORLANDC__)
-/* #define USE_FORTIFY */
 #endif
 
 #if (DOSX && DOSX != WINWATT)
@@ -139,16 +133,12 @@
  * Select malloc debuggers on Windows
  */
 #if defined(_WIN32) && defined(_MSC_VER) && defined(_DEBUG)  /* cl -MDd -D_DEBUG */
-  #define USE_CRTDBG                       /* use CrtDebug; faster than Fortify? */
-
-#elif defined(__MINGW32__) && !defined(NDEBUG)
-/*#define USE_FORTIFY */
+  #define USE_CRTDBG                                         /* use CrtDebug? */
 
 #elif defined(_WIN32) && defined(__WATCOMC__)
 /* #define USE_STACKWALKER */ /* Not possible */
 
 #elif defined(__CYGWIN__) && !defined(NDEBUG)
-/* #define USE_FORTIFY */
   #define USE_BUFFERED_IO
 #endif
 
@@ -181,7 +171,6 @@
   #undef USE_SCTP
   #undef USE_CRTDBG
   #undef USE_BUGTRAP
-  #undef USE_FORTIFY
 #endif
 
 #if defined(_MSC_VER) && 0
@@ -195,7 +184,6 @@
   #undef USE_BUFFERED_IO
   #undef USE_TFTP
   #undef USE_LOOPBACK
-  #undef USE_FORTIFY
   #undef USE_BIND
 #endif
 
@@ -232,10 +220,6 @@
   #if defined(USE_BIND) || defined(USE_SOCKET) || defined(USE_STATISTICS)
   #error "tcc 2.0 cannot compile resolver, socket code or statistics"
   #endif
-#endif
-
-#if defined(USE_FORTIFY) && defined(USE_CRTDBG)
-  #error "Cannot use both Fortify and CrtDebug."
 #endif
 
 /**
@@ -281,7 +265,6 @@
   #define USE_LANGUAGE
   #define USE_FRAGMENTS
   #define USE_STATISTICS
-  #define USE_FORTIFY
   #define USE_FSEXT
   #define USE_LOOPBACK
   #define USE_EMBEDDED

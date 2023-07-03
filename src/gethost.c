@@ -942,11 +942,6 @@ int main (void)
   if (h)
      fprintf (stderr, "entry didn't timeout!.\n");
 
-#if defined(USE_FORTIFY)
-  Fortify_ListAllMemory();
-  Fortify_OutputStatistics();
-#endif
-
   return (0);
 }
 #endif /* USE_BSD_API */

@@ -163,9 +163,6 @@ struct ulong_long {
   #define _CRTDBG_MAP_ALLOC
   #undef _malloca            /* Avoid MSVC-9 <malloc.h>/<crtdbg.h> name-clash */
   #include <crtdbg.h>
-
-#elif defined(USE_FORTIFY)
-  #include "fortify.h"       /**< use Fortify malloc code (internal to watt-32) */
 #endif
 
 #ifndef FALSE

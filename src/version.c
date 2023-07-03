@@ -657,9 +657,6 @@ static const char *capabilities[] = {
 #if defined(USE_STATISTICS)
            "stat",
 #endif
-#if defined(USE_FORTIFY)
-           "fortify",
-#endif
 #if defined(USE_CRTDBG)
            "crt-dbg",
 #endif

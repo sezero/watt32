@@ -68,8 +68,6 @@ WORD multihomes        = 0;    /* We have more than 1 IP-addresses */
 BOOL dynamic_host      = 0;    /* Reverse resolve assigned IP to true FQDN */
 int  stkwalk_details   = 1;    /* Win: simple (1) or detailed(2) stack-trace. */
                                /* Effective only with USE_STACKWALKER. */
-int  fortify_fail_rate = 0;    /* The fail-rate for Fortify mallocer. */
-                               /* Effective only with USE_FORTIFY. */
 
 DWORD Cookies [MAX_COOKIES];
 WORD  last_cookie = 0;
@@ -847,8 +845,6 @@ static const struct config_table normal_cfg[] = {
        { "TCP.RECV_WIN",         ARG_FUNC, (void*)set_recv_win       },
 #endif
        { "MEMDBG.STACK_DUMP",    ARG_ATOI, (void*)&stkwalk_details   },  /* put this somewehere else */
-       { "MEMDBG.FORTIFY_FAIL",  ARG_ATOI, (void*)&fortify_fail_rate },  /* put this somewehere else */
-
        { NULL, 0, NULL }
      };
 

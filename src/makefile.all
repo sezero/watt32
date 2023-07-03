@@ -81,7 +81,7 @@ W32_NASM = nasm
 ASM_SOURCE = asmpkt.asm cpumodel.asm
 
 CORE_SOURCE = bsdname.c  btree.c    chksum.c   country.c  crc.c      dynip.c    \
-              echo.c     fortify.c  getopt.c   gettod.c   highc.c    idna.c     \
+              echo.c                getopt.c   gettod.c   highc.c    idna.c     \
               ip4_frag.c ip4_in.c   ip4_out.c  ip6_in.c   ip6_out.c  language.c \
               lookup.c   loopback.c misc.c     netback.c  oldstuff.c packet32.c \
               pc_cbrk.c  pcarp.c    pcbootp.c  pcbuf.c    pcconfig.c pcdbug.c   \
@@ -121,7 +121,7 @@ COMMON_OBJS = \
        $(OBJPATH)close.obj    $(OBJPATH)connect.obj   \
        $(OBJPATH)crc.obj      $(OBJPATH)dynip.obj     \
        $(OBJPATH)echo.obj     $(OBJPATH)fcntl.obj     \
-       $(OBJPATH)fortify.obj  $(OBJPATH)get_ai.obj    \
+                              $(OBJPATH)get_ai.obj    \
        $(OBJPATH)get_ip.obj   $(OBJPATH)get_ni.obj    \
        $(OBJPATH)get_xbyr.obj $(OBJPATH)geteth.obj    \
        $(OBJPATH)gethost.obj  $(OBJPATH)gethost6.obj  \

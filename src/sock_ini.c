@@ -928,9 +928,6 @@ int W32_CALL watt_sock_init (size_t tcp_Sock_size, size_t udp_Sock_size, size_t 
     dbug_open();
 #if defined(USE_BSD_API)
     _sock_dbug_open();
-#if defined(USE_FORTIFY)
-    Fortify_SetOutputFunc (bsd_fortify_print);
-#endif
 #endif
   }
 #endif

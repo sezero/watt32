@@ -90,9 +90,7 @@ void *_sock_calloc (size_t size, const char *file, unsigned line)
      SOCK_FATAL (("%s (%u) Fatal: heap corrupt\n", file, line));
 #endif
 
-#if defined(USE_FORTIFY)
-  ptr = Fortify_calloc (size, 1, file, line);
-#elif defined(_CRTDBG_MAP_ALLOC)  /* MSVC _DEBUG */
+#if defined(_CRTDBG_MAP_ALLOC)  /* MSVC _DEBUG */
   ptr = _calloc_dbg (size, 1, _NORMAL_BLOCK, file, (int)line);
 #else
   ptr = calloc (size, 1);
@@ -1300,88 +1298,6 @@ void _sock_crit_stop (void)
   }
 }
 
-
-#if defined(USE_FORTIFY) && defined(USE_DEBUG)
-/**
- * Exit handler for Fortify.
- * Traverse all sockets and print some state and memory statistics.
- */
-static void sock_fortify_exit (void)
-{
-  const Socket *sock;
-
-  if (!_sock_dbug_active())
-     return;
-
-  for (sock = sk_list; sock; sock = sock->next)
-  {
-    const char *type  = "<?>";
-    const void *wsock = NULL;
-    const _tcp_Socket *tcp;
-
-    if (sock->cookie != SAFETY_TCP ||
-        sock->fd < SK_FIRST        ||
-        sock->fd >= sk_last)
-    {
-      SOCK_DEBUGF (("\nsk_list munged; sock->fd = %d", sock->fd));
-      return;
-    }
-
-    switch (sock->so_type)
-    {
-      case SOCK_STREAM:
-           type  = "TCP";
-           wsock = sock->tcp_sock;
-           break;
-
-      case SOCK_DGRAM:
-           type  = "UDP";
-           wsock = sock->udp_sock;
-           break;
-
-      case SOCK_PACKET:
-           type  = "Packet";
-           wsock = sock->packet_pool;
-           break;
-
-      case SOCK_RAW:
-#if defined(USE_IPV6)
-           if (sock->so_family == AF_INET6)
-           {
-             type  = "Raw6";
-             wsock = sock->raw6_sock;
-           }
-           else
-#endif
-           {
-             type  = "Raw";
-             wsock = sock->raw_sock;
-           }
-           break;
-    }
-
-    SOCK_DEBUGF (("\n%2d: inuse %d, type %s, watt-sock %08lX",
-                  sock->fd, FD_ISSET(sock->fd,&inuse[0]) ? 1 : 0,
-                  type, (DWORD_PTR)wsock));
-
-    tcp = sock->tcp_sock;
-    if (tcp)
-    {
-      if (sock->so_state & SS_ISDISCONNECTING)
-           SOCK_DEBUGF ((" (closed"));
-      else if (sock->so_state & SS_ISLISTENING)
-           SOCK_DEBUGF ((" (listening"));
-      else SOCK_DEBUGF ((" (aborted?"));
-      SOCK_DEBUGF ((", %s)", tcpStateName(tcp->state)));
-    }
-  }
-
-  SOCK_DEBUGF ((" \n"));
-  Fortify_OutputStatistics();
-  Fortify_LeaveScope();
-}
-#endif /* USE_FORTIFY && USE_DEBUG */
-
 /*
  *  With MSVC using the 'Univeral CRT', the <errno.h> is in the Windows SDK.
  * Then there should be no relationship between 'ERRNO_VENDOR_VERSION' and
@@ -1558,11 +1474,6 @@ static BOOL init_sockets (void)
 
   DAEMON_ADD (sock_daemon);
 
-#if defined(USE_FORTIFY) && defined(USE_DEBUG)
-  Fortify_EnterScope();
-  Fortify_SetOutputFunc (bsd_fortify_print);
-  RUNDOWN_ADD (sock_fortify_exit, 140);
-#endif
   return (TRUE);
 }
 

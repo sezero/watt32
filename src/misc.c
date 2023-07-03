@@ -7,7 +7,7 @@
  *   - address validation for DOSX targets.
  *   - simple range limited random routine.
  *   - ffs() routine to find the first bit set.
- *   - initialize memory-debugger (Fortify/CrtDbg)
+ *   - initialize memory-debug; CrtDbg
  *   - stack checker exit routine for Borland/Watcom.
  */
 
@@ -478,9 +478,8 @@ FILE *fopen_excl (const char *file, const char *mode)
 #endif
 }
 
-
 /*
- * Consolidated memory debug for Fortify and MSVC CrtDbg.
+ * Consolidated memory debug for MSVC CrtDbg.
  */
 #if defined(USE_CRTDBG)  /* For _MSC_VER / clang-cl (Win32/Win64) only */
   #if !defined(_MSC_VER)
@@ -488,7 +487,6 @@ FILE *fopen_excl (const char *file, const char *mode)
   #endif
 
 /*
- * If using MSVCRTD debug version, there's little point using Fortify too.
  * USE_CRTDBG is set only when building with "cl -MDd" or "cl -MTd" (_DEBUG set).
  */
 #if !defined(_CRT_RPTHOOK_INSTALL) && (_MSC_VER < 1300)  /* VC headers too old */
@@ -644,49 +642,9 @@ void memdbg_post_init (void)
      SetCallStackOutputType (ACOutput_Advanced);
 #endif
 }
+#endif   /* USE_CRTDBG */
 
-#elif defined(USE_FORTIFY)
-/**
- * Report routine for Fortify. Report memory statistics and leaks
- * done in this scope (the core API level). BSD socket API sets
- * it's own scope with reporting done in sock_fortify_exit().
- */
-static void fortify_report (void)
-{
-  if (debug_on >= 2)
-  {
-    Fortify_SetOutputFunc ((Fortify_OutputFuncPtr)printf);
-    Fortify_OutputStatistics();
-  }
-  else
-    Fortify_SetOutputFunc (NULL);
-  Fortify_LeaveScope();
-}
-
-void memdbg_init (void)
-{
-  static int done = 0;
-
-#if defined(USE_DEBUG) && defined(USE_BSD_API)
-  Fortify_SetOutputFunc (bsd_fortify_print);
-#endif
-
-  if (done)
-     return;
-  done = 1;
-  Fortify_EnterScope();
-
-  RUNDOWN_ADD (fortify_report, 311);
-}
-
-void memdbg_post_init (void)
-{
-  if (fortify_fail_rate)
-     Fortify_SetAllocateFailRate (fortify_fail_rate);
-}
-#endif   /* USE_CRTDBG || USE_FORTIFY */
-
-#if !defined(USE_CRTDBG) && !defined(USE_FORTIFY)
+#if !defined(USE_CRTDBG)
   void memdbg_init (void)      {}
   void memdbg_post_init (void) {}
 #endif

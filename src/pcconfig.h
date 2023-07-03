@@ -33,7 +33,6 @@ extern WORD  last_cookie;
 extern int   ctrace_on;
 extern BOOL  dynamic_host;
 extern int   stkwalk_details;
-extern int   fortify_fail_rate;
 
 extern const struct config_table *watt_init_cfg;
 
