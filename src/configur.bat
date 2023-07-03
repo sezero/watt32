@@ -280,8 +280,9 @@ echo neterr.c: build/clang/syserr.c >> build\clang\watt32.dep
 echo Run GNU make to make target(s):
 echo   E.g. "make -f clang-release_32.mak"
 echo     or "make -f clang-release_64.mak"
-echo Depending on which clang-cl.exe (32 or 64-bit) is first on your PATH, use the
-echo correct 'clang-release_32.mak' or 'clang-release_64.mak'.
+echo Remember to add these:
+echo   e.g. 'set CLANG_32=f:\ProgramFiler\LLVM-16.0.0\win32'
+echo   e.g. 'set CLANG_64=f:\ProgramFiler\LLVM-16.0.0\win64'
 goto next
 
 ::--------------------------------------------------------------------------

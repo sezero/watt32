@@ -114,6 +114,13 @@ if %BUILDER%. == borland. set INCLUDE=%BCCDIR%\include\windows;%BCCDIR%\include\
 set PATH=%PATH%;c:\Program Files\LLVM\bin
 
 ::
+:: These are needed by 'clang-release_32.mak' and 'clang-release_64.mak'
+::
+set CLANG_32=c:\Program Files (x86)\LLVM
+set CLANG_64=c:\Program Files\LLVM
+
+
+::
 :: And append the '%WATCOM%\binnt' to the 'PATH' since Watcom has an 'cl.exe'
 :: which we do not want to use for 'BUILDER=visualc'.
 ::

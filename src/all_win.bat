@@ -73,16 +73,25 @@ call :do_make
 set MAKE_CMD=nmake.exe -nologo -f visualc-debug_%BITS%.mak
 call :do_make
 
-set MAKE_CMD=make.exe -f clang-release_%BITS%.mak
+set MAKE_CMD=make.exe -f clang-release_32.mak CPU=x86
 call :do_make
 
-set MAKE_CMD=make.exe -f clang-debug_%BITS%.mak
+set MAKE_CMD=make.exe -f clang-release_64.mak CPU=x64
+call :do_make
+
+set MAKE_CMD=make.exe -f clang-debug_32.mak CPU=x86
+call :do_make
+
+set MAKE_CMD=make.exe -f clang-debug_64.mak CPU=x64
 call :do_make
 
 set MAKE_CMD=wmake.exe -h -f watcom_w.mak
 call :do_make
 
-set MAKE_CMD=make.exe -f MinGW64_%BITS%.mak
+set MAKE_CMD=make.exe -f MinGW64_32.mak
+call :do_make
+
+set MAKE_CMD=make.exe -f MinGW64_64.mak
 call :do_make
 
 if %HAVE_CYGWIN32%. == 1. (

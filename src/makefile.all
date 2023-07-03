@@ -286,7 +286,7 @@ LIB_ARGS = $(OBJPATH)ar.arg
 TARGETS = $(STAT_LIB)
 
 all: $(PKT_STUB) $(OBJPATH)cflags.h $(TARGETS)
-	@echo All done
+	@echo "All done"
 
 $(STAT_LIB): $(OBJS) $(LIB_ARGS)
 	$(AR) $@ @$(LIB_ARGS)
@@ -309,7 +309,7 @@ install: all
 
 clean:
 	rm -f $(TARGETS) $(OBJPATH)*.o $(OBJPATH)*.iS $(OBJPATH)*.arg $(PKT_STUB) $(OBJPATH)cflags.h
-	@echo Cleaning done
+	@echo "Cleaning done"
 
 -include build/djgpp/watt32.dep
 
@@ -621,7 +621,8 @@ TARGETS = $(STAT_LIB) $(IMP_LIB) $(WATT_DLL)
 TARGETS = $(STAT_LIB)
 @endif
 
-all: $(PKT_STUB) $(OBJPATH)cflags.h $(OBJPATH)cflagsbf.h $(TARGETS)
+all: $(PKT_STUB) $(OBJPATH)cflags.h $(OBJPATH)cflagsbf.h $(TARGETS) .SYMBOLIC
+	@echo All done
 
 @ifdef WIN32
 $(IMP_LIB): $(WATT_DLL)
@@ -797,7 +798,7 @@ $(C_ARGS): $(MAKE_FILE)
 	@echo -c $(CFLAGS) > $@
 
 $(LINK_ARGS): $(MAKE_FILE)
-	@echo $(OBJS) $(RESOURCE) $(EX_LIBS) > $@
+	@echo $(LDFLAGS) $(OBJS) $(RESOURCE) $(EX_LIBS) > $@
 
 #
 # Static libs
@@ -811,7 +812,7 @@ $(STAT_LIB): $(OBJS)
 # Import libs + DLLs
 #
 $(WATT_DLL) $(IMP_LIB): $(OBJS) $(RESOURCE) $(LINK_ARGS)
-	link $(LDFLAGS) -out:$(WATT_DLL) -implib:$(IMP_LIB) @$(LINK_ARGS) > link.tmp
+	link -out:$(WATT_DLL) -implib:$(IMP_LIB) @$(LINK_ARGS) > link.tmp
 	type link.tmp >> $(WATT_DLL:.dll=.map)
 	@del $(IMP_LIB:.lib=.exp)
 	touch $(IMP_LIB)
@@ -836,13 +837,21 @@ clean:
 	- @del $(OBJPATH)*.lst
 	- @del $(RESOURCE)
 	- @del vc1*.pdb $(IMP_LIB:.lib=.exp) $(WATT_DLL:.dll=.pdb)
-	@echo Cleaning done
+	@echo "Cleaning done"
 
 ########################################################################
 
 @elifdef CLANG
 
-CC     = clang-cl
+ifeq ($(CLANG_$(BITS)),)
+  $(error 'CLANG_32' or 'CLANG_64' must be set in your environment to point to the 32/64-bit root of your clang-cl installation.)
+endif
+
+CLANG_ROOT = $(realpath $(CLANG_$(BITS)))
+
+$(info Detected 'CLANG_ROOT= $(CLANG_ROOT)' for clang-cl)
+
+CC     = $(CLANG_ROOT)/bin/clang-cl
 CFLAGS = -nologo -Zi -Zo -GS- -I. -I../inc \
          -DWATT32_BUILD                    \
          -D_CRT_SECURE_NO_WARNINGS         \
@@ -874,7 +883,16 @@ USE_UBSAN ?= 0
 # Enable full Microsoft Visual C++ compatibility
 #
 CFLAGS += -fms-compatibility
-LDFLAGS = -dll -nologo -map -debug -debugtype:cv -incremental:no -verbose
+LDFLAGS = -dll -nologo -map -debug -debugtype:cv -incremental:no -verbose -machine:$(CPU)
+
+#
+# Since either a 32-bit or a 64-bit 'clang-cl.exe' can be used
+# without the use of the 'vcvarsall.bat' non-sense, we MUST
+# define the paths to the correct libraries here:
+#
+LDFLAGS += -libpath:$(VCToolkitInstallDir)\lib\$(CPU) \
+           -libpath:$(WindowsSdkDir)\lib\$(WindowsSdkVer)\ucrt\$(CPU) \
+           -libpath:$(WindowsSdkDir)\lib\$(WindowsSdkVer)\um\$(CPU)
 
 #
 # Enable one of the above as e.g:
@@ -898,17 +916,9 @@ ifeq ($(USE_UBSAN),1)
 endif
 
 ifneq ($(USE_ASAN)$(USE_UBSAN),00)
-  ifeq ($(CLANG_$(BITS)),)
-    $(error 'CLANG_32' or 'CLANG_64' must be set in your environment to point to the 32/64-bit root of your clang-cl installation.)
-  endif
-
   ifeq ($(CLANG_MAJOR_VER),)
     $(error 'CLANG_MAJOR_VER' must be set in your environment.)
   endif
-
-  CLANG_ROOT = $(realpath $(CLANG_$(BITS)))
-
-  $(info Detected '$(CLANG_ROOT)' for 'USE_ASAN=$(USE_ASAN)' and 'USE_UBSAN=$(USE_UBSAN)'.)
 
   #
   # The default for 'x86 / Release' is 'clang_rt.asan_dynamic_runtime_thunk-i386.lib'
@@ -978,7 +988,7 @@ LINK_ARGS = $(OBJPATH)link.arg
 TARGETS = $(STAT_LIB) $(IMP_LIB) $(WATT_DLL)
 
 all: $(OBJPATH)cflags.h $(OBJPATH)cflagsbf.h $(TARGETS)
-	@echo All done
+	@echo "All done"
 
 #
 # Static library rules:
@@ -992,7 +1002,7 @@ $(STAT_LIB): $(OBJS) $(LIB_ARGS)
 $(IMP_LIB): $(WATT_DLL)
 
 $(WATT_DLL): $(OBJS) $(RESOURCE) $(LINK_ARGS)
-	link $(LDFLAGS) -machine:$(CPU) -out:$@ -implib:$(IMP_LIB) @$(LINK_ARGS) > link.tmp
+	link -out:$@ -implib:$(IMP_LIB) @$(LINK_ARGS) > link.tmp
 	cat link.tmp >> $(WATT_DLL:.dll=.map)
 	rm -f $(IMP_LIB:.lib=.exp)
 
@@ -1009,7 +1019,7 @@ $(OBJPATH)%.obj: %.asm
 
 clean:
 	- rm -f $(TARGETS) $(OBJPATH)*.obj $(OBJPATH)*.arg $(OBJPATH)cflags.h $(OBJPATH)cflagsbf.h $(RESOURCE)
-	@echo Cleaning done
+	@echo "Cleaning done"
 
 ########################################################################
 
@@ -1099,7 +1109,7 @@ $(STAT_LIB): $(OBJS)
 $(IMP_LIB): $(WATT_DLL)
 
 $(WATT_DLL): $(OBJS) $(RESOURCE) $(LINK_ARGS)
-	$(OLINK) -o $@ $(LDFLAGS) @$(LINK_ARGS) > $(WATT_DLL:.dll=.map)
+	$(OLINK) -o $@ @$(LINK_ARGS) > $(WATT_DLL:.dll=.map)
 	@echo
 
 $(OBJDIR)/cpumodel.obj: cpumodel.nas
@@ -1177,7 +1187,7 @@ LINK_ARGS = $(OBJPATH)ld.arg
 TARGETS = $(STAT_LIB) $(IMP_LIB) $(WATT_DLL)
 
 all: $(OBJPATH)cflags.h $(OBJPATH)cflagsbf.h $(TARGETS)
-	@echo All done
+	@echo "All done"
 
 $(STAT_LIB): $(OBJS) $(LIB_ARGS)
 	$(AR) $@ @$(LIB_ARGS)
@@ -1200,7 +1210,7 @@ $(OBJPATH)%.o: %.S $(C_ARGS)
 
 clean:
 	rm -f $(TARGETS) $(OBJPATH)*.o $(OBJPATH)*.iS $(OBJPATH)*.arg $(RESOURCE) $(OBJPATH)cflags.h $(OBJPATH)cflagsbf.h
-	@echo Cleaning done
+	@echo "Cleaning done"
 
 ########################################################################
 
@@ -1263,7 +1273,7 @@ LINK_ARGS = $(OBJPATH)ld.arg
 TARGETS = $(STAT_LIB) $(IMP_LIB) $(WATT_DLL)
 
 all: $(OBJPATH)cflags.h $(OBJPATH)cflagsbf.h $(TARGETS)
-	@echo All done
+	@echo "All done"
 
 $(STAT_LIB): $(OBJS) $(LIB_ARGS)
 	$(AR) $@ @$(LIB_ARGS)
@@ -1286,7 +1296,7 @@ $(OBJPATH)%.o: %.S $(C_ARGS)
 
 clean:
 	rm -f $(TARGETS) $(OBJPATH)*.arg $(OBJPATH)*.o $(OBJPATH)*.iS $(RESOURCE) $(OBJPATH)cflags.h $(OBJPATH)cflagsbf.h
-	@echo Cleaning done
+	@echo "Cleaning done"
 
 ########################################################################
 
@@ -1319,7 +1329,7 @@ LINK_ARGS = $(OBJPATH)ld.arg
 TARGETS = $(STAT_LIB) $(IMP_LIB) $(WATT_DLL)
 
 all: $(OBJPATH)cflags.h $(OBJPATH)cflagsbf.h $(TARGETS)
-	@echo All done
+	@echo "All done"
 
 $(STAT_LIB): $(OBJS) $(LIB_ARGS)
 	$(AR) $@ @$(LIB_ARGS)
@@ -1342,7 +1352,7 @@ $(OBJPATH)%.o: %.S $(C_ARGS)
 
 clean:
 	rm -f $(TARGETS) $(OBJPATH)*.o $(OBJPATH)*.iS $(OBJPATH)*.arg $(RESOURCE) $(OBJPATH)cflags.h $(OBJPATH)cflagsbf.h
-	@echo Cleaning done
+	@echo "Cleaning done"
 
 ########################################################################
 
@@ -1438,7 +1448,7 @@ lang.c: lang.l
       $(foreach f, $(2), $(file >> $(1),$(strip $(f))) )
     endef
 
-    else
+  else
     #
     # For a buggy (?) GNU-make. E.g. on MacOS:
     #
@@ -1456,6 +1466,9 @@ $(LIB_ARGS): $(OBJS) $(MAKEFILE_LIST)
 @ifdef HIGHC DJGPP
 $(LINK_ARGS): $(OBJS) $(MAKEFILE_LIST)
 	$(call create_response_file, $@, $(OBJS))
+@elifdef CLANG
+$(LINK_ARGS): $(OBJS) $(RESOURCE) $(MAKEFILE_LIST)
+	$(call create_response_file, $@, $(LDFLAGS) $(OBJS) $(RESOURCE) $(EX_LIBS))
 @else
 $(LINK_ARGS): $(OBJS) $(RESOURCE) $(MAKEFILE_LIST)
 	$(call create_response_file, $@, $(OBJS) $(RESOURCE) $(EX_LIBS))

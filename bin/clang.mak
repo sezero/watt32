@@ -34,14 +34,30 @@ GEOIP_LIB = 2
 #
 # Use "Address Sanitizer"?
 #
-USE_ASAN  ?= 0
+USE_ASAN ?= 0
 
 #
 # Use "Undefined Behavior Sanitizer (UBSan)"?
 #
 USE_UBSAN ?= 0
 
-CC = clang-cl
+ifeq ($(CPU),x86)
+  BITS = 32
+else ifeq ($(CPU),x64)
+  BITS = 64
+else
+  $(error 'CPU' must be 'x86' or 'x64')
+endif
+
+ifeq ($(CLANG_$(BITS)),)
+  $(error 'CLANG_32' or 'CLANG_64' must be set in your environment to point to the 32/64-bit root of your clang-cl installation.)
+endif
+
+CLANG_ROOT = $(realpath $(CLANG_$(BITS)))
+
+$(info Detected 'CLANG_ROOT= $(CLANG_ROOT)' for clang-cl)
+
+CC = $(CLANG_ROOT)/bin/clang-cl
 
 ifeq ($(USE_DEBUG_LIB),1)
   CFLAGS     = -MDd
@@ -59,6 +75,16 @@ CFLAGS += -W3 -O2 -I../inc -D_CRT_SECURE_NO_WARNINGS -D_CRT_NONSTDC_NO_WARNINGS 
 CFLAGS += -Wno-invalid-source-encoding
 
 LDFLAGS = -nologo -map -machine:$(CPU)
+
+
+#
+# Since either a 32-bit or a 64-bit 'clang-cl.exe' can be used
+# without the use of the 'vcvarsall.bat' non-sense, we MUST
+# define the paths to the correct libraries here:
+#
+LDFLAGS += -libpath:$(VCToolkitInstallDir)\lib\$(CPU) \
+           -libpath:$(WindowsSdkDir)\lib\$(WindowsSdkVer)\ucrt\$(CPU) \
+           -libpath:$(WindowsSdkDir)\lib\$(WindowsSdkVer)\um\$(CPU)
 
 ifeq ($(USE_STATIC_LIB),1)
   CFLAGS   += -DWATT32_STATIC
@@ -79,21 +105,23 @@ ifeq ($(USE_UBSAN),1)
 endif
 
 ifneq ($(USE_ASAN)$(USE_UBSAN),00)
-  ifeq ($(CLANG_$(BITS)),)
-    $(error 'CLANG_32' or 'CLANG_64' must be set in your environment to point to the 32/64-bit root of your clang-cl installation.)
-  endif
-
   ifeq ($(CLANG_MAJOR_VER),)
     $(error 'CLANG_MAJOR_VER' must be set in your environment.)
   endif
 
-  CLANG_ROOT = $(realpath $(CLANG_$(BITS)))
-
-  $(info Detected '$(CLANG_ROOT)' for 'USE_ASAN=$(USE_ASAN)' and 'USE_UBSAN=$(USE_UBSAN)'.)
-
   #
   # The default for 'x86 / Release' is 'clang_rt.asan_dynamic_runtime_thunk-i386.lib'
-  # (and clang_rt.asan_dbg_dynamic_runtime_thunk-i386.lib for 'x86 / Debug')
+  # (and clang_rt.asan_dbg_dynamic_runtime_thunk-i386.lib for 'x86 / Debug').
+  #
+  # If the default '%CPU%' does not match the compiled '%CPU', ensure the
+  # needed .DLLs are copied to a place on the %PATH%.
+  # For 'x86':
+  #   %VCToolkitInstallDir%\bin\HostX64\x86\clang_rt.asan_dbg_dynamic-i386.dll ; for '_DEBUG'-mode
+  #   %VCToolkitInstallDir%\bin\HostX64\x86\clang_rt.asan_dynamic-i386.dll     ; for '_RELEASE'-mode
+  #
+  # and 'x64':
+  #   %VCToolkitInstallDir%\bin\HostX64\x64\clang_rt.asan_dbg_dynamic-x86_64.dll ; for '_DEBUG'-mode
+  #   %VCToolkitInstallDir%\bin\HostX64\x64\clang_rt.asan_dynamic-x86_64.dll     ; for '_RELEASE'-mode
   #
   # Let the linker select the ASAN libraries.
   #
