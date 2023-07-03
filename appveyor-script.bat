@@ -32,7 +32,7 @@ set URL_LLVM_EXE=https://prereleases.llvm.org/win-snapshots/LLVM-10.0.0-e20a1e48
 :: locally.
 :: Change this for an 'echo.exe' with colour support. Like Cygwin.
 ::
-set _ECHO=%MSYS2_ROOT%\usr\bin\echo.exe -e
+set _ECHO=%CYGWIN_ROOT%\bin\echo.exe -e
 
 if %APPVEYOR_PROJECT_NAME%. == . (
   set LOCAL_TEST=1
@@ -104,6 +104,8 @@ set BCCDIR=%CI_ROOT%
 if %BUILDER%. == borland. set CBUILDER_IS_LLVM_BASED=1
 if %BUILDER%. == borland. set INCLUDE=%BCCDIR%\include\windows;%BCCDIR%\include\windows\sdk;%INCLUDE%
 
+if %LOCAL_TEST% == 1 goto local_test_1
+
 ::
 :: Shit for brains 'cmd' cannot have this inside a 'if x (' block since
 :: on a AppVeyor build several "c:\Program Files (x86)\Microsoft xxx" strings
@@ -116,9 +118,8 @@ set PATH=%PATH%;c:\Program Files\LLVM\bin
 ::
 :: These are needed by 'clang-release_32.mak' and 'clang-release_64.mak'
 ::
-set CLANG_32=c:\Program Files (x86)\LLVM
-set CLANG_64=c:\Program Files\LLVM
-
+set CLANG_32="c:\Program Files (x86)\LLVM"
+set CLANG_64="c:\Program Files\LLVM"
 
 ::
 :: And append the '%WATCOM%\binnt' to the 'PATH' since Watcom has an 'cl.exe'
@@ -130,6 +131,8 @@ set PATH=%PATH%;%WATCOM%\binnt
 :: And append the '%BCCDIR%\bin' to the 'PATH' too.
 ::
 set PATH=%PATH%;%BCCDIR%\bin
+
+:local_test_1
 
 ::
 :: In case my curl was built with Wsock-Trace

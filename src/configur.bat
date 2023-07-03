@@ -281,8 +281,8 @@ echo Run GNU make to make target(s):
 echo   E.g. "make -f clang-release_32.mak"
 echo     or "make -f clang-release_64.mak"
 echo Remember to add these:
-echo   e.g. 'set CLANG_32=f:\ProgramFiler\LLVM-16.0.0\win32'
-echo   e.g. 'set CLANG_64=f:\ProgramFiler\LLVM-16.0.0\win64'
+echo   e.g. 'set CLANG_32=c:\ProgramFiles\LLVM-16.0.0\win32'
+echo   e.g. 'set CLANG_64=c:\ProgramFiles\LLVM-16.0.0\win64'
 goto next
 
 ::--------------------------------------------------------------------------
