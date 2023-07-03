@@ -548,7 +548,7 @@ sysdep.h: ../wattcp.h ../timer.h  \
                netdb.h               \
                resolv.h)
 
-../wattcp.h: ../target.h ../config.h ../fortify.h \
+../wattcp.h: ../target.h ../config.h \
               $(addprefix ../../inc/, \
                 tcp.h                 \
                 sys/w32api.h          \
@@ -699,7 +699,7 @@ udp_test_w.exe: sysdep.h
 #
 # A 'USE_ASTYLE_FORMAT = 1' needs 'astyle.exe' on PATH and a '%HOME/.astylerc'.
 #
-# Use as e.g.
+# Use as e.g.:
 #   make -f clang_32.mak cpu.i
 #
 # to see the gory details of what gets compiled.
@@ -783,46 +783,29 @@ endif
 define CPP_FILTER_PY
   import sys, os
 
-  try:
-    import ntpath
-  except ImportError as e:
-    print ("Failed to import ntpath: %s" % e)
-    sys.exit(1)
-
-  def _win32_abspath (path):
-    path = ntpath.abspath (path)
-    return path.replace ('\\', '/')
-
-  cwd = _win32_abspath (os.getcwd()) + '/'
-
-  last_line  = '??'
-  last_fname = '??'
   empty_lines = 0
-
   while True:
     line = sys.stdin.readline()
     if not line:
-      break
-    if line.startswith('\n') or line.startswith('\r'):
-      empty_lines += 1
-      continue
+       break
+    line = line.rstrip()
+    if line == "":
+       empty_lines += 1
+       continue
 
-    line = line.replace ("\\\\", "/")
-    fname = None
-    quote = line.find ('\"')
+    #
+    # MSVC or clang-cl 'line' directive
+    #
+    if line.lstrip().startswith("#line") or line.lstrip().startswith("# "):
+       line = line.replace (r"\\", "/")
 
-    if line.startswith ("#line ") and quote > 0:
-      fname = _win32_abspath (line[quote:])
-      last_fname = fname
+    print (line)
 
-    if line.strip() != '' and last_line != '':
-      if fname is None or fname != last_fname:
-        print (line, end="")
-      if line.strip() == "}":  # Print a new-line after functions
-        print ("")
+    #
+    # Print a newline after a functions or structs
+    #
+    if line == "}" or line == "};":
+       print ("")
 
-    last_line = line
-
-  if empty_lines > 0:
-    print ("Removed %d empty lines." % empty_lines, file=sys.stderr)
+  print ("Removed %d empty lines." % empty_lines, file=sys.stderr)
 endef
