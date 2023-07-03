@@ -41,7 +41,6 @@
   #include "pcdns.h"
   #include "pctcp.h"
   #include "misc.h"
-  #include "misc.c"   /* Because misc.c must be compiled without '__declspec(thread)' */
 %}
 
 #define WINWATT   64
@@ -72,12 +71,15 @@
 
 // extern int sock_init (void);
 
-W32_FUNC void        W32_CALL dbug_init (void);
-W32_FUNC DWORD       W32_CALL lookup_host (const char *host, char *ip_str);
-W32_FUNC int         W32_CALL _ping     (DWORD host, DWORD num, const BYTE *pattern, size_t len);
-W32_FUNC DWORD       W32_CALL _chk_ping (DWORD host, DWORD *ping_num);
-W32_FUNC void        W32_CALL add_ping  (DWORD host, DWORD tim, DWORD number);
-W32_FUNC WORD        W32_CALL tcp_tick  (sock_type *s);
+W32_FUNC void  W32_CALL dbug_init (void);
+W32_FUNC DWORD W32_CALL lookup_host (const char *host, char *ip_str);
+W32_FUNC DWORD W32_CALL _chk_ping (DWORD host, DWORD *ping_num);
+W32_FUNC void  W32_CALL add_ping  (DWORD host, DWORD tim, DWORD number);
+W32_FUNC WORD  W32_CALL tcp_tick  (sock_type *s);
+W32_FUNC int   W32_CALL _ping     (DWORD       host,
+                                   int         num,  /* is actually a 'DWORD' */
+                                   const BYTE *pattern,
+                                   size_t      len);
 
 W32_FUNC const char *W32_CALL wattcpVersion (void);      /* Watt-32 target version/date */
 W32_FUNC const char *W32_CALL wattcpCapabilities (void); /* what features was been compiled in */

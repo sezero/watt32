@@ -43,13 +43,6 @@ endef
 # as non-default.
 #
 
-#
-# This assumes you have a MSys/Cygwin's 'echo.exe' program with ANSI colour support.
-#
-BRIGHT_GREEN = \e[1;32m
-BRIGHT_WHITE = \e[1;37m
-green_msg    = @echo -e "$(BRIGHT_GREEN)$(1)\e[0m"
-
 export CL=
 
 #
@@ -58,6 +51,17 @@ export CL=
 # call the 'vcvarsall.bat x86' first.
 #
 CPU ?= x86
+
+ifeq ($(CPU),x86)
+  BITS          = 32
+  WINDRES_FLAGS = --target=pe-i386
+
+else ifeq ($(CPU),x64)
+  BITS          = 64
+  WINDRES_FLAGS = --target=pe-x86-64
+else
+  $(error CPU must be 'x86' or 'x64')
+endif
 
 #
 # The only option at the moment:
@@ -74,22 +78,25 @@ PY_MAJOR_VER = $(shell $(PYTHON) -c "import sys; print(sys.version_info.major)" 
 PY_MINOR_VER = $(shell $(PYTHON) -c "import sys; print(sys.version_info.minor)" )
 
 ifeq ($(CC),cl)
+  OBJ_DIR = MSVC_obj
   CFLAGS  = -nologo -MD -Ox -Zi -W3
   RCFLAGS = -nologo -D_MSC_VER
   LDFLAGS = -nologo -debug -dll -map -verbose -incremental:no -nodefaultlib:uuid.lib -libpath:$(PY_ROOT)/libs
-  EX_LIBS = $(wildcard $(PY_ROOT)/libs/python$(PY_MAJOR_VER).lib)
+  PY_LIB  = $(wildcard $(PY_ROOT)/libs/python$(PY_MAJOR_VER).lib)
 
 else ifeq ($(CC),clang-cl)
+  OBJ_DIR = clang_obj
   CFLAGS  = -nologo -MD -Ox -Zi -W3
   RCFLAGS = -nologo -D__clang__
   LDFLAGS = -nologo -debug -dll -map -verbose -incremental:no -nodefaultlib:uuid.lib -libpath:$(PY_ROOT)/libs
-  EX_LIBS = $(wildcard $(PY_ROOT)/libs/python$(PY_MAJOR_VER).lib)
+  PY_LIB  = $(wildcard $(PY_ROOT)/libs/python$(PY_MAJOR_VER).lib)
 
 else ifeq ($(CC),gcc)
-  CFLAGS =  -m32 -Wall -O2 -s
-  RCFLAGS = -O COFF --target=pe-i386 -D__MINGW32__
-  LDFLAGS = -m32 -s -shared -static-libgcc -Wl,--print-map
-  EX_LIBS  = $(wildcard $(PY_ROOT)/libs/libpython$(PY_MAJOR_VER).a)
+  OBJ_DIR = gcc_obj
+  CFLAGS  =  -m$(BITS) -Wall -O2 -s
+  RCFLAGS = -O COFF -D__MINGW32__ $(WINDRES_FLAGS)
+  LDFLAGS = -m$(BITS) -s -shared -static-libgcc -Wl,--print-map
+  PY_LIB  = $(wildcard $(PY_ROOT)/libs/libpython$(PY_MAJOR_VER)*.a)
 
 else
   $(error $(Usage))
@@ -100,7 +107,8 @@ RCFLAGS += -I../../inc \
 
 CFLAGS  += -I.. -I../../inc     \
            -I$(PY_ROOT)/include \
-           -DPy_ENABLE_SHARED
+           -DPy_ENABLE_SHARED   \
+           -DSWIG
 
 # CFLAGS += -DSWIG_LINK_RUNTIME \
 #           -DSWIGRUNTIME_DEBUG
@@ -121,117 +129,159 @@ ifeq ($(WATT32_STATIC),1)
   CFLAGS += -DWATT32_STATIC
 
   ifeq ($(CC),cl)
-    EX_LIBS += ../../lib/$(CPU)/wattcpvc.lib
+    W32_LIB = ../../lib/$(CPU)/wattcpvc.lib
   else ifeq ($(CC),clang-cl)
-    EX_LIBS += ../../lib/$(CPU)/wattcp_clang.lib
+    W32_LIB = ../../lib/$(CPU)/wattcp_clang.lib
   else
-    EX_LIBS += ../../lib/$(CPU)/libwatt32.a
+    W32_LIB = ../../lib/$(CPU)/libwatt32.a
   endif
 
   ifeq ($(CC),gcc)
-    SYS_LIBS = -luser32 -ladvapi32
+    OS_LIBS = -luser32 -ladvapi32
   else
-    SYS_LIBS = user32.lib advapi32.lib
+    OS_LIBS = user32.lib advapi32.lib
   endif
 
 else
   CFLAGS  += -DWATT32_BUILD
-  SYS_LIBS =
+  OS_LIBS =
 
   ifeq ($(CC),cl)
-    EX_LIBS += ../../lib/$(CPU)/wattcpvc_imp.lib
+    W32_LIB = ../../lib/$(CPU)/wattcpvc_imp.lib
   else ifeq ($(CC),clang-cl)
-    EX_LIBS += ../../lib/$(CPU)/wattcp_clang_imp.lib
+    W32_LIB = ../../lib/$(CPU)/wattcp_clang_imp.lib
   else
-    EX_LIBS += ../../lib/$(CPU)/libwatt32.dll.a
+    W32_LIB = ../../lib/$(CPU)/libwatt32.dll.a
   endif
 endif
 
 SWIG_FLAGS = -macroerrors -python $(filter -D% -I%, $(CFLAGS)) # -nodefaultctor -nodefaultdtor -debug-symbols
 SWIG_FLAGS += -w451 -w454
 
-GENERATED = watt32_swig_wrap.c watt32.py check-for-unused-libs.py
-
-all: py_info _watt32.pyd epilogue
+all: py_info py_check _watt32.pyd epilogue
 
 epilogue:
-	$(call green_msg,Do a $(BRIGHT_WHITE)$(PYTHON) ./runme.py -d www.google.com $(BRIGHT_GREEN)to test it.)
-	$(call green_msg,Do a $(BRIGHT_WHITE)make CC=$(CC) install $(BRIGHT_GREEN)to install it.)
+	$(call green_msg, Do a $(BRIGHT_WHITE)$(PYTHON) ./runme.py -d www.google.com $(BRIGHT_GREEN)to test it.)
+	$(call green_msg, Do a $(BRIGHT_WHITE)make CC=$(CC) install $(BRIGHT_GREEN)to install it.)
 
 py_info:
-	$(call green_msg,Detected Python variables:)
-	$(call green_msg,  PY_ROOT:      $(BRIGHT_WHITE)$(PY_ROOT).)
-	$(call green_msg,  PY_MAJOR_VER: $(BRIGHT_WHITE)$(PY_MAJOR_VER).)
-	$(call green_msg,  PY_MINOR_VER: $(BRIGHT_WHITE)$(PY_MINOR_VER).)
+	$(call green_msg, Detected Python variables:)
+	$(call green_msg0,  PY_ROOT:      $(BRIGHT_WHITE)$(PY_ROOT).)
+	$(call green_msg0,  PY_MAJOR_VER: $(BRIGHT_WHITE)$(PY_MAJOR_VER).)
+	$(call green_msg0,  PY_MINOR_VER: $(BRIGHT_WHITE)$(PY_MINOR_VER).)
 
-ifeq ($(CC),gcc)
-  _watt32.pyd: watt32_swig_wrap.o _watt32.res $(EX_LIBS)
-	$(call green_msg,Linking $@)
-	$(CC) -o $@ $(LDFLAGS) $^ $(SYS_LIBS) > _watt32.map
-	@echo
-
-  _watt32.res: _watt32.rc
-	windres -o $@ $(RCFLAGS) $<
-	@echo
-
-  install: _watt32.pyd watt32.py
-	cp --update _watt32.pyd  $(PY_ROOT)/DLLs
-	cp --update watt32.py    $(PY_ROOT)/Lib/site-packages
-
+py_check:
+ifeq ($(PY_LIB),)
+	$(error A suiteable 'PY_LIB' was not found)
 else
-  _watt32.pyd: watt32_swig_wrap.obj _watt32.res  $(EX_LIBS) | check-for-unused-libs.py
-	$(call green_msg,Linking $@)
-	link $(LDFLAGS) $^ -out:$@ $(SYS_LIBS) > link.tmp
-	@cat link.tmp >> _watt32.map
-	@rm -f _watt32.{exp,lib}
-	@$(PYTHON) check-for-unused-libs.py link.tmp
+	$(call green_msg0,  PY_LIB:       $(BRIGHT_WHITE)$(PY_LIB).)
+endif
 
-  _watt32.res: _watt32.rc
-	rc -Fo $@ $(RCFLAGS) $<
+_watt32.pyd: $(OBJ_DIR)/watt32_swig_wrap.o $(OBJ_DIR)/_watt32.res $(W32_LIB) $(PY_LIB) | check-for-unused-libs.py
+	$(call link_PYD, $@, $^ $(OS_LIBS))
+
+$(OBJ_DIR)/_watt32.res: _watt32.rc | $(OBJ_DIR)
+	$(call create_res, $@, $<)
+
+$(OBJ_DIR)/watt32.py: $(OBJ_DIR)/watt32_swig_wrap.c
+
+$(OBJ_DIR)/watt32_swig_wrap.c: watt32_swig.i | $(OBJ_DIR)
+	$(call green_msg, Generating Swig wrapper $@)
+	swig $(SWIG_FLAGS) -o $@ watt32_swig.i
 	@echo
 
-  install: _watt32.pyd watt32.py
-	cp --update _watt32.{pyd,pdb} $(PY_ROOT)/DLLs
-	cp --update watt32.py         $(PY_ROOT)/Lib/site-packages
+$(OBJ_DIR)/%.o: $(OBJ_DIR)/%.c | $(OBJ_DIR)
+	$(call compile, $@, $<)
+
+$(OBJ_DIR):
+	mkdir $@
+
+clean:
+	rm -f link.tmp check-for-unused-libs.py *.pdb *.pyc vc1*.pdb \
+	   _watt32.{exp,lib,map,pyc} watt32.pyo
+	rm -fr $(OBJ_DIR) __pycache__
+
+vclean realclean: clean
+	rm -f _watt32.pyd
+
+install: _watt32.pyd $(OBJ_DIR)/watt32.py
+	cp --update $(OBJ_DIR)/watt32.py  $(PY_ROOT)/Lib/site-packages
+	cp --update _watt32.pyd           $(PY_ROOT)/DLLs
+ifneq ($(CC),gcc)
+	cp --update _watt32.pdb  $(PY_ROOT)/DLLs
 endif
 
 uninstall:
 	rm -f $(PY_ROOT)/dlls/_watt32.{pyd,pdb}
 	rm -f $(PY_ROOT)/Lib/site-packages/watt32.py
 
-watt32.py: watt32_swig_wrap.c
-
-watt32_swig_wrap.c: watt32_swig.i
-	$(call green_msg,Generating Swig wrapper $@)
-	swig $(SWIG_FLAGS) -o $@ watt32_swig.i
-	@echo
+check-for-unused-libs.py: Makefile
+	$(call green_msg, Generating $@)
+	$(file >  $@,#!/usr/env/python)
+	$(file >> $@,if 1:)
+	$(file >> $@,$(check_for_unused_libs_PY))
 
 #
 # The dependency must be updated by hand.
 #
-watt32_swig_wrap.c: ../../inc/sys/w32api.h ../wattcp.h ../sock_ini.h ../pcdbug.h ../pcicmp.h \
-                    ../pcdns.h ../pctcp.h ../misc.h ../misc.c
+$(OBJ_DIR)/watt32_swig_wrap.c: \
+  ../../inc/sys/w32api.h       \
+  ../wattcp.h                  \
+  ../sock_ini.h                \
+  ../pcdbug.h                  \
+  ../pcicmp.h                  \
+  ../pcdns.h                   \
+  ../pctcp.h                   \
+  ../misc.h                    \
+  ../misc.c
 
-%.o: %.c
-	$(CC) $(CFLAGS) -DSWIG -c $<
-	@echo
 
-%.obj: %.c
-	$(CC) $(CFLAGS) -DSWIG -c $<
-	@echo
+#
+# GNU-make macros:
+#
+# This assumes you have a MSys/Cygwin's 'echo.exe' program with ANSI colour support.
+#
+BRIGHT_GREEN = \e[1;32m
+BRIGHT_WHITE = \e[1;37m
+green_msg    = @echo -e "$(BRIGHT_GREEN)$(strip $(1))\e[0m"
+green_msg0   = @echo -e "$(BRIGHT_GREEN)$(1)\e[0m"
 
-clean:
-	rm -f *.obj *.o *.pdb *.pyc *.res vc1*.pdb link.tmp $(GENERATED)
-	rm -fr __pycache__
+ifeq ($(CC),gcc)
+  define compile
+    $(CC) -c $(CFLAGS) -o $(strip $(1) $(2))
+    @echo
+  endef
 
-vclean realclean: clean
-	rm -f _watt32.pyd _watt32.res _watt32.exp _watt32.lib _watt32.map watt32.pyo _watt32.pyc
+  define link_PYD
+    $(call green_msg, Linking $(1))
+    $(CC) -o $(1) $(LDFLAGS) $(2) > $(1:.pyd=.map)
+    @echo
+  endef
 
-check-for-unused-libs.py: Makefile
-	$(call green_msg,Generating $@)
-	$(file >  $@,#!/usr/env/python)
-	$(file >> $@,if 1:)
-	$(file >> $@,$(check_for_unused_libs_PY))
+  define create_res
+    windres -o $(1) $(RCFLAGS) $(2)
+    @echo
+  endef
+
+else
+  define compile
+    $(CC) -c $(CFLAGS) -Fo$(strip $(1) $(2))
+    @echo
+  endef
+
+  define link_PYD
+    $(call green_msg, Linking $(1))
+    link -out:$(strip $(1)) $(LDFLAGS) $(2) > link.tmp
+    @cat link.tmp >> $(1:.pyd=.map)
+    @rm -f $(1:.pyd=.exp) $(1:.pyd=.lib)
+    @$(PYTHON) check-for-unused-libs.py link.tmp
+  endef
+
+  define create_res
+    rc -Fo $(1) $(RCFLAGS) $(2)
+    @echo
+  endef
+endif
 
 define check_for_unused_libs_PY
   #
