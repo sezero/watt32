@@ -117,7 +117,7 @@ if %LOCAL_TEST% == 1 goto local_test_1
 ::
 :: These are needed by 'clang-release_32.mak' and 'clang-release_64.mak'
 ::
-set CLANG_32="c:\Program Files (x86)\LLVM"
+set CLANG_32="c:\Program Files\ (x86)\LLVM"
 set CLANG_64="c:\Program Files\LLVM"
 
 ::
@@ -190,14 +190,14 @@ if %LOCAL_TEST% == 0 (
 
 %_ECHO% "\e[1;33m--------------------------------------------------------------------------------------------------\e[0m"
 
+%_ECHO% "\e[1;33m[%CPU%]: call configur.bat %BUILDER%:\e[0m"
+
 if %BUILDER%. == visualc. (
   call configur.bat visualc
   %_ECHO% "\e[1;33m[%CPU%]: Building release:\e[0m"
   nmake -nologo -f visualc-release_%BITS%.mak
   exit /b
 )
-
-%_ECHO% "\e[1;33m[%CPU%]: call configur.bat %BUILDER%:\e[0m"
 
 ::
 :: Need to do 'call :install_CLANG_%BITS%' here to set the PATH for 'clang-cl.exe'!
