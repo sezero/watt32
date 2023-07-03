@@ -204,18 +204,8 @@
   #define MS_CDECL
 #endif
 
-#if !defined(__AVR__)
-/*
- * The __CONCAT macro is used to concatenate parts of symbol names, e.g.
- * with "#define OLD(foo) __CONCAT(old,foo)", OLD(foo) produces oldfoo.
- * The __CONCAT macro is a bit tricky -- make sure you don't put spaces
- * in between its arguments.  __CONCAT can also concatenate double-quoted
- * strings produced by the __STRING macro, but this only works with ANSI C.
- */
 #if ((defined(__STDC__) && __STDC__) || defined(__cplusplus) || \
     defined(__TURBOC__)) && !defined(__CYGWIN__)
-  #define __CONCAT(x,y)   x ## y
-  #define __STRING(x)     #x
 
   #if defined(__cplusplus)
     #define __inline      inline        /* convert to C++ keyword */
@@ -224,12 +214,21 @@
   #endif
 
 #else
-  #define __CONCAT(x,y)   x/**/y
-  #define __STRING(x)     "x"
-
   #if !defined(__GNUC__) && !defined(_MSC_VER) && !defined(__WATCOMC__)
-    #define __inline
+  #define __inline
   #endif
+#endif    /* (__STDC__ || __cpluplus) && !__CYGWIN__ */
+
+#if defined(OLD_JUNK_NOT_NEEDED)
+  /*
+   * The __CONCAT macro is used to concatenate parts of symbol names, e.g.
+   * with "#define OLD(foo) __CONCAT(old,foo)", OLD(foo) produces oldfoo.
+   * The __CONCAT macro is a bit tricky -- make sure you don't put spaces
+   * in between its arguments.  __CONCAT can also concatenate double-quoted
+   * strings produced by the __STRING macro, but this only works with ANSI C.
+   */
+  #define __CONCAT(x,y)   x ## y
+  #define __STRING(x)     #x
 
   #if !defined(__GNUC__)
     /*
@@ -247,9 +246,7 @@
       #define volatile
     #endif
   #endif  /* !__GNUC__ */
-#endif    /* (__STDC__ || __cpluplus) && !__CYGWIN__ */
-#endif    /* !__AVR__ */
-
+#endif
 
 /*
  * Macros for gcc 4.6+ Pragmas. Ref.:
