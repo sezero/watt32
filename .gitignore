@@ -69,7 +69,6 @@ watt-32_64.pc
 watcom-arpa-test.*
 back.btm
 blkfile*
-CI
 CORE
 core
 DESCRIPT.ION
@@ -92,7 +91,6 @@ snmp
 t
 tt
 zip
-
 CI-temp
 bin/archie
 bin/BING
