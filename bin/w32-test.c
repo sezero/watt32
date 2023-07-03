@@ -3,7 +3,7 @@
  *  - BugTrap reporting. (MSVC only)
  *  - GUI MessageBox() on assert and abort().
  *  - Test StackWalker in combination with:
- *     - leak detection; CrtDbg (with MSVC) or Fortify for all.
+ *     - leak detection; CrtDbg (with MSVC only).
  *     - exception reporting.
  */
 
@@ -57,7 +57,7 @@ int MS_CDECL _tmain (int argc, TCHAR **argv)
                     break;
           case 'b': do_bugtrap = 1;
                     break;
-          case 'd': printf ("Debug-mode enabled.");
+          case 'd': puts ("Debug-mode enabled.");
                     dbug_init();
                     break;
           case 'e': do_except = 1;
