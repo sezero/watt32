@@ -208,7 +208,7 @@ if %BUILDER%. == clang. (
   cd src
   call configur.bat clang
   %_ECHO% "\e[1;33m[%CPU%]: Building release:\e[0m"
-  ..\CI\make -f clang-release_%BITS%.mak
+  ..\CI\gnumake -f clang-release_%BITS%.mak
   exit /b
 )
 
