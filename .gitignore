@@ -190,7 +190,6 @@ src/*.mak
 src/chk_gcc.bat
 src/chk_hdr.bat
 src/cpp_filter.py
-src/ALL_DOS.BAT
 src/BOB
 src/build/borland
 src/build/clang
