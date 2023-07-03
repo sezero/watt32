@@ -113,7 +113,7 @@ if %LOCAL_TEST% == 1 goto local_test_1
 ::
 :: This is the PATH to the 64-bit 'clang-cl' already on AppVeyor.
 ::
-set PATH=%PATH%;c:\Program Files\LLVM\bin
+:: set PATH=%PATH%;c:\Program Files\LLVM\bin
 
 ::
 :: These are needed by 'clang-release_32.mak' and 'clang-release_64.mak'
