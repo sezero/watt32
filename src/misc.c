@@ -510,7 +510,7 @@ static const char *report_name (int type)
 /*
  * This doesn't seem to be called (?)
  */
-static void __cdecl crtdbg_dump (const void *buf, size_t len)
+static void __cdecl crtdbg_dump (void *buf, size_t len)
 {
   const BYTE *p = (const BYTE*) buf;
   size_t i;
