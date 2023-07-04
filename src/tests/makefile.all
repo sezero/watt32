@@ -310,16 +310,14 @@ CC_ARGS = $(CC).arg
   define compile_and_link
     $(call create_response_file, $(CC_ARGS), -c $(COMMON_CFLAGS) $(W32_CFLAGS) -Fo.\\)
     $(CC) @$(CC_ARGS) $(strip $(2))
-    $(call create_response_file, link.arg, $(LDFLAGS) $(notdir $(2:.c=.obj)) $(WATT_LIB) user32.lib advapi32.lib)
-    link -out:$(strip $(1)) @link.arg
+    link -out:$(strip $(1)) $(LDFLAGS) $(notdir $(2:.c=.obj)) $(WATT_LIB) user32.lib advapi32.lib
     rm -f $(1:.exe=.lib) $(1:.exe=.exp)
   endef
 
   define compile_and_link_ws2
     $(call create_response_file, $(CC_ARGS), -c $(COMMON_CFLAGS) $(NO_W32_CFLAGS) -Fo.\\)
     $(CC) @$(CC_ARGS) $(strip $(2))
-    $(call create_response_file, link.arg, $(LDFLAGS) $(notdir $(2:.c=.obj)) user32.lib advapi32.lib $(WS2_32_LIB))
-    link -out:$(strip $(1)) @link.arg
+    link -out:$(strip $(1)) $(LDFLAGS) $(notdir $(2:.c=.obj)) user32.lib advapi32.lib $(WS2_32_LIB)
     rm -f $(1:.exe=.lib) $(1:.exe=.exp)
   endef
 
