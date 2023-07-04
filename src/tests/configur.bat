@@ -95,7 +95,6 @@ echo Generating clang-cl (x86/x64) makefiles
 echo Run GNU make to make target(s):
 echo   "make -f clang_32.mak"
 echo   "make -f clang_64.mak"
-echo Depending on which clang-cl.exe (32 or 64-bit) is first on your PATH, use the correct 'clang_32.mak' or 'clang_64.mak'.
 goto next
 
 ::--------------------------------------------------------------------------
