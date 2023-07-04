@@ -25,20 +25,13 @@ int send_udp (char *message, int len, struct sockaddr_in *addr)
 
   if (fd < 0)
   {
-    perror ("socket");
+    PERROR ("socket");
     return (-1);
   }
 
   ret = sendto (fd, message, len, 0, (struct sockaddr*)addr, sizeof(struct sockaddr));
   if (ret < 0)
-  {
-#ifdef _Windows
-    int err = WSAGetLastError();
-    printf ("sendto: erroor %d:\n", err);
-#else
-    printf ("sendto: %s (%d)\n", strerror(errno), errno);
-#endif
-  }
+     PERROR ("sendto");
 
   printf ("Ret %d\n", ret);
   sleep (4);
@@ -56,7 +49,7 @@ int main (int argc, char **argv)
   int    i, port;
   size_t len;
 
-  if (argc > 1 && (!strcmp(argv[1],"-?") || !strcmp(argv[1],"-h")))
+  if (argc > 1 && (!strcmp(argv[1], "-?") || !strcmp(argv[1], "-h")))
   {
     printf ("Usage: %s [[Ip] [Port]] [-mMessage]\n\n", argv[0]);
     return (0);
@@ -66,13 +59,7 @@ int main (int argc, char **argv)
   dbug_init();
 
 #elif defined(_Windows)
-  memset (&wsa_state, 0, sizeof(wsa_state));
-  if (WSAStartup(MAKEWORD(1,1),&wsa_state) != 0)
-  {
-    printf ("Unable to start WinSock, error code=%d\n", WSAGetLastError());
-    return (0);
-  }
-  atexit (cleanup);
+  WS_init();
 #endif
 
   /* set up destination address */

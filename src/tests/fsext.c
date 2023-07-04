@@ -30,14 +30,14 @@ int main (void)
   s = socket (AF_INET, SOCK_DGRAM, 0);
   if (s < 0)
   {
-    perror ("socket");
+    PERROR ("socket");
     return (-1);
   }
 
   fil = fdopen (s, "r+");
   if (!fil)
   {
-    perror ("fdopen");
+    PERROR ("fdopen");
     return (-1);
   }
 
@@ -47,13 +47,13 @@ int main (void)
 
   if (bind(s, (struct sockaddr*)&sin, sizeof(sin)) < 0)
   {
-    perror ("bind");
+    PERROR ("bind");
     return (-1);
   }
 
   if (setsockopt(s, SOL_SOCKET, SO_REUSEADDR, (char*)&on, sizeof(on)) < 0 )
   {
-    perror ("setsockopt");
+    PERROR ("setsockopt");
     return (-1);
   }
 
@@ -65,12 +65,12 @@ int main (void)
     gethostname (buf, sizeof(buf));
     if (fprintf(fil, "HELO %s\r\n", buf) < 0)
     {
-      perror ("fprintf");
+      PERROR ("fprintf");
       break;
     }
     if (fgets(msg, sizeof(msg), fil) == NULL)
     {
-      perror ("fgets");
+      PERROR ("fgets");
       break;
     }
     fputs (msg, stderr);
@@ -81,14 +81,14 @@ int main (void)
   linger.l_onoff  = 1;
   if (setsockopt(s, SOL_SOCKET, SO_LINGER, (void*)&linger, sizeof(linger)) < 0)
   {
-    perror ("setsockopt");
+    PERROR ("setsockopt");
     return (-1);
   }
 #endif
 
   if (close(s) < 0)
   {
-    perror ("close");
+    PERROR ("close");
     return (-1);
   }
   return (0);

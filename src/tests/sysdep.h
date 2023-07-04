@@ -47,7 +47,7 @@
 
     #define uint64   unsigned long long
     #define u_int64  uint64
-    #define ioctlsocket(s, cmd, val_p)  ioctl(s, cmd, val_p)
+    #define IOCTLSOCKET(s, cmd, val_p)  ioctl(s, cmd, val_p)
   #else
     /*
      * Undo what <sys/w32api.h> did.
@@ -58,16 +58,29 @@
     #undef _WINSOCK2_H
 
     #include <winsock2.h>
+    #include <ws2tcpip.h>
     #include <windows.h>
 
-    #define close(s)  closesocket (s)
-    #define uint64    unsigned __int64
+    #define close(s)                 closesocket (s)
+    #define poll(fds, num, timeout)  WSAPoll (fds, num, timeout)
+    #define uint64                   unsigned __int64
 
     static struct WSAData wsa_state;
 
-    static void cleanup (void)
+    static void WS_cleanup (void)
     {
       WSACleanup();
+    }
+
+    static void WS_init (void)
+    {
+      memset (&wsa_state, 0, sizeof(wsa_state));
+      if (WSAStartup(MAKEWORD(1,1),&wsa_state) != 0)
+      {
+        fprintf (stderr, "Unable to start WinSock, error code=%d\n", WSAGetLastError());
+        exit (1);
+      }
+      atexit (WS_cleanup);
     }
   #endif
 
@@ -89,9 +102,10 @@
   #undef _Windows  /* '__BORLANDC__' for Win32 seems to have this as a built-in */
 
   #undef  kbhit
-  #define kbhit()   watt_kbhit()
-  #define close(s)  close_s(s)
-  #define select(num, rd, wr, exc, tv) select_s(num, rd, wr, exc, tv)
+  #define kbhit()                       watt_kbhit()
+  #define write(s, buf, len)            write_s (s, buf, len)
+  #define close(s)                      close_s(s)
+  #define select(num, rd, wr, exc, tv)  select_s(num, rd, wr, exc, tv)
 #endif
 
 #if defined(_WIN32)
@@ -101,10 +115,6 @@
 
 #if defined(__CYGWIN__)
   #define strnicmp(s1, s2, len)  strncasecmp (s1, s2, len)
-#endif
-
-#if defined(__DJGPP__)
-  int getch (void);  /* Since <conio.h> can not be included */
 #endif
 
 #if defined(__DMC__)
@@ -122,6 +132,53 @@
 #if !defined(__CYGWIN__) || !defined(__USE_W32_SOCKETS)
   #define __ms_u_long   u_long
   #define __ms_timeval  timeval
+#endif
+
+#ifndef __ms_u_long
+#define __ms_u_long unsigned long
+#endif
+
+#ifndef IOCTLSOCKET
+  #ifdef _Windows
+    #define IOCTLSOCKET(s, cmd, val_p)  ioctlsocket(s, cmd, (u_long*)val_p)
+  #else
+    #define IOCTLSOCKET(s, cmd, val_p)  ioctlsocket(s, cmd, (char*)val_p)
+  #endif
+#endif
+
+#if defined(_Windows)
+  static char e_buf [10];
+  #define strerror(e) itoa (e, e_buf, 10)
+
+#elif defined(__DJGPP__)
+  int getch (void);    /* Since <conio.h> can not be included */
+  #define PERROR(str)  perror (str)
+
+#else
+  #define strerror(e)  strerror_s_ (e)
+  #define PERROR(str)  perror_s (str)
+#endif
+
+#ifndef PERROR
+  #ifdef _Windows
+    #define PERROR(str)  fprintf (stderr, "%s: error %d:\n", str, WSAGetLastError())
+  #else
+    #define PERROR(str)  fprintf (stderr, "%s: %s (%d)\n", str, strerror(errno), errno)
+  #endif
+#endif
+
+/*
+ * Cast type for the 3rd arg to 'getsockopt()' or 'setsockopt()'. E.g.:
+ *   int       error;
+ *   socklen_t len = sizeof(int);
+ *   getsockopt (s, SOL_SOCKET, SO_ERROR, (SOCKOPT_CAST)&error, &len);
+ */
+#ifndef SOCKOPT_CAST
+  #ifdef _Windows
+    #define SOCKOPT_CAST char *
+  #else
+    #define SOCKOPT_CAST int *
+  #endif
 #endif
 
 #if (DOSX)

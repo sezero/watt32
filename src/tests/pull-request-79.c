@@ -2,23 +2,13 @@
  * A simple test program for Pull Request 79:
  * https://github.com/gvanem/Watt-32/pull/79
  */
-#include <sys/socket.h>
-#include <arpa/inet.h>
-#include <netinet/in.h>
-#include <sys/ioctl.h>
-#include <poll.h>
 #include <stdio.h>
 #include <string.h>
-#include <tcp.h>
+#include "sysdep.h"
 
-#ifdef __GNUC__
-#include <unistd.h>
-#endif
-
-#if !defined(__DJGPP__)
-#define close(s)     close_s (s)
-#define strerror(e)  strerror_s_ (e)
-#define perror(str)  perror_s (str)
+#if !defined(_Windows)
+  #include <sys/ioctl.h>
+  #include <poll.h>
 #endif
 
 #ifndef REMOTE_IP
@@ -31,33 +21,37 @@
 
 int main (int argc, char **argv)
 {
+#if defined(_Windows)
+  WS_init();
+#else
   if (argc >= 2 && !strcmp(argv[1], "-d"))
      dbug_init();
+#endif
 
   int fd = socket(PF_INET, SOCK_STREAM, 0);
   if (fd < 0)
   {
-    perror("socket()");
+    PERROR ("socket()");
     return 1;
   }
 
   int opt = 1;
-  if (ioctlsocket(fd, FIONBIO, (char*)&opt) < 0)
+  if (IOCTLSOCKET(fd, FIONBIO, &opt) < 0)
   {
-    perror("ioctlsocket()");
+    PERROR ("ioctlsocket()");
     goto fail;
   }
 
   struct sockaddr_in addr;
   addr.sin_family = AF_INET;
   addr.sin_port = htons (REMOTE_PORT);
-  inet_aton (REMOTE_IP, &addr.sin_addr);
+  inet_pton (AF_INET, REMOTE_IP, &addr.sin_addr);
 
   if (connect(fd, (struct sockaddr*)&addr, sizeof(struct sockaddr_in)))
   {
     if (errno != EINPROGRESS)
     {
-      perror("connect()");
+      PERROR ("connect()");
       goto fail;
     }
   }
@@ -68,15 +62,15 @@ int main (int argc, char **argv)
   pfd.revents = 0;
   if (poll(&pfd, 1, -1) < 0)
   {
-    perror("poll()");
+    PERROR ("poll()");
     goto fail;
   }
 
   int so_error;
   socklen_t len = sizeof(int);
-  if (getsockopt(fd, SOL_SOCKET, SO_ERROR, &so_error, &len))
+  if (getsockopt(fd, SOL_SOCKET, SO_ERROR, (SOCKOPT_CAST)&so_error, &len))
   {
-    perror("getsockopt()");
+    PERROR ("getsockopt()");
     goto fail;
   }
 

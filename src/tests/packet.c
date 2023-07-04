@@ -2,6 +2,10 @@
 #include <stdlib.h>
 #include <string.h>
 
+#if defined(_Windows) || !defined(WATT32)
+#error "This program is not for Winsock2"
+#endif
+
 #define WATT32_BUILD  /* Since "sysdep.h" needs some internals */
 
 #include <sys/socket.h>
@@ -61,20 +65,20 @@ int main (int argc, char **argv)
 
   printf ("Linux style AF_PACKET example. Press ESC to quit\n");
 
-  if (argc > 1 && !strcmp(argv[1],"-d"))
+  if (argc > 1 && !strcmp(argv[1], "-d"))
      dbug_init();
 
   s1 = socket (AF_PACKET, SOCK_PACKET, 0);
   if (s1 < 0)
   {
-    perror ("socket");
+    PERROR ("socket");
     return (-1);
   }
   s2 = socket (AF_PACKET, SOCK_PACKET, 0);
   if (s2 < 0)
   {
-    perror ("socket");
-    close_s (s1);
+    PERROR ("socket");
+    close (s1);
     return (-1);
   }
 
@@ -94,7 +98,7 @@ int main (int argc, char **argv)
 
     if (select_s(num, &rd, NULL, NULL, &tv) < 0)
     {
-      perror ("select_s");
+      PERROR ("select_s");
       quit = TRUE;
     }
 
@@ -108,8 +112,8 @@ int main (int argc, char **argv)
        packet_recv (s2);
   }
 
-  close_s (s1);
-  close_s (s2);
+  close (s1);
+  close (s2);
   return (0);
 }
 

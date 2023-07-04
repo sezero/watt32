@@ -9,33 +9,31 @@
 
 #include "sysdep.h"
 
-#if !defined(_Windows) /* Real Watt-32, Not native Winsock2 programs */
+#if !defined(_Windows)   /* Real Watt-32, Not native Winsock2 programs */
   #include <netinet/in.h>
   #include <sys/socket.h>
   #include <sys/ioctl.h>
   #include <arpa/inet.h>
 #endif
 
-#ifndef __ms_u_long
-#define __ms_u_long unsigned long
-#endif
-
 #define MYPORT 6543    /* the port users will be connecting to */
 
 #define MAXBUFLEN 100
 
+#if defined(WATT32)
+  #define OPTS_SHORT "dn"
+  #define OPTS_HELP  "  -d  enable Watt-32 debug\n" \
+                     "  -n  use non-blocking socket\n"
+#else
+  #define OPTS_SHORT "n"
+  #define OPTS_HELP  "  -n  use non-blocking Winsock2 socket\n"
+#endif
+
 void usage (void)
 {
-#if defined(WATT32)
-  printf ("udp_srv [-dn]\n"
-          "  listen for UDP-traffic on port %d.\n"
-          "  -d  enable Watt-32 debug\n"
-          "  -n  use non-blocking socket\n", MYPORT);
-#else
-  printf ("udp_srv [-n]\n"
-          "  listen for UDP-traffic on port %d.\n"
-          "  -n  use non-blocking socket\n", MYPORT);
-#endif
+  printf ("udp_srv [%s]\n"
+          "  listen for UDP-traffic on port %d.\n%s\n",
+          OPTS_SHORT, MYPORT, OPTS_HELP);
   exit (0);
 }
 
@@ -65,19 +63,13 @@ int main (int argc, char **argv)
   sock_init();
 
 #elif defined(_Windows)
-  memset (&wsa_state, '\0', sizeof(wsa_state));
-  if (WSAStartup(MAKEWORD(1,1), &wsa_state) != 0)
-  {
-    printf ("Unable to start WinSock, error code=%d\n", WSAGetLastError());
-    return (0);
-  }
-  atexit (cleanup);
+  WS_init();
 #endif
 
   sockfd = socket (AF_INET, SOCK_DGRAM, 0);
   if (sockfd == -1)
   {
-    perror ("socket");
+    PERROR ("socket");
     return (1);
   }
 
@@ -88,15 +80,11 @@ int main (int argc, char **argv)
 
   if (bind(sockfd, (struct sockaddr*)&my_addr, sizeof(struct sockaddr)) == -1)
   {
-    perror ("bind");
+    PERROR ("bind");
     return (1);
   }
 
-#ifdef _Windows
-  ioctlsocket (sockfd, FIONBIO, &non_block);
-#else
-  ioctlsocket (sockfd, FIONBIO, (char*)&non_block);
-#endif
+  IOCTLSOCKET (sockfd, FIONBIO, &non_block);
 
   printf ("Waiting for UDP messages at port %d...", MYPORT);
   fflush (stdout);
@@ -119,7 +107,7 @@ int main (int argc, char **argv)
 
       if (n < 0)
       {
-        perror ("select");
+        PERROR ("select");
         return (1);
       }
       if (n == 0)
@@ -133,7 +121,7 @@ int main (int argc, char **argv)
                          (struct sockaddr *)&their_addr, &addr_len);
     if (numbytes < 0)
     {
-      perror ("recvfrom");
+      PERROR ("recvfrom");
       return (1);
     }
 
@@ -148,7 +136,7 @@ int main (int argc, char **argv)
                        (struct sockaddr*)&their_addr, sizeof(struct sockaddr));
     if (numbytes < 0)
     {
-      perror ("sendto");
+      PERROR ("sendto");
       return (1);
     }
     printf ("sent %d bytes to %s\n", numbytes, inet_ntoa(their_addr.sin_addr));
