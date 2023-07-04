@@ -5,27 +5,30 @@ skip_commits:
    files:
     - '**/*.md'
 
+#
+# matrix members without a 'MODEL:' is for 'win32' only.
+#
 environment:
   matrix:
-    - BUILDER: clang
-      CPU:     x86
-    - BUILDER: clang
-      CPU:     x64
     - BUILDER: cygwin
       CPU:     x86
     - BUILDER: cygwin
       CPU:     x64
-    - BUILDER: borland
-      CPU:     x86
     - BUILDER: visualc
       CPU:     x86
     - BUILDER: visualc
+      CPU:     x64
+    - BUILDER: clang
+      CPU:     x86
+    - BUILDER: clang
       CPU:     x64
     - BUILDER: mingw64
       CPU:     x86
     - BUILDER: mingw64
       CPU:     x64
     - BUILDER: djgpp
+      CPU:     x86
+    - BUILDER: borland
       CPU:     x86
     - BUILDER: watcom
       CPU:     x86
