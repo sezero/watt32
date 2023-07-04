@@ -53,11 +53,11 @@ ifeq ($(CLANG_$(BITS)),)
   $(error 'CLANG_32' or 'CLANG_64' must be set in your environment to point to the 32/64-bit root of your clang-cl installation.)
 endif
 
-CLANG_ROOT = $(realpath $(CLANG_$(BITS)))
+CLANG_ROOT = $(CLANG_$(BITS))
 
-$(info Detected 'CLANG_ROOT= $(CLANG_ROOT)' for clang-cl)
+$(info Detected 'CLANG_ROOT=$(CLANG_ROOT)')
 
-CC = $(CLANG_ROOT)/bin/clang-cl
+CC = "$(CLANG_ROOT)/bin/clang-cl.exe"
 
 ifeq ($(USE_DEBUG_LIB),1)
   CFLAGS     = -MDd
@@ -76,15 +76,14 @@ CFLAGS += -Wno-invalid-source-encoding
 
 LDFLAGS = -nologo -map -machine:$(CPU)
 
-
 #
 # Since either a 32-bit or a 64-bit 'clang-cl.exe' can be used
 # without the use of the 'vcvarsall.bat' non-sense, we MUST
 # define the paths to the correct libraries here:
 #
-LDFLAGS += -libpath:$(VCToolkitInstallDir)\lib\$(CPU) \
-           -libpath:$(WindowsSdkDir)\lib\$(WindowsSdkVer)\ucrt\$(CPU) \
-           -libpath:$(WindowsSdkDir)\lib\$(WindowsSdkVer)\um\$(CPU)
+LDFLAGS += -libpath:"$(VCToolsInstallDir)\lib\$(CPU)" \
+           -libpath:"$(WindowsSdkDir)\lib\$(WindowsSdkVer)\ucrt\$(CPU)" \
+           -libpath:"$(WindowsSdkDir)\lib\$(WindowsSdkVer)\um\$(CPU)"
 
 ifeq ($(USE_STATIC_LIB),1)
   CFLAGS   += -DWATT32_STATIC
@@ -126,7 +125,7 @@ ifneq ($(USE_ASAN)$(USE_UBSAN),00)
   # Let the linker select the ASAN libraries.
   #
   LDFLAGS += -inferasanlibs \
-             -libpath:$(CLANG_ROOT)/lib/clang/$(CLANG_MAJOR_VER)/lib/windows
+             -libpath:"$(CLANG_ROOT)/lib/clang/$(CLANG_MAJOR_VER)/lib/windows"
 endif
 
 
@@ -137,7 +136,7 @@ PROGS = ping.exe     popdump.exe  rexec.exe    tcpinfo.exe  cookie.exe   \
         ident.exe    country.exe  con-test.exe gui-test.exe tracert.exe
 
 all: $(PROGS)
-	@echo 'Clang-CL binaries done.'
+	@echo "Clang-CL binaries done."
 
 con-test.exe: w32-test.c $(WATT_LIB)
 	$(CC) -c $(CFLAGS) w32-test.c
@@ -168,7 +167,7 @@ tracert.exe: tracert.c geoip.c IP2Location.c $(WATT_LIB)
 	@echo
 
 check_CPU:
-	@echo 'Building for CPU=$(CPU).'
+	@echo "Building for CPU=$(CPU)."
 
 clean:
 	rm -f $(PROGS)

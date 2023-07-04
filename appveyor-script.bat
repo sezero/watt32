@@ -119,6 +119,7 @@ if %LOCAL_TEST% == 1 goto local_test_1
 ::
 set CLANG_32=c:/Program Files (x86)/LLVM
 set CLANG_64=c:/Program Files/LLVM
+set CLANG_MAJOR_VER=11
 
 ::
 :: And append the '%WATCOM%\binnt' to the 'PATH' since Watcom has an 'cl.exe'
