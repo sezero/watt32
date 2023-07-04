@@ -209,7 +209,7 @@ if %BUILDER%. == clang. (
   cd src
   call configur.bat clang
   %_ECHO% "\e[1;33m[%CPU%]: Building release:\e[0m"
-  ..\CI\gnumake -f clang-release_%BITS%.mak
+  make -f clang-release_%BITS%.mak
   exit /b
 )
 
@@ -393,7 +393,7 @@ exit /b 0
 
   set USE_WSOCK_TRACE=0
 
-  %_ECHO% "\e[1;33m[%CPU%]Configuring 'build_tests' for 'BUILDER=%BUILDER%'.\e[0m"
+  %_ECHO% "\e[1;33m[%CPU%]: Configuring 'build_tests' for 'BUILDER=%BUILDER%'.\e[0m"
 
   call configur.bat %BUILDER%
   if %BUILDER%. == borland.  make -f bcc_w.mak
