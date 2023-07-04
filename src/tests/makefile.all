@@ -142,7 +142,7 @@ endif
   PROGRAMS += fsext.exe
 @endif
 
-VPATH  = ..
+VPATH = ..
 
 #
 # Used for all Watt-32 test programs:
@@ -174,8 +174,8 @@ NO_W32_CFLAGS = -D_Windows
   endef
 
   define compile_and_link_ws2
-    $(call create_response_file, $(CC).arg, $(NO_W32_CFLAGS) $(COMMON_CFLAGS) $(LDFLAGS) $(2) $(WS2_32_LIB))
-    $(CC) -o $(strip $(1)) @$(CC).arg > $(1:.exe=.map)
+    $(call create_response_file, $(CC_ARGS), $(NO_W32_CFLAGS) $(COMMON_CFLAGS) $(LDFLAGS) $(2) $(WS2_32_LIB))
+    $(CC) -o $(strip $(1)) @$(CC_ARGS) > $(1:.exe=.map)
   endef
 
 @elifdef VISUALC CLANG
@@ -184,13 +184,22 @@ NO_W32_CFLAGS = -D_Windows
                   -D_CRT_NONSTDC_NO_WARNINGS \
                   -D_CRT_OBSOLETE_NO_WARNINGS
 
-  LDFLAGS = -nologo -map -debug -incremental:no -nodefaultlib:uuid.lib -verbose
+  LDFLAGS = -nologo -map -debug -incremental:no -nodefaultlib:uuid.lib
 
   #
   # Ignore this:
   #  LINK : warning LNK4098: defaultlib 'msvcrt.lib' conflicts with ...
   #
   LDFLAGS += -ignore:4098
+
+  #
+  # Since either a 32-bit or a 64-bit compiler can be used
+  # without the use of the 'vcvarsall.bat' non-sense, we MUST
+  # define the paths to the correct libraries here:
+  #
+  LDFLAGS += -libpath:"$(VCToolsInstallDir)\lib\$(CPU)" \
+             -libpath:"$(WindowsSdkDir)\lib\$(WindowsSdkVer)\ucrt\$(CPU)" \
+             -libpath:"$(WindowsSdkDir)\lib\$(WindowsSdkVer)\um\$(CPU)"
 @endif
 
 @ifdef VISUALC CLANG MINGW64 CYGWIN
@@ -225,6 +234,8 @@ NO_W32_CFLAGS = -D_Windows
   LIB_DIR = ../../lib
 @endif
 
+CC_ARGS = $(CC).arg
+
 @ifdef MINGW64
   WATT_LIB = $(LIB_DIR)/libwatt32.a
 
@@ -243,6 +254,17 @@ NO_W32_CFLAGS = -D_Windows
   WATT_LIB = $(LIB_DIR)/wattcpvc.lib
 
 @elifdef CLANG
+  ifeq ($(CLANG_$(BITS)),)
+    $(error 'CLANG_32' or 'CLANG_64' must be set in your environment to point to the 32/64-bit root of your clang-cl installation.)
+  endif
+
+  CLANG_ROOT = $(CLANG_$(BITS))
+
+  $(info Detected 'CLANG_ROOT=$(CLANG_ROOT)')
+
+  CC = "$(CLANG_ROOT)/bin/clang-cl.exe"
+  CC_ARGS = clang-cl.args
+
   #
   # In case '%CL%' is set, it could confuse 'clang-cl'. Unset it.
   #
@@ -254,7 +276,6 @@ NO_W32_CFLAGS = -D_Windows
   export C_INCLUDE_PATH=
   export CPLUS_INCLUDE_PATH=
 
-  CC             = clang-cl
   COMMON_CFLAGS += -Wno-unused-function -Wno-unused-variable -Wno-unused-value
   WATT_LIB       = $(LIB_DIR)/wattcp_clang.lib
 
@@ -287,21 +308,19 @@ NO_W32_CFLAGS = -D_Windows
 
 @elifdef VISUALC CLANG
   define compile_and_link
-    $(call create_response_file, $(CC).arg, -c $(COMMON_CFLAGS) $(W32_CFLAGS) -Fo.\\)
-    $(CC) @$(CC).arg $(strip $(2))
+    $(call create_response_file, $(CC_ARGS), -c $(COMMON_CFLAGS) $(W32_CFLAGS) -Fo.\\)
+    $(CC) @$(CC_ARGS) $(strip $(2))
     $(call create_response_file, link.arg, $(LDFLAGS) $(notdir $(2:.c=.obj)) $(WATT_LIB) user32.lib advapi32.lib)
-    link -out:$(strip $(1)) @link.arg > link.tmp
-    cat link.tmp >> $(1:.exe=.map)
-    rm -f $(1:.exe=.lib) $(1:.exe=.exp) link.tmp
+    link -out:$(strip $(1)) @link.arg
+    rm -f $(1:.exe=.lib) $(1:.exe=.exp)
   endef
 
   define compile_and_link_ws2
-    $(call create_response_file, $(CC).arg, -c $(COMMON_CFLAGS) $(NO_W32_CFLAGS) -Fo.\\)
-    $(CC) @$(CC).arg $(strip $(2))
+    $(call create_response_file, $(CC_ARGS), -c $(COMMON_CFLAGS) $(NO_W32_CFLAGS) -Fo.\\)
+    $(CC) @$(CC_ARGS) $(strip $(2))
     $(call create_response_file, link.arg, $(LDFLAGS) $(notdir $(2:.c=.obj)) user32.lib advapi32.lib $(WS2_32_LIB))
-    link -out:$(strip $(1)) @link.arg > link.tmp
-    cat link.tmp >> $(1:.exe=.map)
-    rm -f $(1:.exe=.lib) $(1:.exe=.exp) link.tmp
+    link -out:$(strip $(1)) @link.arg
+    rm -f $(1:.exe=.lib) $(1:.exe=.exp)
   endef
 
 @elifdef HIGHC
@@ -339,7 +358,7 @@ NO_W32_CFLAGS = -D_Windows
   define compile_and_link
     $(call create_response_file, highc.arg, $(COMMON_CFLAGS) $(W32_CFLAGS))
     echo '$(LDFLAGS)' > 386link.arg
-    $(CC) -c @$(CC).arg -o $(strip $(1:.c=.obj) $(1))
+    $(CC) -c @$(CC_ARGS) -o $(strip $(1:.c=.obj) $(1))
     386link @386link.arg $(1:.c=.obj) -exe $(strip $(2))
   endef
 
@@ -390,15 +409,15 @@ NO_W32_CFLAGS = -D_Windows
   # But the .exe-file seems to run fine.
   #
   define compile_and_link
-    $(call create_response_file, $(CC).arg, $(subst /,\, $(COMMON_CFLAGS) $(W32_CFLAGS)) $(subst /,\,$(2)))
-    $(CC) @$(CC).arg
+    $(call create_response_file, $(CC_ARGS), $(subst /,\, $(COMMON_CFLAGS) $(W32_CFLAGS)) $(subst /,\,$(2)))
+    $(CC) @$(CC_ARGS)
     $(call create_response_file2, wlink.arg, $(LDFLAGS) library $(WATT_LIB) file $(notdir $(2:.c=.obj)))
     wlink name $(strip $(1)) @wlink.arg
   endef
 
   define compile_and_link_ws2
-    $(call create_response_file, $(CC).arg, $(subst /,\, $(COMMON_CFLAGS) $(NO_W32_CFLAGS)) $(subst /,\,$(2)))
-    $(CC) @$(CC).arg
+    $(call create_response_file, $(CC_ARGS), $(subst /,\, $(COMMON_CFLAGS) $(NO_W32_CFLAGS)) $(subst /,\,$(2)))
+    $(CC) @$(CC_ARGS)
     $(call create_response_file2, wlink.arg, $(LDFLAGS) library $(WS2_32_LIB) file $(notdir $(2:.c=.obj)))
     wlink name $(strip $(1)) @wlink.arg
   endef
@@ -433,14 +452,14 @@ NO_W32_CFLAGS = -D_Windows
   COMMON_CFLAGS += -j5 -a- -DBUILD_WINDOWS
 
   define compile_and_link
-    $(call create_response_file, $(CC).arg, $(COMMON_CFLAGS) $(W32_CFLAGS) $(2) $(LDFLAGS) -l $(WATT_LIB))
-    $(CC) -o $(strip $(1)) @$(CC).arg
+    $(call create_response_file, $(CC_ARGS), $(COMMON_CFLAGS) $(W32_CFLAGS) $(2) $(LDFLAGS) -l $(WATT_LIB))
+    $(CC) -o $(strip $(1)) @$(CC_ARGS)
     rm -f $(1:.exe=.tds)
   endef
 
   define compile_and_link_ws2
-    $(call create_response_file, $(CC).arg, $(COMMON_CFLAGS) $(NO_W32_CFLAGS) $(2) $(LDFLAGS) -l $(WS2_32_LIB))
-    $(CC) -o $(strip $(1)) @$(CC).arg
+    $(call create_response_file, $(CC_ARGS), $(COMMON_CFLAGS) $(NO_W32_CFLAGS) $(2) $(LDFLAGS) -l $(WS2_32_LIB))
+    $(CC) -o $(strip $(1)) @$(CC_ARGS)
     rm -f $(1:.exe=.tds)
   endef
 @endif
@@ -483,7 +502,7 @@ udp_test_w.o: udp_test.c
 
 clean realclean vclean:
 	rm -f $(PROGRAMS) $(PROGRAMS:.exe=.obj) $(PROGRAMS:.exe=.map) echo.obj listen.obj cyg_kbhit.o
-	rm -f $(PROGRAMS:.exe=.pdb) vc1*.pdb highc.arg 386link.arg fsext.exe fsext.map link.tmp cpp_filter.py
+	rm -f $(PROGRAMS:.exe=.pdb) vc1*.pdb highc.arg 386link.arg fsext.exe fsext.map cpp-filter.py
 	rm -f link.arg wlink.arg cl.arg clang-cl.arg bcc32.arg bcc32c.arg wcc.arg wcc386.arg gcc.arg $(BIN_PREFIX)gcc.arg
 	@echo 'Cleaning done.'
 
@@ -695,7 +714,7 @@ udp_test_w.exe: sysdep.h
 
 #
 # Command to generate a nicer C preprocessed output
-# with the help of a generated 'cpp_filter.py' and optionally 'clang-format' or 'astyle'.
+# with the help of a generated 'cpp-filter.py' and optionally 'clang-format' or 'astyle'.
 #
 # A 'USE_ASTYLE_FORMAT = 1' needs 'astyle.exe' on PATH and a '%HOME/.astylerc'.
 #
@@ -704,18 +723,18 @@ udp_test_w.exe: sysdep.h
 #
 # to see the gory details of what gets compiled.
 #
-udp_srv_w.i: udp_srv.c cpp_filter.py FORCE
+udp_srv_w.i: udp_srv.c cpp-filter.py FORCE
 	$(call C_preprocess, $(COMMON_CFLAGS) $(NO_W32_CFLAGS), $<, $@)
 
-udp_test_w.i: udp_test.c cpp_filter.py FORCE
+udp_test_w.i: udp_test.c cpp-filter.py FORCE
 	$(call C_preprocess, $(COMMON_CFLAGS) $(NO_W32_CFLAGS), $<, $@)
 
-%.i: %.c cpp_filter.py FORCE
+%.i: %.c cpp-filter.py FORCE
 	$(call C_preprocess, $(COMMON_CFLAGS) $(W32_CFLAGS), $<, $@)
 
 FORCE:
 
-cpp_filter.py: $(MAKEFILE_LIST)
+cpp-filter.py: $(MAKEFILE_LIST)
 	$(info Generating $@)
 	$(file  > $@,#!/usr/env/python)
 	$(file >> $@,from __future__ import print_function)
@@ -744,7 +763,7 @@ ifeq ($(USE_ASTYLE_FORMAT),1)
     @$(foreach f, $(1), $(file >> $(3), * $(f)))
     $(file >> $(3), *---------------------------------------------------------)
     $(file >> $(3), */)
-    $(CC) -E $(1) $(2) | $(PYTHON) cpp_filter.py | astyle >> $(3)
+    $(CC) -E $(1) $(2) | $(PYTHON) cpp-filter.py | astyle >> $(3)
     @echo
   endef
 
@@ -755,7 +774,7 @@ else ifeq ($(USE_CLANG_FORMAT),1)
     @$(foreach f, $(1), $(file >> $(3), * $(f)))
     $(file >> $(3), *---------------------------------------------------------)
     $(file >> $(3), */)
-    $(CC) -E $(1) $(2) | $(PYTHON) cpp_filter.py | clang-format -style=Mozilla -assume-filename=c >> $(3)
+    $(CC) -E $(1) $(2) | $(PYTHON) cpp-filter.py | clang-format -style=Mozilla -assume-filename=c >> $(3)
     @echo
   endef
 
@@ -766,7 +785,7 @@ else
     @$(foreach f, $(1), $(file >> $(3), * $(f)))
     $(file >> $(3), *---------------------------------------------------------)
     $(file >> $(3), */)
-    $(CC) -E $(1) $(2) | $(PYTHON) cpp_filter.py >> $(3)
+    $(CC) -E $(1) $(2) | $(PYTHON) cpp-filter.py >> $(3)
     @echo
   endef
 endif
