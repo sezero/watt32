@@ -756,10 +756,10 @@ OBJPATH = $(OBJDIR)\ #
 
 #
 # TODO:
-#   Use 'CC=$(VCToolkitInstallDir)\bin\Hostx86\$(CPU)\cl.exe'
-#   Use 'LDFLAGS=-libpath:$(VCToolkitInstallDir)\lib\$(CPU) \
-#                -libpath:$(WindowsSdkDir)\lib\$(TargetPlatformVersion)\ucrt\$(CPU) \
-#                -libpath:$(WindowsSdkDir)\lib\$(TargetPlatformVersion)\um\$(CPU)'
+#   Use 'CC = $(VCToolsInstallDir)\bin\Hostx86\$(CPU)\cl.exe'
+#   Use 'LDFLAGS = -libpath:"$(VCToolsInstallDir)\lib\$(CPU)" \
+#                  -libpath:"$(WindowsSdkDir)\lib\$(TargetPlatformVersion)\ucrt\$(CPU)" \
+#                  -libpath:"$(WindowsSdkDir)\lib\$(TargetPlatformVersion)\um\$(CPU)"'
 #
 CC      = cl
 LDFLAGS = -dll -nologo -map -debug -debugtype:cv -incremental:no -verbose $(LDFLAGS)
@@ -905,9 +905,9 @@ LDFLAGS = -dll -nologo -map -debug -debugtype:cv -incremental:no -machine:$(CPU)
 # without the use of the 'vcvarsall.bat' non-sense, we MUST
 # define the paths to the correct libraries here:
 #
-LDFLAGS += -libpath:$(VCToolkitInstallDir)\lib\$(CPU) \
-           -libpath:$(WindowsSdkDir)\lib\$(WindowsSdkVer)\ucrt\$(CPU) \
-           -libpath:$(WindowsSdkDir)\lib\$(WindowsSdkVer)\um\$(CPU)
+LDFLAGS += -libpath:"$(VCToolsInstallDir)\lib\$(CPU)" \
+           -libpath:"$(WindowsSdkDir)\lib\$(WindowsSdkVer)\ucrt\$(CPU)" \
+           -libpath:"$(WindowsSdkDir)\lib\$(WindowsSdkVer)\um\$(CPU)"
 
 #
 # Enable one of the above as e.g:
