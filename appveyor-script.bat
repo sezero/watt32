@@ -381,11 +381,12 @@ exit /b 0
 :: All these generated makefiles requires GNU-make (a 'make' should already be on 'PATH').
 ::
 :build_tests
+  if %LOCAL_TEST%. == 0. if %CPU%. == x86. set PATH=c:\Program Files (x86)\LLVM\bin;%PATH%
+
   if %LOCAL_TEST%. == 0. (
     set WATTCP_CFG=c:/projects/watt-32
     %_ECHO% "\e[1;33mGenerating '%%WATTCP_CFG%%/wattcp.cfg'.\e[0m"
     call :generate_wattcp_cfg
-    if %CPU%. == x86. set PATH=c:\Program Files (x86)\LLVM\bin;%PATH%
   )
 
   cd src\tests
