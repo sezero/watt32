@@ -8,6 +8,7 @@
 #include <sys/ioctl.h>
 #include <poll.h>
 #include <stdio.h>
+#include <string.h>
 #include <tcp.h>
 
 #ifdef __GNUC__
