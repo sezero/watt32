@@ -1,6 +1,7 @@
 #include "socket.h"
 #include "loopback.h"
 #include "pcdbug.h"
+#include "sysdep.h"
 
 #include <rpc/types.h>
 
@@ -15,8 +16,6 @@ void AssertFail   (unsigned line);
 int  sock_select   (int sock);
 int  W32_CALL sock_loopback (in_Header *ip);
 
-/*--------------------------------------------------------------------------*/
-
 void setup (void)
 {
   dbug_init();
@@ -24,12 +23,10 @@ void setup (void)
   loopback_handler = sock_loopback;
 }
 
-/*--------------------------------------------------------------------------*/
-
 int main (void)
 {
   int  rc;
-  char buf[100] = { 0 };
+  char buf [100] = { 0 };
 
   setup();
   sock = socket (AF_INET, SOCK_STREAM, 0);
@@ -51,17 +48,17 @@ int main (void)
   }
   while (rc < 0);
 
-  assert (write_s(sock,"HELO",4) != -1);
-  assert (read_s (sock,buf,sizeof(buf)) != -1);
+  assert (write(sock, "HELO", 4) != -1);
+  assert (read_s (sock, buf, sizeof(buf)) != -1);
   printf ("buf = `%s'\n", buf);
 
-  assert (write_s(sock,"QUIT",4) != -1);
-  assert (close_s(sock) != -1);
+  assert (write(sock, "QUIT", 4) != -1);
+  assert (read_s (sock, buf, sizeof(buf)) != -1);
+  printf ("buf = `%s'\n", buf);
+  assert (close(sock) != -1);
   sock = -1;
   return (0);
 }
-
-/*--------------------------------------------------------------------------*/
 
 int sock_select (int sock)
 {
@@ -77,8 +74,6 @@ int sock_select (int sock)
   timeout.tv_usec = 0;
   return select_s (sock+1, &read_fd, &write_fd, NULL, &timeout);
 }
-
-/*--------------------------------------------------------------------------*/
 
 int fix_tcp_packet (in_Header *ip, tcp_Header *tcp, int ack_len, int data_len)
 {
@@ -109,8 +104,6 @@ int fix_tcp_packet (in_Header *ip, tcp_Header *tcp, int ack_len, int data_len)
   return (sizeof(*ip) + sizeof(*tcp) + data_len);
 }
 
-/*--------------------------------------------------------------------------*/
-
 int W32_CALL sock_loopback (in_Header *ip)
 {
   if (ip->proto == TCP_PROTO)
@@ -131,12 +124,12 @@ int W32_CALL sock_loopback (in_Header *ip)
       {
         char *data = (char*)tcp + (tcp->offset << 2);
 
-        if (!strncmp(data,"HELO",4))
+        if (!strncmp(data, "HELO", 4))
         {
           strcpy (data, "Welcome to loop-back handler");
           return fix_tcp_packet (ip, tcp, 4, strlen(data) + 1);
         }
-        if (!strncmp(data,"QUIT",4))
+        if (!strncmp(data, "QUIT", 4))
         {
           strcpy (data, "Bye from loop-back handler");
           return fix_tcp_packet (ip, tcp, 4, strlen(data) + 1);
@@ -147,13 +140,11 @@ int W32_CALL sock_loopback (in_Header *ip)
   return (-1);
 }
 
-/*----------------------------------------------------------------*/
-
 void AssertFail (unsigned line)
 {
   fprintf (stderr, "\nAssert fail at line %d\n", line);
   if (sock != -1)
-     close_s (sock);
+     close (sock);
   exit (-1);
 }
 

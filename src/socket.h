@@ -140,7 +140,6 @@
 #define DEFAULT_RECV_LOWAT  0
 #define DEFAULT_UDP_SIZE   (8*1024)
 
-
 /* Buffer types for AF_PACKET sockets
  */
 struct sock_packet_buf {

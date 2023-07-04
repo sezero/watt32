@@ -41,7 +41,7 @@
 #include "pcicmp6.h"
 #include "pcdns.h"
 
-#if defined(USE_BSD_API)
+#if defined(USE_BSD_API)    /* rest of file */
 
 static int     sk_block = 0;          /* sock_daemon() semaphore */
 static int     sk_last  = SK_FIRST+1; /* highest socket number + 1 */
@@ -55,7 +55,8 @@ static int (*ip4_raw_hook) (const in_Header *ip)  = NULL;
 static int (*ip6_raw_hook) (const in6_Header *ip) = NULL;
 #endif
 
-/** \todo
+/**
+ * \todo
  * Use socket hash bucket to speedup _socklist_find() etc.
  */
 #define SOCK_HASH_SIZE 64  /* must be 2^n */
@@ -110,7 +111,6 @@ void *_sock_calloc (size_t size, const char *file, unsigned line)
   return (ptr);
 }
 
-
 /**
  * `inuse[]' has a non-zero bit for each socket-descriptor in use.
  * There can be max `MAX_SOCKETS' allocated at any time.  Dead stream
@@ -125,7 +125,6 @@ void *_sock_calloc (size_t size, const char *file, unsigned line)
  *   `sk_last' is not used (initialised to MAX_SOCKETS). Thus max # of
  *   sockets are limited by max # of DOS handles that can be created.
  */
-
 static fd_set inuse [NUM_SOCK_FDSETS];  /* MAX_SOCKETS/8 = 625 bytes */
 
 static int sock_alloc_fd (char **err)
@@ -148,7 +147,7 @@ static int sock_alloc_fd (char **err)
       return (-1);
     }
 
-    if (FD_ISSET(fd,&inuse[0]))
+    if (FD_ISSET(fd, &inuse[0]))
     {
       sprintf (err_buf, "Reusing existing socket %d", fd);
       *err = err_buf;
@@ -169,8 +168,8 @@ static int sock_alloc_fd (char **err)
 #else  /* __DJGPP__ && USE_FSEXT */
 
   for (fd = SK_FIRST; fd < sk_last; fd++)
-      if (!FD_ISSET(fd,&inuse[0]) &&  /* not marked as in-use */
-          !_socklist_find(fd))        /* don't use a dying socket */
+      if (!FD_ISSET(fd, &inuse[0]) &&  /* not marked as in-use */
+          !_socklist_find(fd))         /* don't use a dying socket */
          break;
 
 #endif /* __DJGPP__ && USE_FSEXT */
@@ -196,9 +195,9 @@ static int sock_alloc_fd (char **err)
  *   Return TRUE if `s' is a valid DOS/Win32 handle.
  *   Used to differentiate EBADF from ENOTSOCK.
  *
- *   Note: for non-djgpp targets `s' may have same value as a
- *         DOS-handle. This function should only be used when `s'
- *         isn't found in `sk_list'.
+ * \note for non-djgpp targets `s' may have same value as a
+ *       DOS-handle. This function should only be used when `s'
+ *       isn't found in `sk_list'.
  */
 BOOL _sock_dos_fd (int s)
 {
@@ -379,11 +378,13 @@ BOOL _sock_set_mcast_rx_mode (void)
   BOOL rc = TRUE;
 
   if (!mcast_set)
+  {
 #if defined(USE_IPV6)
-     rc = _ip6_pkt_init();
+    rc = _ip6_pkt_init();
 #else
-     rc = pkt_set_rcv_mode (RXMODE_MULTICAST2);
+    rc = pkt_set_rcv_mode (RXMODE_MULTICAST2);
 #endif
+  }
 
   mcast_set = TRUE;
   return (rc);
@@ -480,8 +481,7 @@ static int W32_CALL sock_packet_peek (const union link_Packet *pkt)
 #if defined(USE_DEBUG)
         if (!pktq_check(q))
         {
-          TRACE_CONSOLE (0, "%s(%u): SOCK_PACKET queue munged, "
-                            "fd %d\n", __FILE__, __LINE__, sock->fd);
+          TRACE_CONSOLE (0, "fd=%d: SOCK_PACKET queue munged\n", sock->fd);
           pktq_clear (q);
           continue;
         }
@@ -489,7 +489,7 @@ static int W32_CALL sock_packet_peek (const union link_Packet *pkt)
         if (pktq_in_index(q) == q->out_index)   /* no room */
         {
           q->num_drop++;
-          TRACE_CONSOLE (0, "SOCK_PACKET drops %lu\n", (u_long)q->num_drop);
+          TRACE_CONSOLE (0, "fd=%d: SOCK_PACKET drops %lu\n", sock->fd, (u_long)q->num_drop);
           continue;
         }
 
@@ -515,11 +515,11 @@ static int W32_CALL sock_packet_peek (const union link_Packet *pkt)
  */
 static char get_pkt_type_eth (const eth_Header *eth)
 {
-  if (!memcmp(&_eth_addr,&eth->destination,_eth_mac_len))
+  if (!memcmp(&_eth_addr, &eth->destination, _eth_mac_len))
      return (PACKET_HOST);
-  if (!memcmp(&_eth_addr,&eth->source,_eth_mac_len))
+  if (!memcmp(&_eth_addr, &eth->source, _eth_mac_len))
      return (PACKET_OUTGOING);
-  if (!memcmp(&eth->destination,&_eth_brdcast,_eth_mac_len))
+  if (!memcmp(&eth->destination, &_eth_brdcast, _eth_mac_len))
      return (PACKET_BROADCAST);
   if ((eth->destination[0] & 1) == 1)
      return (PACKET_MULTICAST);
@@ -528,11 +528,11 @@ static char get_pkt_type_eth (const eth_Header *eth)
 
 static char get_pkt_type_fddi (const fddi_Header *fddi)
 {
-  if (!memcmp(&_eth_addr,&fddi->destination,_eth_mac_len))
+  if (!memcmp(&_eth_addr, &fddi->destination, _eth_mac_len))
      return (PACKET_HOST);
-  if (!memcmp(&_eth_addr,&fddi->source,_eth_mac_len))
+  if (!memcmp(&_eth_addr, &fddi->source, _eth_mac_len))
      return (PACKET_OUTGOING);
-  if (!memcmp(&fddi->destination,&_eth_brdcast,_eth_mac_len))
+  if (!memcmp(&fddi->destination, &_eth_brdcast, _eth_mac_len))
      return (PACKET_BROADCAST);
   if ((fddi->destination[0] & 1) == 1)
      return (PACKET_MULTICAST);
@@ -541,11 +541,11 @@ static char get_pkt_type_fddi (const fddi_Header *fddi)
 
 static char get_pkt_type_tok (const tok_Header *tok)
 {
-  if (!memcmp(&_eth_addr,&tok->destination,_eth_mac_len))
+  if (!memcmp(&_eth_addr, &tok->destination, _eth_mac_len))
      return (PACKET_HOST);
-  if (!memcmp(&_eth_addr,&tok->source,_eth_mac_len))
+  if (!memcmp(&_eth_addr, &tok->source, _eth_mac_len))
      return (PACKET_OUTGOING);
-  if (!memcmp(&tok->destination,&_eth_brdcast,_eth_mac_len))
+  if (!memcmp(&tok->destination, &_eth_brdcast, _eth_mac_len))
      return (PACKET_BROADCAST);
   if ((tok->destination[0] & 1) == 1)
      return (PACKET_MULTICAST);
@@ -651,7 +651,6 @@ unsigned sock_packet_transmit (Socket *socket, const void *buf, unsigned len,
   return (rc + _pkt_ip_ofs);
 }
 
-
 /*
  * Clear 'fd' from the inuse array. For djgpp only:
  *  Free the socket from File-System Extension system.
@@ -686,7 +685,7 @@ Socket *_sock_del_fd (int fd, const char *file, unsigned line)
 
   SOCK_DEBUGF (("\n  _sock_del_fd:%d", fd));
 
-  if (fd < SK_FIRST || fd >= sk_last || !FD_ISSET(fd,&inuse[0]))
+  if (fd < SK_FIRST || fd >= sk_last || !FD_ISSET(fd, &inuse[0]))
   {
     SOCK_FATAL (("%s (%u) Fatal: socket %d not inuse\n", file, line, fd));
     return (NULL);
@@ -1248,7 +1247,7 @@ static void W32_CALL sock_daemon (void)
   {
     next = sock->next;
 
-    if (!FD_ISSET(sock->fd,&inuse[0]))
+    if (!FD_ISSET(sock->fd, &inuse[0]))
        continue;
 
     if (sock->local_addr == NULL)  /* not bound to anything yet */
@@ -2017,7 +2016,6 @@ int _UDP_listen (Socket *socket, struct in_addr host, WORD port)
   udp->icmp_callb = (icmp_upcall) icmp_callback;
   return (1);
 }
-
 
 /**
  * Open and listen routines for SOCK_STREAM at the socket-level

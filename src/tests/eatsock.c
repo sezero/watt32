@@ -35,13 +35,13 @@ void setup (void)
 
 static int get_sock_type (const char *type)
 {
-  if (!stricmp(type,"SOCK_RAW"))
+  if (!stricmp(type, "SOCK_RAW"))
      return (SOCK_RAW);
-  if (!stricmp(type,"SOCK_PACKET"))
+  if (!stricmp(type, "SOCK_PACKET"))
      return (SOCK_PACKET);
-  if (!stricmp(type,"SOCK_DGRAM"))
+  if (!stricmp(type, "SOCK_DGRAM"))
      return (SOCK_DGRAM);
-  if (!stricmp(type,"SOCK_STREAM"))
+  if (!stricmp(type, "SOCK_STREAM"))
      return (SOCK_STREAM);
   return (-1);
 }

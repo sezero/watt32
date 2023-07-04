@@ -1,4 +1,4 @@
-/*!\file pcqueue.h
+/**\file pcqueue.h
  */
 #ifndef _w32_PCQUEUE_H
 #define _w32_PCQUEUE_H
@@ -74,19 +74,20 @@
 #define RX_SIZE               sizeof(struct pkt_rx_element)
 #define RX_ELEMENT_HEAD_SIZE  offsetof (struct pkt_rx_element, rx_buf[0])
 
-/*!\struct pkt_ringbuf
+/**
+ * \struct pkt_ringbuf
  * FIFO style ring-buffer.
  */
 struct pkt_ringbuf {
-       volatile WORD  in_index;   /* index *ahead* of last buffer put */
-       WORD           out_index;  /* index of buffer pulled out */
-       WORD           buf_size;   /* size of each buffer */
-       WORD           num_buf;    /* number of buffers */
-       volatile DWORD num_drop;   /* number of dropped pkts */
-       DWORD_PTR      buf_start;  /* start of buffer pool (linear addr) */
+       volatile WORD  in_index;   /**< index *ahead* of last buffer put */
+       WORD           out_index;  /**< index of buffer pulled out */
+       WORD           buf_size;   /**< size of each buffer */
+       WORD           num_buf;    /**< number of buffers */
+       volatile DWORD num_drop;   /**< number of dropped pkts */
+       DWORD_PTR      buf_start;  /**< start of buffer pool (linear addr) */
 #if (DOSX & (DOS4GW|POWERPAK)) || defined(USE_FAST_PKT)
-       WORD           dos_ofs;    /* offset of pool, used by rmode stub */
-#endif                            /* total size = 26 for DOS4GW/POWERPAK */
+       WORD           dos_ofs;    /**< offset of pool, used by rmode stub */
+#endif                            /**< total size = 26 for DOS4GW/POWERPAK */
      };
 
 #if (DOSX & DOS4GW) || defined(USE_FAST_PKT)
@@ -107,7 +108,7 @@ extern int   pktq_queued   (struct pkt_ringbuf *q);
 #if defined(USE_FAST_PKT) && defined(__MSDOS__)
   extern DWORD asmpkt_rm_base;
 
-  /* macros to access runtime location of 'asmpkt_inf'
+  /* Macros to access runtime location of 'asmpkt_inf'
    */
   #define FAR_PEEK_WORD(struc,mbr)    PEEKW (0, asmpkt_rm_base + offsetof(struc,mbr))
   #define FAR_PEEK_DWORD(struc,mbr)   PEEKL (0, asmpkt_rm_base + offsetof(struc,mbr))

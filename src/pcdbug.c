@@ -2660,12 +2660,12 @@ static void set_debug_filter (const char *value)
   _strlcpy (val, value, sizeof(val));
   strupr (val);
 
-  if (strstr(val,"ALL"))
+  if (strstr(val, "ALL"))
   {
     memset (&filter, 1, sizeof(filter));
     filter.NONE = FALSE;
   }
-  else if (strstr(val,"NONE"))
+  else if (strstr(val, "NONE"))
   {
     memset (&filter, 0, sizeof(filter));
     filter.NONE = TRUE;
