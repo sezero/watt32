@@ -489,6 +489,10 @@ pull-request-79.exe: pull-request-79.c
 	$(call compile_and_link, $@, $<)
 	@echo
 
+pull-request-79_w.exe: pull-request-79.c
+	$(call compile_and_link_ws2, $@, -D_WIN32_WINNT=0x0600 $<)
+	@echo
+
 %.exe: %.c $(WATT_LIB) | $(MAKEFILE_LIST)
 	$(call compile_and_link, $@, $<)
 	@echo
@@ -506,6 +510,7 @@ clean realclean vclean:
 	rm -f $(PROGRAMS) $(PROGRAMS:.exe=.obj) $(PROGRAMS:.exe=.map) echo.obj listen.obj cyg_kbhit.o
 	rm -f $(PROGRAMS:.exe=.pdb) vc1*.pdb highc.arg 386link.arg fsext.exe fsext.map cpp-filter.py
 	rm -f link.arg wlink.arg cl.arg clang-cl.arg bcc32.arg bcc32c.arg wcc.arg wcc386.arg gcc.arg $(BIN_PREFIX)gcc.arg
+	rm -f pull-request-79*.{exe,map,pdb,obj}
 	@echo 'Cleaning done.'
 
 #
