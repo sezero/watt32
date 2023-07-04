@@ -865,7 +865,7 @@ ifeq ($(wildcard "$(CLANG_ROOT)/bin/clang-cl.exe"),"")
   $(error "$(CLANG_ROOT)/bin/clang-cl.exe" not found!)
 endif
 
-CC     = "$(CLANG_ROOT)/bin/clang-cl"
+CC     = "$(CLANG_ROOT)/bin/clang-cl.exe"
 CFLAGS = -nologo -Zi -Zo -GS- -I. -I../inc \
          -DWATT32_BUILD                    \
          -D_CRT_SECURE_NO_WARNINGS         \

@@ -8,9 +8,9 @@ skip_commits:
 environment:
   matrix:
     - BUILDER: clang
-      CPU:     x64
-    - BUILDER: clang
       CPU:     x86
+    - BUILDER: clang
+      CPU:     x64
     - BUILDER: cygwin
       CPU:     x86
     - BUILDER: cygwin
