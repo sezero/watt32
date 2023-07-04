@@ -847,7 +847,7 @@ ifeq ($(CLANG_64),)
   $(error 'CLANG_64' must be set in your environment to point to the 64-bit root of your clang-cl installation.)
 endif
 
-CLANG_ROOT = "$(CLANG_64)"
+CLANG_ROOT = $(CLANG_64)
 $(info CLANG_64: $(CLANG_64))
 
 @else
@@ -855,13 +855,17 @@ ifeq ($(CLANG_32),)
   $(error 'CLANG_32' must be set in your environment to point to the 32-bit root of your clang-cl installation.)
 endif
 
-CLANG_ROOT = "$(CLANG_32)"
+CLANG_ROOT = $(CLANG_32)
 $(info CLANG_32: $(CLANG_32))
 @endif
 
 $(info Detected 'CLANG_ROOT=$(CLANG_ROOT)' for clang-cl)
 
-CC     = $(CLANG_ROOT)/bin/clang-cl
+ifeq ($(wildcard "$(CLANG_ROOT)/bin/clang-cl.exe"),"")
+  $(error "$(CLANG_ROOT)/bin/clang-cl.exe" not found!)
+endif
+
+CC     = "$(CLANG_ROOT)/bin/clang-cl"
 CFLAGS = -nologo -Zi -Zo -GS- -I. -I../inc \
          -DWATT32_BUILD                    \
          -D_CRT_SECURE_NO_WARNINGS         \
@@ -938,7 +942,7 @@ ifneq ($(USE_ASAN)$(USE_UBSAN),00)
   # Let the linker select the ASAN libraries.
   #
   LDFLAGS += -inferasanlibs \
-             -libpath:$(CLANG_ROOT)/lib/clang/$(CLANG_MAJOR_VER)/lib/windows
+             -libpath:"$(CLANG_ROOT)/lib/clang/$(CLANG_MAJOR_VER)/lib/windows"
 endif
 
 #
