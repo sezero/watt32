@@ -30,6 +30,7 @@ set W32_BIN2C_=../util/win32/bin2c.exe
 
 set HAVE_CYGWIN32=0
 set HAVE_CYGWIN64=0
+set HAVE_MINGW_TDM=0
 
 if exist %CYGWIN32_ROOT%\bin\gcc.exe (
    set HAVE_CYGWIN32=1
@@ -43,6 +44,10 @@ if exist %CYGWIN64_ROOT%\bin\gcc.exe (
    set TEE=%CYGWIN64_ROOT%\bin\tee.exe
    set DATE=%CYGWIN64_ROOT%\bin\date.exe
    set CYGWIN_ROOT=%CYGWIN64_ROOT%
+)
+
+if exist %MINGW_TDM%\bin\gcc.exe (
+   set HAVE_MINGW_TDM=1
 )
 
 if exist %MSYS_ROOT%\bin\tee.exe (
@@ -88,11 +93,18 @@ call :do_make
 set MAKE_CMD=wmake.exe -h -f watcom_w.mak
 call :do_make
 
-set MAKE_CMD=make.exe -f MinGW64_32.mak
-call :do_make
-
-set MAKE_CMD=make.exe -f MinGW64_64.mak
-call :do_make
+::
+:: Set paths for a Cygwin32/64 install and hope it has a 'sh.exe' for '%GNUMAKE%'
+::
+if %HAVE_MINGW_TDM%. == 1. (
+  set PATH=%MINGW_TDM%\bin;%CYGWIN32_ROOT%\bin;%CYGWIN64_ROOT%\bin;%WINDIR%\System32
+  set MAKE_CMD=%GNUMAKE% -f MinGW64_32.mak
+  call :do_make
+  set MAKE_CMD=%GNUMAKE% -f MinGW64_64.mak
+  call :do_make
+) else (
+  call :do_log "No dual-mode TDM-MinGW found"
+)
 
 if %HAVE_CYGWIN32%. == 1. (
   set PATH=%CYGWIN32_ROOT%\bin;%WINDIR%\System32
@@ -115,7 +127,7 @@ exit /b
 
 :do_make
   echo ------------------------------------------------------------------------- | %TEE% %MAKE_LOG%
-  %DATE% +%%T                       >> %MAKE_LOG%
+  %DATE% "+%%F %%T:"                >> %MAKE_LOG%
   echo Calling '%MAKE_CMD% %CLEAN%' >> %MAKE_LOG%
   echo.                             >> %MAKE_LOG%
   echo on
@@ -125,6 +137,6 @@ exit /b
 
 :do_log
   echo ------------------------------------------------------------------------- | %TEE% %MAKE_LOG%
-  %DATE% +%%T >> %MAKE_LOG%
-  echo %$ | %TEE% %MAKE_LOG%
+  %DATE% "+%%F %%T:" >> %MAKE_LOG%
+  echo %$ | %TEE%       %MAKE_LOG%
   exit /b
