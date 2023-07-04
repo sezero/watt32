@@ -1018,7 +1018,7 @@ $(STAT_LIB): $(OBJS) $(LIB_ARGS)
 $(IMP_LIB): $(WATT_DLL)
 
 $(WATT_DLL): $(OBJS) $(RESOURCE) $(LINK_ARGS)
-	link -out:$@ -implib:$(IMP_LIB) @$(LINK_ARGS)
+	link -out:$@ -implib:$(IMP_LIB) $(LDFLAGS) @$(LINK_ARGS)
 	rm -f $(IMP_LIB:.lib=.exp)
 
 $(OBJPATH)%.obj: %.c $(C_ARGS)
@@ -1481,9 +1481,6 @@ $(LIB_ARGS): $(OBJS) $(MAKEFILE_LIST)
 @ifdef HIGHC DJGPP
 $(LINK_ARGS): $(OBJS) $(MAKEFILE_LIST)
 	$(call create_response_file, $@, $(OBJS))
-@elifdef CLANG
-$(LINK_ARGS): $(OBJS) $(RESOURCE) $(MAKEFILE_LIST)
-	$(call create_response_file, $@, $(LDFLAGS) $(OBJS) $(RESOURCE) $(EX_LIBS))
 @else
 $(LINK_ARGS): $(OBJS) $(RESOURCE) $(MAKEFILE_LIST)
 	$(call create_response_file, $@, $(OBJS) $(RESOURCE) $(EX_LIBS))
