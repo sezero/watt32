@@ -24,7 +24,7 @@ if %_CMDPROC. == 4NT. .or. %_CMDPROC. == TCC. .or. %_CMDPROC. == TCCLE. on break
 :: For 'bcc_w.mak'
 ::
 set BCCDIR=..\CI\CBuilder
-set GNUMAKE=..\CI\gnumake.exe
+set GNUMAKE=..\util\win32\gnumake.exe
 set W32_BIN2C=..\util\win32\bin2c.exe
 set W32_BIN2C_=../util/win32/bin2c.exe
 
