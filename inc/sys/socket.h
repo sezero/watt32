@@ -302,7 +302,7 @@ W32_FUNC int W32_CALL accept (int, struct sockaddr *, socklen_t *);
 W32_FUNC int W32_CALL bind (int, const struct sockaddr *, socklen_t);
 W32_FUNC int W32_CALL closesocket (int s);
 W32_FUNC int W32_CALL connect (int, const struct sockaddr *, socklen_t);
-W32_FUNC int W32_CALL ioctlsocket (int s, long cmd, char *argp);
+W32_FUNC int W32_CALL ioctlsocket (int s, long cmd, void *argp);
 W32_FUNC int MS_CDECL fcntlsocket (int s, int cmd, ...);
 
 W32_FUNC int W32_CALL getdomainname (char *name, size_t len);

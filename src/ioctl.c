@@ -41,10 +41,10 @@
 
 #if defined(USE_BSD_API)
 
-static int file_ioctrl  (Socket *socket, long cmd, char *argp);
-static int iface_ioctrl (Socket *socket, long cmd, char *argp);
-static int arp_ioctrl   (Socket *socket, long cmd, char *argp);
-static int waterm_ioctrl(Socket *socket, long cmd, char *argp);
+static int file_ioctrl  (Socket *socket, long cmd, void *argp);
+static int iface_ioctrl (Socket *socket, long cmd, void *argp);
+static int arp_ioctrl   (Socket *socket, long cmd, void *argp);
+static int waterm_ioctrl(Socket *socket, long cmd, void *argp);
 
 #define NO_CMD(cmd) SOCK_DEBUGF ((", unsupported cmd %d, group %c", \
                                   (int)((cmd) & IOCPARM_MASK),      \
@@ -61,7 +61,7 @@ static const char *get_ioctl_cmd (long cmd);
 #define ARPHRD_FDDI 10
 #endif
 
-int W32_CALL ioctlsocket (int s, long cmd, char *argp)
+int W32_CALL ioctlsocket (int s, long cmd, void *argp)
 {
   Socket *socket = _socklist_find (s);
 
@@ -90,15 +90,15 @@ int W32_CALL ioctlsocket (int s, long cmd, char *argp)
 /*
  * IO-control for "file" handles (i.e. stream/datagram sockets)
  */
-static int file_ioctrl (Socket *socket, long cmd, char *argp)
+static int file_ioctrl (Socket *socket, long cmd, void *argp)
 {
   int len;
-
-  VERIFY_RW (argp, sizeof(*argp));
 
   switch ((DWORD)cmd)
   {
     case FIONREAD:
+         VERIFY_RW (argp, sizeof(u_long));
+
          if (socket->so_type != SOCK_DGRAM &&
              socket->so_type != SOCK_STREAM)
          {
@@ -126,7 +126,9 @@ static int file_ioctrl (Socket *socket, long cmd, char *argp)
          break;
 
     case FIONBIO:                 /* set nonblocking I/O on/off */
-         if (*argp)
+         VERIFY_RW (argp, sizeof(char));
+
+         if (*(char*)argp)
          {
            socket->so_state |= SS_NBIO;
            socket->timeout = 0;
@@ -265,7 +267,7 @@ static struct ifnet *tok_ifnet (void)
 /*
  * Handler for interface request get/set commands
  */
-static int iface_ioctrl (Socket *socket, long cmd, char *argp)
+static int iface_ioctrl (Socket *socket, long cmd, void *argp)
 {
   struct ifreq       *ifr = (struct ifreq *) argp;
   struct ifconf      *ifc = (struct ifconf*) argp;
@@ -507,10 +509,8 @@ static int iface_ioctrl (Socket *socket, long cmd, char *argp)
 /*
  * Handler for buffer hi/lo watermark and urgent data (OOB)
  */
-static int waterm_ioctrl (Socket *socket, long cmd, char *argp)
+static int waterm_ioctrl (Socket *socket, long cmd, void *argp)
 {
-  VERIFY_RW (argp, sizeof(*argp));
-
   switch ((DWORD)cmd)
   {
     case SIOCSHIWAT:
@@ -547,7 +547,7 @@ static int waterm_ioctrl (Socket *socket, long cmd, char *argp)
 /*
  * Handler for ARP-cache interface commands
  */
-static int arp_ioctrl (Socket *socket, long cmd, char *argp)
+static int arp_ioctrl (Socket *socket, long cmd, void *argp)
 {
   struct arpreq *arp = (struct arpreq*) argp;
   eth_address   *eth;
