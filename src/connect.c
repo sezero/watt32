@@ -372,21 +372,13 @@ static int tcp_connect (Socket *socket)
 
   W32_GCC_FUNC_TYPE_WARN_DEF()
 
-  if (socket->so_error == EHOSTUNREACH)
+  if (socket->so_error != 0)
   {
-    SOCK_DEBUGF ((", %s", socket->tcp_sock->err_msg ?
-                  socket->tcp_sock->err_msg : "no route"));
-    SOCK_ERRNO (EHOSTUNREACH);
-    return (-1);
-  }
-
-  /* We got an ICMP_UNREACH from someone
-   */
-  if (socket->so_state & SS_CONN_REFUSED)
-  {
-    socket->so_state &= ~SS_ISCONNECTING;
-    SOCK_DEBUGF ((", ECONNREFUSED"));
-    SOCK_ERRNO (ECONNREFUSED);
+    SOCK_DEBUGF ((", SO_ERROR: %s", socket->tcp_sock->err_msg ?
+                  socket->tcp_sock->err_msg :
+                  short_strerror (socket->so_error)));
+    SOCK_ERRNO (socket->so_error);
+    socket->so_error = 0;
     return (-1);
   }
 
