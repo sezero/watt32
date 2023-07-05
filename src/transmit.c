@@ -619,10 +619,11 @@ static int tcp_transmit (Socket *socket, const void *buf, unsigned len,
 
   if (rc <= 0)    /* error in tcp_write() */
   {
-    if (sk->tcp.locflags & LF_GOT_ICMP) /* got ICMP host/port unreachable */
+    if (socket->so_error != 0)
     {
-      SOCK_DEBUGF ((", ECONNREFUSED")); /* !! a better code? */
-      SOCK_ERRNO (ECONNREFUSED);
+      SOCK_DEBUGF ((", SO_ERROR: %s", short_strerror (socket->so_error)));
+      SOCK_ERRNO (socket->so_error);
+      socket->so_error = 0;
     }
     else if (sk->tcp.state != tcp_StateESTAB)
     {
@@ -756,10 +757,11 @@ static int udp_transmit (Socket *socket, const void *buf, unsigned len)
 
   if (rc <= 0)    /* error in udp_write() */
   {
-    if (sk->udp.locflags & LF_GOT_ICMP)
+    if (socket->so_error != 0)
     {
-      SOCK_DEBUGF ((", ECONNREFUSED"));
-      SOCK_ERRNO (ECONNREFUSED);
+      SOCK_DEBUGF ((", SO_ERROR: %s", short_strerror (socket->so_error)));
+      SOCK_ERRNO (socket->so_error);
+      socket->so_error = 0;
     }
     else
     {

@@ -474,10 +474,11 @@ read_it:
       break;
     }
 
-    if (socket->so_state & SS_CONN_REFUSED)
+    if (socket->so_error != 0)
     {
-      SOCK_DEBUGF ((", ECONNREFUSED (2)"));
-      SOCK_ERRNO (ECONNREFUSED);
+      SOCK_DEBUGF ((", SO_ERROR: %s", short_strerror (socket->so_error)));
+      SOCK_ERRNO (socket->so_error);
+      socket->so_error = 0;
       return (-1);
     }
 
@@ -644,10 +645,11 @@ static int udp_receive (Socket *socket, void *buf, int len, int flags,
       break;
     }
 
-    if (socket->so_state & SS_CONN_REFUSED)
+    if (socket->so_error != 0)
     {
-      SOCK_DEBUGF ((", ECONNREFUSED (2)"));
-      SOCK_ERRNO (ECONNREFUSED);
+      SOCK_DEBUGF ((", SO_ERROR: %s", short_strerror (socket->so_error)));
+      SOCK_ERRNO (socket->so_error);
+      socket->so_error = 0;
       return (-1);
     }
 
