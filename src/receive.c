@@ -105,18 +105,36 @@ static int receive (const char *func, int s, void *buf, int len, int flags,
     VERIFY_RW (from, sa_len);
   }
 
+  if (socket->so_state & SS_ISCONNECTING)
+  {
+    while (1)
+    {
+      tcp_tick (NULL);
+
+      if (!_sock_pending_connect (socket))
+         break;
+
+      if (socket->so_state & SS_NBIO)
+      {
+        SOCK_DEBUGF ((", EAGAIN"));
+        SOCK_ERRNO (EAGAIN);
+        return (-1);
+      }
+    }
+  }
+
+  if (socket->so_error != 0)
+  {
+    SOCK_DEBUGF ((", SO_ERROR: %s", short_strerror (socket->so_error)));
+    SOCK_ERRNO (socket->so_error);
+    socket->so_error = 0;
+    return (-1);
+  }
+
   if (socket->so_state & SS_CONN_REFUSED)
   {
-    if (socket->so_error == ECONNRESET)  /* from BSO_RST_CALLBACK */
-    {
-      SOCK_DEBUGF ((", ECONNRESET"));
-      SOCK_ERRNO (ECONNRESET);
-    }
-    else
-    {
-      SOCK_DEBUGF ((", ECONNREFUSED (1)"));
-      SOCK_ERRNO (ECONNREFUSED);
-    }
+    SOCK_DEBUGF ((", ECONNREFUSED (1)"));
+    SOCK_ERRNO (ECONNREFUSED);
     return (-1);
   }
 
