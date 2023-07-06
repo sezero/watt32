@@ -1,0 +1,68 @@
+This is a port of wget 1.8.2 to DOS. It includes support for SSL (the
+https:/ protocol). It does not have National Language Support. This
+program does NOT interface with Winsock under Windows9x. If you use
+Windows, see one of the Windows ports of wget, rather than this port,
+which uses the WATT-32 tcp library. To use wget, there MUST be a packet
+driver loaded, and you should have a working WATTCP.CFG file. The
+documentation is best read with the "info" program, but can be read
+with any text viewer. To install the documentation, edit your "DIR"
+file, to include the line that starts with "*" at the beginning of the
+wget.inf file. This can be done automatically by the "install-info"
+program. If you are in plain DOS, with 8+3 filesystem, the file is
+called "install-.exe". If you don't have info, it is available from
+"ftp://ftp.simtel.net/pub/simtelnet/gnu/djgpp/v2gnu/txi42b.zip".
+
+Wget is best run from a batch file that installs the packet driver and
+sets the necessary environment variables. HOME should point to the
+directory where _wgetrc and _netrc reside. WATTCP.CFG should point to
+the directory where the file "WATTCP.CFG" resides. The appropriate
+packet driver depends on the network card installed. If calling over a
+modem, the DOSPPP program by Antonio Lopez is recommended, but other
+PPP packet drivers or SLIP packet drivers may work. The WATTCP.CFG file
+must have correct information as to your IP address, Gateway IP address,
+and domain nameservers. If you use dynamic IP addreessing and can't use
+BOOTP, then these will have to be entered each time. Environment
+variables can be used. See the WATTCP.CFG file for details.
+
+Wget can be used as an external program with the DOS port of lynx. The
+DOS port uses $HOME/_wgetrc and $HOME/_netrc rather than the ".wgetrc"
+and ".netrc" files referred to in the documentation. The ability of
+wget to function in the background is not present in this port. The
+same setup which works with the WATT-32 DOS version of lynx should work
+with this port. See the lynx distribution from my site for more detail.
+Source code for wget is available from any GNU mirror site, or from
+"ftp://ftp.gnu.org/pub/wget".
+
+The 0.6 pre-beta version of DOSPPP is available from:
+"http://personal.redestb.es/tonilop/dosppp/dosppp06.zip"
+"http://www.ibiblio.org/pub/micro/pc-stuff/freedos/files/net/dosppp/dosppp06.zip"
+"http:///www.ncf.carleton.ca/ncf/pda/computer/dos/net/dosppp06.zip"
+"http://www.geocities.com/Eureka/Plaza/4918/dosppp06.zip"
+
+For help in setting up dosppp on your system, see the setup program
+developed by Alfredo Cole, available at:
+"http://www.geocities.com/Eureka/Plaza/4918/setup.zip"
+
+Other packet drivers can be obtained from
+"ftp://ftp.crynwr.com/drivers" and from
+"ftp://ftp.columbia.edu/packet-drivers".
+
+Like all DJGPP programs, wget is a protected mode program and needs
+a protected mode interface such as CWSDPMI. You may need to place
+CWSDPMI.EXE in your path. Math coprocessor emulation (387) is built
+into the executable and should be used automatically if you don't have
+a math coprocessor. CWSDPMI is available from any DJGPP mirror site,
+or at "ftp://ftp.simtel.net/pub/simtelnet/gnu/djgpp/v2misc/"
+
+See the WATT-32 lynx distribution at
+"http://www.rahul.net/dkaufman/index.html".
+
+This port was compiled with DJGPP 2.03, Binutils 2.11.2, GCC
+2.95.2, WATT-32 2.1 dev.rel.5 and openssl-0.9.6d-beta1. It uses the
+wmemu library for 387 emulation. Source code for 
+wmemu can be obtained from any of the DJGPP mirror sites, such as
+"ftp://ftp.simtel.net/pub/simtelnet/gnu/djgpp/". Source code for
+WATT-32 is available at "http://www.bgnett.no/~giva".
+
+Send comments about the DOS port to "dkaufman@rahul.net".
+                           Doug Kaufman
