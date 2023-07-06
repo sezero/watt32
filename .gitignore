@@ -178,11 +178,8 @@ bin/VERIFY
 bin/WAKEUP
 bin/WATFTP
 bin/WGET
-bin/WPUT.030
-bin/wput.031
 bin/WWW.BOA
 bin/watt-32.chm
-
 src/*.mak
 src/chk_gcc.bat
 src/chk_hdr.bat

@@ -1,0 +1,138 @@
+#
+# GNU-make Makefile for the `wput' utility.
+# For either:
+#   Watt-32 on Windows;  USE_WATT32=1 -> wput-w32.exe
+#   or Winsock2;         USE_WATT32=0 -> wput-win.exe
+#
+# Target either MSVC, clang-cl or MinGW-w64.
+#
+USE_MINGW  ?= 0
+USE_CLANG  ?= 0
+USE_WATT32 ?= 0
+
+MAKEFLAGS += --warn-undefined-variables
+
+ifeq ($(CPU),x86)
+  BITS = 32
+else
+  BITS = 64
+endif
+
+ifeq ($(USE_MINGW),1)
+  #
+  # Change to suite
+  #
+  CC      =  $(realpath $(MINGW_TDM))/bin/gcc.exe
+  OBJ_DIR = mingw_obj
+  O       = o
+  select  = $(1)
+
+else ifeq ($(USE_CLANG),1)
+  CC      = clang-cl.exe
+  OBJ_DIR = clang_obj
+  O       = obj
+  select  = $(2)
+
+else
+  CC      = cl.exe
+  OBJ_DIR = msvc_obj
+  O       = obj
+  select  = $(3)
+endif
+
+c_to_obj = $(addprefix $(OBJ_DIR)/, $(notdir $(1:.c=.$(O))))
+
+SOURCES = ftp.c getopt.c utils.c wput.c
+
+CFLAGS = -I.                   \
+         -DWIN32_LEAN_AND_MEAN \
+         -D_WINSOCK_DEPRECATED_NO_WARNINGS
+
+ifeq ($(USE_MINGW),1)
+  CFLAGS  += -m$(BITS)
+  LDFLAGS  = -m$(BITS)
+else
+  CFLAGS += -nologo -MD -Ot -W3 -Zi    \
+            -Gy -GS -RTCs              \
+            -I./msvc-missing           \
+            -D_CRT_SECURE_NO_WARNINGS  \
+            -D_CRT_SECURE_NO_DEPRECATE \
+            -D_CRT_NONSTDC_NO_WARNINGS \
+            -wd4101 -wd4244 -wd4267
+
+  LDFLAGS = -nologo -manifest:no -debug -incremental:no -machine:$(CPU)
+
+  vpath %.c  msvc-missing
+  SOURCES += msvc-missing/dirent.c
+endif
+
+ifeq ($(USE_CLANG),1)
+  CFLAGS += -fms-compatibility   \
+            -ferror-limit=5      \
+            -Wno-format          \
+            -Wno-unused-variable \
+            -Wno-deprecated-non-prototype
+endif
+
+OBJECTS = $(call c_to_obj, $(SOURCES))
+
+ifeq ($(USE_WATT32),1)
+  EXE     = wput-w32.exe
+  CFLAGS += -DWATT32           \
+            -DWATT32_NO_OLDIES \
+            -I$(WATT_ROOT)/inc \
+            -I$(WATT_ROOT)/inc/w32-fakes
+
+  CFLAGS += $(call select,, -D__GETOPT_H__, -D__GETOPT_H__)
+
+  OS_LIBS  =
+  WATT_LIB = $(call select, $(WATT_ROOT)/lib/$(CPU)/libwatt32.dll.a,      \
+                            $(WATT_ROOT)/lib/$(CPU)/wattcp_clang_imp.lib, \
+                            $(WATT_ROOT)/lib/$(CPU)/wattcpvc_imp.lib)
+else
+  EXE      = wput-win.exe
+  OS_LIBS  = $(call select, -lws2_32, ws2_32.lib, ws2_32.lib)
+  WATT_LIB =
+endif
+
+all: $(EXE)
+
+%.obj:
+	$(CC) -c $(CFLAGS) $*.c
+	@echo
+
+$(OBJ_DIR)/%.o: %.c | $(OBJ_DIR)
+	$(CC) -c $(CFLAGS) -o $@ $<
+	@echo
+
+$(OBJ_DIR)/%.obj: %.c | $(OBJ_DIR)
+	$(CC) -c $(CFLAGS) -Fo./$@ $<
+	@echo
+
+$(OBJ_DIR):
+	mkdir $@
+
+ifeq ($(USE_MINGW),1)
+  $(EXE): $(OBJECTS) $(WATT_LIB)
+	$(CC) -o $@ $(LDFLAGS) $^ $(OS_LIBS)
+	@echo
+else
+  $(EXE): $(OBJECTS) $(WATT_LIB)
+	link -out:$@ $(LDFLAGS) $^ $(OS_LIBS)
+	rm -f $(@:.exe=.{exp,lib})
+	@echo
+endif
+
+clean:
+	rm -fr $(OBJ_DIR)
+	rm -f vc14*.pdb
+
+vclean realclean: clean
+	rm -f wput-win.* wput-w32.*
+	rm -fr clang_obj mingw_obj msvc_obj
+
+$(OBJ_DIR)/wput.$(O):   wput.c wput.h utils.h getopt.h
+$(OBJ_DIR)/ftp.$(O):    ftp.c ftp.h wput.h utils.h
+$(OBJ_DIR)/utils.$(O):  utils.c wput.h utils.h
+$(OBJ_DIR)/getopt.$(O): getopt.c
+

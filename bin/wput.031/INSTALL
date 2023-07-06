@@ -1,0 +1,33 @@
+wput 0.3.1
+
+Put the files in a directory under $(WATT_ROOT)/bin.
+
+For Windows users:
+
+  To build:
+  1) Run 'make -f makefile.Windows USE_WATT32=1'
+     to build a Watt-32 (Win) version 'wput-w32.exe'.
+  1) Run 'make -f makefile.Windows USE_WATT32=0'
+     to build a plain Winsock2 version 'wput-win.exe'.
+
+For DOS / Watt-32 users:
+
+  To build:
+  1) Run 'make -f makefile.dj depend'
+  2) Run 'make -f makefile.dj'
+
+Get Watt-32 at http://www.watt-32.net/
+
+I did this port in hurry, so there may still be bugs.
+The 'Makefile.Windows' is for MSVC, clang-cl or MinGW-w64
+(Cygwin unsupported).
+
+The project (now dead it seems) is hosted at SourceForge:
+  https://sourceforge.net/projects/wput/
+  git clone https://git.code.sf.net/p/wput/code
+
+G.Vanem <gvanem@yahoo.no>
+
+PS. Credits go to the original author <afei@jhu.edu>.
+    Whoever that is, Andy Feinberg?
+

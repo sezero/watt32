@@ -1,0 +1,10 @@
+
+SRC = wput.c ftp.c utils.c
+
+DJGPP_EXE = wput-dj.exe
+
+CFLAGS = -Wno-unused-variable -Wno-stringop-truncation -Wno-format-overflow
+
+include ../djcommon.mak
+
+# DO NOT DELETE THIS LINE
