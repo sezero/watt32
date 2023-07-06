@@ -803,8 +803,8 @@ extern const char *short_strerror (int errnum);
   #define POPF()          _inline (0x9D)       /* popfd */
 
 #elif defined(__GNUC__) && defined(__i386__)
-  #define PUSHF_CLI()     __asm__ __volatile__ ("pushfl; cli" ::: "memory")
-  #define POPF()          __asm__ __volatile__ ("popfl"       ::: "memory")
+  #define PUSHF_CLI()     int eflags_; __asm__ __volatile__ ("pushfl; cli; popl %0" : "=rm" (eflags_))
+  #define POPF()          __asm__ __volatile__ ("pushl %0; popfl" :: "rm" (eflags_))
 
 #elif (defined(__SMALL__) || defined(__LARGE__)) && !defined(__SMALL32__)
   #if defined(__BORLANDC__) /* prevent spawning tasm.exe */
