@@ -120,6 +120,10 @@ static int receive (const char *func, int s, void *buf, int len, int flags,
         SOCK_ERRNO (EAGAIN);
         return (-1);
       }
+
+      if (socket->tcp_sock->usr_yield)
+         (*socket->tcp_sock->usr_yield) ();
+      else WATT_YIELD ();
     }
   }
 

@@ -282,6 +282,10 @@ static int transmit (const char *func, int s, const void *buf, unsigned len,
           SOCK_ERRNO (EAGAIN);
           return (-1);
         }
+
+        if (socket->tcp_sock->usr_yield)
+           (*socket->tcp_sock->usr_yield) ();
+        else WATT_YIELD ();
       }
     }
 
