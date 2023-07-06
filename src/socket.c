@@ -1156,17 +1156,7 @@ static Socket *tcp_sock_daemon (Socket *sock)
   if (sock->so_options & SO_KEEPALIVE)
      do_keepalive (sock);
 
-  if (state == tcp_StateRESOLVE ||
-      state == tcp_StateSYNSENT)        /* opening active tcp session */
-  {
-    sock->so_state |= SS_ISCONNECTING;
-  }
-  else if (state == tcp_StateESTAB)        /* established tcp session */
-  {
-    sock->so_state |=  SS_ISCONNECTED;
-    sock->so_state &= ~(SS_ISCONNECTING | SS_ISDISCONNECTING);
-  }
-  else if (state >= tcp_StateTIMEWT)             /* dying tcp session */
+  if (state >= tcp_StateTIMEWT)             /* dying tcp session */
   {
     sock_type *sk = (sock_type*)tcp;
     BOOL closing  = (sock->so_state & (SS_ISDISCONNECTING | SS_CANTSENDMORE));
@@ -2183,6 +2173,56 @@ int _UDP6_listen (Socket *socket, const void *host, WORD port)
 }
 #endif  /* USE_IPV6 */
 
+/**
+ * Check progress on a non-blocking SOCK_STREAM socket that has
+ * SS_ISCONNECTING set.  Updates SO_STATE and SO_ERROR.
+ * Returns TRUE if the connection is still pending.
+ */
+BOOL _sock_pending_connect (Socket *socket)
+{
+  if (socket->tcp_sock->state == tcp_StateESTAB)
+  {
+    socket->so_state &= ~(SS_ISCONNECTING | SS_UNCONNECTED);
+    socket->so_state |= SS_ISCONNECTED;
+    WATT_ASSERT (socket->so_error == 0);
+    return (FALSE);
+  }
+
+  if (socket->so_error != 0)
+  {
+    /* Caught an ICMP reject or TCP RST.
+     */
+    socket->so_state &= ~SS_ISCONNECTING;
+    return (FALSE);
+  }
+
+  if (chk_timeout (socket->nb_timer))
+  {
+    socket->so_state &= ~SS_ISCONNECTING;
+    socket->so_error = ETIMEDOUT;
+    return (FALSE);
+  }
+
+  if (socket->tcp_sock->state > tcp_StateESTAB)
+  {
+    /* We forgot to set SO_ERROR somewhere.
+     */
+    SOCK_FATAL (("%s (%d) Fatal: Unhandled non-block event\n",
+                 __FILE__, __LINE__));
+    socket->so_state &= ~SS_ISCONNECTING;
+    socket->so_error = ECONNREFUSED;
+    return (FALSE);
+  }
+
+  /* Don't let tcp_Retransmitter() timeout this socket
+   * (unless there is a ARP timeout etc.)
+   */
+  socket->tcp_sock->timeout = 0;
+
+  /* Still connecting.
+   */
+  return (TRUE);
+}
 
 #ifdef NOT_USED
 /**

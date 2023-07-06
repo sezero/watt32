@@ -423,6 +423,11 @@ extern int _UDP6_open  (Socket *socket, const void *host, WORD loc_port, WORD re
 extern int _TCP6_listen(Socket *socket, const void *host, WORD loc_port);
 extern int _UDP6_listen(Socket *socket, const void *host, WORD port);
 
+/*
+ * Check progress on a non-blocking connect().
+ */
+extern BOOL _sock_pending_connect (Socket *socket);
+
 #endif  /* old __TURBOC__ */
 #endif  /* _w32_SOCKET_H */
 

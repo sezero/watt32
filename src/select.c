@@ -432,39 +432,21 @@ static __inline int listen_queued (Socket *socket)
 }
 
 /*
- * Return TRUE if socket has a "real" error and not a "pending" error.
- * I.e. EALREADY is not a real error, but a pending condition until a
- * non-blocking socket is actually connected. Or if connection fails,
- * in which case the error is ECONNREFUSED.
+ * Return TRUE if socket has any of the state flags set in MASK, or a
+ * non-zero SO_ERROR.
  *
  * This signalled read/write state is assumed to persist for the
  * remaining life of the socket.
  */
 #define READ_STATE_MASK   (SS_CANTRCVMORE)  /* set in recv() or shutdown() */
-#define WRITE_STATE_MASK  (SS_CANTSENDMORE | SS_ISCONNECTED)
+#define WRITE_STATE_MASK  (SS_CANTSENDMORE)
 
 static __inline int sock_signalled (Socket *socket, int mask)
 {
   if (socket->so_state & mask)
      return (1);
 
-  /* A normal blocking socket. 'so_error' is set in
-   * connect(), a "ICMP Unreachable" callback or when RST received
-   * in pctcp.c. Otherwise 'so_error' is zero.
-   */
-  if (!(socket->so_state & SS_NBIO))
-     return (socket->so_error);
-
-#if 0
-  if (socket->so_options & SO_ACCEPTCONN) /* non-blocking listen sock */
-     return (0);
-
-  if (socket->so_error == EALREADY)       /* temporary non-blocking error */
-     return (0);
-  return (1);
-#else
-  return (0);
-#endif
+  return (socket->so_error);
 }
 
 #if defined(__MSDOS__)
@@ -545,18 +527,16 @@ static int read_select (int s, Socket *socket)
   {
     sock_type *sk = (sock_type*) socket->tcp_sock;
 
-    if ((socket->so_state & SS_NBIO) &&
-        sk->tcp.state == tcp_StateESTAB &&
-        socket->so_error == EALREADY)
-       socket->so_error = EISCONN;
+    if (socket->so_options & SO_ACCEPTCONN)     /* incoming connection */
+       return (listen_queued (socket));
 
-    if (sock_signalled(socket,READ_STATE_MASK) || /* signalled for read_s() */
-        sk->tcp.state >= tcp_StateLASTACK      || /* got FIN from peer */
-        sock_rbused(sk) > socket->recv_lowat)     /* Rx-data above low-limit */
+    if (sk->tcp.state >= tcp_StateLASTACK)      /* got FIN from peer */
        return (1);
 
-    if ((socket->so_options & SO_ACCEPTCONN) &&   /* connection pending */
-        listen_queued(socket))
+    if (sock_rbused(sk) > socket->recv_lowat)   /* Rx-data above low-limit */
+       return (1);
+
+    if (sock_signalled(socket, READ_STATE_MASK))
        return (1);
   }
   return (0);
@@ -601,18 +581,17 @@ static int write_select (int s, Socket *socket)
   {
     sock_type *sk = (sock_type*) socket->tcp_sock;
 
-    if (sk->tcp.state == tcp_StateESTAB)
-    {
-      if ((socket->so_state & SS_NBIO) && socket->so_error == EALREADY)
-         socket->so_error = EISCONN;
+    if ((socket->so_state & SS_ISCONNECTING) &&
+        _sock_pending_connect (socket))            /* non-blocking connect() */
+       return (0);
 
-      if (sock_tbleft(sk) > socket->send_lowat)  /* Tx room above low-limit */
-         return (1);
-    }
     if (sk->tcp.state >= tcp_StateESTCL)
        return (1);
 
-    if (sock_signalled(socket,WRITE_STATE_MASK)) /* signalled for write */
+    if (sock_tbleft(sk) > socket->send_lowat)     /* Tx room above low-limit */
+       return (1);
+
+    if (sock_signalled(socket, WRITE_STATE_MASK)) /* signalled for write */
        return (1);
   }
   return (0);
