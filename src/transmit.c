@@ -386,59 +386,8 @@ static int transmit (const char *func, int s, const void *buf, unsigned len,
  */
 static int setup_udp_raw (Socket *socket, const struct sockaddr *to, int tolen)
 {
-  const struct sockaddr_in *peer = (const struct sockaddr_in*) to;
   DWORD keepalive = socket->keepalive;
-  WORD  lport     = 0;
-  BOOL  is_ip6    = (socket->so_family == AF_INET6);
-  BYTE *rdata     = NULL;
   int   rc;
-
-  if (socket->so_state & SS_ISCONNECTED)
-  {
-    if (!socket->remote_addr)
-    {
-      SOCK_FATAL (("setup_udp_raw(): no remote_addr\n"));
-      return (-1);
-    }
-
-    /* No need to reconnect if same peer address/port.
-     */
-    if (!is_ip6)
-    {
-      const struct sockaddr_in *ra = (const struct sockaddr_in*)socket->remote_addr;
-
-      if (peer->sin_addr.s_addr == ra->sin_addr.s_addr &&
-          peer->sin_port        == ra->sin_port)
-        return (1);
-    }
-#if defined(USE_IPV6)
-    else
-    {
-      const struct sockaddr_in6 *ra    = (const struct sockaddr_in6*)socket->remote_addr;
-      const struct sockaddr_in6 *peer6 = (const struct sockaddr_in6*)to;
-
-      if (!memcmp(&peer6->sin6_addr, &ra->sin6_addr, sizeof(peer6->sin6_addr)) &&
-          peer6->sin6_port == ra->sin6_port)
-        return (1);
-    }
-#endif
-
-    SOCK_DEBUGF ((", reconnecting"));
-
-    free (socket->remote_addr);
-    socket->remote_addr = NULL;
-
-    /* Clear any effect of previous ICMP errors etc.
-     */
-    socket->so_state &= ~(SS_CONN_REFUSED | SS_CANTSENDMORE | SS_CANTRCVMORE);
-    socket->so_error  = 0;
-
-    if (socket->so_type == SOCK_DGRAM)
-    {
-      lport = socket->udp_sock->myport;
-      rdata = socket->udp_sock->rx_data;  /* preserve current data */
-    }
-  }
 
   /* For SOCK_DGRAM, udp_close() will be called when (re)opening socket.
    */
@@ -448,35 +397,6 @@ static int setup_udp_raw (Socket *socket, const struct sockaddr *to, int tolen)
 
   if (rc < 0)
      return (-1);
-
-#if 0
-  if ((socket->so_state & SS_PRIV) && socket->so_type == SOCK_DGRAM)
-  {
-    SOCK_DEBUGF ((", SS_PRIV"));
-
-    /* Clear any effect of previous ICMP errors etc.
-     */
-    socket->so_state &= ~(SS_CONN_REFUSED | SS_CANTSENDMORE | SS_CANTRCVMORE);
-    socket->so_error  = 0;
-
-    lport = socket->udp_sock->myport;
-    grab_localport (lport);
-  }
-#endif
-
-  if (rdata)  /* Must be SOCK_DGRAM */
-  {
-    _udp_Socket *udp = socket->udp_sock;
-
-    /* free new rx-buffer set in connect() / _UDP_open().
-     */
-    DISABLE();
-    _sock_free_rcv_buf ((sock_type*)udp);
-    udp->rx_data = rdata;      /* reuse previous data buffer */
-    ENABLE();
-
-    grab_localport (lport);    /* Restore free'd localport */
-  }
 
   /* restore keepalive timer changed in connect()
    */
