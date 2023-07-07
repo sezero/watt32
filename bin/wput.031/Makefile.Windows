@@ -97,10 +97,6 @@ endif
 
 all: $(EXE)
 
-%.obj:
-	$(CC) -c $(CFLAGS) $*.c
-	@echo
-
 $(OBJ_DIR)/%.o: %.c | $(OBJ_DIR)
 	$(CC) -c $(CFLAGS) -o $@ $<
 	@echo
