@@ -44,10 +44,6 @@ so, delete this exception statement from your version.  */
 #define strcasecmp stricmp
 #define strncasecmp strnicmp
 
-/* The same for snprintf() and vsnprintf().  */
-#define snprintf _snprintf
-#define vsnprintf _vsnprintf
-
 /* No stat on Windows.  */
 #define lstat stat
 
