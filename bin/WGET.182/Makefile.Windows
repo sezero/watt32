@@ -1,0 +1,165 @@
+#
+# GNU-make Makefile for the `wget' utility.
+# For either:
+#   Watt-32 on Windows;  USE_WATT32=1 -> wget-w32.exe
+#   or Winsock2;         USE_WATT32=0 -> wget-win.exe
+#
+# Target either MSVC, clang-cl or MinGW-w64.
+#
+USE_MINGW  ?= 0
+USE_CLANG  ?= 1
+USE_WATT32 ?= 1
+
+MAKEFLAGS += --warn-undefined-variables
+
+ifeq ($(CPU),x86)
+  BITS = 32
+else
+  BITS = 64
+endif
+
+ifeq ($(USE_MINGW),1)
+  #
+  # Change to suite
+  #
+  CC      =  $(realpath $(MINGW_TDM))/bin/gcc.exe
+  OBJ_DIR = mingw_obj
+  O       = o
+  select  = $(1)
+
+else ifeq ($(USE_CLANG),1)
+  CC      = clang-cl.exe
+  OBJ_DIR = clang_obj
+  O       = obj
+  select  = $(2)
+
+else
+  CC      = cl.exe
+  OBJ_DIR = msvc_obj
+  O       = obj
+  select  = $(3)
+endif
+
+c_to_obj = $(addprefix $(OBJ_DIR)/, $(notdir $(1:.c=.$(O))))
+
+SOURCES = cmpt.c connect.c cookies.c fnmatch.c ftp-basi.c ftp-ls.c \
+          ftp-opie.c ftp.c gen-md5.c gen_sslf.c getopt.c gnu-md5.c \
+          hash.c headers.c host.c html-par.c html-url.c http.c     \
+          init.c log.c main.c netrc.c progress.c rbuf.c recur.c    \
+          res.c retr.c safe-cty.c snprintf.c url.c utils.c         \
+          version.c mswindow.c
+
+CFLAGS = -I. -DHAVE_CONFIG_H -D_WINSOCK_DEPRECATED_NO_WARNINGS
+
+ifeq ($(USE_MINGW),1)
+  CFLAGS  += -m$(BITS)
+  LDFLAGS  = -m$(BITS)
+else
+  CFLAGS += -nologo -MD -Ot -W3 -Zi    \
+            -Gy -GS -RTCs              \
+            -I./msvc-missing           \
+            -D_CRT_SECURE_NO_WARNINGS  \
+            -D_CRT_SECURE_NO_DEPRECATE \
+            -D_CRT_NONSTDC_NO_WARNINGS \
+            -wd4101 -wd4244 -wd4267
+
+  LDFLAGS = -nologo -manifest:no -debug -incremental:no -machine:$(CPU)
+
+  #vpath %.c  msvc-missing
+  #SOURCES += msvc-missing/dirent.c
+endif
+
+ifeq ($(USE_CLANG),1)
+  CFLAGS += -fms-compatibility            \
+            -ferror-limit=5               \
+            -Wno-format                   \
+            -Wno-unused-variable          \
+            -Wno-deprecated-non-prototype \
+            -Wno-implicit-function-declaration
+endif
+
+OBJECTS = $(call c_to_obj, $(SOURCES))
+
+ifeq ($(USE_WATT32),1)
+  EXE     = wget-w32.exe
+  CFLAGS += -DWATT32           \
+            -DWATT32_NO_OLDIES \
+            -I$(WATT_ROOT)/inc \
+            -I$(WATT_ROOT)/inc/w32-fakes
+
+  OS_LIBS  = $(call select, -luser32, user32.lib, user32.lib)
+  WATT_LIB = $(call select, $(WATT_ROOT)/lib/$(CPU)/libwatt32.dll.a,      \
+                            $(WATT_ROOT)/lib/$(CPU)/wattcp_clang_imp.lib, \
+                            $(WATT_ROOT)/lib/$(CPU)/wattcpvc_imp.lib)
+else
+  CFLAGS  += -D_CRT_NO_POSIX_ERROR_CODES
+  EXE      = wget-win.exe
+  OS_LIBS  = $(call select, -lws2_32, ws2_32.lib, ws2_32.lib)
+  WATT_LIB =
+endif
+
+all: $(EXE)
+
+$(OBJ_DIR)/%.o: %.c | $(OBJ_DIR)
+	$(CC) -c $(CFLAGS) -o $@ $<
+	@echo
+
+$(OBJ_DIR)/%.obj: %.c | $(OBJ_DIR)
+	$(CC) -c $(CFLAGS) -Fo./$@ $<
+	@echo
+
+$(OBJ_DIR):
+	mkdir $@
+
+ifeq ($(USE_MINGW),1)
+  $(EXE): $(OBJECTS) $(WATT_LIB)
+	$(CC) -o $@ $(LDFLAGS) $^ $(OS_LIBS)
+	@echo
+else
+  $(EXE): $(OBJECTS) $(WATT_LIB)
+	link -out:$@ $(LDFLAGS) $^ $(OS_LIBS)
+	rm -f $(@:.exe=.{exp,lib})
+	@echo
+endif
+
+clean:
+	rm -fr $(OBJ_DIR)
+	rm -f vc14*.pdb
+
+vclean realclean: clean
+	rm -f wget-win.* wget-w32.*
+	rm -fr clang_obj mingw_obj msvc_obj
+
+$(OBJ_DIR)/cmpt.$(O):     cmpt.c config.h wget.h sysdep.h options.h safe-cty.h
+$(OBJ_DIR)/connect.$(O):  connect.c config.h wget.h sysdep.h options.h safe-cty.h connect.h host.h
+$(OBJ_DIR)/cookies.$(O):  cookies.c config.h wget.h sysdep.h options.h safe-cty.h utils.h hash.h url.h cookies.h
+$(OBJ_DIR)/fnmatch.$(O):  fnmatch.c config.h wget.h sysdep.h options.h safe-cty.h fnmatch.h
+$(OBJ_DIR)/ftp-basi.$(O): ftp-basi.c config.h wget.h sysdep.h options.h safe-cty.h utils.h rbuf.h connect.h host.h ftp.h
+$(OBJ_DIR)/ftp-ls.$(O):   ftp-ls.c config.h wget.h sysdep.h options.h safe-cty.h utils.h ftp.h rbuf.h url.h
+$(OBJ_DIR)/ftp-opie.$(O): ftp-opie.c config.h wget.h sysdep.h options.h safe-cty.h gen-md5.h
+$(OBJ_DIR)/ftp.$(O):      ftp.c config.h wget.h sysdep.h options.h safe-cty.h utils.h url.h rbuf.h retr.h ftp.h connect.h host.h fnmatch.h netrc.h
+$(OBJ_DIR)/gen-md5.$(O):  gen-md5.c config.h wget.h sysdep.h options.h safe-cty.h gen-md5.h gnu-md5.h
+$(OBJ_DIR)/gen_sslf.$(O): gen_sslf.c config.h
+$(OBJ_DIR)/getopt.$(O):   getopt.c config.h wget.h sysdep.h options.h safe-cty.h getopt.h
+$(OBJ_DIR)/gnu-md5.$(O):  gnu-md5.c config.h wget.h sysdep.h options.h safe-cty.h gnu-md5.h
+$(OBJ_DIR)/hash.$(O):     hash.c config.h wget.h sysdep.h options.h safe-cty.h utils.h hash.h
+$(OBJ_DIR)/headers.$(O):  headers.c config.h wget.h sysdep.h options.h safe-cty.h connect.h rbuf.h headers.h
+$(OBJ_DIR)/host.$(O):     host.c config.h wget.h sysdep.h options.h safe-cty.h utils.h host.h url.h hash.h
+$(OBJ_DIR)/html-par.$(O): html-par.c config.h wget.h sysdep.h options.h safe-cty.h html-par.h
+$(OBJ_DIR)/html-url.$(O): html-url.c config.h wget.h sysdep.h options.h safe-cty.h html-par.h url.h utils.h
+$(OBJ_DIR)/http.$(O):     http.c config.h wget.h sysdep.h options.h safe-cty.h utils.h url.h host.h rbuf.h retr.h headers.h connect.h fnmatch.h netrc.h cookies.h gen-md5.h
+$(OBJ_DIR)/init.$(O):     init.c config.h wget.h sysdep.h options.h safe-cty.h utils.h init.h host.h recur.h netrc.h cookies.h progress.h
+$(OBJ_DIR)/log.$(O):      log.c config.h wget.h sysdep.h options.h safe-cty.h utils.h
+$(OBJ_DIR)/main.$(O):     main.c config.h wget.h sysdep.h options.h safe-cty.h utils.h init.h retr.h rbuf.h recur.h host.h cookies.h url.h progress.h getopt.h
+$(OBJ_DIR)/netrc.$(O):    netrc.c config.h wget.h sysdep.h options.h safe-cty.h utils.h netrc.h init.h
+$(OBJ_DIR)/progress.$(O): progress.c config.h wget.h sysdep.h options.h safe-cty.h progress.h utils.h retr.h rbuf.h
+$(OBJ_DIR)/rbuf.$(O):     rbuf.c config.h wget.h sysdep.h options.h safe-cty.h rbuf.h connect.h
+$(OBJ_DIR)/recur.$(O):    recur.c config.h wget.h sysdep.h options.h safe-cty.h url.h recur.h utils.h retr.h rbuf.h ftp.h fnmatch.h host.h hash.h res.h
+$(OBJ_DIR)/res.$(O):      res.c config.h wget.h sysdep.h options.h safe-cty.h utils.h hash.h url.h retr.h rbuf.h res.h
+$(OBJ_DIR)/retr.$(O):     retr.c config.h wget.h sysdep.h options.h safe-cty.h utils.h retr.h rbuf.h progress.h url.h recur.h ftp.h host.h connect.h hash.h
+$(OBJ_DIR)/safe-cty.$(O): safe-cty.c config.h safe-cty.h
+$(OBJ_DIR)/snprintf.$(O): snprintf.c config.h safe-cty.h
+$(OBJ_DIR)/url.$(O):      url.c config.h wget.h sysdep.h options.h safe-cty.h utils.h url.h host.h hash.h
+$(OBJ_DIR)/utils.$(O):    utils.c config.h wget.h sysdep.h options.h safe-cty.h utils.h fnmatch.h hash.h
+$(OBJ_DIR)/version.$(O):  version.c
+$(OBJ_DIR)/mswindow.$(O): mswindow.c
