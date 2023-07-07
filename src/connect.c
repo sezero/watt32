@@ -148,9 +148,6 @@ int W32_CALL connect (int s, const struct sockaddr *servaddr, socklen_t addrlen)
     }
 #endif
 
-    free (socket->remote_addr);
-    socket->remote_addr = NULL;
-
     /* Clear any effect of previous ICMP errors etc.
      */
     socket->so_state &= ~(SS_CONN_REFUSED | SS_CANTSENDMORE | SS_CANTRCVMORE);
@@ -162,13 +159,15 @@ int W32_CALL connect (int s, const struct sockaddr *servaddr, socklen_t addrlen)
       rdata = socket->udp_sock->rx_data;  /* preserve current data */
     }
   }
-
-  socket->remote_addr = (struct sockaddr_in*) SOCK_CALLOC (sa_len);
-  if (!socket->remote_addr)
+  else
   {
-    SOCK_DEBUGF ((", ENOMEM (rem)"));
-    SOCK_ERRNO (ENOMEM);
-    return (-1);
+    socket->remote_addr = SOCK_CALLOC (sa_len);
+    if (!socket->remote_addr)
+    {
+      SOCK_DEBUGF ((", ENOMEM (rem)"));
+      SOCK_ERRNO (ENOMEM);
+      return (-1);
+    }
   }
 
 #if defined(USE_IPV6)
