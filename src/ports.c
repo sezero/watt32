@@ -147,7 +147,7 @@ int grab_localport (WORD port)
 #else
 int grab_localport (WORD port)
 {
-  ARGUSED (port);
+  ARGSUSED (port);
   return (-1);
 }
 #endif
