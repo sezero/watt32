@@ -126,6 +126,9 @@ extern char hostname [MAX_HOSTLEN+1];
 extern _tcp_Socket *_tcp_allsocs;
 extern _udp_Socket *_udp_allsocs;
 
+extern int _udp_listen (_udp_Socket *s, WORD lport, DWORD ip, WORD port);
+extern int _udp_open   (_udp_Socket *s, WORD lport, DWORD ip, WORD port);
+
 extern void _udp_cancel (const in_Header *ip, int icmp_type, int icmp_code,
                          const char *msg, const void *arg);
 

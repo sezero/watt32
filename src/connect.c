@@ -57,8 +57,6 @@ int W32_CALL connect (int s, const struct sockaddr *servaddr, socklen_t addrlen)
   struct   Socket       *socket = _socklist_find (s);
   volatile int rc, sa_len;
   BOOL     is_ip6;
-  WORD     lport = 0;
-  BYTE    *rdata = NULL;
 
   SOCK_PROLOGUE (socket, "\nconnect:%d", s);
 
@@ -152,12 +150,6 @@ int W32_CALL connect (int s, const struct sockaddr *servaddr, socklen_t addrlen)
      */
     socket->so_state &= ~(SS_CONN_REFUSED | SS_CANTSENDMORE | SS_CANTRCVMORE);
     socket->so_error  = 0;
-
-    if (socket->so_type == SOCK_DGRAM)
-    {
-      lport = socket->udp_sock->myport;
-      rdata = socket->udp_sock->rx_data;  /* preserve current data */
-    }
   }
   else
   {
@@ -261,38 +253,6 @@ int W32_CALL connect (int s, const struct sockaddr *servaddr, socklen_t addrlen)
   _sock_sig_restore();
   _sock_crit_stop();
 
-  if (rc == 0)
-  {
-#if 0
-    if ((socket->so_state & SS_PRIV) && socket->so_type == SOCK_DGRAM)
-    {
-      SOCK_DEBUGF ((", SS_PRIV"));
-
-      /* Clear any effect of previous ICMP errors etc.
-       */
-      socket->so_state &= ~(SS_CONN_REFUSED | SS_CANTSENDMORE | SS_CANTRCVMORE);
-      socket->so_error  = 0;
-
-      lport = socket->udp_sock->myport;
-      grab_localport (lport);
-    }
-#endif
-
-    if (rdata)  /* Must be SOCK_DGRAM */
-    {
-      _udp_Socket *udp = socket->udp_sock;
-
-      /* free new rx-buffer set in connect() / _UDP_open().
-       */
-      DISABLE();
-      _sock_free_rcv_buf ((sock_type*)udp);
-      udp->rx_data = rdata;      /* reuse previous data buffer */
-      ENABLE();
-
-      grab_localport (lport);    /* Restore free'd localport */
-    }
-  }
-
   return (rc);
 }
 
@@ -325,15 +285,6 @@ static int udp_connect (Socket *socket)
     /* errno already set in udp_open() */
     SOCK_DEBUGF ((", %s", socket->udp_sock->err_msg));
     return (-1);
-  }
-
-  if ((socket->so_state & SS_PRIV) && socket->bcast_pool)
-  {
-    /* undo what udp_open() did above.
-     * !!Fix me: clears recv data.
-     */
-    sock_recv_init ((sock_type*)socket->udp_sock,
-                    socket->bcast_pool, socket->pool_size);
   }
 
   socket->so_state &= ~SS_UNCONNECTED;
