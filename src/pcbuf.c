@@ -160,8 +160,16 @@ size_t W32_CALL sock_setbuf (sock_type *s, BYTE *rx_buf, size_t rx_len)
 
   if (rx_len < 8 || !rx_buf)
   {
-    s->tcp.rx_data     = &s->tcp.rx_buf[0];
-    s->tcp.max_rx_data = sizeof(s->tcp.rx_buf) - 1;
+    if (type == VALID_TCP)
+    {
+      s->tcp.rx_data     = &s->tcp.rx_buf[0];
+      s->tcp.max_rx_data = sizeof(s->tcp.rx_buf) - 1;
+    }
+    else /* type == VALID_UDP */
+    {
+      s->udp.rx_data     = &s->udp.rx_buf[0];
+      s->udp.max_rx_data = sizeof(s->udp.rx_buf) - 1;
+    }
   }
   else
   {
