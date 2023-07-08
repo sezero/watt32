@@ -442,7 +442,7 @@ datetime_str (time_t *tm)
 /* The Windows versions of the following two functions are defined in
    mswindows.c.  */
 
-#if !defined(WINDOWS) && !defined(MSDOS)
+#if !defined(WINDOWS) && !defined(MSDOS) || defined(__CYGWIN__)
 void
 fork_to_background (void)
 {
