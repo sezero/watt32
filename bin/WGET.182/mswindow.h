@@ -40,10 +40,6 @@ so, delete this exception statement from your version.  */
 # define S_ISLNK(a) 0
 #endif
 
-/* We have strcasecmp and strncasecmp, just under a different name. */
-#define strcasecmp stricmp
-#define strncasecmp strnicmp
-
 /* No stat on Windows.  */
 #define lstat stat
 
@@ -61,6 +57,7 @@ so, delete this exception statement from your version.  */
 #endif
 #endif
 
+#undef  REALCLOSE
 #define REALCLOSE(x) closesocket (x)
 
 /* read & write don't work with sockets on Windows 95.  */
@@ -70,16 +67,16 @@ so, delete this exception statement from your version.  */
 #ifndef __CYGWIN__
   /* #### Do we need this?  */
   #include <direct.h>
-#endif
 
-/* Windows compilers accept only one arg to mkdir. */
-#ifndef __BORLANDC__
-# define mkdir(a, b) _mkdir(a)
-# define MKDIR(a, b) _mkdir(a)
-#else  /* __BORLANDC__ */
-# define mkdir(a, b) mkdir(a)
-# define MKDIR(a, b) mkdir(a)
-#endif /* __BORLANDC__ */
+  /* Windows compilers accept only one arg to mkdir. */
+  #ifndef __BORLANDC__
+  # define mkdir(a, b) _mkdir(a)
+  # define MKDIR(a, b) _mkdir(a)
+  #else  /* __BORLANDC__ */
+  # define mkdir(a, b) mkdir(a)
+  # define MKDIR(a, b) mkdir(a)
+  #endif /* __BORLANDC__ */
+#endif   /* __CYGWIN__ */
 
 #include <windows.h>
 
@@ -124,14 +121,13 @@ so, delete this exception statement from your version.  */
 #endif
 
 /* Public functions.  */
-#if !defined(__LCC__)
+#if !defined(__MINGW32__) && !defined(__CYGWIN__)
 unsigned int sleep (unsigned);
 #endif
 
 void ws_startup (void);
 void ws_changetitle (char*, int);
 char *ws_mypath (void);
-void ws_help (const char *);
 void windows_main_junk (int *, char **, char **);
 
 #endif /* MSWINDOWS_H */

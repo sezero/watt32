@@ -54,13 +54,12 @@ static int windows_nt_p;
 
 
 /* Emulation of Unix sleep.  */
-#if !defined(__LCC__)
+#if !defined(__MINGW32__)
 unsigned int
 sleep (unsigned seconds)
 {
   return SleepEx (1000 * seconds, TRUE) ? 0U : 1000 * seconds;
 }
-#endif
 
 /* Emulation of Unix usleep().  This has a granularity of
    milliseconds, but that's ok because:
@@ -77,6 +76,7 @@ usleep (unsigned long usec)
   SleepEx (usec / 1000, TRUE);
   return 0;
 }
+#endif
 
 static char *
 read_registry (HKEY hkey, char *subkey, char *valuename, char *buf, int *len)
@@ -123,6 +123,7 @@ ws_hangup (void)
   log_request_redirect_output ("CTRL+Break");
 }
 
+#if !defined(__CYGWIN__)
 void
 fork_to_background (void)
 {
@@ -142,6 +143,7 @@ fork_to_background (void)
   if (!windows_nt_p)
     FreeConsole ();
 }
+#endif
 
 static BOOL WINAPI
 ws_handler (DWORD dwEvent)
@@ -202,28 +204,6 @@ ws_mypath (void)
   else
     wspathsave = NULL;
   return wspathsave;
-}
-
-void
-ws_help (const char *name)
-{
-  char *mypath = ws_mypath ();
-
-  if (mypath)
-    {
-      struct stat sbuf;
-      char *buf = (char *)alloca (strlen (mypath) + strlen (name) + 4 + 1);
-      sprintf (buf, "%s%s.HLP", mypath, name);
-      if (stat (buf, &sbuf) == 0)
-	{
-          printf (_("Starting WinHelp %s\n"), buf);
-          WinHelp (NULL, buf, HELP_INDEX, 0);
-        }
-      else
-        {
-          printf ("%s: %s\n", buf, strerror (errno));
-        }
-    }
 }
 
 void

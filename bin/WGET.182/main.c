@@ -482,9 +482,6 @@ hpVqvdkKsxmNWrHSLcFbEY:G:g:T:U:O:l:n:i:o:a:t:D:A:R:P:B:e:Q:X:I:w:C:",
 	  break;
 	case 'h':
 	  print_help ();
-#ifdef WINDOWS
-	  ws_help (exec_name);
-#endif
 	  exit (0);
 	  break;
 	case 'K':
