@@ -1,16 +1,33 @@
 #
-# GNU-make Makefile for the `wget' utility.
-# For either:
+# GNU-make Makefile for the `wget' utility (building on Windows).
+#
+# Targets:
 #   Watt-32 on Windows;  USE_WATT32=1 -> wget-w32.exe
 #   or Winsock2;         USE_WATT32=0 -> wget-win.exe
+#   or djgpp (MSDOS);    USE_DJGPP=1  -> wget-dj.exe
 #
-# Target either MSVC, clang-cl or MinGW-w64.
+# Target either MSVC, clang-cl, MinGW-w64, Cygwin (todo) or djgpp.
 #
+USE_DJGPP  ?= 0
 USE_MINGW  ?= 0
 USE_CLANG  ?= 1
+USE_CYGWIN ?= 0
 USE_WATT32 ?= 1
 
+#
+# Use "Address Sanitizer"?
+#
+USE_ASAN  ?= 0
+
+#
+# Use "Undefined Behavior Sanitizer (UBSan)"?
+#
+USE_UBSAN ?= 0
+
+THIS_FILE  = Makefile.Windows
 MAKEFLAGS += --warn-undefined-variables
+
+WATT_ROOT := $(realpath $(WATT_ROOT))
 
 ifeq ($(CPU),x86)
   BITS = 32
@@ -18,43 +35,121 @@ else
   BITS = 64
 endif
 
-ifeq ($(USE_MINGW),1)
+ifeq ($(USE_DJGPP),1)
+  ifneq ($(OS),Windows_NT)
+    $(error Use this makefile on Windows only)
+  endif
+
+  ifeq ($(DJGPP_PREFIX),)
+    $(error Define a DJGPP_PREFIX to invoke the djgpp cross compiler)
+  endif
+
+  USE_WATT32 = 1
+  CC         = $(DJGPP_PREFIX)-gcc.exe
+  OBJ_DIR    = djgpp_obj
+  O          = o
+  IS_GCC     = 1
+  CC_ARGS    = gcc.args
+  select     =
+
+else ifeq ($(USE_MINGW),1)
   #
   # Change to suite
   #
   CC      =  $(realpath $(MINGW_TDM))/bin/gcc.exe
   OBJ_DIR = mingw_obj
   O       = o
+  CC_ARGS = gcc.args
+  IS_GCC  = 1
   select  = $(1)
 
+else ifeq ($(USE_CYGWIN),1)
+  #
+  # Change to suite
+  #
+  CC      =  $(realpath $(CYGWIN_ROOT))/bin/gcc.exe
+  OBJ_DIR = cygwin_obj
+  O       = o
+  CC_ARGS = gcc.args
+  IS_GCC  = 1
+  select  = $(2)
+
 else ifeq ($(USE_CLANG),1)
-  CC      = clang-cl.exe
+  #
+  # The 'clang-cl.bat' (on PATH) should look like this:
+  #   @echo off
+  #   setlocal
+  #   set CLANG_32=c:\ProgramFiles\LLVM-15-32bit  << install base of your 32-bit Clang
+  #   set CLANG_64=c:\ProgramFiles\LLVM-15-64bit  << ditto for 64-bit
+  #   set CL=
+  #   if %1. == -m32. (
+  #     shift
+  #     %CLANG_32%\bin\clang-cl.exe %*
+  #   ) else if %1. == -m64. (
+  #     shift
+  #     %CLANG_64%\bin\clang-cl.exe %*
+  #   ) else (
+  #     clang-cl.exe %*
+  #   )
+  #
+  CC      = clang-cl.bat -m$(BITS)
   OBJ_DIR = clang_obj
   O       = obj
-  select  = $(2)
+  CC_ARGS = clang-cl.args
+  IS_GCC  = 0
+  select  = $(3)
 
 else
   CC      = cl.exe
   OBJ_DIR = msvc_obj
   O       = obj
-  select  = $(3)
+  CC_ARGS = cl.args
+  IS_GCC  = 0
+  select  = $(4)
 endif
 
-c_to_obj = $(addprefix $(OBJ_DIR)/, $(notdir $(1:.c=.$(O))))
+c_to_obj = $(addprefix $(OBJ_DIR)/, \
+             $(notdir $(1:.c=.$(O))))
+
+ifeq ($(IS_GCC),1)
+  os_lib = $(addprefix -l,$(strip $(1:.lib=)))
+else
+  os_lib = $(1)
+endif
 
 SOURCES = cmpt.c connect.c cookies.c fnmatch.c ftp-basi.c ftp-ls.c \
           ftp-opie.c ftp.c gen-md5.c gen_sslf.c getopt.c gnu-md5.c \
           hash.c headers.c host.c html-par.c html-url.c http.c     \
           init.c log.c main.c netrc.c progress.c rbuf.c recur.c    \
-          res.c retr.c safe-cty.c snprintf.c url.c utils.c         \
-          version.c mswindow.c
+          res.c retr.c safe-cty.c url.c utils.c version.c # snprintf.c
 
-CFLAGS = -I. -DHAVE_CONFIG_H -D_WINSOCK_DEPRECATED_NO_WARNINGS
+CFLAGS = -I. -DHAVE_CONFIG_H
 
-ifeq ($(USE_MINGW),1)
-  CFLAGS  += -m$(BITS)
+ifeq ($(USE_DJGPP),0)
+  SOURCES += mswindow.c
+  CFLAGS  += -D_WIN32_WINNT=0x0600 \
+             -D_WINSOCK_DEPRECATED_NO_WARNINGS
+endif
+
+OBJECTS = $(call c_to_obj, $(SOURCES))
+
+ifeq ($(USE_DJGPP),1)
+  CFLAGS += -fdiagnostics-color=never
+
+else ifeq ($(USE_MINGW),1)
+  CFLAGS  += -m$(BITS) -fdiagnostics-color=never
   LDFLAGS  = -m$(BITS)
+
+else ifeq ($(USE_CYGWIN),1)
+  # CFLAGS += -fdiagnostics-color=never
+  ifeq ($(USE_WATT32),0)
+    CFLAGS += -DWINDOWS
+  endif
+
 else
+  #
+  # MSVC or clang-cl:
+  #
   CFLAGS += -nologo -MD -Ot -W3 -Zi    \
             -Gy -GS -RTCs              \
             -I./msvc-missing           \
@@ -64,57 +159,116 @@ else
             -wd4101 -wd4244 -wd4267
 
   LDFLAGS = -nologo -manifest:no -debug -incremental:no -machine:$(CPU)
-
-  #vpath %.c  msvc-missing
-  #SOURCES += msvc-missing/dirent.c
 endif
 
 ifeq ($(USE_CLANG),1)
   CFLAGS += -fms-compatibility            \
             -ferror-limit=5               \
             -Wno-format                   \
+            -Wno-unused-function          \
             -Wno-unused-variable          \
+            -Wno-constant-conversion      \
             -Wno-deprecated-non-prototype \
             -Wno-implicit-function-declaration
+
+  #
+  # Enable one of the above as e.g:
+  #   make -f $(THIS_FILE) USE_CLANG=1 USE_ASAN=1 clean all
+  #   make -f $(THIS_FILE) USE_CLANG=1 USE_ASAN=1 clean all
+  #
+  # Can be used with 'USE_UBSAN = 1' too.
+  #
+  # This works pretty good for bug reporting:
+  #   c:\> set ASAN_OPTIONS=print_stats=1:windows_hook_legacy_allocators=1:color=always:halt_on_error=0
+  #
+  ifeq ($(USE_ASAN),1)
+    CFLAGS += -DUSE_ASAN         \
+              -fsanitize=address \
+              -fsanitize-recover=address
+  endif
+
+  ifeq ($(USE_UBSAN),1)
+    CFLAGS += -DUSE_UBSAN \
+              -fsanitize=undefined
+  endif
+
+  ifneq ($(USE_ASAN)$(USE_UBSAN),00)
+    ifeq ($(CLANG_MAJOR_VER),)
+      $(error 'CLANG_MAJOR_VER' must be set in your environment.)
+    endif
+
+    #
+    # E.g. for 'CPU=x86', CLANG_ROOT -> 'c:/ProgramFiles/LLVM-15-32bit'
+    #
+    CLANG_ROOT = $(realpath $(CLANG_$(BITS)))
+
+    #
+    # The default for 'x86 / Release' is 'clang_rt.asan_dynamic_runtime_thunk-i386.lib'
+    # (and clang_rt.asan_dbg_dynamic_runtime_thunk-i386.lib for 'x86 / Debug')
+    #
+    # Let the linker select the ASAN libraries.
+    #
+    LDFLAGS += -inferasanlibs \
+               -libpath:"$(CLANG_ROOT)/lib/clang/$(CLANG_MAJOR_VER)/lib/windows"
+  endif
 endif
 
-OBJECTS = $(call c_to_obj, $(SOURCES))
+ifeq ($(USE_DJGPP),1)
+  EXE     = wget-dj.exe
+  CFLAGS += -DWATT32           \
+            -DWATT32_NO_OLDIES \
+            -I$(WATT_ROOT)/inc
 
-ifeq ($(USE_WATT32),1)
+  OS_LIBS  =
+  WATT_LIB = $(WATT_ROOT)/lib/libwatt.a
+
+else ifeq ($(USE_WATT32),1)
   EXE     = wget-w32.exe
   CFLAGS += -DWATT32           \
             -DWATT32_NO_OLDIES \
+            -DWATT32_STATIC    \
             -I$(WATT_ROOT)/inc \
             -I$(WATT_ROOT)/inc/w32-fakes
 
-  OS_LIBS  = $(call select, -luser32, user32.lib, user32.lib)
-  WATT_LIB = $(call select, $(WATT_ROOT)/lib/$(CPU)/libwatt32.dll.a,      \
-                            $(WATT_ROOT)/lib/$(CPU)/wattcp_clang_imp.lib, \
-                            $(WATT_ROOT)/lib/$(CPU)/wattcpvc_imp.lib)
+  OS_LIBS = $(call os_lib, advapi32.lib user32.lib)
+
+  WATT_LIB = $(call select, $(WATT_ROOT)/lib/$(CPU)/libwatt32.a,        \
+                            $(WATT_ROOT)/lib/$(CPU)/libwatt32-cygwin.a, \
+                            $(WATT_ROOT)/lib/$(CPU)/wattcp_clang.lib,   \
+                            $(WATT_ROOT)/lib/$(CPU)/wattcpvc.lib)
 else
-  CFLAGS  += -D_CRT_NO_POSIX_ERROR_CODES
+  #
+  # Let Cygwin use the Winsock2 API (not POSIX)
+  #
+  CFLAGS += -D__USE_W32_SOCKETS \
+            -D_CRT_NO_POSIX_ERROR_CODES
   EXE      = wget-win.exe
-  OS_LIBS  = $(call select, -lws2_32, ws2_32.lib, ws2_32.lib)
+  OS_LIBS  = $(call select, -lws2_32, -lws2_32, ws2_32.lib, ws2_32.lib)
   WATT_LIB =
 endif
 
 all: $(EXE)
 
-$(OBJ_DIR)/%.o: %.c | $(OBJ_DIR)
-	$(CC) -c $(CFLAGS) -o $@ $<
+$(OBJ_DIR)/%.o: %.c | $(OBJ_DIR) $(CC_ARGS)
+	$(CC) @$(CC_ARGS) -o $@ $<
 	@echo
 
-$(OBJ_DIR)/%.obj: %.c | $(OBJ_DIR)
-	$(CC) -c $(CFLAGS) -Fo./$@ $<
+$(OBJ_DIR)/%.obj: %.c | $(OBJ_DIR) $(CC_ARGS)
+	$(CC) @$(CC_ARGS) -Fo./$@ $<
 	@echo
 
 $(OBJ_DIR):
 	mkdir $@
 
-ifeq ($(USE_MINGW),1)
+$(CC_ARGS): $(THIS_FILE)
+	$(call green_msg, All CFLAGS are in $@)
+	$(call create_resp_file, $@, -c $(CFLAGS))
+
+ifeq ($(IS_GCC),1)
   $(EXE): $(OBJECTS) $(WATT_LIB)
 	$(CC) -o $@ $(LDFLAGS) $^ $(OS_LIBS)
 	@echo
+
 else
   $(EXE): $(OBJECTS) $(WATT_LIB)
 	link -out:$@ $(LDFLAGS) $^ $(OS_LIBS)
@@ -124,11 +278,28 @@ endif
 
 clean:
 	rm -fr $(OBJ_DIR)
-	rm -f vc14*.pdb
+	rm -f vc14*.pdb cl.args clang-cl.args gcc.args
 
 vclean realclean: clean
 	rm -f wget-win.* wget-w32.*
 	rm -fr clang_obj mingw_obj msvc_obj
+
+#
+# Some GNU-make macros.
+#
+# The following assumes you have MSys/Cygwin's echo with colour support.
+#
+BRIGHT_GREEN = \e[1;32m
+BRIGHT_WHITE = \e[1;37m
+
+colour_msg = @echo -e "$(1)\e[0m"
+green_msg  = $(call colour_msg,$(BRIGHT_GREEN)$(strip $(1)))
+white_msg  = $(call colour_msg,$(BRIGHT_WHITE)$(strip $(1)))
+
+define create_resp_file
+  $(file > $(1))
+  $(foreach w, $(2), $(file >> $(1),$(strip $(w))) )
+endef
 
 $(OBJ_DIR)/cmpt.$(O):     cmpt.c config.h wget.h sysdep.h options.h safe-cty.h
 $(OBJ_DIR)/connect.$(O):  connect.c config.h wget.h sysdep.h options.h safe-cty.h connect.h host.h
