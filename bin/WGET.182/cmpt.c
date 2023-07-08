@@ -903,10 +903,12 @@ strptime_internal (buf, format, tm, decided)
 	    }
 #endif
 	  if (!match_string (HERE_AM_STR, rp))
+	  {
 	    if (match_string (HERE_PM_STR, rp))
 	      is_pm = 1;
 	    else
 	      return NULL;
+      }
 	  break;
 	case 'r':
 #ifdef _NL_CURRENT
@@ -941,7 +943,7 @@ strptime_internal (buf, format, tm, decided)
 	       the `get_number' macro.  Instead read the number
 	       character for character and construct the result while
 	       doing this.  */
-	    time_t secs;
+	    time_t secs = 0;
 	    if (*rp < '0' || *rp > '9')
 	      /* We need at least one digit.  */
 	      return NULL;
