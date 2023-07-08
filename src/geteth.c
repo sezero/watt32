@@ -254,7 +254,7 @@ void W32_CALL DumpEthersCache (void)
 
   if (!ethersFname[0])
   {
-    SOCK_DEBUGF (("No ETHERS line found in WATTCP.CFG\n"));
+    SOCK_DEBUGF (("\nNo ETHERS line found in WATTCP.CFG\n"));
     return;
   }
 
