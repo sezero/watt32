@@ -143,6 +143,13 @@ int grab_localport (WORD port)
   FD_SET (port, lport_inuse);
   return (rc);
 }
+
+#else
+int grab_localport (WORD port)
+{
+  ARGUSED (port);
+  return (-1);
+}
 #endif
 
 /*
