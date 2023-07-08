@@ -18,7 +18,7 @@ if %1. == clean. (
 ::
 :: Using a '4NT', 'tcc' or 'tccle' shell:
 ::
-if %_CMDPROC. == 4NT. .or. %_CMDPROC. == TCC. .or. %_CMDPROC. == TCCLE. on break quit
+if %_CMDPROC%. == 4NT. .or. %_CMDPROC%. == TCC. .or. %_CMDPROC%. == TCCLE. on break quit
 
 ::
 :: For 'bcc_w.mak'
@@ -67,7 +67,7 @@ if not exist %DATE% (
 set TEE=%TEE% --append
 
 set BITS=64
-if %CPU. == x86. set BITS=32
+if %CPU%. == x86. set BITS=32
 
 set MAKE_CMD=%BCCDIR%\bin\make.exe -nologo -f bcc_w.mak
 call :do_make
