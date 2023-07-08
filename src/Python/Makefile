@@ -8,7 +8,7 @@
 define Usage
 
   Usage:
-    make CC=[cl | clang-cl | gcc] <PYTHON="py -2.x" | "py -3.x"> <WATT32_STATIC=1> [all | clean | vclean]'
+    make CC=[cl | clang-cl | gcc] <PYTHON="py -2.x" | "py -3.x"> <WATT32_STATIC=1> [all | clean | vclean | install]'
       CC=gcc      - use MinGW
       CC=cl       - use MSVC
       CC=clang-cl - use clang-cl
@@ -242,7 +242,7 @@ $(OBJ_DIR)/watt32_swig_wrap.c: \
 # This assumes you have a MSys/Cygwin's 'echo.exe' program with ANSI colour support.
 #
 BRIGHT_GREEN = \e[1;32m
-BRIGHT_WHITE = \e[1;37m
+BRIGHT_WHITE = \e[1;45;37m
 green_msg    = @echo -e "$(BRIGHT_GREEN)$(strip $(1))\e[0m"
 green_msg0   = @echo -e "$(BRIGHT_GREEN)$(1)\e[0m"
 
