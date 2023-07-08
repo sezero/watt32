@@ -25,7 +25,7 @@ USE_YAMD    = 0
 MAKE_MAP    = 0
 NO_OPTIMIZE = 0
 
-DJGPP_EXE = wget32.exe
+DJGPP_EXE = wget-dj.exe
 
 SRC = cmpt.c connect.c cookies.c fnmatch.c ftp-basi.c ftp-ls.c \
       ftp-opie.c ftp.c gen-md5.c gen_sslf.c getopt.c gnu-md5.c \
