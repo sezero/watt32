@@ -79,6 +79,7 @@
   #define HAVE_USLEEP 1
   #define HAVE_SIGNAL 1
   #define HAVE_BASENAME 1
+  #define HAVE_VSNPRINTF 1
 #endif
 
 #ifdef __HIGHC__
