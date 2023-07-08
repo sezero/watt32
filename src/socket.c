@@ -1946,10 +1946,12 @@ int _UDP_open (Socket *socket, struct in_addr host, WORD loc_port, WORD rem_port
   loc_port = ntohs (loc_port);
   rem_port = ntohs (rem_port);
 
-  if (!udp_open (socket->udp_sock, loc_port, ip, rem_port, NULL))
+  if (!_udp_open (socket->udp_sock, loc_port, ip, rem_port))
      return (0);
 
-  _sock_set_rcv_buf ((sock_type*)socket->udp_sock, DEFAULT_UDP_SIZE);
+  if (!socket->udp_sock->rx_data)
+     _sock_set_rcv_buf ((sock_type*)socket->udp_sock, DEFAULT_UDP_SIZE);
+
   socket->udp_sock->icmp_callb = (icmp_upcall) icmp_callback;
   return (1);
 }
@@ -2155,7 +2157,10 @@ int _TCP6_listen (Socket *socket, const void *host, WORD loc_port)
 int _UDP6_open (Socket *socket, const void *host, WORD loc_port, WORD rem_port)
 {
   /** \todo Support UDP connect() for AF_INET6 */
-  _sock_set_rcv_buf ((sock_type*)socket->udp_sock, DEFAULT_UDP_SIZE);
+
+  if (!socket->udp_sock->rx_data)
+     _sock_set_rcv_buf ((sock_type*)socket->udp_sock, DEFAULT_UDP_SIZE);
+
   socket->udp_sock->icmp_callb = (icmp_upcall) icmp_callback;
   ARGSUSED (host);
   ARGSUSED (loc_port);

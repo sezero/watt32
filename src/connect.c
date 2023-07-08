@@ -96,38 +96,70 @@ int W32_CALL connect (int s, const struct sockaddr *servaddr, socklen_t addrlen)
 
   if (socket->remote_addr)
   {
-    if ((socket->so_type == SOCK_STREAM) &&
-        (socket->so_state & SS_NBIO))
+    if (socket->so_type == SOCK_STREAM)
     {
-      tcp_tick (NULL);
-
-      if (_sock_pending_connect (socket))
+      if (socket->so_state & SS_ISCONNECTING)
       {
-        SOCK_DEBUGF ((", EALREADY"));
-        SOCK_ERRNO (EALREADY);
-        return (-1);
+        tcp_tick (NULL);
+
+        if (_sock_pending_connect (socket))
+        {
+          SOCK_DEBUGF ((", EALREADY"));
+          SOCK_ERRNO (EALREADY);
+          return (-1);
+        }
+
+        if (socket->so_error != 0)
+        {
+          SOCK_DEBUGF ((", SO_ERROR: %s", short_strerror(socket->so_error)));
+          SOCK_ERRNO (socket->so_error);
+          socket->so_error = 0;
+          return (-1);
+        }
       }
 
-      if (socket->so_error != 0)
-      {
-        SOCK_DEBUGF ((", SO_ERROR: %s", short_strerror(socket->so_error)));
-        SOCK_ERRNO (socket->so_error);
-        socket->so_error = 0;
-        return (-1);
-      }
+      SOCK_DEBUGF ((", connect already done!"));
+      SOCK_ERRNO (EISCONN);
+      return (-1);
     }
 
-    SOCK_DEBUGF ((", connect already done!"));
-    SOCK_ERRNO (EISCONN);
-    return (-1);
-  }
+    SOCK_DEBUGF ((", reconnecting"));
 
-  socket->remote_addr = (struct sockaddr_in*) SOCK_CALLOC (sa_len);
-  if (!socket->remote_addr)
+    /* No need to reconnect if same peer address/port.
+     */
+    if (!is_ip6)
+    {
+      const struct sockaddr_in *ra = (const struct sockaddr_in*)socket->remote_addr;
+
+      if (addr->sin_addr.s_addr == ra->sin_addr.s_addr &&
+          addr->sin_port        == ra->sin_port)
+        return (0);
+    }
+#if defined(USE_IPV6)
+    else
+    {
+      const struct sockaddr_in6 *ra    = (const struct sockaddr_in6*)socket->remote_addr;
+
+      if (!memcmp(&addr6->sin6_addr, &ra->sin6_addr, sizeof(addr6->sin6_addr)) &&
+          addr6->sin6_port == ra->sin6_port)
+        return (0);
+    }
+#endif
+
+    /* Clear any effect of previous ICMP errors etc.
+     */
+    socket->so_state &= ~(SS_CONN_REFUSED | SS_CANTSENDMORE | SS_CANTRCVMORE);
+    socket->so_error  = 0;
+  }
+  else
   {
-    SOCK_DEBUGF ((", ENOMEM (rem)"));
-    SOCK_ERRNO (ENOMEM);
-    return (-1);
+    socket->remote_addr = SOCK_CALLOC (sa_len);
+    if (!socket->remote_addr)
+    {
+      SOCK_DEBUGF ((", ENOMEM (rem)"));
+      SOCK_ERRNO (ENOMEM);
+      return (-1);
+    }
   }
 
 #if defined(USE_IPV6)
@@ -220,6 +252,7 @@ int W32_CALL connect (int s, const struct sockaddr *servaddr, socklen_t addrlen)
 
   _sock_sig_restore();
   _sock_crit_stop();
+
   return (rc);
 }
 
@@ -252,15 +285,6 @@ static int udp_connect (Socket *socket)
     /* errno already set in udp_open() */
     SOCK_DEBUGF ((", %s", socket->udp_sock->err_msg));
     return (-1);
-  }
-
-  if ((socket->so_state & SS_PRIV) && socket->bcast_pool)
-  {
-    /* undo what udp_open() did above.
-     * !!Fix me: clears recv data.
-     */
-    sock_recv_init ((sock_type*)socket->udp_sock,
-                    socket->bcast_pool, socket->pool_size);
   }
 
   socket->so_state &= ~SS_UNCONNECTED;

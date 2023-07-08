@@ -153,6 +153,38 @@ static void udp_close (const _udp_Socket *s);
 static void (W32_CALL *system_yield)(void) = NULL;
 
 /**
+ * Implementation for udp_listen() and udp_open().
+ */
+int _udp_listen (_udp_Socket *s, WORD lport, DWORD ip, WORD port)
+{
+  if (!_eth_is_init) /* GvB 2002-09, Lets us survive without a working eth */
+  {
+    SOCK_ERRNO (ENETDOWN);
+    s->err_msg = _LANG (_eth_not_init);
+    return (0);
+  }
+
+  s->ip_type      = UDP_PROTO;
+  s->myaddr       = my_ip_addr;
+  s->myport       = lport;
+  s->hisaddr      = ip;
+  s->hisport      = port;
+
+  if (!s->rx_data)
+  {
+    /* This is a new socket, set default options and insert it in the chain.
+     */
+    s->sockmode   = SOCK_MODE_BINARY | SOCK_MODE_UDPCHK;
+    s->ttl        = _default_ttl;
+    s->usr_yield  = system_yield;
+    s->safetysig  = SAFETY_UDP;
+    s->next       = _udp_allsocs;
+    _udp_allsocs  = s;
+  }
+  return (1);
+}
+
+/**
  * UDP passive open. Listen for a connection on a particular port.
  */
 int W32_CALL udp_listen (_udp_Socket *s, WORD lport, DWORD ip,
@@ -162,47 +194,26 @@ int W32_CALL udp_listen (_udp_Socket *s, WORD lport, DWORD ip,
   WATT_LARGE_CHECK (s, sizeof(*s));
   memset (s, 0, sizeof(*s));
 
-  if (!_eth_is_init) /* GvB 2002-09, Lets us survive without a working eth */
+  lport = find_free_port (lport, 0);
+
+  if (!_udp_listen (s, lport, ip, port))
   {
-    SOCK_ERRNO (ENETDOWN);
-    s->err_msg = _LANG (_eth_not_init);
+    reuse_localport (lport);
     return (0);
   }
 
   s->rx_data      = &s->rx_buf[0];
   s->max_rx_data  = sizeof(s->rx_buf) - 1;
-  s->ip_type      = UDP_PROTO;
-  s->sockmode     = SOCK_MODE_BINARY | SOCK_MODE_UDPCHK;
-  s->myport       = find_free_port (lport, 0); /* grab a local port */
-  s->hisport      = port;
-  s->hisaddr      = ip;
-  s->ttl          = _default_ttl;
   s->protoHandler = handler;
-  s->usr_yield    = system_yield;
-  s->safetysig    = SAFETY_UDP;
-  s->next         = _udp_allsocs;            /* insert into chain */
-  _udp_allsocs    = s;
   return (1);
 }
 
 /**
- * UDP active open. Open a connection on a particular port.
+ * Implementation for udp_open(), also used by BSD connect().
  */
-int W32_CALL udp_open (_udp_Socket *s, WORD lport, DWORD ip,
-                       WORD port, ProtoHandler handler)
+int _udp_open (_udp_Socket *s, WORD lport, DWORD ip, WORD port)
 {
   BOOL bcast;
-
-  udp_close (s);
-  WATT_LARGE_CHECK (s, sizeof(*s));
-  memset (s, 0, sizeof(*s));
-
-  if (!_eth_is_init) /* GvB 2002-09, Lets us survive without a working eth */
-  {
-    SOCK_ERRNO (ENETDOWN);
-    s->err_msg = _LANG (_eth_not_init);
-    return (0);
-  }
 
   if (ip && _ip4_is_multihome_addr(ip))  /* 0.0.0.0 is legal */
   {
@@ -213,13 +224,16 @@ int W32_CALL udp_open (_udp_Socket *s, WORD lport, DWORD ip,
     return (0);
   }
 
+  if (!_udp_listen(s, lport, ip, port))
+     return (0);
+
   bcast = ((ip == IP_BCAST_ADDR) || (~ip & ~sin_mask) == 0);
 
   if (bcast || !ip)      /* check for broadcast */
   {
     memset (s->his_ethaddr, 0xFF, sizeof(eth_address));
     if (!ip)
-       ip = IP_BCAST_ADDR; /* s->hisaddr = 255.255.255.255 (this network) */
+       s->hisaddr = IP_BCAST_ADDR; /* 255.255.255.255 (this network) */
   }
 #if defined(USE_MULTICAST)
   else if (_ip4_is_multicast(ip))   /* check for multicast */
@@ -235,23 +249,34 @@ int W32_CALL udp_open (_udp_Socket *s, WORD lport, DWORD ip,
     strcat (s->err_buf, _inet_ntoa(NULL,ip));
     s->err_msg = s->err_buf;
     STAT (ip4stats.ips_noroute++);
+    udp_close (s);
+    return (0);
+  }
+
+  return (1);
+}
+
+/**
+ * UDP active open. Open a connection on a particular port.
+ */
+int W32_CALL udp_open (_udp_Socket *s, WORD lport, DWORD ip,
+                       WORD port, ProtoHandler handler)
+{
+  udp_close (s);
+  WATT_LARGE_CHECK (s, sizeof(*s));
+  memset (s, 0, sizeof(*s));
+
+  lport = find_free_port (lport, 0);
+
+  if (!_udp_open (s, lport, ip, port))
+  {
+    reuse_localport (lport);
     return (0);
   }
 
   s->rx_data      = &s->rx_buf[0];
   s->max_rx_data  = sizeof(s->rx_buf) - 1;
-  s->ip_type      = UDP_PROTO;
-  s->sockmode     = SOCK_MODE_BINARY | SOCK_MODE_UDPCHK;
-  s->myport       = find_free_port (lport, 0);
-  s->myaddr       = my_ip_addr;
-  s->ttl          = _default_ttl;
-  s->hisaddr      = ip;
-  s->hisport      = port;
   s->protoHandler = handler;
-  s->usr_yield    = system_yield;
-  s->safetysig    = SAFETY_UDP;
-  s->next         = _udp_allsocs;
-  _udp_allsocs    = s;
   return (1);
 }
 
