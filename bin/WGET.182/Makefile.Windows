@@ -6,11 +6,11 @@
 #   or Winsock2;         USE_WATT32=0 -> wget-win.exe
 #   or djgpp (MSDOS);    USE_DJGPP=1  -> wget-dj.exe
 #
-# Target either MSVC, clang-cl, MinGW-w64, Cygwin (todo) or djgpp.
+# Target either MSVC (default), clang-cl, MinGW-w64, Cygwin or djgpp.
 #
 USE_DJGPP  ?= 0
 USE_MINGW  ?= 0
-USE_CLANG  ?= 1
+USE_CLANG  ?= 0
 USE_CYGWIN ?= 0
 USE_WATT32 ?= 1
 
@@ -134,16 +134,13 @@ endif
 OBJECTS = $(call c_to_obj, $(SOURCES))
 
 ifeq ($(USE_DJGPP),1)
-  CFLAGS += -fdiagnostics-color=never
-
 else ifeq ($(USE_MINGW),1)
-  CFLAGS  += -m$(BITS) -fdiagnostics-color=never
+  CFLAGS  += -m$(BITS)
   LDFLAGS  = -m$(BITS)
 
 else ifeq ($(USE_CYGWIN),1)
-  # CFLAGS += -fdiagnostics-color=never
   ifeq ($(USE_WATT32),0)
-    CFLAGS += -DWINDOWS
+    CFLAGS += -DWINDOWS # -D__USE_W32_SOCKETS
   endif
 
 else
@@ -156,20 +153,22 @@ else
             -D_CRT_SECURE_NO_WARNINGS  \
             -D_CRT_SECURE_NO_DEPRECATE \
             -D_CRT_NONSTDC_NO_WARNINGS \
-            -wd4101 -wd4244 -wd4267
+            -wd4101 -wd4018 -wd4244    \
+            -wd4267 -wd4133
 
   LDFLAGS = -nologo -manifest:no -debug -incremental:no -machine:$(CPU)
 endif
 
 ifeq ($(USE_CLANG),1)
-  CFLAGS += -fms-compatibility            \
-            -ferror-limit=5               \
-            -Wno-format                   \
-            -Wno-unused-function          \
-            -Wno-unused-variable          \
-            -Wno-constant-conversion      \
-            -Wno-deprecated-non-prototype \
-            -Wno-implicit-function-declaration
+  CFLAGS += -fms-compatibility              \
+            -ferror-limit=5                 \
+            -Wno-format                     \
+            -Wno-unused-function            \
+            -Wno-unused-variable            \
+            -Wno-constant-conversion        \
+            -Wno-deprecated-non-prototype   \
+            -Wno-incompatible-pointer-types \
+          # -Wno-implicit-function-declaration
 
   #
   # Enable one of the above as e.g:
@@ -208,7 +207,10 @@ ifeq ($(USE_CLANG),1)
     #
     # Let the linker select the ASAN libraries.
     #
-    LDFLAGS += -inferasanlibs \
+    LDFLAGS += -inferasanlibs                                               \
+               -libpath:"$(VCToolsInstallDir)\lib\$(CPU)"                   \
+               -libpath:"$(WindowsSdkDir)\lib\$(WindowsSdkVer)\ucrt\$(CPU)" \
+               -libpath:"$(WindowsSdkDir)\lib\$(WindowsSdkVer)\um\$(CPU)"   \
                -libpath:"$(CLANG_ROOT)/lib/clang/$(CLANG_MAJOR_VER)/lib/windows"
   endif
 endif
@@ -257,14 +259,12 @@ $(OBJ_DIR)/%.obj: %.c | $(OBJ_DIR) $(CC_ARGS)
 	$(CC) @$(CC_ARGS) -Fo./$@ $<
 	@echo
 
-$(OBJ_DIR):
-	mkdir $@
-
-$(CC_ARGS): $(THIS_FILE)
-	$(call green_msg, All CFLAGS are in $@)
-	$(call create_resp_file, $@, -c $(CFLAGS))
-
 ifeq ($(IS_GCC),1)
+  #
+  # The awful '$GCC_COLORS' messed up the console.
+  #
+  CFLAGS += -fdiagnostics-color=never
+
   $(EXE): $(OBJECTS) $(WATT_LIB)
 	$(CC) -o $@ $(LDFLAGS) $^ $(OS_LIBS)
 	@echo
@@ -275,6 +275,13 @@ else
 	rm -f $(@:.exe=.{exp,lib})
 	@echo
 endif
+
+$(OBJ_DIR):
+	mkdir $@
+
+$(CC_ARGS): $(THIS_FILE)
+	$(call green_msg, All CFLAGS are in $@)
+	$(call create_resp_file, $@, -c $(CFLAGS))
 
 clean:
 	rm -fr $(OBJ_DIR)
