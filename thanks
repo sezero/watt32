@@ -23,3 +23,7 @@ Riccardo De Agostini  <riccardo.de.agostini@isielettronica.it>
                                                     parser. DHCP transient config
                                                     hook. DHCP config to battery
                                                     RAM.
+Jirí Malák            ??                            Many fixes for Watcom version.
+J.W. Jagersma         jwjagersma@gmail.com          Many Pull Requests for fixes of
+                                                    the BSD-socket API. And for djgpp and
+                                                    even MacOS!
