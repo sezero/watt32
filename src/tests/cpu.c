@@ -40,7 +40,13 @@
 
 static char Cx86_step = 0;
 
-const char *cpu_get_model (int type, int model);
+/* Problem with '../cpumodel.S' in Cygwin
+ */
+#if defined(__CYGWIN__) && defined(WATT32_STATIC)
+  #define cpu_get_model(t, m) "??"
+#else
+  const char *cpu_get_model (int type, int model);
+#endif
 
 #if !defined(COMPILING_PCDBUG_C)
   static char *Cx86_type[] = {
@@ -486,7 +492,7 @@ void get_cache_info (void)
   }
 
   if (cache_sz)
-       printf ("%lu bytes\n", cache_sz);
+       printf ("%lu bytes\n", (u_long)cache_sz);
   else puts ("Unknown");
 }
 

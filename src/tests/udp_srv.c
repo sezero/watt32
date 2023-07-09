@@ -94,13 +94,13 @@ int main (int argc, char **argv)
     if (non_block)
     {
       fd_set fd;
-      struct timeval tv = { 0, 10000 };
+      struct __ms_timeval tv = { 0, 10000 };
       int    n;
 
       FD_ZERO (&fd);
       FD_SET (sockfd, &fd);
 #ifdef _Windows
-      n = select (sockfd+1, &fd, NULL, NULL, (struct __ms_timeval*)&tv);
+      n = select (sockfd+1, &fd, NULL, NULL, &tv);
 #else
       n = select_s (sockfd+1, &fd, NULL, NULL, &tv);
 #endif
@@ -143,6 +143,7 @@ int main (int argc, char **argv)
   }
 
   close (sockfd);
+  (void) debug;
   return (0);
 }
 

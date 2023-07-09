@@ -1475,8 +1475,8 @@ int init_geoip (const char *argv0)
             GeoIPDBDescription[geoip_country_db],
             geoip_country_info ? geoip_country_info : "<none>");
 
-    printf ("GeoIP country-file: %-20s%s (size: %lu MB).\n", file1, file1_found ? "" : " Not found", file1_size/(1024*1024));
-    printf ("GeoIP city-file:    %-20s%s (size: %lu MB).\n", file2, file2_found ? "" : " Not found", file2_size/(1024*1024));
+    printf ("GeoIP country-file: %-20s%s (size: %lu MB).\n", file1, file1_found ? "" : " Not found", (u_long)file1_size/(1024*1024));
+    printf ("GeoIP city-file:    %-20s%s (size: %lu MB).\n", file2, file2_found ? "" : " Not found", (u_long)file2_size/(1024*1024));
   }
 #endif
 

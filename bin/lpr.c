@@ -140,7 +140,8 @@ static int lpr (char *localhostname, char *printer,  char *rhostname,
 {
   static tcp_Socket socket;
   tcp_Socket *s = &socket;
-  DWORD       filesize = 0, host;
+  DWORD       host;
+  long        filesize  = 0;
   int         status    = 0;
   int         connected = 0;
   int         completed = 0;
