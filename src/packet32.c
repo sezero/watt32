@@ -257,14 +257,14 @@ static BOOL get_npf_ver_from_registry (char *ret_ver, size_t ver_size)
    */
   if (status != ERROR_SUCCESS)
   {
-    WINPKT_TRACE ("status: %ld; %s\n", status, win_strerror(GetLastError()));
+    WINPKT_TRACE ("status: %ld; %s\n", (long)status, win_strerror(GetLastError()));
     goto fail;
   }
 
   status = RegQueryValueEx (key, "DisplayVersion", NULL, NULL, (BYTE*)&str, &size);
   if (status != ERROR_SUCCESS)
   {
-    WINPKT_TRACE ("status: %ld; %s\n", status, win_strerror(GetLastError()));
+    WINPKT_TRACE ("status: %ld; %s\n", (long)status, win_strerror(GetLastError()));
     goto fail;
   }
 
@@ -294,14 +294,14 @@ static BOOL get_npcap_ver_from_registry  (char *ret_ver, size_t ver_size)
 
   if (status != ERROR_SUCCESS)
   {
-    WINPKT_TRACE ("status: %ld; %s\n", status, win_strerror(GetLastError()));
+    WINPKT_TRACE ("status: %ld; %s\n", (long)status, win_strerror(GetLastError()));
     goto fail;
   }
 
   status = RegQueryValueEx (key, "DisplayVersion", NULL, NULL, (BYTE*)&str, &size);
   if (status != ERROR_SUCCESS)
   {
-    WINPKT_TRACE ("status: %ld; %s\n", status, win_strerror(GetLastError()));
+    WINPKT_TRACE ("status: %ld; %s\n", (long)status, win_strerror(GetLastError()));
     goto fail;
   }
 
@@ -442,7 +442,7 @@ BOOL PacketInitModule (void)
   WINPKT_TRACE ("rc %d\n", rc);
 
   /* Check if we loaded WanPacket.dll okay. We don't care if it fails (since
-   * it's not critical for Watt-32/Win. These 'p_' func-ptr are et in win_dll.c
+   * it's not critical for Watt-32/Win. These 'p_' func-ptr are in win_dll.c
    */
   use_wanpacket = (p_WanPacketSetBpfFilter  && p_WanPacketOpenAdapter    &&
                    p_WanPacketCloseAdapter  && p_WanPacketSetBufferSize  &&
@@ -712,7 +712,7 @@ static ADAPTER *PacketOpenAdapterNPF (const char *AdapterName)
     KeyRes = RegOpenKeyExA (HKEY_LOCAL_MACHINE, registry_location, 0, KEY_READ, &PathKey);
     RegCloseKey (PathKey);
 
-    WINPKT_TRACE ("RegOpenKeyExA (\"HKLM\\%s\") -> KeyRes: %lu\n", registry_location, KeyRes);
+    WINPKT_TRACE ("RegOpenKeyExA (\"HKLM\\%s\") -> KeyRes: %lu\n", registry_location, (u_long)KeyRes);
 
     if (KeyRes != ERROR_SUCCESS)
     {
@@ -732,7 +732,7 @@ static ADAPTER *PacketOpenAdapterNPF (const char *AdapterName)
 
         status = RegOpenKeyExA (HKEY_LOCAL_MACHINE, NPCAP_registry_params, 0, KEY_READ, &params);
 
-        WINPKT_TRACE ("RegOpenKeyExA (\"HKLM\\%s\") -> status: %lu\n", NPCAP_registry_params, status);
+        WINPKT_TRACE ("RegOpenKeyExA (\"HKLM\\%s\") -> status: %lu\n", NPCAP_registry_params, (u_long)status);
         if (status == ERROR_SUCCESS)
         {
           bufLen = sizeof(AdminOnly);
@@ -748,7 +748,7 @@ static ADAPTER *PacketOpenAdapterNPF (const char *AdapterName)
                                      &regType, (BYTE*)&LoopbackSupport, &bufLen);
           RegCloseKey (params);
           WINPKT_TRACE ("AdminOnly: %lu, LoopbackSupport: %lu, WinPcapCompatible: %lu\n",
-                        AdminOnly, LoopbackSupport, WinPcapCompatible);
+                        (u_long)AdminOnly, (u_long)LoopbackSupport, (u_long)WinPcapCompatible);
         }
       }
       Result = TRUE;

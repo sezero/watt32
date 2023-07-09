@@ -271,7 +271,7 @@ static __inline BOOL check_frag_ofs (const in_Header *ip, DWORD ofs, DWORD end)
      return (TRUE);
 
   TRACE_CONSOLE (2, "Bad frag-ofs: %lu, frag-end: %lu, ip-prot %u (%s -> %s)\n",
-                 ofs, end, ip->proto,
+                 (u_long)ofs, (u_long)end, ip->proto,
                  _inet_ntoa(NULL,intel(ip->source)),
                  _inet_ntoa(NULL,intel(ip->destination)));
   ARGSUSED (ip);

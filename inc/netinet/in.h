@@ -149,14 +149,14 @@ struct in_addr {
  */
 #if 0
   struct in6_addr {
-         u_int8_t  s6_addr[16];
+         u_int8_t  s6_addr [16];
        };
 #else
   struct in6_addr {
          union {
-           u_char  _S6_u8[16];
-           u_short _S6_u16[8];
-           u_long  _S6_u32[4];
+           u_int8_t  _S6_u8 [16];
+           u_int16_t _S6_u16 [8];
+           u_int32_t _S6_u32 [4];
          } _S6_un;
        };
   /* s6_addr is the standard name */

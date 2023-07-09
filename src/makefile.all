@@ -1318,7 +1318,9 @@ clean:
 @elifdef CYGWIN
 
 CC       = gcc
-CFLAGS   = -m$(BITS) -O2 -g -Wall -mthreads -fno-strict-aliasing -static-libgcc -I. -I../inc -DWATT32_BUILD -D_WIN32_WINNT=0x0601
+CFLAGS   = -m$(BITS) -O2 -g -Wall -Wno-unused-function -mthreads \
+           -fno-strict-aliasing -static-libgcc -I. -I../inc      \
+           -DWATT32_BUILD -D_WIN32_WINNT=0x0601
 LDFLAGS  = -m$(BITS) -shared -static-libgcc -Wl,--print-map
 AS       = as
 AFLAGS   = --$(BITS) -ahls
