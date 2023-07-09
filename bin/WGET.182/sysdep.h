@@ -52,7 +52,7 @@ so, delete this exception statement from your version.  */
 /* Windows doesn't have some functions.  Include mswindow.h so we get
    their declarations, as well as some additional declarations and
    macros.  This must come first, so it can set things up.  */
-#include <mswindow.h>
+#include "mswindow.h"
 
 #ifdef WATT32
 #include <sys/socket.h>
@@ -122,9 +122,11 @@ so, delete this exception statement from your version.  */
 #ifndef READ
 # define READ(fd, buf, cnt) read ((fd), (buf), (cnt))
 #endif
+
 #ifndef WRITE
 # define WRITE(fd, buf, cnt) write ((fd), (buf), (cnt))
 #endif
+
 #ifndef REALCLOSE
 # define REALCLOSE(x) close (x)
 #endif

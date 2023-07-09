@@ -114,6 +114,10 @@ char *html_quote_string PARAMS ((const char *));
 int determine_screen_width PARAMS ((void));
 int random_number PARAMS ((int));
 
+#if (defined(MSDOS) || defined(WINDOWS)) && !defined(HAVE_FTRUNCATE)
+int ftruncate(int fd, off_t where);
+#endif
+
 #if defined(MSDOS) || defined(__CYGWIN__)
 char *rename_if_dos_device_name PARAMS ((char *));
 char *msdosify PARAMS ((char *));

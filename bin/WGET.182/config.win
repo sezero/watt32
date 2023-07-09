@@ -33,6 +33,7 @@
 #include <stdlib.h>
 #include <limits.h>
 #include <malloc.h>
+#include <io.h>
 
 #if !defined(WINDOWS) && !defined(__CYGWIN__)
 #define WINDOWS 1
@@ -40,6 +41,7 @@
 
 #ifdef WINDOWS
 #define WIN32_LEAN_AND_MEAN
+#define BUILD_WINDOWS
 #include <windows.h>
 #endif
 

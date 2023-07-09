@@ -33,11 +33,18 @@ so, delete this exception statement from your version.  */
 /* Apparently needed for alloca(). */
 #include <malloc.h>
 
-#ifndef S_ISDIR
-# define S_ISDIR(m) (((m) & (_S_IFMT)) == (_S_IFDIR))
+#ifdef WATT32
+  #include <sys/socket.h>
+#else
+  #include <winsock.h>
 #endif
+
+#ifndef S_ISDIR
+#define S_ISDIR(m) (((m) & (_S_IFMT)) == (_S_IFDIR))
+#endif
+
 #ifndef S_ISLNK
-# define S_ISLNK(a) 0
+#define S_ISLNK(a) 0
 #endif
 
 /* No stat on Windows.  */
@@ -47,21 +54,20 @@ so, delete this exception statement from your version.  */
 
 /* Microsoft says stat is _stat, Borland doesn't */
 #ifdef _MSC_VER
-# define stat _stat
+#define stat _stat
 #endif
 
 #ifdef HAVE_ISATTY
-/* Microsoft VC supports _isatty; Borland ? */
-#ifdef _MSC_VER
-# define isatty _isatty
-#endif
+  /* Microsoft VC supports _isatty; Borland ? */
+  #ifdef _MSC_VER
+  #define isatty _isatty
+  #endif
 #endif
 
 #undef  REALCLOSE
 #define REALCLOSE(x) closesocket (x)
 
-/* read & write don't work with sockets on Windows 95.  */
-#define READ(fd, buf, cnt) recv ((fd), (buf), (cnt), 0)
+#define READ(fd, buf, cnt)  recv ((fd), (buf), (cnt), 0)
 #define WRITE(fd, buf, cnt) send ((fd), (buf), (cnt), 0)
 
 #ifndef __CYGWIN__
@@ -80,44 +86,13 @@ so, delete this exception statement from your version.  */
 
 #include <windows.h>
 
-/* Declarations of various socket errors: */
+/* Redefine only the socket errors we use */
 
 #ifndef WATT32
-#define EWOULDBLOCK             WSAEWOULDBLOCK
-#define EINPROGRESS             WSAEINPROGRESS
-#define EALREADY                WSAEALREADY
-#define ENOTSOCK                WSAENOTSOCK
-#define EDESTADDRREQ            WSAEDESTADDRREQ
-#define EMSGSIZE                WSAEMSGSIZE
-#define EPROTOTYPE              WSAEPROTOTYPE
-#define ENOPROTOOPT             WSAENOPROTOOPT
-#define EPROTONOSUPPORT         WSAEPROTONOSUPPORT
-#define ESOCKTNOSUPPORT         WSAESOCKTNOSUPPORT
-#define EOPNOTSUPP              WSAEOPNOTSUPP
-#define EPFNOSUPPORT            WSAEPFNOSUPPORT
-#define EAFNOSUPPORT            WSAEAFNOSUPPORT
-#define EADDRINUSE              WSAEADDRINUSE
-#define EADDRNOTAVAIL           WSAEADDRNOTAVAIL
-#define ENETDOWN                WSAENETDOWN
-#define ENETUNREACH             WSAENETUNREACH
-#define ENETRESET               WSAENETRESET
-#define ECONNABORTED            WSAECONNABORTED
-#define ECONNRESET              WSAECONNRESET
-#define ENOBUFS                 WSAENOBUFS
-#define EISCONN                 WSAEISCONN
-#define ENOTCONN                WSAENOTCONN
-#define ESHUTDOWN               WSAESHUTDOWN
-#define ETOOMANYREFS            WSAETOOMANYREFS
-#define ETIMEDOUT               WSAETIMEDOUT
-#define ECONNREFUSED            WSAECONNREFUSED
-#define ELOOP                   WSAELOOP
-#define EHOSTDOWN               WSAEHOSTDOWN
-#define EHOSTUNREACH            WSAEHOSTUNREACH
-#define EPROCLIM                WSAEPROCLIM
-#define EUSERS                  WSAEUSERS
-#define EDQUOT                  WSAEDQUOT
-#define ESTALE                  WSAESTALE
-#define EREMOTE                 WSAEREMOTE
+  #undef  ETIMEDOUT
+  #undef  ECONNREFUSED
+  #define ETIMEDOUT        WSAETIMEDOUT
+  #define ECONNREFUSED     WSAECONNREFUSED
 #endif
 
 /* Public functions.  */

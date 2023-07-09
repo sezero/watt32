@@ -65,6 +65,10 @@ so, delete this exception statement from your version.  */
 extern int errno;
 #endif
 
+#if defined(__CYGWIN__) && defined(__USE_W32_SOCKETS)
+#define timeval __ms_timeval
+#endif
+
 /* Variables shared by bindport and acceptport: */
 static int msock = -1;
 static struct sockaddr *addr;

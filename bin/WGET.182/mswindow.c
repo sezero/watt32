@@ -36,12 +36,10 @@ so, delete this exception statement from your version.  */
 #include <winsock.h>
 #include <string.h>
 #include <assert.h>
-#include <errno.h>
 
 #include "wget.h"
 #include "url.h"
 #include "utils.h"
-#include "mswindow.h"
 
 #ifndef errno
 extern int errno;
@@ -86,7 +84,7 @@ read_registry (HKEY hkey, char *subkey, char *valuename, char *buf, int *len)
   DWORD type = REG_SZ;
   if (RegOpenKeyEx (hkey, subkey, 0, KEY_READ, &result) != ERROR_SUCCESS)
     return NULL;
-  if (RegQueryValueEx (result, valuename, NULL, &type, buf, &size) != ERROR_SUCCESS)
+  if (RegQueryValueEx (result, valuename, NULL, &type, (BYTE*)buf, &size) != ERROR_SUCCESS)
     buf = NULL;
   *len = size;
   RegCloseKey (result);
