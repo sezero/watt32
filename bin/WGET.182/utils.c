@@ -1579,66 +1579,6 @@ rename_if_dos_device_name (char *file_name)
 }
 #endif /* MSDOS */
 
-#ifdef __CYGWIN__
-char *
-msdosify (char *file_name)
-{
-  static char dos_name[PATH_MAX];
-  static char illegal_chars_w95[] = "<>\\\":?*";
-  int idx;
-  char *s = file_name, *d = dos_name;
-  char *illegal_aliens = illegal_chars_w95;
-  size_t len = sizeof (illegal_chars_w95) - 1;
-
-
-  /* Get past the drive letter, if any. */
-  if (s[0] >= 'A' && s[0] <= 'z' && s[1] == ':')
-    {
-      *d++ = *s++;
-      *d++ = *s++;
-    }
-
-  for (idx = 0; *s; s++, d++)
-    {
-      if (memchr (illegal_aliens, *s, len))
-       {
-           *d = '_';
-       }
-      else
-       *d = *s;
-       idx++;
-    }
-
-  *d = '\0';
-  return dos_name;
-}
-
-char *
-rename_if_dos_device_name (char *file_name)
-{
-  /* We could have a file whose name is a device on MS-DOS.
-   * Trying to retrieve such a file would fail at best and
-   * wedge us at worst.  We need to rename such files. */
-  char *base;
-  struct stat st_buf;
-  char fname[PATH_MAX];
-
-  strcpy (fname, file_name);
-  base = strrchr(fname, '/') + 1;
-  if (base == NULL) {base = fname;}
-  if ((stat (base, &st_buf) == 0 && S_ISCHR (st_buf.st_mode)) || (tolower(base[0]) == 'p' && tolower(base[1]) == 'r' && tolower(base[2]) == 'n' && base[3] == '\0'))
-    {
-      size_t blen = strlen (base);
-
-      /* Prepend a '_'.  */
-      memmove (base + 1, base, blen + 1);
-      base[0] = '_';
-      strcpy (file_name, fname);
-    }
-    return file_name;
-}
-#endif /* __CYGWIN__ */
-
 #undef ONE_DIGIT
 #undef ONE_DIGIT_ADVANCE
 

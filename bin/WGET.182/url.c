@@ -212,7 +212,7 @@ encode_string_maybe (const char *s)
 
 /* Encode the unsafe characters (as determined by UNSAFE_CHAR) in a
    given string, returning a malloc-ed %XX encoded string.  */
-  
+
 char *
 encode_string (const char *s)
 {
@@ -1390,14 +1390,14 @@ url_filename (const struct url *u)
   }
 #endif /* WINDOWS */
 
-#if defined(MSDOS) || defined(__CYGWIN__)
+#if defined(MSDOS)
     {
       char tmp [PATH_MAX];
 
       strcpy (tmp, msdosify(file));
       strcpy (file, rename_if_dos_device_name(tmp));
     }
-#endif /* MSDOS || __CYGWIN__ */
+#endif /* MSDOS */
 
   /* Check the cases in which the unique extensions are not used:
      1) Clobbering is turned off (-nc).
@@ -2364,7 +2364,7 @@ local_quote_string (const char *file)
    However, our hash tables only accept pointers for keys and values.
    So when we need a pointer, we use the address of a
    downloaded_file_t variable of static storage.  */
-   
+
 static downloaded_file_t *
 downloaded_mode_to_ptr (downloaded_file_t mode)
 {
