@@ -167,7 +167,6 @@ bin/SNARF.70
 bin/sniff.bat
 bin/SSH
 bin/SUCK
-bin/syslogd
 bin/syslogd2
 bin/TALK
 bin/TELNET

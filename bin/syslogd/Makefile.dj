@@ -1,0 +1,23 @@
+#
+# GNU Makefile for WatTCP syslog daemon (djgpp)
+#
+# Ken Yap <ken@nlc.net.au>
+#
+SRC       = syslogd.c pidfile.c ntp.c # snprintf.c
+DJGPP_EXE = syslog-dj.exe
+
+#
+# To reduce the warnings
+#
+CFLAGS = -D__GLIBC__               \
+         -Wno-stringop-truncation  \
+         -Wno-tautological-compare \
+         -Wno-incompatible-pointer-types
+
+include ../djcommon.mak
+
+# DO NOT DELETE THIS LINE
+syslogd.o: syslogd.c pidfile.h version.h portable.h
+pidfile.o: pidfile.c portable.h
+snprintf.o: snprintf.c
+ntp.o: ntp.c portable.h ntp.h
