@@ -378,7 +378,7 @@ int W32_CALL select (int nfds, fd_set *read_fds, fd_set *write_fds,
 int W32_CALL poll (struct pollfd *p, int num, int timeout_ms)
 {
   DWORD   timeout_at;
-  int     i, fd, ret = 0;
+  int     i, ret = 0;
 
   SOCK_DEBUGF (("\npoll: n=%d", num));
 
@@ -416,23 +416,26 @@ int W32_CALL poll (struct pollfd *p, int num, int timeout_ms)
 
     for (i = 0; i < num; ++i)
     {
-      Socket *socket = NULL;
+      Socket    *socket = NULL;
+      const int  fd     = p[i].fd;
 
-      fd = p[i].fd;
+      if (fd < 0)
+         goto poll_invalid;
       if (fd >= SK_FIRST)
       {
         socket = _socklist_find (fd);
         if (!socket)
-        {
-          p[i].revents = POLLNVAL;
-          ++ret;
-          continue;
-        }
+           goto poll_invalid;
       }
 
       p[i].revents = poll_one (fd, socket, p[i].events);
       if (p[i].revents)
          ++ret;
+      continue;
+
+    poll_invalid:
+      p[i].revents = POLLNVAL;
+      ++ret;
     }
 
     /* Safe to run other "tasks" now.
