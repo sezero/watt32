@@ -156,8 +156,12 @@ NO_W32_CFLAGS = -D_Windows
 
 @ifdef IS_GCC
   CC            = $(BIN_PREFIX)gcc
-  COMMON_CFLAGS = -O2 -g -W -Wall -Wno-strict-aliasing -Wno-unused-variable
   LDFLAGS       = -Wl,--print-map,--sort-common
+  COMMON_CFLAGS = -O2 -g -W -Wall      \
+                  -Wno-strict-aliasing \
+                  -Wno-unused-function \
+                  -Wno-unused-variable \
+                  -Wno-unused-but-set-variable
 
   #
   # These stupid '$GCC_COLORS' messed up my shell big-time.
@@ -284,7 +288,7 @@ CC_ARGS = $(CC).arg
   export C_INCLUDE_PATH=
   export CPLUS_INCLUDE_PATH=
 
-  COMMON_CFLAGS += -Wno-unused-function -Wno-unused-variable -Wno-unused-value
+  COMMON_CFLAGS += -Wno-unused-variable -Wno-unused-value
   WATT_LIB       = $(LIB_DIR)/wattcp_clang.lib
 
 @elifdef WATCOM
@@ -311,7 +315,7 @@ CC_ARGS = $(CC).arg
 
 @ifdef CYGWIN
   CC             = gcc
-  COMMON_CFLAGS += -static-libgcc -Wno-unused-but-set-variable -Wno-unused-function
+  COMMON_CFLAGS += -static-libgcc
   NO_W32_CFLAGS += -D__USE_W32_SOCKETS  # Use Winsock2
 
 @elifdef VISUALC CLANG
@@ -471,6 +475,13 @@ CC_ARGS = $(CC).arg
 @endif
 
 ########################################################################
+
+@ifdef CYGWIN
+  #
+  # Cygwin could have an issue here. Drop it.
+  #
+  PROGRAMS := $(filter-out swap.exe, $(PROGRAMS))
+@endif
 
 PROGRAMS := $(sort $(PROGRAMS))
 

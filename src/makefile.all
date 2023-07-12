@@ -260,6 +260,16 @@ prefix = /dev/env/DJDIR/net/watt
 CFLAGS = -O3 -g -I. -I../inc -DWATT32_BUILD -W -Wall -Wno-strict-aliasing \
          -march=i386 -mtune=i586
 
+#
+# Add this for all gcc compilers since it could create havoc to the
+# shell's default colours (unless it has a black background). E.g. with
+# and environment variable like:
+#   set GCC_COLORS=error=49;01;31:warning=49;01;35:note=49;01;36:caret=49;01;32:locus=01;49:quote=37;1
+#
+# any warning turns into awful mess of junk.
+#
+CFLAGS += -fdiagnostics-color=never
+
 STAT_LIB = ../lib/libwatt.a
 OBJDIR   = build/djgpp
 OBJPATH  = $(OBJDIR)/
@@ -1153,7 +1163,7 @@ clean:
 #
 CC      = gcc
 CFLAGS  = -O2 -g -Wall -Wno-strict-aliasing -mthreads -pipe -I. -I../inc \
-          -DWATT32_BUILD -D_WIN32_WINNT=0x0601 -DWINVER=0x0601
+          -fdiagnostics-color=never -DWATT32_BUILD -D_WIN32_WINNT=0x0601 -DWINVER=0x0601
 
 LDFLAGS = -shared -Wl,--enable-stdcall-fixup,--print-map,--sort-common,--cref
 
@@ -1244,7 +1254,8 @@ else
   CFLAGS = -O0 -g2 -fgnu89-inline
 endif
 
-CFLAGS += -Wall -Wundef -Wno-strict-aliasing -I. -I../inc -DWATT32_BUILD -D_WIN32_WINNT=0x0601 -DWINVER=0x0601
+CFLAGS += -Wall -Wundef -Wno-strict-aliasing -I. -I../inc \
+          -fdiagnostics-color=never -DWATT32_BUILD -D_WIN32_WINNT=0x0601 -DWINVER=0x0601
 LDFLAGS = -shared -Wl,--enable-stdcall-fixup,--print-map,--sort-common,--cref
 
 #
@@ -1320,7 +1331,7 @@ clean:
 CC       = gcc
 CFLAGS   = -m$(BITS) -O2 -g -Wall -Wno-unused-function -mthreads \
            -fno-strict-aliasing -static-libgcc -I. -I../inc      \
-           -DWATT32_BUILD -D_WIN32_WINNT=0x0601
+           -fdiagnostics-color=never -DWATT32_BUILD -D_WIN32_WINNT=0x0601
 LDFLAGS  = -m$(BITS) -shared -static-libgcc -Wl,--print-map
 AS       = as
 AFLAGS   = --$(BITS) -ahls

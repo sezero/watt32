@@ -21,14 +21,11 @@
 #include <unistd.h>
 #endif
 
-#if !defined(_Windows)
-  #include <sys/cdefs.h>
-
+#if defined(__GNUC__)
   /*
-   * I'm sick of gcc not understanding shit like "%llu".
+   * I'm sick of gcc / MinGW-w64 not understanding shit like "%llu".
    */
-  W32_GCC_PRAGMA (GCC diagnostic push)
-  W32_GCC_PRAGMA (GCC diagnostic ignored "-Wformat")
+  #pragma GCC diagnostic ignored "-Wformat"
 #endif
 
 /*
