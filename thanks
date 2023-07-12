@@ -27,3 +27,5 @@ Jirí Malák            ??                            Many fixes for Watcom versio
 J.W. Jagersma         jwjagersma@gmail.com          Many Pull Requests for fixes of
                                                     the BSD-socket API. And for djgpp and
                                                     even MacOS!
+Andrew Wu:            Taiwan                        The djgpp cross-compiler for Windows:
+                                                    https://github.com/andrewwutw/build-djgpp/releases/
