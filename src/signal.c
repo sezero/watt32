@@ -135,11 +135,15 @@ int _sock_sig_setup (void)
 
 #if (USE_SIGMASK)
     sigaddset (&new_mask, sig->sig_num);
-    sigprocmask (SIG_SETMASK, &new_mask, &old_mask);
 #else
     sig->old = signal (sig->sig_num, sig_catch);
 #endif
   }
+
+#if (USE_SIGMASK)
+  sigprocmask (SIG_SETMASK, &new_mask, &old_mask);
+#endif
+
   return (0);
 }
 
