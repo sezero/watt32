@@ -473,6 +473,34 @@ poll_ok:
   return (ret);
 }
 
+#if defined(__DJGPP__) && defined(USE_FSEXT)
+/*
+ * Check one socket.  Called by libc select().
+ */
+int _fsext_ready (int fd)
+{
+  Socket *socket;
+  int revents, ret = 0;
+
+  tcp_tick (NULL);
+
+  socket = _socklist_find (fd);
+  if (!socket)
+     return (-1);
+
+  revents = select_one (fd, socket, POLLIN | POLLOUT | POLLPRI);
+
+  if (revents & POLLIN)
+     ret |= __FSEXT_ready_read;
+  if (revents & POLLOUT)
+     ret |= __FSEXT_ready_write;
+  if (revents & POLLPRI)
+     ret |= __FSEXT_ready_error;
+
+   return ret;
+}
+#endif /* __DJGPP__ && USE_FSEXT */
+
 #ifdef NOT_YET
 int pselect (int nfds, fd_set *readfds, fd_set *writefds,
              fd_set *exceptfds, struct timespec *timeout,
