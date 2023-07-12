@@ -383,9 +383,10 @@ extern const char *qword_str (uint64 val);
   #define WIDESTR_FMT  "ws"
 #endif
 
-/* Printing an hex linear address.
+/*
+ * Printing an hex linear address.
  * Printing an decimal value from the address-bus (e.g. a stack-limit)
- * E.g. printf (buf, "0x%"ADDR_FMT, ADDR_CAST(ptr));
+ * E.g. printf (buf, "0x%" ADDR_FMT, ADDR_CAST(ptr));
  */
 #if defined(WIN64) && defined(_MSC_VER)
   #define ADDR_FMT     "016I64X"
@@ -410,7 +411,7 @@ extern const char *qword_str (uint64 val);
   #define ABUS_VAL_FMT "u"              /* should match an UINT_PTR */
 
 #else
-  #define ADDR_FMT     "04X"     /* real-mode segment or offset. */
+  #define ADDR_FMT     "04X"            /* real-mode segment or offset. */
   #define ADDR_CAST(x) ((WORD)(x))
   #define ABUS_VAL_FMT "u"
 #endif
