@@ -21,6 +21,16 @@
 #include <unistd.h>
 #endif
 
+#if !defined(_Windows)
+  #include <sys/cdefs.h>
+
+  /*
+   * I'm sick of gcc not understanding shit like "%llu".
+   */
+  W32_GCC_PRAGMA (GCC diagnostic push)
+  W32_GCC_PRAGMA (GCC diagnostic ignored "-Wformat")
+#endif
+
 /*
  * When compiling pure Winsock versions of various test programs:
  */

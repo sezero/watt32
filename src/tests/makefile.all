@@ -156,8 +156,16 @@ NO_W32_CFLAGS = -D_Windows
 
 @ifdef IS_GCC
   CC            = $(BIN_PREFIX)gcc
-  COMMON_CFLAGS = -O2 -g -W -Wall -Wno-strict-aliasing
+  COMMON_CFLAGS = -O2 -g -W -Wall -Wno-strict-aliasing -Wno-unused-variable
   LDFLAGS       = -Wl,--print-map,--sort-common
+
+  #
+  # These stupid '$GCC_COLORS' messed up my shell big-time.
+  # Turn colours off.
+  #
+  ifeq ($(USER),gv)
+    COMMON_CFLAGS += -fdiagnostics-color=never
+  endif
 
   ifeq ($(filter 2 3 4,$(word 3, $(shell true | $(CC) -E -dD -x c - | grep 'define\ *__GNUC__'))),)
     #
@@ -303,7 +311,7 @@ CC_ARGS = $(CC).arg
 
 @ifdef CYGWIN
   CC             = gcc
-  COMMON_CFLAGS += -static-libgcc -Wno-unused-but-set-variable -Wno-unused-function -Wno-unused-variable
+  COMMON_CFLAGS += -static-libgcc -Wno-unused-but-set-variable -Wno-unused-function
   NO_W32_CFLAGS += -D__USE_W32_SOCKETS  # Use Winsock2
 
 @elifdef VISUALC CLANG
