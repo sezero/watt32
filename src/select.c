@@ -198,6 +198,12 @@ int W32_CALL select_s (int nfds, fd_set *readfds, fd_set *writefds,
     if (_sock_sig_pending())
        goto select_intr;
 
+    /* Not safe to run sock_daemon() (or other "tasks") now
+     */
+    _sock_crit_start();
+
+    tcp_tick (NULL);
+
     for (s = 0; s < num_fd; s++)
     {
       /* read/write/except counters for socket 's'
@@ -205,10 +211,6 @@ int W32_CALL select_s (int nfds, fd_set *readfds, fd_set *writefds,
       int     revents, events = 0;
       int     read_cnt = 0, write_cnt = 0, exc_cnt = 0;
       Socket *socket = NULL;
-
-      /* Not safe to run sock_daemon() (or other "tasks") now
-       */
-      _sock_crit_start();
 
       if (readfds && FD_ISSET(s,readfds))
          events |= POLLIN;
@@ -219,15 +221,11 @@ int W32_CALL select_s (int nfds, fd_set *readfds, fd_set *writefds,
       if (exceptfds && FD_ISSET(s,exceptfds))
          events |= POLLPRI;
 
-      if (events)
+      if (events && s >= SK_FIRST)
       {
-        tcp_tick (NULL);      /* must do tcp_tick() here */
-        if (s >= SK_FIRST)
-        {
-          socket = setup_select (s, loop_1st);
-          if (!socket)        /* skip this fd */
-             events = 0;
-        }
+        socket = setup_select (s, loop_1st);
+        if (!socket)        /* skip this fd */
+           events = 0;
       }
 
       revents = select_one (s, socket, events);
@@ -260,13 +258,13 @@ int W32_CALL select_s (int nfds, fd_set *readfds, fd_set *writefds,
       total_ex += exc_cnt;
 #endif
 
-      /* Safe to run other "tasks" now.
-       */
-      _sock_crit_stop();
       SOCK_DBUG_FLUSH();
 
     } /* end of for loop; all sockets checked at least once */
 
+    /* Safe to run other "tasks" now.
+     */
+    _sock_crit_stop();
 
     /* WATT_YIELD() sometimes hangs for approx 250msec under Win-XP.
      * Don't yield for "small" timeouts.
@@ -359,7 +357,6 @@ select_intr:
   SOCK_DEBUGF ((", EINTR"));
   SOCK_ERRNO (EINTR);
   ret_count = -1;
-  _sock_crit_stop();
 
 select_ok:
   _sock_sig_restore();
