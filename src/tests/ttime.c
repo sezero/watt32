@@ -154,7 +154,7 @@ int test_rollover (void)
 #ifdef HAVE_UINT64
 const char *get_cpu_wrap_time (void)
 {
-  return (NULL);  /* \todo */
+  return ("?");  /* \todo */
 }
 #endif
 
