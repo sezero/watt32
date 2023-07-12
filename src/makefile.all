@@ -98,9 +98,9 @@ BSD_SOURCE =  accept.c   bind.c     bsddbug.c  close.c    connect.c  fcntl.c    
               fsext.c    get_ai.c   get_ip.c   get_ni.c   get_xbyr.c geteth.c   \
               gethost.c  gethost6.c getname.c  getnet.c   getprot.c  getput.c   \
               getserv.c  ioctl.c    linkaddr.c listen.c   netaddr.c  neterr.c   \
-              nettime.c  nsapaddr.c poll.c     presaddr.c printk.c   receive.c  \
-              select.c   shutdown.c signal.c   socket.c   sockopt.c  stream.c   \
-              syslog.c   syslog2.c  transmit.c
+              nettime.c  nsapaddr.c presaddr.c printk.c   receive.c  select.c   \
+              shutdown.c signal.c   socket.c   sockopt.c  stream.c   syslog.c   \
+              syslog2.c  transmit.c
 
 BIND_SOURCE = res_comp.c res_data.c res_debu.c res_init.c res_loc.c res_mkqu.c \
               res_quer.c res_send.c
@@ -121,33 +121,32 @@ COMMON_OBJS = \
        $(OBJPATH)close.obj    $(OBJPATH)connect.obj   \
        $(OBJPATH)crc.obj      $(OBJPATH)dynip.obj     \
        $(OBJPATH)echo.obj     $(OBJPATH)fcntl.obj     \
-                              $(OBJPATH)get_ai.obj    \
-       $(OBJPATH)get_ip.obj   $(OBJPATH)get_ni.obj    \
-       $(OBJPATH)get_xbyr.obj $(OBJPATH)geteth.obj    \
-       $(OBJPATH)gethost.obj  $(OBJPATH)gethost6.obj  \
-       $(OBJPATH)getname.obj  $(OBJPATH)getnet.obj    \
-       $(OBJPATH)getopt.obj   $(OBJPATH)getprot.obj   \
-       $(OBJPATH)getput.obj   $(OBJPATH)getserv.obj   \
-       $(OBJPATH)gettod.obj   $(OBJPATH)idna.obj      \
-       $(OBJPATH)ioctl.obj    $(OBJPATH)ip4_frag.obj  \
-       $(OBJPATH)ip4_in.obj   $(OBJPATH)ip4_out.obj   \
-       $(OBJPATH)ip6_in.obj   $(OBJPATH)ip6_out.obj   \
-       $(OBJPATH)language.obj $(OBJPATH)linkaddr.obj  \
-       $(OBJPATH)listen.obj   $(OBJPATH)lookup.obj    \
-       $(OBJPATH)loopback.obj $(OBJPATH)misc.obj      \
-       $(OBJPATH)netaddr.obj  $(OBJPATH)netback.obj   \
-       $(OBJPATH)neterr.obj   $(OBJPATH)nettime.obj   \
-       $(OBJPATH)nsapaddr.obj $(OBJPATH)oldstuff.obj  \
-       $(OBJPATH)packet32.obj $(OBJPATH)pc_cbrk.obj   \
-       $(OBJPATH)pcarp.obj    $(OBJPATH)pcbootp.obj   \
-       $(OBJPATH)pcbuf.obj    $(OBJPATH)pcconfig.obj  \
-       $(OBJPATH)pcdbug.obj   $(OBJPATH)pcdhcp.obj    \
-       $(OBJPATH)pcdns.obj    $(OBJPATH)pcicmp.obj    \
-       $(OBJPATH)pcicmp6.obj  $(OBJPATH)pcigmp.obj    \
-       $(OBJPATH)pcping.obj   $(OBJPATH)pcqueue.obj   \
-       $(OBJPATH)pcrarp.obj   $(OBJPATH)pcrecv.obj    \
-       $(OBJPATH)pcsed.obj    $(OBJPATH)pcstat.obj    \
-       $(OBJPATH)pctcp.obj    $(OBJPATH)poll.obj      \
+       $(OBJPATH)get_ai.obj   $(OBJPATH)get_ip.obj    \
+       $(OBJPATH)get_ni.obj   $(OBJPATH)get_xbyr.obj  \
+       $(OBJPATH)geteth.obj   $(OBJPATH)gethost.obj   \
+       $(OBJPATH)gethost6.obj $(OBJPATH)getname.obj   \
+       $(OBJPATH)getnet.obj   $(OBJPATH)getopt.obj    \
+       $(OBJPATH)getprot.obj  $(OBJPATH)getput.obj    \
+       $(OBJPATH)getserv.obj  $(OBJPATH)gettod.obj    \
+       $(OBJPATH)idna.obj     $(OBJPATH)ioctl.obj     \
+       $(OBJPATH)ip4_frag.obj $(OBJPATH)ip4_in.obj    \
+       $(OBJPATH)ip4_out.obj  $(OBJPATH)ip6_in.obj    \
+       $(OBJPATH)ip6_out.obj  $(OBJPATH)language.obj  \
+       $(OBJPATH)linkaddr.obj $(OBJPATH)listen.obj    \
+       $(OBJPATH)lookup.obj   $(OBJPATH)loopback.obj  \
+       $(OBJPATH)misc.obj     $(OBJPATH)netaddr.obj   \
+       $(OBJPATH)netback.obj  $(OBJPATH)neterr.obj    \
+       $(OBJPATH)nettime.obj  $(OBJPATH)nsapaddr.obj  \
+       $(OBJPATH)oldstuff.obj $(OBJPATH)packet32.obj  \
+       $(OBJPATH)pc_cbrk.obj  $(OBJPATH)pcarp.obj     \
+       $(OBJPATH)pcbootp.obj  $(OBJPATH)pcbuf.obj     \
+       $(OBJPATH)pcconfig.obj $(OBJPATH)pcdbug.obj    \
+       $(OBJPATH)pcdhcp.obj   $(OBJPATH)pcdns.obj     \
+       $(OBJPATH)pcicmp.obj   $(OBJPATH)pcicmp6.obj   \
+       $(OBJPATH)pcigmp.obj   $(OBJPATH)pcping.obj    \
+       $(OBJPATH)pcqueue.obj  $(OBJPATH)pcrarp.obj    \
+       $(OBJPATH)pcrecv.obj   $(OBJPATH)pcsed.obj     \
+       $(OBJPATH)pcstat.obj   $(OBJPATH)pctcp.obj     \
        $(OBJPATH)ports.obj    $(OBJPATH)ppp.obj       \
        $(OBJPATH)pppoe.obj    $(OBJPATH)presaddr.obj  \
        $(OBJPATH)printk.obj   $(OBJPATH)profile.obj   \

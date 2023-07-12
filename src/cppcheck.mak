@@ -76,10 +76,9 @@ BSD_SOURCE = accept.c   adr2asc.c  asc2adr.c  bind.c     bsddbug.c  \
              get_ni.c   get_ip.c   geteth.c   gethost.c  gethost6.c \
              getname.c  getnet.c   getprot.c  getput.c   getserv.c  \
              get_xbyr.c ioctl.c    linkaddr.c listen.c   netaddr.c  \
-             neterr.c   nettime.c  nsapaddr.c poll.c     presaddr.c \
-             printk.c   receive.c  select.c   shutdown.c signal.c   \
-             socket.c   sockopt.c  stream.c   syslog.c   syslog2.c  \
-             transmit.c
+             neterr.c   nettime.c  nsapaddr.c presaddr.c printk.c   \
+             receive.c  select.c   shutdown.c signal.c   socket.c   \
+             sockopt.c  stream.c   syslog.c   syslog2.c  transmit.c
 
 BIND_SOURCE = res_comp.c res_data.c res_debu.c res_init.c res_loc.c \
               res_mkqu.c res_quer.c res_send.c

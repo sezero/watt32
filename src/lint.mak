@@ -35,14 +35,14 @@ SOURCES = accept.c   adr2asc.c  asc2adr.c  bind.c     bsddbug.c  bsdname.c  \
           pcarp.c    pcbootp.c  pcbsd.c    pcbuf.c    pcconfig.c pcdbug.c   \
           pcdhcp.c   pcicmp.c   pcicmp6.c  pcintr.c   pcmulti.c  pcping.c   \
           pcpkt.c    pcpkt32.c  pcqueue.c  pcrarp.c   pcrecv.c   pcsed.c    \
-          pcslip.c   pcstat.c   pctcp.c    poll.c     ports.c    ppp.c      \
-          pppoe.c    presaddr.c printk.c   qmsg.c     receive.c  res_comp.c \
-          res_data.c res_debu.c res_init.c res_loc.c  res_mkqu.c res_quer.c \
-          res_send.c select.c   settod.c   shutdown.c signal.c   sock_dbu.c \
-          sock_in.c  sock_ini.c sock_io.c  sock_prn.c sock_scn.c sock_sel.c \
-          socket.c   sockopt.c  split.c    stream.c   strings.c  syslog.c   \
-          syslog2.c  tcp_fsm.c  tftp.c     timer.c    transmit.c udp_dom.c  \
-          udp_nds.c  udp_rev.c  version.c  w32pcap.c  wdpmi.c    x32vm.c    \
+          pcslip.c   pcstat.c   pctcp.c    ports.c    ppp.c      pppoe.c    \
+          presaddr.c printk.c   qmsg.c     receive.c  res_comp.c res_data.c \
+          res_debu.c res_init.c res_loc.c  res_mkqu.c res_quer.c res_send.c \
+          select.c   settod.c   shutdown.c signal.c   sock_dbu.c sock_in.c  \
+          sock_ini.c sock_io.c  sock_prn.c sock_scn.c sock_sel.c socket.c   \
+          sockopt.c  split.c    stream.c   strings.c  syslog.c   syslog2.c  \
+          tcp_fsm.c  tftp.c     timer.c    transmit.c udp_dom.c  udp_nds.c  \
+          udp_rev.c  version.c  w32pcap.c  wdpmi.c    x32vm.c    \
           rs232.c
 
 LFILES = $(SOURCES:.c=.lnt)

@@ -1,5 +1,5 @@
 /*!\file select.c
- * BSD select().
+ * BSD select(), poll().
  */
 
 /*  BSD sockets functionality for Watt-32 TCP/IP
@@ -38,6 +38,7 @@
  *                       Changed criteria for read/writeability.
  */
 
+#include <sys/poll.h>
 #include "socket.h"
 
 #if defined(USE_BSD_API)
@@ -75,6 +76,9 @@ static struct timeval sel_min_block = { 0, 500000 }; /* 0.5 sec */
 static int read_select  (int s, Socket *socket);
 static int write_select (int s, Socket *socket);
 static int exc_select   (int s, Socket *socket);
+
+static int select_one (int fd, Socket *socket, int events);
+static int poll_one   (int fd, Socket *socket, int events);
 
 /*
  * Setup for read/write/except_select()
@@ -198,7 +202,7 @@ int W32_CALL select_s (int nfds, fd_set *readfds, fd_set *writefds,
     {
       /* read/write/except counters for socket 's'
        */
-      int     do_read  = 0, do_write  = 0, do_exc  = 0;
+      int     revents, events = 0;
       int     read_cnt = 0, write_cnt = 0, exc_cnt = 0;
       Socket *socket = NULL;
 
@@ -207,50 +211,43 @@ int W32_CALL select_s (int nfds, fd_set *readfds, fd_set *writefds,
       _sock_crit_start();
 
       if (readfds && FD_ISSET(s,readfds))
-         do_read = 1;
+         events |= POLLIN;
 
       if (writefds && FD_ISSET(s,writefds))
-         do_write = 1;
+         events |= POLLOUT;
 
       if (exceptfds && FD_ISSET(s,exceptfds))
-         do_exc = 1;
+         events |= POLLPRI;
 
-      if (do_read || do_write || do_exc)
+      if (events)
       {
         tcp_tick (NULL);      /* must do tcp_tick() here */
         if (s >= SK_FIRST)
         {
           socket = setup_select (s, loop_1st);
           if (!socket)        /* skip this fd */
-             do_read = do_write = do_exc = 0;
+             events = 0;
         }
       }
 
-      /* Check this socket for readability ?
-       */
-      if (do_read)
+      revents = select_one (s, socket, events);
+
+      if (revents & POLLIN)
       {
-        read_cnt = read_select (s, socket);
-        if (read_cnt > 0)
-           FD_SET (s, &tmp_read[0]);
+        read_cnt = 1;
+        FD_SET (s, &tmp_read[0]);
       }
 
-      /* Check this socket for writeability ?
-       */
-      if (do_write)
+      if (revents & POLLOUT)
       {
-        write_cnt = write_select (s, socket);
-        if (write_cnt > 0)
-           FD_SET (s, &tmp_write[0]);
+        write_cnt = 1;
+        FD_SET (s, &tmp_write[0]);
       }
 
-      /* Check this socket for exception ?
-       */
-      if (do_exc)
+      if (revents & POLLPRI)
       {
-        exc_cnt = exc_select (s, socket);
-        if (exc_cnt > 0)
-           FD_SET (s, &tmp_except[0]);
+        exc_cnt = 1;
+        FD_SET (s, &tmp_except[0]);
       }
 
       /* Increment the return and total counters (may increment by 0)
@@ -378,6 +375,103 @@ int W32_CALL select (int nfds, fd_set *read_fds, fd_set *write_fds,
 }
 #endif
 
+/*
+ * POSIX poll() function.
+ */
+int W32_CALL poll (struct pollfd *p, int num, int timeout_ms)
+{
+  DWORD   timeout_at;
+  int     i, fd, ret = 0;
+
+  SOCK_DEBUGF (("\npoll: n=%d", num));
+
+  if (num < 0 || num > MAX_SOCKETS)
+  {
+    SOCK_DEBUGF ((", EINVAL"));
+    SOCK_ERRNO (EINVAL);
+    return (-1);
+  }
+
+  VERIFY_RW (p, num * sizeof (struct pollfd));
+
+  if (timeout_ms > 0)
+  {
+    SOCK_DEBUGF ((", timeout %lu ms", (u_long)timeout_ms));
+    timeout_at = set_timeout (timeout_ms);
+  }
+  else if (timeout_ms < 0)
+  {
+    SOCK_DEBUGF ((", no timeout"));
+  }
+
+  _sock_sig_setup();
+
+  /*
+   * Loop until specified timeout expires or event(s) satisfied.
+   */
+  while (1)
+  {
+    /* Not safe to run sock_daemon() (or other "tasks") now
+     */
+    _sock_crit_start();
+
+    tcp_tick (NULL);
+
+    for (i = 0; i < num; ++i)
+    {
+      Socket *socket = NULL;
+
+      fd = p[i].fd;
+      if (fd >= SK_FIRST)
+      {
+        socket = _socklist_find (fd);
+        if (!socket)
+        {
+          p[i].revents = POLLNVAL;
+          ++ret;
+          continue;
+        }
+      }
+
+      p[i].revents = poll_one (fd, socket, p[i].events);
+      if (p[i].revents)
+         ++ret;
+    }
+
+    /* Safe to run other "tasks" now.
+     */
+    _sock_crit_stop();
+
+    /* Poll for caught signals (SIGINT/SIGALRM)
+     */
+    if (_sock_sig_pending())
+       goto poll_intr;
+
+    if (ret || timeout_ms == 0)
+    {
+      SOCK_DEBUGF ((", ret=%d", ret));
+      goto poll_ok;
+    }
+
+    if (timeout_ms > 0 && chk_timeout (timeout_at))
+    {
+      SOCK_DEBUGF ((", timeout!"));
+      goto poll_ok;
+    }
+
+    WATT_YIELD();
+  }
+
+poll_intr:
+  SOCK_DEBUGF ((", EINTR"));
+  SOCK_ERRNO (EINTR);
+  ret = -1;
+
+poll_ok:
+  _sock_sig_restore();
+
+  return (ret);
+}
 
 #ifdef NOT_YET
 int pselect (int nfds, fd_set *readfds, fd_set *writefds,
@@ -535,9 +629,6 @@ static int read_select (int s, Socket *socket)
 
     if (sock_rbused(sk) > socket->recv_lowat)   /* Rx-data above low-limit */
        return (1);
-
-    if (sock_signalled(socket, READ_STATE_MASK))
-       return (1);
   }
   return (0);
 }
@@ -581,17 +672,10 @@ static int write_select (int s, Socket *socket)
   {
     sock_type *sk = (sock_type*) socket->tcp_sock;
 
-    if ((socket->so_state & SS_ISCONNECTING) &&
-        _sock_pending_connect (socket))            /* non-blocking connect() */
-       return (0);
-
     if (sk->tcp.state >= tcp_StateESTCL)
        return (1);
 
     if (sock_tbleft(sk) > socket->send_lowat)     /* Tx room above low-limit */
-       return (1);
-
-    if (sock_signalled(socket, WRITE_STATE_MASK)) /* signalled for write */
        return (1);
   }
   return (0);
@@ -615,6 +699,96 @@ static int exc_select (int s, Socket *socket)
   ARGSUSED (socket);
   return (0);
 }
+
+/*
+ * Check if socket hasn't connected yet.
+ * Status will be updated by _sock_pending_connect().
+ */
+static BOOL still_connecting (Socket *socket)
+{
+  if ((socket->so_state & SS_ISCONNECTING) &&
+      _sock_pending_connect (socket))
+     return (TRUE);
+  return (FALSE);
+}
+
+/*
+ * Check one socket for select().
+ */
+static int select_one (int fd, Socket *socket, int events)
+{
+  int revents     = 0;
+  BOOL connecting = FALSE;
+
+  if (socket)
+     connecting = still_connecting (socket);
+
+  if (events & POLLIN)                  /* readable or error */
+  {
+    if (read_select (fd, socket) ||
+        (socket && sock_signalled (socket, READ_STATE_MASK)))
+       revents |= POLLIN;
+  }
+
+  if ((events & POLLOUT) &&             /* writable or error */
+      !connecting)                      /* skip if still connecting */
+  {
+    if (write_select (fd, socket) ||
+        (socket && sock_signalled (socket, WRITE_STATE_MASK)))
+       revents |= POLLOUT;
+  }
+
+  if (events & POLLPRI)                 /* OOB data */
+  {
+    if (exc_select (fd, socket))
+       revents |= POLLPRI;
+  }
+
+  return (revents);
+}
+
+/*
+ * Check one socket for poll().
+ */
+static int poll_one (int fd, Socket *socket, int events)
+{
+  int revents     = 0;
+  BOOL connecting = FALSE;
+
+  if (socket)
+  {
+    connecting = still_connecting (socket);
+
+    if (socket->so_state & SS_CANTSENDMORE)     /* connection closed */
+       revents |= POLLHUP;
+
+    if (socket->so_error != 0)                  /* error state set */
+       revents |= POLLERR;
+  }
+
+  if (events & POLLIN)                          /* readable */
+  {
+    if (read_select (fd, socket))
+       revents |= POLLIN;
+  }
+
+  if ((events & POLLOUT) &&                     /* writable */
+      !(revents & POLLHUP) &&                   /* but skip if closed */
+      !connecting)                              /* or still connecting */
+  {
+    if (write_select (fd, socket))
+       revents |= POLLOUT;
+  }
+
+  if (events & POLLPRI)                         /* OOB data */
+  {
+    if (exc_select (fd, socket))
+       revents |= POLLPRI;
+  }
+
+  return (revents);
+}
+
 #endif /* USE_BSD_API */
 
 
