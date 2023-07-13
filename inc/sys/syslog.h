@@ -38,6 +38,16 @@
 #ifndef __SYS_SYSLOG_H
 #define __SYS_SYSLOG_H
 
+#include <stdarg.h>
+
+#ifndef __SYS_W32API_H
+#include <sys/w32api.h>
+#endif
+
+#ifndef __SYS_CDEFS_H
+#include <sys/cdefs.h>
+#endif
+
 #ifndef _PATH_LOG
 #define _PATH_LOG   "/var/run/log"
 #endif
@@ -78,7 +88,7 @@ typedef struct _code {
         const char   *c_name;
       } CODE;
 
-extern CODE prioritynames[13];
+W32_DATA CODE prioritynames [13];
 
 /* facility codes */
 #define LOG_KERN     (0<<3)  /* kernel messages */
@@ -113,7 +123,7 @@ extern CODE prioritynames[13];
                              /* facility of pri */
 #define LOG_FAC(p)   (((p) & LOG_FACMASK) >> 3)
 
-extern CODE facilitynames[24];
+W32_DATA CODE facilitynames [24];
 
 /*
  * arguments to setlogmask.
@@ -133,16 +143,6 @@ extern CODE facilitynames[24];
 #define LOG_NDELAY 0x08   /* don't delay open */
 #define LOG_NOWAIT 0x10   /* don't wait for console forks: DEPRECATED */
 #define LOG_PERROR 0x20   /* log to stderr as well */
-
-#include <stdarg.h>
-
-#ifndef __SYS_W32API_H
-#include <sys/w32api.h>
-#endif
-
-#ifndef __SYS_CDEFS_H
-#include <sys/cdefs.h>
-#endif
 
 __BEGIN_DECLS
 
