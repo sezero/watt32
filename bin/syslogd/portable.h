@@ -2,100 +2,62 @@
  * Portability hacks for syslogd
  */
 
-#if defined(__DJGPP__) || defined(__HIGHC__) || defined(unix)
+#if defined(__GNUC__) || defined(__HIGHC__)
 #include <unistd.h>
 #include <sys/time.h>           /* struct timeval */
 #endif
 
-#if defined(__DJGPP__) || defined(__HIGHC__) || \
-    defined(__BORLANDC__) || defined(__WATCOMC__)
+#define SYSLOG_INET
+#define SYSV           /* to pull the correct headers */
+#define RECEIVE_NTP    /* use NTP timestamping */
 
-  #define SYSLOG_INET
-  #define NO_SCCS
-  #define SYSV           /* to pull the correct headers */
-  #define RECEIVE_NTP    /* use NTP timestamping */
-
-  #include <stdlib.h>
-  #include <string.h>
-  #include <time.h>
-  #include <memory.h>
-  #include <process.h>
-  #include <dos.h>
-  #include <io.h>
-  #include <tcp.h>
-  #include <sys/socket.h>
-
-  #define _PATH_TTY       "con:"
-  #define _PATH_LOGCONF   "syslog.conf"
-
-  #if defined(__BORLANDC__) || defined(__WATCOMC__)
-    typedef int pid_t;
-  #endif
-
-  #ifdef __HIGHC__
-    #define snprintf _bprintf
-  #endif
-
-  #ifndef __DJGPP__
-    #define  kill(a,b)     (errno=ESRCH)
-    #define  alarm(a)      0
-    #define  setsid()      0
-    #define  setlinebuf(a) 0
-    #define  fsync(a)      0
-  #endif
-
-  #define select           select_s
-  #define sigmask(a)       0
-  #define sigblock(a)      1
-  #define sigsetmask(a)    1
-  #define fork()           0
-  #define ttyname(x)       "con"
-  #define close_sock       close_s
-  #define getdtablesize()  32
-
-//extern int writev (int f, struct iovec *iov, int len);
-
-  extern unsigned long ntp_time (void *p);
-
-#else
-  #include <unistd.h>
-  #include <utmp.h>
-  #include <sys/uio.h>
-  #include <sys/un.h>
-  #include <sys/wait.h>
-  #include <sys/file.h>
-  #include <sys/resource.h>
-  #include <sys/param.h>
-  #include <sys/errno.h>
-  #include <sys/ioctl.h>
-  #include <sys/stat.h>
-  #include <sys/socket.h>
-  #include <sys/time.h>
-
-  #include <syscall.h>
-
-  #define close_sock  close
-#endif
-
-#if defined(unix) && defined(SYSV)
-  #include <sys/times.h>
-  #include <sys/param.h>
-#endif
-
-#ifdef SYSV
-#include <sys/types.h>
-#endif
-
-#ifdef SYSV
+#include <stdlib.h>
+#include <string.h>
+#include <time.h>
+#include <memory.h>
 #include <fcntl.h>
-#else
-#include <sys/msgbuf.h>
+#include <process.h>
+#include <dos.h>
+#include <io.h>
+#include <tcp.h>
+#include <sys/socket.h>
+
+#define _PATH_TTY       "con:"
+#define _PATH_LOGCONF   "syslog.conf"
+
+#define SYSLOGD_PIDNAME   _w32_ExpandVarStr ("$(TEMP)/syslog.pid")
+#define _PATH_LOGPID     SYSLOGD_PIDNAME
+
+#if defined(_MSC_VER) || defined(__BORLANDC__) || defined(__WATCOMC__)
+  typedef int pid_t;
+
+  #define sleep(s)               _sleep(s)
 #endif
 
-#if defined(__linux__)
-#include <paths.h>
+#if !defined(__DJGPP__)
+  #define writev(s, vec, count)  writev_s(s, vec, count)
 #endif
 
+#if defined(__HIGHC__)
+  #define snprintf _bprintf
+#endif
+
+#define  kill(a, b)      (errno = ESRCH)
+#define  alarm(a)        0
+#define  setsid()        0
+#define  setlinebuf(a)   0
+#define  fsync(a)        0
+
+#define select           select_s
+#define sigmask(a)       0
+#define sigblock(a)      1
+#define sigsetmask(a)    1
+#define fork()           0
+#define ttyname(x)       "con"
+#define close_sock       close_s
+#define getdtablesize()  32
+
+extern unsigned long ntp_time (void *p);
 
 #ifndef UTMP_FILE
   #ifdef UTMP_FILENAME
@@ -105,23 +67,6 @@
       #define UTMP_FILE _PATH_UTMP
     #else
       #define UTMP_FILE "/etc/utmp"
-    #endif
-  #endif
-#endif
-
-#if defined(SYSLOGD_PIDNAME)
-  #undef _PATH_LOGPID
-  #if defined(FSSTND)
-    #define _PATH_LOGPID  _PATH_VARRUN SYSLOGD_PIDNAME
-  #else
-    #define _PATH_LOGPID  "/etc/" SYSLOGD_PIDNAME
-  #endif
-#else
-  #ifndef _PATH_LOGPID
-    #if defined(FSSTND)
-      #define _PATH_LOGPID  _PATH_VARRUN "syslogd.pid"
-    #else
-      #define _PATH_LOGPID  "/etc/syslogd.pid"
     #endif
   #endif
 #endif

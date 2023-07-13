@@ -15,16 +15,6 @@
  * WARRANTIES OF MERCHANTIBILITY AND FITNESS FOR A PARTICULAR PURPOSE.
  */
 
-#if !defined(lint) && !defined(NO_SCCS)
-char copyright2[] =
-"@(#) Copyright (c) 1983, 1988 Regents of the University of California.\n\
- All rights reserved.\n";
-#endif /* not lint */
-
-#if !defined(lint) && !defined(NO_SCCS)
-static char sccsid[] = "@(#)syslogd.c	5.27 (Berkeley) 10/10/88";
-#endif /* not lint */
-
 /*
  *  syslogd -- log system messages
  *
@@ -447,8 +437,8 @@ static char sccsid[] = "@(#)syslogd.c	5.27 (Berkeley) 10/10/88";
 #include "version.h"
 #include "portable.h"
 
-char    *ConfFile = _PATH_LOGCONF;
-char	*PidFile = _PATH_LOGPID;
+char    *ConfFile = NULL;
+char	*PidFile = NULL;
 char	ctty[] = _PATH_CONSOLE;
 
 char	**parts;
@@ -641,10 +631,7 @@ char	**LocalHosts = NULL;	/* these hosts are logged with their hostname */
 int	NoHops = 1;		/* Can we bounce syslog messages through an
                        intermediate host. */
 
-extern	int errno;
-
 /* Function prototypes. */
-int main(int argc, char **argv);
 char **crunch_list(char *list);
 int usage(void);
 void untty(void);
@@ -728,6 +715,9 @@ int main(argc, argv)
 	extern int optind;
 	extern char *optarg;
 	int maxfds;
+
+	ConfFile = _PATH_LOGCONF;
+	PidFile = _PATH_LOGPID;
 
 #if !defined(TESTING) && !defined(WATT32)
 	chdir ("/");
