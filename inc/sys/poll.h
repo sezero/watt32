@@ -11,8 +11,8 @@
 #define POLLPRI  0x0002   /* not used */
 #define POLLOUT  0x0004
 #define POLLERR  0x0008
-#define POLLHUP  0x0010   /* not used */
-#define POLLNVAL 0x0020   /* not used */
+#define POLLHUP  0x0010
+#define POLLNVAL 0x0020
 
 struct pollfd {
        int fd;

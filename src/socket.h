@@ -105,6 +105,9 @@
   /* in fsext.c */
   extern int _fsext_demux (__FSEXT_Fnumber func, int *rv, va_list _args);
 
+  /* in select.c */
+  extern int _fsext_ready (int fd);
+
 #elif defined(__CYGWIN__)
   #include <cygwin/version.h>
 

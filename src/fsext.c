@@ -153,32 +153,7 @@ int _fsext_demux (__FSEXT_Fnumber func, int *rv, va_list _args)
          return (1);
 
     case __FSEXT_ready:   /* ready (fd) called from select() */
-         {
-           struct  timeval tv;
-           fd_set  fd_read, fd_write, fd_err;
-
-           FD_ZERO (&fd_read);
-           FD_ZERO (&fd_write);
-           FD_ZERO (&fd_err);
-           FD_SET (fd, &fd_read);
-           FD_SET (fd, &fd_write);
-           FD_SET (fd, &fd_err);
-           tv.tv_sec  = 0;
-           tv.tv_usec = 0L;
-           *rv = 0;
-
-           if (select_s (fd+1, &fd_read, &fd_write, &fd_err, &tv) >= 0)
-           {
-             if (FD_ISSET(fd,&fd_read))
-                *rv |= __FSEXT_ready_read;
-             if (FD_ISSET(fd,&fd_write))
-                *rv |= __FSEXT_ready_write;
-             if (FD_ISSET(fd,&fd_err))
-                *rv |= __FSEXT_ready_error;
-           }
-           else
-             *rv = -1;
-         }
+         *rv = _fsext_ready (fd);
          return (1);
 
     case __FSEXT_creat:
