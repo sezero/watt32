@@ -10,6 +10,12 @@
 export CL=
 
 #
+# In-case some variables are unset, let gnumake warn about them.
+# It seems '$(VCToolsInstallDir)' is unset on AppVeyor for some reason.
+#
+MAKEFLAGS += --warn-undefined-variables
+
+#
 # Set to 1 to link using a debug library:
 #   ../lib/$(CPU)/wattcp_clang_imp_d.lib - for 'USE_STATIC_LIB = 0'
 #   ../lib/$(CPU)/wattcp_clang_d.lib     - for 'USE_STATIC_LIB = 1'

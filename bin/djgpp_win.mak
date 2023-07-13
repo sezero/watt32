@@ -28,7 +28,17 @@ USE_Wall ?= 1
 #   GEOIP_LIB = 1 ==> compile with 'geoip.c'
 #   GEOIP_LIB = 0 ==> compile with neither.
 #
-GEOIP_LIB = 2
+GEOIP_LIB ?= 2
+
+#
+# Do we need some extra objects?
+#
+EXTRA_O ?=
+
+#
+# In-case some variables are unset, let gnumake warn about them.
+#
+MAKEFLAGS += --warn-undefined-variables
 
 #
 # If building on Windows or Linux, '$(DJGPP_PREFIX)-gcc' should become
@@ -55,6 +65,14 @@ LDFLAGS = -s
 
 ifeq ($(USE_Wall),1)
   CFLAGS += -Wall -Wno-address -Wno-sign-compare -Wno-pointer-sign -Wno-implicit-fallthrough
+endif
+
+#
+# These stupid '$GCC_COLORS' messed up my shell big-time.
+# Turn colours off.
+#
+ifeq ($(USER),gv)
+  CFLAGS += -fdiagnostics-color=never
 endif
 
 ifeq ($(MAKE_MAP),1)

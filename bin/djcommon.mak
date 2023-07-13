@@ -47,12 +47,14 @@ USE_Wall ?= 1
 # Default to off for these. See below.
 #
 CWSDPMI_STUB  ?= 0
-STRIP_EXE     ?= 0
-PACK_EXE      ?= 0
+GENERATED     ?=
+LDFLAGS       ?=
 MAKE_MAP      ?= 0
 NO_OPTIMIZE   ?= 0
-USE_YAMD      ?= 0
 PREREQUISITES ?=
+PACK_EXE      ?= 0
+STRIP_EXE     ?= 0
+USE_YAMD      ?= 0
 
 #
 # Override any Unix-like SHELL set in environment or djgpp.env
@@ -90,7 +92,11 @@ ifeq ($(USE_Wall),1)
   CFLAGS += -Wall
 endif
 
-CFLAGS += -g -Wno-strict-aliasing -DWATT32 -I$(WATT32_ROOT)/inc
+CFLAGS += -g -DWATT32 -I$(WATT32_ROOT)/inc \
+          -Wno-unused-variable             \
+          -Wno-strict-aliasing
+
+LDFLAGS ?=
 
 ifneq ($(CC_SRC),)
   LDFLAGS += -lstdcxx
