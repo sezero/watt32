@@ -4,7 +4,7 @@
 # Ken Yap <ken@nlc.net.au>
 #
 SRC       = syslogd.c pidfile.c ntp.c # snprintf.c
-DJGPP_EXE = syslog-dj.exe
+DJGPP_EXE = syslogd-dj.exe
 
 #
 # To reduce the warnings

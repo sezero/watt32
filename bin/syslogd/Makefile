@@ -3,7 +3,7 @@
 #
 # Ken Yap <ken@nlc.net.au>
 #
-SRC         = syslogd.c pidfile.c ntp.c # snprintf.c
+SRC         = syslogd.c pidfile.c ntp.c snprintf.c
 
 BORLAND_EXE = syslogd.exe
 PHARLAP_EXP = syslogd.exp
