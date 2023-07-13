@@ -138,52 +138,50 @@
   #endif
 #endif
 
-#if !defined(__GLIBC__)
-  #if !defined(HAVE_U_CHAR) && !defined(u_char) && !defined(__u_char_defined)
-    typedef unsigned char u_char;
-    #define HAVE_U_CHAR
-    #define __u_char_defined
-  #endif
+#if !defined(HAVE_U_CHAR) && !defined(u_char) && !defined(__u_char_defined)
+  typedef unsigned char u_char;
+  #define HAVE_U_CHAR
+  #define __u_char_defined
+#endif
 
-  #if !defined(HAVE_U_SHORT) && !defined(u_short) && !defined(__u_short_defined)
-    typedef unsigned short u_short;
-    #define HAVE_U_SHORT
-    #define __u_short_defined
-  #endif
+#if !defined(HAVE_U_SHORT) && !defined(u_short) && !defined(__u_short_defined)
+  typedef unsigned short u_short;
+  #define HAVE_U_SHORT
+  #define __u_short_defined
+#endif
 
-  #if !defined(HAVE_USHORT) && !defined(ushort)
-    typedef unsigned short ushort;   /* SysV compatibility */
-    #define HAVE_USHORT
-  #endif
+#if !defined(HAVE_USHORT) && !defined(ushort)
+  typedef unsigned short ushort;   /* SysV compatibility */
+  #define HAVE_USHORT
+#endif
 
-  #if !defined(HAVE_U_LONG) && !defined(u_long) && !defined(__u_long_defined)
-    typedef unsigned long u_long;
-    #define HAVE_U_LONG
-    #define __u_long_defined
-  #endif
+#if !defined(HAVE_U_LONG) && !defined(u_long) && !defined(__u_long_defined)
+  typedef unsigned long u_long;
+  #define HAVE_U_LONG
+  #define __u_long_defined
+#endif
 
-  #if !defined(HAVE_U_INT) && !defined(u_int) && !defined(__u_int_defined)
-    #if defined(__SMALL__) || defined(__LARGE__)
-      typedef unsigned long u_int;  /* too many headers assumes u_int is >=32-bit */
-    #else
-      typedef unsigned int  u_int;
-    #endif
-    #define HAVE_U_INT
-    #define __u_int_defined
+#if !defined(HAVE_U_INT) && !defined(u_int) && !defined(__u_int_defined)
+  #if defined(__SMALL__) || defined(__LARGE__)
+    typedef unsigned long u_int;  /* too many headers assumes u_int is >=32-bit */
+  #else
+    typedef unsigned int  u_int;
   #endif
+  #define HAVE_U_INT
+  #define __u_int_defined
+#endif
 
-  #if !defined(HAVE_CADDR_T) && !defined(caddr_t) && !defined(__caddr_t_defined)
-    /* !! typedef unsigned long caddr_t; */
-    typedef char *caddr_t;
-    #define HAVE_CADDR_T
-    #define __caddr_t_defined
-  #endif
+#if !defined(HAVE_CADDR_T) && !defined(caddr_t) && !defined(__caddr_t_defined)
+  /* !! typedef unsigned long caddr_t; */
+  typedef char *caddr_t;
+  #define HAVE_CADDR_T
+  #define __caddr_t_defined
+#endif
 
-  #if !defined(HAVE_DADDR_T) && !defined(daddr_t) && !defined(__daddr_t_defined)
-    typedef long daddr_t;
-    #define HAVE_DADDR_T
-    #define __daddr_t_defined
-  #endif
+#if !defined(HAVE_DADDR_T) && !defined(daddr_t) && !defined(__daddr_t_defined)
+  typedef long daddr_t;
+  #define HAVE_DADDR_T
+  #define __daddr_t_defined
 #endif
 
 #if !defined(HAVE_U_INT8_T) && !defined(u_int8_t)
