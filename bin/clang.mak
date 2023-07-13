@@ -13,7 +13,9 @@ export CL=
 # In-case some variables are unset, let gnumake warn about them.
 # It seems '$(VCToolsInstallDir)' is unset on AppVeyor for some reason.
 #
-MAKEFLAGS += --warn-undefined-variables
+ifneq ($(APPVEYOR_PROJECT_NAME),)
+  MAKEFLAGS += --warn-undefined-variables
+endif
 
 #
 # Set to 1 to link using a debug library:

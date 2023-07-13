@@ -288,7 +288,10 @@ CC_ARGS = $(CC).arg
   export C_INCLUDE_PATH=
   export CPLUS_INCLUDE_PATH=
 
-  COMMON_CFLAGS += -Wno-unused-variable -Wno-unused-value
+  COMMON_CFLAGS += -Wno-unused-function \
+                   -Wno-unused-variable \
+                   -Wno-unused-value
+
   WATT_LIB       = $(LIB_DIR)/wattcp_clang.lib
 
 @elifdef WATCOM
