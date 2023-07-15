@@ -69,8 +69,8 @@ WATCOM_PREFIX=
 #
 missing_stuff ()
 {
-  echo "You must export WATT_ROOT, like:   'export WATT_ROOT=\$HOME/watt'"
-  echo "and must run this script from within your \$WATT_ROOT/src directory."
+  echo "Some files appear to be missing.  Make sure you are running this script"
+  echo "from your \$WATT_ROOT/src directory."
   exit 4;
 }
 
@@ -251,13 +251,6 @@ test -d ../bin       || { missing_stuff ; }
 test -d ../inc       || { missing_stuff ; }
 test -d ../lib       || { missing_stuff ; }
 test -d ../util      || { missing_stuff ; }
-
-#
-# Make sure WATT_ROOT is set
-#
-if test "x$WATT_ROOT" = "x"; then
-  missing_stuff
-fi
 
 #
 # Check cmdline args
