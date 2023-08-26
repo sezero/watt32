@@ -403,9 +403,9 @@ exit /b 0
   if %BUILDER%. == cygwin.   make -f Cygwin_%BITS%.mak
   if %BUILDER%. == visualc.  make -f visualc_%BITS%.mak
   if %BUILDER%. == watcom. (
-     if %MODEL%. == large. make -f watcom_l.mak
-     if %MODEL%. == flat.  make -f watcom_f.mak
-     if %MODEL%. == win32. make -f watcom_w.mak
+     if %MODEL%. == large. (make -f watcom_l.mak & if not errorlevel == 0 goto test_failed)
+     if %MODEL%. == flat.  (make -f watcom_f.mak & if not errorlevel == 0 goto test_failed)
+     if %MODEL%. == win32. (make -f watcom_w.mak & if not errorlevel == 0 goto test_failed)
   )
 
   %_ECHO% "\e[1;33mRunning test 'cpu.exe' ---------------------------------------------------------------\e[0m"
@@ -416,6 +416,11 @@ exit /b 0
   swap.exe
   %_ECHO% "\e[1;33mRunning test 'chksum.exe -s' ---------------------------------------------------------\e[0m"
   chksum.exe -s
+
+  exit /b 0
+
+:test_failed
+  exit /b 1
 
 :no_tests
   exit /b 0
