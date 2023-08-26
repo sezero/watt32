@@ -96,8 +96,6 @@ CFLAGS += -g -DWATT32 -I$(WATT32_ROOT)/inc \
           -Wno-unused-variable             \
           -Wno-strict-aliasing
 
-LDFLAGS ?=
-
 ifneq ($(CC_SRC),)
   LDFLAGS += -lstdcxx
 endif
