@@ -1,0 +1,160 @@
+
+
+MTR(8)                         mtr                         MTR(8)
+
+
+NAME
+       mtr - a network diagnostic tool
+
+
+
+SYNOPSIS
+       mtr    [-hvrctglsni]   [--help]   [--version]   [--report]
+       [--report-cycles COUNT]   [--curses]   [--split]   [--raw]
+       [--no-dns]  [--gtk]  [--interval SECONDS] [--psize BYTES |
+       -p BYTES] HOSTNAME [PACKETSIZE]
+
+
+
+DESCRIPTION
+       mtr combines the functionality of the traceroute and  ping
+       programs in a single network diagnostic tool.
+
+
+       As  mtr  starts,  it  investigates  the network connection
+       between the host mtr  runs  on  and  HOSTNAME.   After  it
+       determines  the  address  of  each network hop between the
+       machines, it sends a sequence ICMP ECHO requests  to  each
+       one  to determine the quality of the link to each machine.
+       As it does this, it prints running statistics  about  each
+       machine.
+
+
+
+OPTIONS
+       -h
+
+       --help
+              Print the summary of command line argument options.
+
+
+       -v
+
+       --version
+              Print the installed version of mtr.
+
+
+       -r
+
+       --report
+              This option puts mtr into  report  mode.   When  in
+              this  mode,  mtr  will run for the number of cycles
+              specified by the -c option, and then print  statis-
+              tics and exit.
+
+              This mode is useful for generating statistics about
+              network quality.  Note that each  running  instance
+              of  mtr  generates  a significant amount of network
+              traffic.  Using mtr to measure the quality of  your
+              network    may    result   in   decreased   network
+              performance.
+
+
+       -c COUNT
+
+       --report-cycles COUNT
+              Use this option to set the number of pings sent  to
+              determine  both the machines on the network and the
+              reliability of those machines.   Each  cycle  lasts
+              one second.  This option is only useful with the -r
+              option.
+
+
+       -p BYTES
+
+       --psize BYTES
+
+       PACKETSIZE
+              These options or a trailing PACKETSIZE on the  com-
+              mandline sets the packet size used for probing.  It
+              is in bytes inclusive IP and ICMP headers
+
+       -t
+
+       --curses
+              Use this option to force  mtr  to  use  the  curses
+              based terminal interface (if available).
+
+
+       -n
+
+       --no-dns
+              Use  this option to force mtr to display numeric IP
+              numbers and not try to resolve the host names.
+
+
+       -g
+
+       --gtk
+              Use this option to force mtr to use the GTK+  based
+              X11  window  interface  (if  available).  GTK+ must
+              have been available on  the  system  when  mtr  was
+              built  for  this to work.  See the GTK+ web page at
+              http://www.gimp.org/gtk/ for more information about
+              GTK+.
+
+
+       -s
+
+       --split
+              Use  this  option  to  set mtr to spit out a format
+              that is suitable for a split-user interface.
+
+
+       -l
+
+       --raw
+              Use this option to tell mtr to use the  raw  output
+              format.  This  format is better suited for archival
+              of the measurement results. It could be  parsed  to
+              be presented into any of the other display methods.
+
+
+       -i SECONDS
+
+       --interval SECONDS
+              Use this option to specify the positive  number  of
+              seconds  between  ICMP  ECHO requests.  The default
+              value for this parameter is one second.
+
+
+BUGS
+       Some modern routers give a lower  priority  to  ICMP  ECHO
+       packets  than to other network traffic.  Consequently, the
+       reliability of these routers reported by mtr will be  sig-
+       nificantly  lower  than  the  actual  reliability of these
+       routers.
+
+
+
+CONTACT INFORMATION
+       For  the  latest  version,  see  the  mtr  web   page   at
+       http://www.bitwizard.nl/mtr/.
+
+
+       Subscribe  to  the  mtr  mailing  list.   All  mtr related
+       announcements are posted to the mtr mailing list.  To sub-
+       scribe,  send  email  to majordomo@lists.xmission.com with
+       subscribe mtr in the body of the message.  To send a  mes-
+       sage  to the mailing list, mail to mtr@lists.xmission.com.
+
+
+       Bug reports and feature requests should be sent to the mtr
+       mailing list.
+
+
+
+SEE ALSO
+       traceroute(8), ping(8).
+
+

@@ -1,0 +1,35 @@
+#
+# WMAKE Makefile for `mtr' utility.
+# Watcom-386 / DOS4GW
+#
+# Requires PCcurses 2.6. Change path below.
+#
+PDCURSES = e:\djgpp\contrib\pdcurses.26
+
+CFLAGS  = -mf -3r -w5 -zq -d2 -fpi -fr=nul -bt=dos -olrtf &
+         -I$(%watt_root)\inc -I. -I$(PDCURSES) -DUSE_WATT32 -DHAVE_CONFIG_H &
+         -D__MSDOS__
+
+OBJECTS = curses.obj display.obj dns.obj mtr.obj net.obj raw.obj &
+          report.obj select.obj split.obj getopt.obj getopt1.obj
+
+all: config.h dosmtr.exe .PRECIOUS
+
+config.h: config.w32
+    copy /y config.w32 config.h
+
+dosmtr.exe: $(OBJECTS)
+    *wlink libpath $(%watcom)\lib386 libpath $(%watcom)\lib386\dos      &
+           system dos4g debug all sort global                           &
+           option quiet, map, verbose, caseexact, stack=300k, eliminate &
+           file $(OBJECTS:.obj =.obj,)                                  &
+           library $(%watt_root)\lib\wattcpwf.lib, $(PDCURSES)\dos\pdcurses.lib &
+           name dosmtr.exe
+
+.ERASE
+.c.obj:
+    *wcc386 $[@ $(CFLAGS)
+
+clean: .SYMBOLIC
+    rm -f *.obj dosmtr.exe dosmtr.map config.h
+

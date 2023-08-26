@@ -1,0 +1,37 @@
+#
+# GNU Makefile for `mtr' (djgpp) utility
+#
+# Requires PCcurses 2.6. Change path below.
+#
+PDCURSES_HOME ?= $(DJDIR)/contrib/pdcurses.26
+
+SRC = curses.c  \
+      display.c \
+      dns.c     \
+      getopt.c  \
+      getopt1.c \
+      mtr.c     \
+      net.c     \
+      raw.c     \
+      report.c  \
+      select.c  \
+      split.c
+
+DJGPP_EXE = mtr-dj.exe
+PREREQUISITES = config.h
+
+include ../djcommon.mak
+
+CFLAGS += -I$(PDCURSES_HOME) \
+          -I. -DUSE_WATT32   \
+          -Wno-unused-value  \
+          -Wno-unused-but-set-variable
+
+LDFLAGS += $(PDCURSES_HOME)/dos/pdcurses.a
+
+config.h: config.w32
+	cp --update $< $@
+	@echo
+
+# DO NOT DELETE THIS LINE
+
