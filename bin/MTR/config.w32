@@ -1,5 +1,5 @@
 /*
- * config.w32 for Watt-32 (djgpp/Watcom/MSVC)
+ * config.w32 for Watt-32 (djgpp/Watcom/MSVC/clang-cl)
  */
 #ifndef __MTR_CONFIG_H
 #define __MTR_CONFIG_H
@@ -28,7 +28,8 @@
   #undef dword
 #endif
 
-/* Define if you don't have the GTK+ libraries available.  */
+/* Define if you don't have the GTK+ libraries available.
+ */
 #define NO_GTK
 
 #define select select_s
@@ -42,8 +43,8 @@
 #define HAVE_SYS_TIME_H
 #endif
 
-/*  Define the version string.
+/* Define the version string from 'NEWS'.
  */
-#define VERSION "0.4.1"
+#define VERSION "0.54"
 
 #endif

@@ -1,7 +1,6 @@
 #
 # MTR Makefile for MSVC / clang-cl.
 #
-VERSION   := 0.4.1
 DATE      := $(shell date +%d-%B-%Y)
 THIS_FILE := Makefile.Windows
 PYTHON    := py -3
@@ -93,7 +92,7 @@ endif
 all: $(TARGETS) epilogue
 
 epilogue:
-	$(call green_msg, Welcome to MTR ver. $(VERSION).)
+	$(call green_msg, Welcome to $(TARGETS))
 
 config.h: config.w32
 	cp --update $< $@
