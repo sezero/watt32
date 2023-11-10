@@ -267,6 +267,7 @@ static void dump_win_adapters_info (void)
   pkt_win_print_GetIpNetTable();
   pkt_win_print_GetIpNetTable2();
   pkt_win_print_GetIpForwardTable2();
+  pkt_win_print_GetNetworkParams();
   pkt_win_print_RasEnumConnections();
   pkt_win_print_WlanEnumInterfaces();
   pkt_win_print_WSALookupServices();

@@ -128,15 +128,15 @@ W32_GCC_PRAGMA (GCC diagnostic ignored "-Wformat-extra-args")
 /**
  * We only need 1 set of function-pointers for each loaded .DLL.
  *
- * \def DEF_FUNC(ret,f,(args))
+ * \def DEF_FUNC(ret, f, (args))
  *   define the `typedef` and declare the function-pointer for
  *   the function we want to import.
  *   \param ret    the return value type (or `void`)
  *   \param f      the name of the function (without any `"`).
  *   \param (args) the function arguments (as one list).
  */
-#define DEF_FUNC(ret,f,args)  typedef ret (WINAPI *func_##f) args; \
-                              static func_##f p_##f = NULL
+#define DEF_FUNC(ret, f, args)  typedef ret (WINAPI *func_##f) args; \
+                                static func_##f p_##f = NULL
 
 /* From "ws2_32.dll"
  */
@@ -241,6 +241,10 @@ DEF_FUNC (BOOL, GetIpNetworkConnectionBandwidthEstimates,
           (__in  NET_IFINDEX                                    index,
            __in  ADDRESS_FAMILY                                 family,
            __out MIB_IP_NETWORK_CONNECTION_BANDWIDTH_ESTIMATES *bw_estimates));
+
+DEF_FUNC (DWORD, GetNetworkParams,
+          (__inout FIXED_INFO *fixed_info,
+           __inout DWORD      *size));
 
 /* From "rasapi32.dll"
  */
@@ -406,6 +410,7 @@ static struct LoadTable dyn_funcs2[] = {
                         ADD_VALUE ("iphlpapi.dll", ConvertInterfaceLuidToIndex),
                         ADD_VALUE ("iphlpapi.dll", ConvertInterfaceLuidToNameA),
                         ADD_VALUE ("iphlpapi.dll", GetIpNetworkConnectionBandwidthEstimates),
+                        ADD_VALUE ("iphlpapi.dll", GetNetworkParams),
                         ADD_VALUE ("rasapi32.dll", RasEnumConnectionsA),
                         ADD_VALUE ("rasapi32.dll", RasGetConnectionStatistics),
                         ADD_VALUE ("rasapi32.dll", RasGetErrorStringA),
@@ -2236,6 +2241,61 @@ static int _pkt_win_print_GetIpAddrTable (void)
   return (0);
 }
 
+static int _pkt_win_print_GetNetworkParams (void)
+{
+#if defined(__WATCOMC__)
+  (*_printf) ("\nFrom GetNetworkParams():\n  Not for Watcom.\n");
+  return (0);
+
+#else
+  static const struct search_list node_types[] = {
+                    { BROADCAST_NODETYPE,    "Broadcast node" },
+                    { PEER_TO_PEER_NODETYPE, "Peer-to-peer node" },
+                    { MIXED_NODETYPE,        "Mixed node" },
+                    { HYBRID_NODETYPE,       "Hybrid node" }
+                 };
+
+  FIXED_INFO     *fi = alloca (sizeof(*fi));
+  DWORD           size = 0;
+  IP_ADDR_STRING *ip;
+  int             i;
+
+  (*_printf) ("\nFrom GetNetworkParams():\n");
+
+  if (!p_GetNetworkParams)
+  {
+    (*_printf) ("  This function not available on this OS.");
+     return (0);
+  }
+
+  if ((*p_GetNetworkParams)(fi, &size) != ERROR_BUFFER_OVERFLOW)
+  {
+    (*_printf) ("  error: %s\n", win_strerror(WSAGetLastError()));
+    return (0);
+  }
+
+  fi = alloca (size);
+  if ((*p_GetNetworkParams)(fi, &size) != ERROR_SUCCESS)
+  {
+    (*_printf) ("  error: %s\n", win_strerror(WSAGetLastError()));
+    return (0);
+  }
+
+  (*_printf) ("  Host Name:   %s\n", fi->HostName);
+  (*_printf) ("  Domain Name: %s\n", fi->DomainName[0] ? fi->DomainName : NONE_STR);
+  (*_printf) ("  DNS Servers: %-15s (primary)\n", fi->DnsServerList.IpAddress.String);
+
+  for (i = 1, ip = fi->DnsServerList.Next; ip; ip = ip->Next, i++)
+     (*_printf) ("               %-15s (secondary %d)\n", ip->IpAddress.String, i);
+
+  (*_printf) ("  Node Type:   %s\n", _list_lookup(fi->NodeType, node_types, DIM(node_types)));
+  (*_printf) ("  DHCP scope:  %s\n", fi->ScopeId[0] ? fi->ScopeId : NONE_STR);
+  (*_printf) ("  Routing:     %s\n", fi->EnableRouting ? "Enabled" : "Disabled");
+  (*_printf) ("  ARP proxy:   %s\n", fi->EnableProxy   ? "Enabled" : "Disabled");
+  (*_printf) ("  DNS enabled: %s\n", fi->EnableDns     ? "Yes"     : "No");
+  return (1);
+#endif
+}
 
 /*
  * Use GetAdaptersAddresses and dump information on all IPv4/IPv6 adapters;
@@ -2703,7 +2763,6 @@ static const char *ras_strerror (DWORD err)
      *p = '\0';
   return (work_buf);
 }
-
 
 static const struct search_list auth_proto[] = {
                   { 0,             NONE_STR },
@@ -4063,6 +4122,7 @@ DEFINE_FUNC (pkt_win_print_GetIpAddrTable)
 DEFINE_FUNC (pkt_win_print_GetIpForwardTable2)
 DEFINE_FUNC (pkt_win_print_GetAdaptersAddresses)
 DEFINE_FUNC (pkt_win_print_GetAdapterOrderMap)
+DEFINE_FUNC (pkt_win_print_GetNetworkParams)
 DEFINE_FUNC (pkt_win_print_RasEnumConnections)
 DEFINE_FUNC (pkt_win_print_WlanEnumInterfaces)
 DEFINE_FUNC (pkt_win_print_WSALookupServices)

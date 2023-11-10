@@ -203,6 +203,9 @@
   #define HAVE_WSAQuerySetA
   #define COMPILE_WINADINF_C
 
+  #undef  FIXED_INFO
+  #define FIXED_INFO void /* Fails to compile _pkt_win_print_GetNetworkParams() */
+
 #elif defined(__BORLANDC__) && (__BORLANDC__ >= 0x0700)
   /*
    * A recent version (__BORLANDC__ >= 0x0700?) of CodeGearC or Embarcadero
