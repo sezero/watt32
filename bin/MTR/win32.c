@@ -4,40 +4,67 @@
  * By G. Vanem <gvanem@yahoo.no>
  */
 #if defined(_WIN32) && !defined(USE_WATT32) /* rest of file */
+#include "config.h"
+#include "win32.h"
+
 #include <time.h>
-#include <sys/timeb.h>
 #include <stdio.h>
-#include <stdlib.h>
+#include <stdint.h>
 #include <malloc.h>
 
-#include "win32.h"
 #include <iphlpapi.h>
+
+#if defined(USE_KERBEROS)
+#include <wshelper.h>
+#endif
 
 extern const int debug;
 
-int gettimeofday (struct timeval *tv, struct timezone *tz)
+#if defined(USE_KERBEROS)
+/*
+ * This stucture is NOT exported by Kerberos' 'bin/wshelper[32|64].dll'.
+ * Add our own.
+ */
+struct state _res;
+#endif
+
+/*
+ * Number of micro-seconds between the beginning of the Windows epoch
+ * (Jan. 1, 1601) and the Unix epoch (Jan. 1, 1970).
+ */
+#define DELTA_EPOCH_IN_USEC  11644473600000000Ui64
+
+static uint64_t FILETIME_to_unix_epoch (const FILETIME *ft)
 {
-  struct _timeb tb;
+  uint64_t res = (uint64_t) ft->dwHighDateTime << 32;
+
+  res |= ft->dwLowDateTime;
+  res /= 10;                   /* from 100 nano-sec periods to usec */
+  res -= DELTA_EPOCH_IN_USEC;  /* from Win epoch to Unix epoch */
+  return (res);
+}
+
+int gettimeofday (struct timeval *tv, void *tz_not_needed)
+{
+  FILETIME ft;
+  uint64_t tim;
 
   if (!tv)
     return (-1);
 
-  _ftime (&tb);
-  tv->tv_sec = tb.time;
-  tv->tv_usec = tb.millitm * 1000 + 500;
-  if (tz)
-  {
-    tz->tz_minuteswest = -60 * _timezone;
-    tz->tz_dsttime = _daylight;
-  }
+  GetSystemTimePreciseAsFileTime (&ft);
+  tim = FILETIME_to_unix_epoch (&ft);
+  tv->tv_sec  = (long) (tim / 1000000L);
+  tv->tv_usec = (long) (tim % 1000000L);
+  (void) tz_not_needed;
   return (0);
 }
 
 static const char *h_errlist[] = {
   "Resolver Error 0 (no error)",
-  "Unknown host",               /* 1 HOST_NOT_FOUND */
-  "Host name lookup failure",   /* 2 TRY_AGAIN */
-  "Unknown server error",       /* 3 NO_RECOVERY */
+  "Unknown host",                    /* 1 HOST_NOT_FOUND */
+  "Host name lookup failure",        /* 2 TRY_AGAIN */
+  "Unknown server error",            /* 3 NO_RECOVERY */
   "No address associated with name", /* 4 NO_ADDRESS */
 };
 
@@ -66,23 +93,25 @@ void herror (const char *s)
   fprintf (stderr, "%s: %s\n", s, hstrerror (h_errno));
 }
 
-u_long inet_aton (const char *name, struct in_addr *adr)
+#if !defined(USE_KERBEROS)
+static u_long inet_aton (const char *name, struct in_addr *adr)
 {
   u_long ip = INADDR_ANY;
   int    bytes[4];
 
-  if (sscanf(name,"%d.%d.%d.%d",&bytes[0],&bytes[1],&bytes[2],&bytes[3]) == 4)
+  if (sscanf(name,"%d.%d.%d.%d", &bytes[0], &bytes[1], &bytes[2], &bytes[3]) == 4)
      ip = (bytes[0]) + (bytes[1] << 8) + (bytes[2] << 16) + (bytes[3] << 24	);
   if (adr)
      adr->s_addr = ip;
   return (ip);
 }
+#endif
 
 static int get_netparams (struct in_addr *dns_srv, int max_srv)
 {
   FIXED_INFO    *fi   = alloca (sizeof(*fi));
   DWORD          size = sizeof (*fi);
-  DWORD WINAPI (*GetNetworkParams) (FIXED_INFO*, DWORD*);  /* available only on Win-98/2000+ */
+  DWORD (WINAPI *GetNetworkParams) (FIXED_INFO*, DWORD*);  /* available only on Win-98/2000+ */
   HMODULE        handle = LoadLibrary ("iphlpapi.dll");
   int            count  = 0;
 
@@ -132,6 +161,10 @@ static int get_netparams (struct in_addr *dns_srv, int max_srv)
   return (count);
 }
 
+/*
+ * Initialase the Resolve for either plain Windows2
+ * or when using Kerberos' 'wshelp*.dll'.
+ */
 int win_dns_open (void)
 {
   struct in_addr ns_addr [MAXNS];  /* max 3 srvr */

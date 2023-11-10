@@ -1,5 +1,6 @@
 /*
- * config.w32 for Watt-32 (djgpp/Watcom/MSVC/clang-cl)
+ * config.w32 for Watt-32 / Winsock version of MTR.
+ * djgpp, Watcom, MSVC or clang-cl.
  */
 #ifndef __MTR_CONFIG_H
 #define __MTR_CONFIG_H
@@ -10,37 +11,47 @@
 #if defined(_MSC_VER) || defined(__WATCOMC__)
   #define strcasecmp(s1, s2) _stricmp (s1, s2)
   #include <process.h>
-#else
-  #define HAVE_UNISTD_H
 #endif
 
 /*
- * Pull in the Watt-32 functions
- * unless Winsock is used in 'Makefile.vc6'.
+ * Pull in the Watt-32 functions.
+ * Unless Winsock is used in 'Makefile.Windows'.
  */
 #ifdef USE_WATT32
   #define WATT32_NO_GETOPT  /* don't use getopt in Watt-32 */
+  #define WATT32_NO_OLDIES  /* don't define 'byte' etc. */
 
   #include <tcp.h>
-
-  #undef byte
-  #undef word
-  #undef dword
 #endif
 
 /* Define if you don't have the GTK+ libraries available.
  */
 #define NO_GTK
 
-#define select select_s
-#define close  close_s
+#ifdef USE_WATT32
+  #define select select_s
+  #define close  close_s
+#else
+  #include <winsock2.h>
+
+  #define LITTLE_ENDIAN  1234
+  #define BYTE_ORDER     LITTLE_ENDIAN
+
+  /* In 'win32.c'
+   */
+  void herror (const char *s);
+#endif
 
 #define HAVE_SYS_TYPES_H
 #define HAVE_CURSES_H
 #define HAVE_ATTRON
 
-#ifdef __DJGPP__
-#define HAVE_SYS_TIME_H
+#if defined(__DJGPP__)
+  #define HAVE_SYS_TIME_H
+#endif
+
+#if !defined(_MSC_VER) && !defined(__WATCOMC__)
+  #define HAVE_UNISTD_H
 #endif
 
 /* Define the version string from 'NEWS'.

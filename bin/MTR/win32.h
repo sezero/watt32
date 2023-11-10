@@ -1,26 +1,33 @@
-#ifndef _WIN32_MTR_H
-#define _WIN32_MTR_H
+#pragma once
 
-#if defined(_WIN32) && !defined(USE_WATT32)
+#if defined(_WIN32)  /* Rest of file */
+#include <stdlib.h>
+#include <time.h>
+
+#if defined(USE_KERBEROS)
+  /*
+   * In '$(KRB_ROOT)/include/windows'
+   */
+  #include <resolv.h>
   #include <winsock2.h>
   #include <ws2tcpip.h>
-  #include <time.h>
-  #include <sys/timeb.h>
-  #include <stdlib.h>
 
+#elif !defined(USE_WATT32)
+  /*
+   * This plain Winsock2 version does not work.
+   */
+  #include <winsock2.h>
+  #include <ws2tcpip.h>
   #include "Missing/arpa/nameser.h"
   #include "Missing/resolv.h"
 
-  struct timezone {
-         int tz_minuteswest;           /* minutes west of Greenwich */
-         int tz_dsttime;               /* type of dst correction */
-       };
-
-  extern int         gettimeofday (struct timeval *tv, struct timezone *tz);
   extern const char *hstrerror (int err);
   extern void        herror (const char *s);
-  extern u_long      inet_aton (const char *name, struct in_addr *adr);
-  extern int         win_dns_open (void);
-#endif  /* _WIN32 && && !USE_WATT32 */
-#endif  /* _WIN32_MTR_H */
+#endif
+
+#if !defined(USE_WATT32)
+  extern int win_dns_open (void);
+  extern int gettimeofday (struct timeval *tv, void *tz_not_needed);
+#endif
+#endif
 

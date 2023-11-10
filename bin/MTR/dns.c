@@ -445,6 +445,7 @@ void dns_open()
 #if defined(_WIN32) && !defined(USE_WATT32)
   win_dns_open();
 #endif
+
    if (!_res.nscount){
       fprintf(stderr,"No nameservers defined.\n");
       exit(-1);
@@ -769,7 +770,7 @@ void dorequest(char *s,int type,word id){
    hp = (packetheader *)buf;
    hp->id = id;	/* htons() deliberately left out (redundant) */
    for (i = 0;i < _res.nscount;i++)
-      sendto(resfd,buf,r,0,(struct sockaddr *)&_res.nsaddr_list[i],
+      sendto(resfd,(const void*)buf,r,0,(struct sockaddr *)&_res.nsaddr_list[i],
              sizeof(struct sockaddr));
 }
 

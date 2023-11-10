@@ -1,5 +1,5 @@
 #
-# MTR Makefile for MSVC / clang-cl.
+# MTR Makefile for MSVC, clang-cl and djgpp on Windows.
 #
 DATE      := $(shell date +%d-%B-%Y)
 THIS_FILE := Makefile.Windows
@@ -9,22 +9,35 @@ MAKEFLAGS += --warn-undefined-variables
 #
 # Options and roots. Change to suite.
 #
-USE_ASTYLE ?= 1
-USE_IPV6   ?= 0
-USE_SLANG  ?= 0
+USE_ASTYLE   ?= 1
+USE_IPV6     ?= 0
+USE_CURSES   ?= 1
+USE_SLANG    ?= 0
+USE_KERBEROS ?= 1
 
+WATT32_ROOT   := $(realpath $(WATT_ROOT))
 PDCURSES_ROOT ?= f:/MinGW32/src/TUI/PDcurses-wmcbrine
 SLANG_ROOT    ?= f:/MinGW32/src/TUI/SLang
-WATT32_ROOT   := $(realpath $(WATT_ROOT))
+
+#
+# The below 'wshelper*.dll' files are part of "Kerberos For Windows".
+# Available here: https://web.mit.edu/kerberos/dist/index.html
+#
+KRB_ROOT ?= f:/MinGW32/src/inet/Crypto/Kerberos
 
 define Usage
 
-  make -f $(THIS_FILE) CC=<cl | clang-cl> [all | clean | realclean]
+  make -f $(THIS_FILE) CC=<cl | clang-cl | gcc> [all | clean | realclean]
+    cl:        use MSVC's 'cl'
+    clang-cl:  use LLVM's 'clang-cl'
+    gcc:       use djgpp's 'gcc'
 endef
 
 ifneq ($(CC),cl)
   ifneq ($(CC),clang-cl)
-    $(error $(Usage))
+    ifneq ($(CC),gcc)
+      $(error $(Usage))
+    endif
   endif
 endif
 
@@ -33,21 +46,87 @@ TARGETS = mtr.exe
 export CL=
 
 OBJ_DIR  = objects
-c_to_obj = $(addprefix $(OBJ_DIR)/, $(notdir $(1:.c=.obj)))
 
-CFLAGS = -nologo -MD -W3 -Ot -Zi    \
-         -DUSE_WATT32               \
-         -D_CRT_SECURE_NO_WARNINGS  \
-         -D_CRT_NONSTDC_NO_WARNINGS \
-         -I. -I$(WATT32_ROOT)/inc
+#
+# For targeting djgpp and building on Windows.
+#
+ifeq ($(CC),gcc)
+  #
+  # Curses with djgpp is untested.
+  #
+  USE_CURSES := 0
+
+  #
+  # Building on Windows is the only option now.
+  # Thus the cross-compiler '$(DJ_PREFIX)gcc.exe' MUST exist.
+  # Becoming something like 'f:/dev/djgpp/bin/i586-pc-msdosdjgpp-gcc'.
+  #
+  ifneq ($(OS),Windows_NT)
+    $(error Building on MSDOS is not supported)
+  endif
+
+  ifeq ($(DJ_PREFIX),)
+    $(error Define a $(DJ_PREFIX) to point to the ROOT of the djgpp cross compiler)
+  endif
+
+  _CC = $(DJ_PREFIX)gcc.exe
+  CFLAGS = -g -O2
+
+  #
+  # These stupid '$GCC_COLORS' messed up my shell big-time.
+  # Turn colours off.
+  #
+  CFLAGS += -fdiagnostics-color=never
+
+  #
+  # Watt-32 is the only option here.
+  #
+  CFLAGS += -DUSE_WATT32 -I$(WATT32_ROOT)/inc
+
+  O = o
+
+else
+  #
+  # For 'wshelp*.lib' + 'wshelp*.dll'
+  #
+  ifeq ($(CPU),x64)
+    BITS   = 64
+    PREFIX = amd64
+  else
+    BITS   = 32
+    PREFIX = i386
+  endif
+
+  CFLAGS = -nologo -MD -W3 -Ot -Zi    \
+           -D_CRT_SECURE_NO_WARNINGS  \
+           -D_CRT_NONSTDC_NO_WARNINGS \
+           -D_WINSOCK_DEPRECATED_NO_WARNINGS
+
+  LDFLAGS = -nologo -map -debug -verbose -incremental:no -nodefaultlib:uuid.lib
+
+  ifeq ($(USE_KERBEROS),1)
+    CFLAGS += -DUSE_KERBEROS -I$(KRB_ROOT)/include/windows # -DCorruptCheck
+  else
+    CFLAGS += -DUSE_WATT32 -I$(WATT32_ROOT)/inc
+  endif
+
+  _CC = $(CC)
+  O   = obj
+endif
+
+CFLAGS += -I.
 
 ifeq ($(USE_IPV6),1)
   CFLAGS += -DENABLE_IPV6
 endif
 
-ifeq ($(CC),clang-cl)
+ifeq ($(CC),gcc)
+  WATT_LIB = $(WATT32_ROOT)/lib/libwatt.a
+
+else ifeq ($(CC),clang-cl)
   CFLAGS += -ferror-limit=5               \
             -fms-compatibility            \
+            -Wno-comment                  \
             -Wno-macro-redefined          \
             -Wno-pointer-sign             \
             -Wno-constant-conversion      \
@@ -58,16 +137,50 @@ ifeq ($(CC),clang-cl)
             -Wno-deprecated-declarations  \
             -Wno-incompatible-pointer-types
 
-  mtr_LIBS = $(WATT32_ROOT)/lib/$(CPU)/wattcp_clang_imp.lib
+  WATT_LIB = $(WATT32_ROOT)/lib/$(CPU)/wattcp_clang_imp.lib
+
 else
   CFLAGS  += -wd4005 -wd4101 -wd4244 -wd4267
-  mtr_LIBS = $(WATT32_ROOT)/lib/$(CPU)/wattcpvc_imp.lib
+  WATT_LIB = $(WATT32_ROOT)/lib/$(CPU)/wattcpvc_imp.lib
 endif
 
-LDFLAGS = -nologo -map -debug -verbose -incremental:no -nodefaultlib:uuid.lib
+#
+# SLang, PDCurses or no TUI?
+#
+ifeq ($(USE_CURSES),1)
+  ifeq ($(USE_SLANG),1)
+    CFLAGS  += -I$(SLANG_ROOT)/src -DUSE_SLANG
+    mtr_LIBS = $(SLANG_ROOT)/src/wslang-$(CPU).lib
+  else
+    CFLAGS  += -I$(PDCURSES_ROOT)
+    mtr_LIBS = $(PDCURSES_ROOT)/wincon/pdcurses-$(CPU).lib
+  endif
+else
+  CFLAGS += -DNO_CURSES
 
-mtr_SRC = curses.c  \
-          display.c \
+  ifneq ($(CC),gcc)
+    #
+    # For 'unistd.h' and 'sys/time.h'
+    #
+    CFLAGS += -I./Missing
+  endif
+endif
+
+OS_LIBS = advapi32.lib user32.lib
+
+ifeq ($(USE_KERBEROS),1)
+  OS_LIBS  += ws2_32.lib
+  mtr_LIBS += $(KRB_ROOT)/lib/$(PREFIX)/wshelp$(BITS).lib
+
+  #
+  # Do not assume this is on '%PATH'. Copy to CWD.
+  #
+  TARGETS += wshelp$(BITS).dll
+else
+  mtr_LIBS += $(WATT_LIB)
+endif
+
+mtr_SRC = display.c \
           dns.c     \
           getopt.c  \
           getopt1.c \
@@ -79,14 +192,8 @@ mtr_SRC = curses.c  \
           split.c   \
           win32.c
 
-mtr_OBJ = $(call c_to_obj, $(mtr_SRC))
-
-ifeq ($(USE_SLANG),1)
-  CFLAGS   += -I$(SLANG_ROOT)/src
-  mtr_LIBS += $(SLANG_ROOT)/src/wslang-$(CPU).lib
-else
-  CFLAGS   += -I$(PDCURSES_ROOT)
-  mtr_LIBS += $(PDCURSES_ROOT)/wincon/pdcurses-$(CPU).lib
+ifeq ($(USE_CURSES),1)
+  mtr_SRC += curses.c
 endif
 
 all: $(TARGETS) epilogue
@@ -98,22 +205,39 @@ config.h: config.w32
 	cp --update $< $@
 	@echo
 
-mtr.exe: $(mtr_OBJ) $(mtr_LIBS) | check-for-unused-libs.py
-	$(call link_EXE, $@, $^ advapi32.lib user32.lib)
+mtr_OBJ = $(addprefix $(OBJ_DIR)/, $(notdir $(mtr_SRC:.c=.$(O))))
+
+ifeq ($(CC),gcc)
+  mtr.exe: $(mtr_OBJ) $(WATT_LIB)
+	$(call green_msg, Linking $@)
+	$(_CC) -o $@ $^
+	@echo
+
+else
+  mtr.exe: $(mtr_OBJ) $(mtr_LIBS) | check-for-unused-libs.py
+	$(call link_EXE, $@, $^ $(OS_LIBS))
+endif
+
+wshelp$(BITS).dll:
+	cp --update $(KRB_ROOT)/bin/wshelp$(BITS).dll .
 
 clean:
 	rm -fr $(OBJ_DIR)
 	rm -f vc1*.pdb config.h link.tmp cpp-filter.py check-for-unused-libs.py
 
 vclean realclean: clean
-	rm -f $(TARGETS:.exe=.{exe,map,pdb})
+	rm -f $(TARGETS:.exe=.{exe,map,pdb}) wshelp32.dll wshelp64.dll
 	rm -f .depend.Windows
 
 $(OBJ_DIR):
 	mkdir $@
 
 $(OBJ_DIR)/%.obj: %.c | config.h $(OBJ_DIR)
-	$(CC) -c $(CFLAGS) -Fo./$@ $<
+	$(_CC) -c $(CFLAGS) -Fo./$@ $<
+	@echo
+
+$(OBJ_DIR)/%.o: %.c | config.h $(OBJ_DIR)
+	$(_CC) -c $(CFLAGS) -o $@ $<
 	@echo
 
 %.i: %.c FORCE config.h cpp-filter.py
@@ -134,8 +258,7 @@ FORCE:
 #
 # GNU-make macros:
 #
-# The following codes used in macro 'colour_msg' assumes you have
-# MSys/Cygwin's echo with colour support.
+# The following assumes you have MSys/Cygwin's echo with colour support.
 #
 BRIGHT_GREEN = \e[1;32m
 BRIGHT_WHITE = \e[1;37m
@@ -170,7 +293,7 @@ ifeq ($(USE_ASTYLE),1)
     @$(foreach f, $(CFLAGS), $(file >> $(1), * $(f)))
     $(file >> $(1), *---------------------------------------------------------)
     $(file >> $(1), */)
-    $(CC) -E $(strip $(CFLAGS) $(2)) | $(PYTHON) cpp-filter.py | astyle >> $(1)
+    $(_CC) -E $(strip $(CFLAGS) $(2)) | $(PYTHON) cpp-filter.py | astyle >> $(1)
   endef
 else
   define C_preprocess
@@ -179,7 +302,7 @@ else
     @$(foreach f, $(CFLAGS), $(file >> $(1), * $(f)))
     $(file >> $(1), *---------------------------------------------------------)
     $(file >> $(1), */)
-    $(CC) -E $(strip $(CFLAGS) $(2)) | $(PYTHON) cpp-filter.py >> $(1)
+    $(_CC) -E $(strip $(CFLAGS) $(2)) | $(PYTHON) cpp-filter.py >> $(1)
   endef
 endif
 
@@ -257,7 +380,7 @@ define CHECK_FOR_UNUSED_LIBS_PY
   report (process_map(State.IDLE))
 endef
 
-DEP_REPLACE = sed -e 's|\(.*\)\.o: |\n$$(OBJ_DIR)\/\1.obj: |' \
+DEP_REPLACE = sed -e 's|\(.*\)\.o: |\n$$(OBJ_DIR)\/\1.$$(O): |' \
                   -e 's@config.h @ @g'
 
 DEP_CFLAGS = -MM $(filter -D% -I%, $(CFLAGS))

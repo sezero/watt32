@@ -57,8 +57,6 @@
 
 #define BIND_4_COMPAT
 
-#include <sys/param.h>
-//#include <sys/types.h>
 #include <stdint.h>
 
 #undef __BEGIN_DECLS
