@@ -324,17 +324,26 @@ int W32_CALL select_s (int nfds, fd_set *readfds, fd_set *writefds,
        */
       if (timeout)
       {
+#if defined(W32_NO_8087)
+        *timeout = timeval_diff2(&now, &expiry);
+#else
         double remaining = timeval_diff (&now, &expiry);
 
         timeout->tv_sec  = (long)(remaining / 1E6);
         timeout->tv_usec = (long)remaining % 1000000UL;
+#endif
       }
       goto select_ok;
     }
 
     if (expired)
     {
+#if defined(W32_NO_8087) && defined(USE_DEBUG)
+      struct timeval diff = timeval_diff2(&now, &starttime);
+      SOCK_DEBUGF ((", timeout!: %d.%03u", diff.tv_sec, diff.tv_usec));
+#else
       SOCK_DEBUGF ((", timeout!: %.6fs", timeval_diff(&now, &starttime)/1E6));
+#endif
 
       if (readfds)
          for (s = 0; s < num_fd; s++)
