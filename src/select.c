@@ -182,6 +182,10 @@ int W32_CALL select_s (int nfds, fd_set *readfds, fd_set *writefds,
   memset (tmp_write, 0, sizeof(tmp_write));
   memset (tmp_except, 0, sizeof(tmp_except));
 
+  /* Not safe to run sock_daemon() (or other "tasks") now
+   */
+  _sock_crit_start();
+
   /* If application catches same signals we do, we must exit
    * gracefully from the do-while and for loops below.
    */
@@ -197,10 +201,6 @@ int W32_CALL select_s (int nfds, fd_set *readfds, fd_set *writefds,
      */
     if (_sock_sig_pending())
        goto select_intr;
-
-    /* Not safe to run sock_daemon() (or other "tasks") now
-     */
-    _sock_crit_start();
 
     tcp_tick (NULL);
 
@@ -261,10 +261,6 @@ int W32_CALL select_s (int nfds, fd_set *readfds, fd_set *writefds,
       SOCK_DBUG_FLUSH();
 
     } /* end of for loop; all sockets checked at least once */
-
-    /* Safe to run other "tasks" now.
-     */
-    _sock_crit_stop();
 
     /* WATT_YIELD() sometimes hangs for approx 250msec under Win-XP.
      * Don't yield for "small" timeouts.
@@ -369,6 +365,7 @@ select_intr:
 
 select_ok:
   _sock_sig_restore();
+  _sock_crit_stop();
 
   return (ret_count);
 }
