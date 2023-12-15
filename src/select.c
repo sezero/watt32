@@ -417,10 +417,6 @@ int W32_CALL poll (struct pollfd *p, int num, int timeout_ms)
    */
   while (1)
   {
-    /* Not safe to run sock_daemon() (or other "tasks") now
-     */
-    _sock_crit_start();
-
     tcp_tick (NULL);
 
     for (i = 0; i < num; ++i)
@@ -446,10 +442,6 @@ int W32_CALL poll (struct pollfd *p, int num, int timeout_ms)
       p[i].revents = POLLNVAL;
       ++ret;
     }
-
-    /* Safe to run other "tasks" now.
-     */
-    _sock_crit_stop();
 
     /* Poll for caught signals (SIGINT/SIGALRM)
      */
