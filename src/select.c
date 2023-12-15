@@ -749,14 +749,14 @@ static int select_one (int fd, Socket *socket, int events)
   if (socket)
      connecting = still_connecting (socket);
 
-  if (events & POLLIN)                  /* readable or error */
+  if (events & POLLIN)                  /* check if readable or error */
   {
     if (read_select (fd, socket) ||
         (socket && sock_signalled (socket, READ_STATE_MASK)))
        revents |= POLLIN;
   }
 
-  if ((events & POLLOUT) &&             /* writable or error */
+  if ((events & POLLOUT) &&             /* check if writable or error */
       !connecting)                      /* skip if still connecting */
   {
     if (write_select (fd, socket) ||
@@ -764,7 +764,7 @@ static int select_one (int fd, Socket *socket, int events)
        revents |= POLLOUT;
   }
 
-  if (events & POLLPRI)                 /* OOB data */
+  if (events & POLLPRI)                 /* check for OOB data */
   {
     if (exc_select (fd, socket))
        revents |= POLLPRI;
@@ -792,13 +792,13 @@ static int poll_one (int fd, Socket *socket, int events)
        revents |= POLLERR;
   }
 
-  if (events & POLLIN)                          /* readable */
+  if (events & POLLIN)                          /* check if readable */
   {
     if (read_select (fd, socket))
        revents |= POLLIN;
   }
 
-  if ((events & POLLOUT) &&                     /* writable */
+  if ((events & POLLOUT) &&                     /* check if writable */
       !(revents & POLLHUP) &&                   /* but skip if closed */
       !connecting)                              /* or still connecting */
   {
@@ -806,7 +806,7 @@ static int poll_one (int fd, Socket *socket, int events)
        revents |= POLLOUT;
   }
 
-  if (events & POLLPRI)                         /* OOB data */
+  if (events & POLLPRI)                         /* check for OOB data */
   {
     if (exc_select (fd, socket))
        revents |= POLLPRI;
