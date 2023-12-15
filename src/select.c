@@ -478,7 +478,7 @@ poll_ok:
 int _fsext_ready (int fd)
 {
   Socket *socket;
-  int revents, ret = 0;
+  int     revents, ret = 0;
 
   tcp_tick (NULL);
 
@@ -495,7 +495,7 @@ int _fsext_ready (int fd)
   if (revents & POLLPRI)
      ret |= __FSEXT_ready_error;
 
-   return ret;
+   return (ret);
 }
 #endif /* __DJGPP__ && USE_FSEXT */
 
