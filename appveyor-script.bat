@@ -215,8 +215,7 @@ if %BUILDER%. == clang. (
 
 if %BUILDER%. == mingw64. (
   call configur.bat mingw64
-  %_ECHO% "\e[1;33m[%CPU%]: gcc version-info:\e[0m"
-  gcc -v
+  call :show_gcc_info
   %_ECHO% "\e[1;33m[%CPU%]: Building:\e[0m"
   make -f MinGW64_%BITS%.mak
   exit /b
@@ -224,8 +223,7 @@ if %BUILDER%. == mingw64. (
 
 if %BUILDER%. == cygwin. (
   call configur.bat cygwin
-  %_ECHO% "\e[1;33m[%CPU%]: gcc version-info:\e[0m"
-  gcc -v
+  call :show_gcc_info
   %_ECHO% "\e[1;33m[%CPU%]: Building:\e[0m"
   make -f cygwin_%BITS%.mak
   exit /b
@@ -234,6 +232,7 @@ if %BUILDER%. == cygwin. (
 if %BUILDER%. == djgpp. (
   call :install_djgpp
   call configur.bat djgpp
+  call :show_gcc_info
   %_ECHO% "\e[1;33m[%CPU%]: Building:\e[0m"
   make -f djgpp.mak
   exit /b
@@ -581,6 +580,22 @@ exit /b 0
     exit /b
   )
   %CI_ROOT%\npcap-0.96.exe /loopback_support=yes /winpcap_mode=yes /S
+  exit /b
+
+::
+:: Show some 'gcc -v' output.
+:: Called for 'BUILDER = [cygwin | mingw64 | djgpp]'
+::
+:: This should print:
+::   for 'cygwin' and 'CPU=x86':  gcc 7.4.0
+::   for 'cygwin' and 'CPU=x64':  gcc 9.1.0
+::   for 'mingw64':               gcc version 9.1.0 (Rev3, Built by MSYS2 project)
+::   for 'djgpp':                 gcc version 12.2.0
+::
+:show_gcc_info
+  %_ECHO% "\n\e[1;33m[%CPU%]: gcc version-info:\e[0m"
+  gcc -v
+  %_ECHO% "\n"
   exit /b
 
 ::
