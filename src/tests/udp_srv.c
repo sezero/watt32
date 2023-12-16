@@ -102,7 +102,7 @@ int main (int argc, char **argv)
 #ifdef _Windows
       n = select (sockfd+1, &fd, NULL, NULL, &tv);
 #else
-      n = select_s (sockfd+1, &fd, NULL, NULL, &tv);
+      n = select_s (sockfd+1, &fd, NULL, NULL, (struct timeval*)&tv);
 #endif
 
       if (n < 0)
