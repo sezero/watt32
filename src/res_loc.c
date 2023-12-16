@@ -84,7 +84,12 @@ static const char *precsize_ntoa (BYTE prec)
   int    exponent = (int)((prec >> 0) & 0x0f) % 10;
   u_long value    = mantissa * power_of_ten [exponent];
 
+  W32_GCC_PRAGMA (GCC diagnostic push) \
+  W32_GCC_PRAGMA (GCC diagnostic ignored "-Wformat-overflow=")
+
   sprintf (retbuf, "%lu.%.2lu", value / 100, value % 100);
+
+  W32_GCC_PRAGMA (GCC diagnostic pop)
   return (retbuf);
 }
 
