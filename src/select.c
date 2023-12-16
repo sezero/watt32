@@ -182,6 +182,10 @@ int W32_CALL select_s (int nfds, fd_set *readfds, fd_set *writefds,
   memset (tmp_write, 0, sizeof(tmp_write));
   memset (tmp_except, 0, sizeof(tmp_except));
 
+  /* Not safe to run sock_daemon() (or other "tasks") now
+   */
+  _sock_crit_start();
+
   /* If application catches same signals we do, we must exit
    * gracefully from the do-while and for loops below.
    */
@@ -197,10 +201,6 @@ int W32_CALL select_s (int nfds, fd_set *readfds, fd_set *writefds,
      */
     if (_sock_sig_pending())
        goto select_intr;
-
-    /* Not safe to run sock_daemon() (or other "tasks") now
-     */
-    _sock_crit_start();
 
     tcp_tick (NULL);
 
@@ -261,10 +261,6 @@ int W32_CALL select_s (int nfds, fd_set *readfds, fd_set *writefds,
       SOCK_DBUG_FLUSH();
 
     } /* end of for loop; all sockets checked at least once */
-
-    /* Safe to run other "tasks" now.
-     */
-    _sock_crit_stop();
 
     /* WATT_YIELD() sometimes hangs for approx 250msec under Win-XP.
      * Don't yield for "small" timeouts.
@@ -369,6 +365,7 @@ select_intr:
 
 select_ok:
   _sock_sig_restore();
+  _sock_crit_stop();
 
   return (ret_count);
 }
@@ -417,10 +414,6 @@ int W32_CALL poll (struct pollfd *p, int num, int timeout_ms)
    */
   while (1)
   {
-    /* Not safe to run sock_daemon() (or other "tasks") now
-     */
-    _sock_crit_start();
-
     tcp_tick (NULL);
 
     for (i = 0; i < num; ++i)
@@ -446,10 +439,6 @@ int W32_CALL poll (struct pollfd *p, int num, int timeout_ms)
       p[i].revents = POLLNVAL;
       ++ret;
     }
-
-    /* Safe to run other "tasks" now.
-     */
-    _sock_crit_stop();
 
     /* Poll for caught signals (SIGINT/SIGALRM)
      */
@@ -489,7 +478,7 @@ poll_ok:
 int _fsext_ready (int fd)
 {
   Socket *socket;
-  int revents, ret = 0;
+  int     revents, ret = 0;
 
   tcp_tick (NULL);
 
@@ -506,7 +495,7 @@ int _fsext_ready (int fd)
   if (revents & POLLPRI)
      ret |= __FSEXT_ready_error;
 
-   return ret;
+   return (ret);
 }
 #endif /* __DJGPP__ && USE_FSEXT */
 
@@ -760,14 +749,14 @@ static int select_one (int fd, Socket *socket, int events)
   if (socket)
      connecting = still_connecting (socket);
 
-  if (events & POLLIN)                  /* readable or error */
+  if (events & POLLIN)                  /* check if readable or error */
   {
     if (read_select (fd, socket) ||
         (socket && sock_signalled (socket, READ_STATE_MASK)))
        revents |= POLLIN;
   }
 
-  if ((events & POLLOUT) &&             /* writable or error */
+  if ((events & POLLOUT) &&             /* check if writable or error */
       !connecting)                      /* skip if still connecting */
   {
     if (write_select (fd, socket) ||
@@ -775,7 +764,7 @@ static int select_one (int fd, Socket *socket, int events)
        revents |= POLLOUT;
   }
 
-  if (events & POLLPRI)                 /* OOB data */
+  if (events & POLLPRI)                 /* check for OOB data */
   {
     if (exc_select (fd, socket))
        revents |= POLLPRI;
@@ -803,13 +792,13 @@ static int poll_one (int fd, Socket *socket, int events)
        revents |= POLLERR;
   }
 
-  if (events & POLLIN)                          /* readable */
+  if (events & POLLIN)                          /* check if readable */
   {
     if (read_select (fd, socket))
        revents |= POLLIN;
   }
 
-  if ((events & POLLOUT) &&                     /* writable */
+  if ((events & POLLOUT) &&                     /* check if writable */
       !(revents & POLLHUP) &&                   /* but skip if closed */
       !connecting)                              /* or still connecting */
   {
@@ -817,7 +806,7 @@ static int poll_one (int fd, Socket *socket, int events)
        revents |= POLLOUT;
   }
 
-  if (events & POLLPRI)                         /* OOB data */
+  if (events & POLLPRI)                         /* check for OOB data */
   {
     if (exc_select (fd, socket))
        revents |= POLLPRI;
