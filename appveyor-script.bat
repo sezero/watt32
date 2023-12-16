@@ -595,6 +595,7 @@ exit /b 0
 :show_gcc_info
   %_ECHO% "\e[1;33m[%CPU%]: gcc version-info:\e[0m"
   gcc -v
+  echo.
   exit /b
 
 ::
