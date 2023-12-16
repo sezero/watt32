@@ -57,7 +57,6 @@ int W32_CALL shutdown (int s, int how)
   switch (how)
   {
     case SHUT_RD:
-         socket->so_error    = ESHUTDOWN;
          socket->so_state   |=  SS_CANTRCVMORE;
       /* socket->so_options &= ~SO_ACCEPTCONN; */
 
@@ -67,7 +66,6 @@ int W32_CALL shutdown (int s, int how)
          return (0);
 
     case SHUT_WR:
-         socket->so_error    = ESHUTDOWN;
          socket->so_state   |=  SS_CANTSENDMORE;
          socket->so_state   &= ~SS_ISLISTENING;
       /* socket->so_options &= ~SO_ACCEPTCONN; */
@@ -79,7 +77,6 @@ int W32_CALL shutdown (int s, int how)
          return (0);
 
     case SHUT_RDWR:
-         socket->so_error    = ESHUTDOWN;
          socket->so_state   |= (SS_CANTRCVMORE | SS_CANTSENDMORE);
          socket->so_state   &= ~SS_ISLISTENING;
       /* socket->so_options &= ~SO_ACCEPTCONN; */
