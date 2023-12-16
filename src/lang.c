@@ -866,6 +866,9 @@ static struct Language {
   W32_GCC_PRAGMA (GCC diagnostic push)
   W32_GCC_PRAGMA (GCC diagnostic ignored "-Wunused-function")
 
+#elif defined(__clang__)
+  #pragma clang diagnostic ignored "-Wshadow"
+
 #elif defined(__WATCOMC__)
   /*
    * Warning! W202:  Symbol 'yy_fatal_error' has been defined, but not referenced.
@@ -875,7 +878,7 @@ static struct Language {
   #pragma disable_message (136)
 #endif
 
-#line 878 "<stdout>"
+#line 881 "<stdout>"
 /**
  * Language prefix.
  *
@@ -958,7 +961,7 @@ static struct Language {
  *  zh Chinese
  *  zu Zulu
  */
-#line 961 "<stdout>"
+#line 964 "<stdout>"
 
 #define INITIAL 0
 #define STRING 1
@@ -1178,10 +1181,10 @@ YY_DECL
 		}
 
 	{
-#line 194 "lang.l"
+#line 197 "lang.l"
 
 
-#line 1184 "<stdout>"
+#line 1187 "<stdout>"
 
 	while ( /*CONSTCOND*/1 )		/* loops until end-of-file is reached */
 		{
@@ -1247,24 +1250,24 @@ do_action:	/* This label is used only to access EOF actions. */
 /* get reference string */
 case 1:
 YY_RULE_SETUP
-#line 197 "lang.l"
+#line 200 "lang.l"
 /* discard */
 	YY_BREAK
 case 2:
 /* rule 2 can match eol */
 YY_RULE_SETUP
-#line 198 "lang.l"
+#line 201 "lang.l"
 INCLINE();
 	YY_BREAK
 case 3:
 /* rule 3 can match eol */
 YY_RULE_SETUP
-#line 199 "lang.l"
+#line 202 "lang.l"
 INCLINE();
 	YY_BREAK
 case 4:
 YY_RULE_SETUP
-#line 200 "lang.l"
+#line 203 "lang.l"
 {
                        if (!line_cont)
                           ptr = buf;
@@ -1273,7 +1276,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 5:
 YY_RULE_SETUP
-#line 205 "lang.l"
+#line 208 "lang.l"
 {
                        unput (yytext[0]);
                        BEGIN (PREFIX);
@@ -1283,94 +1286,94 @@ YY_RULE_SETUP
 
 case 6:
 YY_RULE_SETUP
-#line 212 "lang.l"
+#line 215 "lang.l"
 line_cont = 0; BEGIN (EO_LINE);
 	YY_BREAK
 case 7:
 YY_RULE_SETUP
-#line 213 "lang.l"
+#line 216 "lang.l"
 AddChar ('\7');
 	YY_BREAK
 case 8:
 YY_RULE_SETUP
-#line 214 "lang.l"
+#line 217 "lang.l"
 AddChar ('\b');
 	YY_BREAK
 case 9:
 YY_RULE_SETUP
-#line 215 "lang.l"
+#line 218 "lang.l"
 AddChar ('\t');
 	YY_BREAK
 case 10:
 YY_RULE_SETUP
-#line 216 "lang.l"
+#line 219 "lang.l"
 AddChar ('\f');
 	YY_BREAK
 case 11:
 YY_RULE_SETUP
-#line 217 "lang.l"
+#line 220 "lang.l"
 AddChar (27);
 	YY_BREAK
 case 12:
 YY_RULE_SETUP
-#line 218 "lang.l"
+#line 221 "lang.l"
 AddChar ('\r');
 	YY_BREAK
 case 13:
 YY_RULE_SETUP
-#line 219 "lang.l"
+#line 222 "lang.l"
 AddChar ('\n');
 	YY_BREAK
 case 14:
 YY_RULE_SETUP
-#line 220 "lang.l"
+#line 223 "lang.l"
 AddChar ('\\');
 	YY_BREAK
 case 15:
 YY_RULE_SETUP
-#line 221 "lang.l"
+#line 224 "lang.l"
 AddChar ('\"');
 	YY_BREAK
 case 16:
 YY_RULE_SETUP
-#line 222 "lang.l"
+#line 225 "lang.l"
 AddHexcode (yytext+2);
 	YY_BREAK
 case 17:
 YY_RULE_SETUP
-#line 223 "lang.l"
+#line 226 "lang.l"
 AddOctal   (yytext+1);
 	YY_BREAK
 case 18:
 YY_RULE_SETUP
-#line 224 "lang.l"
+#line 227 "lang.l"
 AddDecimal (yytext+1);
 	YY_BREAK
 case 19:
 YY_RULE_SETUP
-#line 225 "lang.l"
+#line 228 "lang.l"
 Fatal ("Unknown ESC code: ", yytext);
 	YY_BREAK
 case 20:
 /* rule 20 can match eol */
 YY_RULE_SETUP
-#line 226 "lang.l"
+#line 229 "lang.l"
 Fatal ("Unterminated line", NULL);
 	YY_BREAK
 case 21:
 YY_RULE_SETUP
-#line 227 "lang.l"
+#line 230 "lang.l"
 AddChar (yytext[0]);
 	YY_BREAK
 case YY_STATE_EOF(STRING):
-#line 228 "lang.l"
+#line 231 "lang.l"
 Fatal ("Unexpected end-of-file", NULL);
 	YY_BREAK
 
 
 case 22:
 YY_RULE_SETUP
-#line 232 "lang.l"
+#line 235 "lang.l"
 {
                        line_cont = 1;
                        BEGIN (INITIAL);
@@ -1379,7 +1382,7 @@ YY_RULE_SETUP
 case 23:
 /* rule 23 can match eol */
 YY_RULE_SETUP
-#line 236 "lang.l"
+#line 239 "lang.l"
 {
                        *ptr = '\0';
                        ptr  = NULL;
@@ -1392,18 +1395,18 @@ YY_RULE_SETUP
 	YY_BREAK
 case 24:
 YY_RULE_SETUP
-#line 245 "lang.l"
+#line 248 "lang.l"
 /* discard */
 	YY_BREAK
 case YY_STATE_EOF(EO_LINE):
-#line 246 "lang.l"
+#line 249 "lang.l"
 Fatal ("Unexpected end-of-string", NULL);
 	YY_BREAK
 
 
 case 25:
 YY_RULE_SETUP
-#line 250 "lang.l"
+#line 253 "lang.l"
 {
                        DEBUG ("lang `%s',\n", yytext);
                        if (!strncmp(yytext,lang.prefix,3))
@@ -1422,27 +1425,27 @@ YY_RULE_SETUP
 case 26:
 /* rule 26 can match eol */
 YY_RULE_SETUP
-#line 264 "lang.l"
+#line 267 "lang.l"
 INCLINE();
 	YY_BREAK
 case 27:
 /* rule 27 can match eol */
 YY_RULE_SETUP
-#line 265 "lang.l"
+#line 268 "lang.l"
 INCLINE();
 	YY_BREAK
 case 28:
 YY_RULE_SETUP
-#line 266 "lang.l"
+#line 269 "lang.l"
 Fatal ("Unknown language prefix: ", yytext);
 	YY_BREAK
 
 case 29:
 YY_RULE_SETUP
-#line 269 "lang.l"
+#line 272 "lang.l"
 ECHO;
 	YY_BREAK
-#line 1445 "<stdout>"
+#line 1448 "<stdout>"
 case YY_STATE_EOF(INITIAL):
 case YY_STATE_EOF(PREFIX):
 	yyterminate();
@@ -2461,7 +2464,7 @@ void yyfree (void * ptr )
 
 #define YYTABLES_NAME "yytables"
 
-#line 269 "lang.l"
+#line 272 "lang.l"
 
 
 /*---------------------------------------------------------------------*/

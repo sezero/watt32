@@ -83,6 +83,9 @@ static struct Language {
   W32_GCC_PRAGMA (GCC diagnostic push)
   W32_GCC_PRAGMA (GCC diagnostic ignored "-Wunused-function")
 
+#elif defined(__clang__)
+  #pragma clang diagnostic ignored "-Wshadow"
+
 #elif defined(__WATCOMC__)
   /*
    * Warning! W202:  Symbol 'yy_fatal_error' has been defined, but not referenced.
