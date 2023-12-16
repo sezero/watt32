@@ -359,9 +359,24 @@
 
   #define W32_GCC_FUNC_TYPE_WARN_DEF() \
           W32_GCC_PRAGMA (GCC diagnostic pop)  /* restore the warning options */
+
+  /*
+   * And similarily for this annoying gcc warning:
+   *  res_loc.c:87:24: warning: '.' directive writing 1 byte into a region of size between 0 and 17 [-Wformat-overflow=]
+   *   87 |   sprintf (retbuf, "%lu.%.2lu", value / 100, value % 100);
+   *      |                        ^
+   */
+  #define W32_GCC_OVERFLOW_WARN_OFF()          \
+          W32_GCC_PRAGMA (GCC diagnostic push) \
+          W32_GCC_PRAGMA (GCC diagnostic ignored "-Wformat-overflow=")
+
+  #define W32_GCC_OVERFLOW_WARN_DEF() \
+          W32_GCC_PRAGMA (GCC diagnostic pop)  /* restore the warning options */
 #else
   #define W32_GCC_FUNC_TYPE_WARN_OFF()
   #define W32_GCC_FUNC_TYPE_WARN_DEF()
+  #define W32_GCC_OVERFLOW_WARN_OFF()
+  #define W32_GCC_OVERFLOW_WARN_DEF()
 #endif
 
 
