@@ -215,6 +215,8 @@ if %BUILDER%. == clang. (
 
 if %BUILDER%. == mingw64. (
   call configur.bat mingw64
+  %_ECHO% "\e[1;33m[%CPU%]: gcc version-info:\e[0m"
+  gcc -v
   %_ECHO% "\e[1;33m[%CPU%]: Building:\e[0m"
   make -f MinGW64_%BITS%.mak
   exit /b
@@ -222,6 +224,8 @@ if %BUILDER%. == mingw64. (
 
 if %BUILDER%. == cygwin. (
   call configur.bat cygwin
+  %_ECHO% "\e[1;33m[%CPU%]: gcc version-info:\e[0m"
+  gcc -v
   %_ECHO% "\e[1;33m[%CPU%]: Building:\e[0m"
   make -f cygwin_%BITS%.mak
   exit /b
