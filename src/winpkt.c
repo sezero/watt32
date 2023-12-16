@@ -293,7 +293,7 @@ static BOOL find_winpcap_adapter (char *aname, size_t size)
  */
 static BOOL find_swsvpkt_adapter (char *aname, size_t size)
 {
-  char name [sizeof("\\\\.\\SwsVpktXX")];
+  char name [sizeof("\\\\.\\SwsVpkt") + 11];
   BOOL found;
   int  i;
 
@@ -304,7 +304,7 @@ static BOOL find_swsvpkt_adapter (char *aname, size_t size)
     struct SwsVpktAdapterState sw_state;
 
     memset (&sw_state,'\0', sizeof(sw_state));
-    SNPRINTF (name, sizeof(name), "\\\\.\\SwsVpkt%d", i & 0x1F);
+    SNPRINTF (name, sizeof(name), "\\\\.\\SwsVpkt%d", i);
     sw_open.uRxBufs = pkt_num_rx_bufs;
     sw_open.pfnRx   = swsvpkt_callback;
     sw_usr = SwsVpktOpen (name, &sw_open);
