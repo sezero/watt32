@@ -68,10 +68,10 @@ md %CI_ROOT% 2> NUL
 :: Since only 'watcom' has a '%MODEL%' set in 'appveyor.yml'
 ::
 if %BUILDER%. == watcom. (
-  %_ECHO% "\e[1;33mDoing '%1' for 'BUILDER=%BUILDER%', 'MODEL=%MODEL%'.\e[0m"
+  %_ECHO% "\n\e[1;33mDoing '%1' for 'BUILDER=%BUILDER%', 'MODEL=%MODEL%'.\e[0m"
 
 ) else (
-  %_ECHO% "\e[1;33mDoing '%1' for 'BUILDER=%BUILDER%'.\e[0m"
+  %_ECHO% "\n\e[1;33mDoing '%1' for 'BUILDER=%BUILDER%'.\e[0m"
 )
 
 ::
@@ -388,7 +388,7 @@ exit /b 0
 
   if %LOCAL_TEST%. == 0. (
     set WATTCP_CFG=c:/projects/watt-32
-    %_ECHO% "\e[1;33mGenerating '%%WATTCP_CFG%%/wattcp.cfg'.\e[0m"
+    %_ECHO% "\n\e[1;33mGenerating '%%WATTCP_CFG%%/wattcp.cfg'.\e[0m"
     call :generate_wattcp_cfg
   )
 
@@ -396,7 +396,7 @@ exit /b 0
 
   set USE_WSOCK_TRACE=0
 
-  %_ECHO% "\e[1;33m[%CPU%]: Configuring 'build_tests' for 'BUILDER=%BUILDER%'.\e[0m"
+  %_ECHO% "\n\e[1;33m[%CPU%]: Configuring 'build_tests' for 'BUILDER=%BUILDER%'.\e[0m"
 
   call configur.bat %BUILDER%
   if %BUILDER%. == borland.  make -f bcc_w.mak
@@ -411,13 +411,13 @@ exit /b 0
      if %MODEL%. == win32. (make -f watcom_w.mak & if not errorlevel == 0 goto test_failed)
   )
 
-  %_ECHO% "\e[1;33mRunning test 'cpu.exe' ---------------------------------------------------------------\e[0m"
+  %_ECHO% "\n\e[1;33mRunning test 'cpu.exe' ---------------------------------------------------------------\e[0m"
   cpu.exe
-  %_ECHO% "\e[1;33mRunning test 'cpuspeed.exe 1 1' ------------------------------------------------------\e[0m"
+  %_ECHO% "\n\e[1;33mRunning test 'cpuspeed.exe 1 1' ------------------------------------------------------\e[0m"
   cpuspeed.exe 1 1
-  %_ECHO% "\e[1;33mRunning test 'swap.exe' --------------------------------------------------------------\e[0m"
+  %_ECHO% "\n\e[1;33mRunning test 'swap.exe' --------------------------------------------------------------\e[0m"
   swap.exe
-  %_ECHO% "\e[1;33mRunning test 'chksum.exe -s' ---------------------------------------------------------\e[0m"
+  %_ECHO% "\n\e[1;33mRunning test 'chksum.exe -s' ---------------------------------------------------------\e[0m"
   chksum.exe -s
 
   exit /b 0
@@ -593,9 +593,8 @@ exit /b 0
 ::   for 'djgpp':                 gcc version 12.2.0
 ::
 :show_gcc_info
-  %_ECHO% "\n\e[1;33m[%CPU%]: gcc version-info:\e[0m"
+  %_ECHO% "\e[1;33m[%CPU%]: gcc version-info:\e[0m"
   gcc -v
-  %_ECHO% "\n"
   exit /b
 
 ::
