@@ -166,7 +166,7 @@ typedef struct Socket {
         BYTE                ip_tos;
         BYTE                ip_ttl;
 
-        struct ip_opts     *ip_opt;      /* for setsockopt(s,IP_OPTION,..) */
+        struct ip_opts     *ip_opt;      /* for setsockopt(s, IP_OPTION, ...) */
         unsigned            ip_opt_len;  /* output IP-option length */
 
         int                 so_options;  /* SO_KEEPALIVE, SO_ACCEPTCONN etc. */
@@ -278,9 +278,9 @@ typedef struct Socket {
         } while (0)
 
 #if defined(TARGET_IS_32BIT)
-  #define VERIFY_RW(ptr,len)                    \
+  #define VERIFY_RW(ptr, len)                   \
           do {                                  \
-            if (0 && !valid_addr(ptr,len)) {    \
+            if (0 && !valid_addr(ptr, len)) {   \
                SOCK_DEBUGF ((", EFAULT "        \
                  "(buf %" ADDR_FMT ", len %d)", \
                  ADDR_CAST(ptr), (int)(len)));  \
@@ -289,7 +289,7 @@ typedef struct Socket {
             }                                   \
           } while (0)
 #else
-  #define VERIFY_RW(ptr,len) ((void)0)
+  #define VERIFY_RW(ptr, len) ((void)0)
 #endif
 
 /*
