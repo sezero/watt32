@@ -341,7 +341,7 @@
 #endif
 
 /*
- * And make gcc 7+ shut up about warnings like this:
+ * And make gcc 8+ shut up about warnings like this:
  *   tftp.c:201:31: warning: cast between incompatible function types from
  *   'void (*)(_udp_Socket *, int,  int)' {aka 'void (*)(struct udp_Socket *,
  *    int, int)'} to 'int (*)(void *, BYTE,  BYTE)' {aka 'int (*)(void *, unsigned char,  unsigned char)'}
@@ -350,9 +350,9 @@
  *         |                               ^
  *
  * And to complicate things further, older clang compilers do not have
- * '-Wcast-function-type'. Hence define it for gcc 7+ only.
+ * '-Wcast-function-type'. Hence define it for gcc 8+ only.
  */
-#if defined(__GNUC__) && (__GNUC__ >= 7)
+#if defined(__GNUC__) && (__GNUC__ >= 8)
   #define W32_GCC_FUNC_TYPE_WARN_OFF()         \
           W32_GCC_PRAGMA (GCC diagnostic push) \
           W32_GCC_PRAGMA (GCC diagnostic ignored "-Wcast-function-type")

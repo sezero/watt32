@@ -382,7 +382,7 @@ static int tcp_connect (Socket *socket)
    * Maybe we should use select_s() instead ?
    * Maybe set LF_NOCLOSE for all BSD sockets?
    *
-   * And make gcc 10+ shut up about this warning:
+   * And make gcc 8+ shut up about this warning:
    *   connect.c:343:41: warning: cast between incompatible function types from
    *   'int (*)(void)' to 'int (*)(void *)' [-Wcast-function-type]
    *     343 |                        socket->timeout, (UserHandler)chk_signals,

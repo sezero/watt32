@@ -197,7 +197,7 @@ static int recv_packet (DWORD block)
    * Note: 'block' is 32-bit, but 16-bit in tftp-header.
    *       We allow the header block-counter to wrap (allowing > 32MB files).
    *
-   * And make gcc 7+ shut up about this warning:
+   * And make gcc 8+ shut up about this warning:
    *   tftp.c:201:31: warning: cast between incompatible function types from
    *   'void (*)(_udp_Socket *, int,  int)' {aka 'void (*)(struct udp_Socket *,
    *    int, int)'} to 'int (*)(void *, BYTE,  BYTE)' {aka 'int (*)(void *, unsigned char,  unsigned char)'}
