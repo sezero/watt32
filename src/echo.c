@@ -124,7 +124,7 @@ void echo_discard_init (void)
 }
 
 /**
- * Make gcc 10+ shut up about this warning:
+ * Make gcc 7+ shut up about this warning:
  *  echo.c:143:19: warning: cast between incompatible function types from
  *   'void (*)(union sock_type *, void *, int, const tcp_PseudoHeader *, const void *)' to
  *   'int (*)(void *, const BYTE *, unsigned int,  const void *, const void *)'
