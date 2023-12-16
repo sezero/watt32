@@ -1088,6 +1088,7 @@ static void W32_CALL dhcp_fsm (void)
 int DHCP_do_boot (void)
 {
   int save_mtu = _mtu;
+  time_t timeout;
 
   if (cfg_read)    /* DHCP_read_config() okay */
      return (1);
@@ -1108,8 +1109,9 @@ int DHCP_do_boot (void)
   _mtu = ETH_MAX_DATA;
   discover_loops = 0;
 
-  erase_config();           /* delete old configuration */
-  DAEMON_ADD (dhcp_fsm);    /* add "background" daemon */
+  erase_config();            /* delete old configuration */
+  if(!DAEMON_ADD (dhcp_fsm)) /* add "background" daemon */
+    return (0);
 
 #if 0
   /* kick start DISCOVER message after 100 msec.
@@ -1125,10 +1127,14 @@ int DHCP_do_boot (void)
       DHCP_state != DHCP_state_REBINDING)
      DHCP_state = DHCP_state_INIT;
 
+  timeout = time(NULL) + (dhcp_timeout * max_retries) + 1;
+
   while (DHCP_state != DHCP_state_BOUND)
   {
     tcp_tick (NULL);
     if (discover_loops >= max_retries)  /* retries exhaused */
+       break;
+    if (time(NULL) > timeout)           /* timeout reached */
        break;
   }
 
