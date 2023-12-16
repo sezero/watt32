@@ -621,6 +621,10 @@
   #define HAVE_POPCOUNT
 #endif
 
+#if !defined(_MSC_VER) && !defined(__BORLANDC__)
+  #define HAVE_UNISTD_H
+#endif
+
 /*
  * C-99 (?) __FUNCTION__
  */

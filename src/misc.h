@@ -26,6 +26,10 @@ extern "C" {
     #undef _WIN32          /* Needed for __DMC__ */
   #endif
 
+  #if !defined(HAVE_UNISTD_H)
+    #define HAVE_UNISTD_H
+  #endif
+
   #include <unistd.h>
 #endif
 
