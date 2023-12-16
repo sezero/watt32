@@ -516,7 +516,7 @@ static const struct search_list wsock_err_tab[] = {
 
 static const char *get_wsock_err (void)
 {
-  static char buf[100];
+  static char buf [100];
   int    err;
 
   if (!p_WSAGetLastError)
@@ -2270,14 +2270,14 @@ static int _pkt_win_print_GetNetworkParams (void)
 
   if ((*p_GetNetworkParams)(fi, &size) != ERROR_BUFFER_OVERFLOW)
   {
-    (*_printf) ("  error: %s\n", win_strerror(WSAGetLastError()));
+    (*_printf) ("  error: %s\n", win_strerror ((*p_WSAGetLastError)()));
     return (0);
   }
 
   fi = alloca (size);
   if ((*p_GetNetworkParams)(fi, &size) != ERROR_SUCCESS)
   {
-    (*_printf) ("  error: %s\n", win_strerror(WSAGetLastError()));
+    (*_printf) ("  error: %s\n", win_strerror ((*p_WSAGetLastError)()));
     return (0);
   }
 
