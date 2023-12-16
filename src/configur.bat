@@ -236,7 +236,7 @@ echo Generating Cygwin (x86/x64) makefiles, directories and dependencies
 %MKMAKE% -o Cygwin_64.mak          -d build\Cygwin\64bit makefile.all CYGWIN WIN64
 %MKDEP%  -s.o -p$(OBJDIR)/ *.c *.h >  build\Cygwin\watt32.dep
 
-make.exe -s -f ../util/pkg-conf.mak cygwin_pkg
+make.exe -s -f ../util/pkg-conf.mak cygwin32_pkg
 make.exe -s -f ../util/pkg-conf.mak cygwin64_pkg
 
 echo Run GNU make to make target(s):
