@@ -18,10 +18,6 @@
 #
 default: all
 
-ifneq (1,1)
-!error "This is a GNU makefile. No pesky Wmake or Nmake allowed please!"
-endif
-
 #
 # For the C-preprocessing rule below.
 #
@@ -513,6 +509,13 @@ pull-request-79.exe: pull-request-79.c
 
 pull-request-79_w.exe: pull-request-79.c
 	$(call compile_and_link_ws2, $@, -D_WIN32_WINNT=0x0600 $<)
+	@echo
+
+#
+# Ref: https://github.com/gvanem/Watt-32/issues/92
+#
+issue-92.exe: issue-92.c $(WATT_LIB) | $(MAKEFILE_LIST)
+	$(call compile_and_link, $@, $<)
 	@echo
 
 %.exe: %.c $(WATT_LIB) | $(MAKEFILE_LIST)
