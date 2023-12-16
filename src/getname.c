@@ -113,7 +113,7 @@ int W32_CALL getpeername (int s, struct sockaddr *name, socklen_t *namelen)
     return (-1);
   }
 
-  if (!(socket->so_state & SS_ISCONNECTED))
+  if (!socket->remote_addr)
   {
     SOCK_DEBUGF ((", ENOTCONN"));
     SOCK_ERRNO (ENOTCONN);
