@@ -305,7 +305,7 @@ static void afd_list_init (BOOL ip6_prio)
   }
 }
 
-int W32_CALL getaddrinfo (const char *hostname, const char *servname,
+int W32_CALL getaddrinfo (const char *_hostname, const char *_servname,
                           const struct addrinfo *hints, struct addrinfo **res)
 {
   static BOOL init = FALSE;
@@ -331,9 +331,9 @@ int W32_CALL getaddrinfo (const char *hostname, const char *servname,
   pai->ai_next      = NULL;
 
   SOCK_DEBUGF (("\ngetaddrinfo: `%s', `%s'",
-                hostname, servname));
+                _hostname, _servname));
 
-  if (!hostname && !servname)
+  if (!_hostname && !_servname)
      ERR (EAI_NONAME);
 
   if (hints)
@@ -377,9 +377,9 @@ int W32_CALL getaddrinfo (const char *hostname, const char *servname,
   }
 
   /* Check for special cases:
-   *  (1) numeric servname is disallowed if socktype/protocol are left
+   *  (1) numeric _servname is disallowed if socktype/protocol are left
    *      unspecified.
-   *  (2) servname is disallowed for raw and other inet{,6} sockets.
+   *  (2) _servname is disallowed for raw and other inet{,6} sockets.
    */
   if (MATCH_FAMILY(pai->ai_family, AF_INET, 1) ||
       MATCH_FAMILY(pai->ai_family, AF_INET6, 1))
@@ -388,7 +388,7 @@ int W32_CALL getaddrinfo (const char *hostname, const char *servname,
 
     if (pai->ai_family == AF_UNSPEC)
         pai->ai_family = AF_INET6;
-    error = get_portmatch (pai, servname);
+    error = get_portmatch (pai, _servname);
     if (error)
        ERR (error);
     *pai = ai0;
@@ -396,7 +396,7 @@ int W32_CALL getaddrinfo (const char *hostname, const char *servname,
 
   ai0 = *pai;
 
-  /* NULL hostname, or numeric hostname
+  /* NULL _hostname, or numeric _hostname
    */
   for (ex = explore; ex->e_af >= 0; ex++)
   {
@@ -418,9 +418,9 @@ int W32_CALL getaddrinfo (const char *hostname, const char *servname,
     if (pai->ai_protocol == ANY && ex->e_protocol != ANY)
         pai->ai_protocol = ex->e_protocol;
 
-    if (!hostname)
-         error = explore_null (pai, servname, &cur->ai_next);
-    else error = explore_numeric_scope (pai, hostname, servname, &cur->ai_next);
+    if (!_hostname)
+         error = explore_null (pai, _servname, &cur->ai_next);
+    else error = explore_numeric_scope (pai, _hostname, _servname, &cur->ai_next);
 
     if (error)
        goto free_it;
@@ -438,10 +438,10 @@ int W32_CALL getaddrinfo (const char *hostname, const char *servname,
   if (pai->ai_flags & AI_NUMERICHOST)
      ERR (EAI_NONAME);
 
-  if (!hostname)
+  if (!_hostname)
      ERR (EAI_NONAME);
 
-  /* hostname as alphabetical name.
+  /* _hostname as alphabetical name.
    * We would like to prefer AF_INET6 than AF_INET, so we'll make a
    * outer loop by AFs.
    */
@@ -475,7 +475,7 @@ int W32_CALL getaddrinfo (const char *hostname, const char *servname,
       if (pai->ai_protocol == ANY && ex->e_protocol != ANY)
           pai->ai_protocol = ex->e_protocol;
 
-      error = explore_fqdn (pai, hostname, servname, &cur->ai_next);
+      error = explore_fqdn (pai, _hostname, _servname, &cur->ai_next);
 
       if (_resolve_exit)  /* interrupted or other fail */
       {
@@ -515,8 +515,8 @@ bad:
 /*
  * FQDN hostname, DNS lookup
  */
-static int explore_fqdn (const struct addrinfo *pai, const char *hostname,
-                         const char *servname, struct addrinfo **res)
+static int explore_fqdn (const struct addrinfo *pai, const char *_hostname,
+                         const char *_servname, struct addrinfo **res)
 {
   static struct hostent  copy;
   static struct in6_addr addr [MAX_ADDRESSES+1];
@@ -539,9 +539,9 @@ static int explore_fqdn (const struct addrinfo *pai, const char *hostname,
    * replace gethostbyname() by getaddrinfo().
    */
 
-  /* if the servname does not match socktype/protocol, ignore it.
+  /* if the _servname does not match socktype/protocol, ignore it.
    */
-  if (get_portmatch(pai, servname) != 0)
+  if (get_portmatch(pai, _servname) != 0)
      return (0);
 
   afd = find_afd (pai->ai_family);
@@ -551,7 +551,7 @@ static int explore_fqdn (const struct addrinfo *pai, const char *hostname,
    * handling code by ourselves.
    */
   SOCK_ENTER_SCOPE();
-  hp = gethostbyname2 (hostname, pai->ai_family);
+  hp = gethostbyname2 (_hostname, pai->ai_family);
   SOCK_LEAVE_SCOPE();
 
   if (!hp)
@@ -614,7 +614,7 @@ static int explore_fqdn (const struct addrinfo *pai, const char *hostname,
     if (!(pai->ai_flags & AI_CANONNAME))
     {
       GET_AI (cur->ai_next, afd, ap);
-      GET_PORT (cur->ai_next, servname);
+      GET_PORT (cur->ai_next, _servname);
     }
     else
     {
@@ -624,7 +624,7 @@ static int explore_fqdn (const struct addrinfo *pai, const char *hostname,
        * XXX getaddrinfo() is a name to address translation function,
        * and it looks strange that we do addr to name translation here.
        */
-      get_name (ap, afd, &cur->ai_next, ap, pai, servname);
+      get_name (ap, afd, &cur->ai_next, ap, pai, _servname);
     }
     while (cur && cur->ai_next)
       cur = cur->ai_next;
@@ -701,10 +701,10 @@ free_it:
 }
 
 /*
- * numeric hostname
+ * numeric _hostname
  */
-static int explore_numeric (const struct addrinfo *pai, const char *hostname,
-                            const char *servname, struct addrinfo **res)
+static int explore_numeric (const struct addrinfo *pai, const char *_hostname,
+                            const char *_servname, struct addrinfo **res)
 {
   const struct afd *afd;
   struct addrinfo  *cur, sentinel;
@@ -722,15 +722,15 @@ static int explore_numeric (const struct addrinfo *pai, const char *hostname,
   sentinel.ai_next = NULL;
   cur = &sentinel;
 
-  /* if the servname does not match socktype/protocol, ignore it.
+  /* if the _servname does not match socktype/protocol, ignore it.
    */
-  if (get_portmatch (pai, servname) != 0)
+  if (get_portmatch (pai, _servname) != 0)
      return (0);
 
   afd   = find_afd (pai->ai_family);
   flags = pai->ai_flags;
 
-  if (inet_pton (afd->a_af, hostname, &pton) == 1)
+  if (inet_pton (afd->a_af, _hostname, &pton) == 1)
   {
     DWORD v4a;
     BYTE  pfx;
@@ -758,7 +758,7 @@ static int explore_numeric (const struct addrinfo *pai, const char *hostname,
       if (!(flags & AI_CANONNAME))
       {
         GET_AI (cur->ai_next, afd, &pton);
-        GET_PORT (cur->ai_next, servname);
+        GET_PORT (cur->ai_next, _servname);
       }
       else
       {
@@ -769,7 +769,7 @@ static int explore_numeric (const struct addrinfo *pai, const char *hostname,
          * and it looks strange that we do addr to name translation here.
          */
         get_name ((const char*)&pton, afd, &cur->ai_next,
-                  (char*)&pton, pai, servname);
+                  (char*)&pton, pai, _servname);
       }
       while (cur && cur->ai_next)
         cur = cur->ai_next;
@@ -787,10 +787,10 @@ bad:
 }
 
 /*
- * numeric hostname with scope
+ * numeric _hostname with scope
  */
 static int explore_numeric_scope (const struct addrinfo *pai,
-                                  const char *hostname, const char *servname,
+                                  const char *_hostname, const char *_servname,
                                   struct addrinfo **res)
 {
   const struct afd    *afd;
@@ -803,27 +803,27 @@ static int explore_numeric_scope (const struct addrinfo *pai,
   SOCK_DEBUGF (("\nexplore_numeric_scope"));
 #endif
 
-  /* if the servname does not match socktype/protocol, ignore it.
+  /* if the _servname does not match socktype/protocol, ignore it.
    */
-  if (get_portmatch (pai, servname) != 0)
+  if (get_portmatch (pai, _servname) != 0)
      return (0);
 
   afd = find_afd (pai->ai_family);
   if (!afd->a_scoped)
-     return explore_numeric (pai, hostname, servname, res);
+     return explore_numeric (pai, _hostname, _servname, res);
 
-  cp = strchr (hostname, SCOPE_DELIMITER);
-  if (!cp || (cp - hostname) >= SIZEOF(hostname2))
-     return explore_numeric (pai, hostname, servname, res);
+  cp = strchr (_hostname, SCOPE_DELIMITER);
+  if (!cp || (cp - _hostname) >= SIZEOF(hostname2))
+     return explore_numeric (pai, _hostname, _servname, res);
 
   /* Handle special case of <scoped_address>%<scope id>
    * 'scope id' is numeric "1..x".
    */
-  _strlcpy (hostname2, hostname, sizeof(hostname2));
+  _strlcpy (hostname2, _hostname, sizeof(hostname2));
 
   /* terminate at the delimiter
    */
-  hostname2 [cp-hostname] = '\0';
+  hostname2 [cp - _hostname] = '\0';
 
   switch (pai->ai_family)
   {
@@ -834,7 +834,7 @@ static int explore_numeric_scope (const struct addrinfo *pai,
          break;
   }
 
-  error = explore_numeric (pai, hostname2, servname, res);
+  error = explore_numeric (pai, hostname2, _servname, res);
   if (error == 0)
   {
     for (cur = *res; cur; cur = cur->ai_next)

@@ -272,6 +272,9 @@ static int iface_ioctrl (Socket *socket, long cmd, void *argp)
   struct ifreq       *ifr = (struct ifreq *) argp;
   struct ifconf      *ifc = (struct ifconf*) argp;
   struct sockaddr_in *sin;
+#if defined(USE_IPV6)
+  struct sockaddr_in6 *sin6;
+#endif
   const eth_address  *eth;
   int   len, i;
 
@@ -290,15 +293,15 @@ static int iface_ioctrl (Socket *socket, long cmd, void *argp)
 
          if (ifr->ifr_addr.sa_family == AF_INET)
          {
-           struct sockaddr_in *sin = (struct sockaddr_in*) &ifr->ifr_addr;
+           sin = (struct sockaddr_in*) &ifr->ifr_addr;
            sin->sin_addr.s_addr = htonl (my_ip_addr);
            break;
          }
 #if defined(USE_IPV6)
          if (ifr->ifr_addr.sa_family == AF_INET6)
          {
-           struct sockaddr_in6 *sin = (struct sockaddr_in6*) &ifr->ifr_addr;
-           memcpy (&sin->sin6_addr, &in6addr_my_ip, sizeof(sin->sin6_addr));
+           sin6 = (struct sockaddr_in6*) &ifr->ifr_addr;
+           memcpy (&sin6->sin6_addr, &in6addr_my_ip, sizeof(sin6->sin6_addr));
            break;
          }
 #endif
@@ -329,8 +332,8 @@ static int iface_ioctrl (Socket *socket, long cmd, void *argp)
 #if defined(USE_IPV6)
          if (ifr->ifr_addr.sa_family == AF_INET6)
          {
-           struct sockaddr_in6 *sin = (struct sockaddr_in6*) &ifr->ifr_addr;
-           memcpy ((void*)&in6addr_my_ip, &sin->sin6_addr, sizeof(in6addr_my_ip));
+           sin6 = (struct sockaddr_in6*) &ifr->ifr_addr;
+           memcpy ((void*)&in6addr_my_ip, &sin6->sin6_addr, sizeof(in6addr_my_ip));
            break;
          }
 #endif

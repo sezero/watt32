@@ -405,7 +405,9 @@ expired:
   {
     h = add_hostent (h, name, dom_cname, dom_a4list, htonl(ip),
                      dom_ttl, from_windns);
-    return (h ? *ret = *h, TRUE : FALSE);
+    if (h)
+       *ret = *h;
+    return (h ? TRUE : FALSE);
   }
 
   /* Add the name to the list even if we got a negative DNS reply.
@@ -602,8 +604,11 @@ expired:
   if (rc)     /* successfully resolved */
   {
     h = add_hostent (h, name, dom_cname, NULL, addr, dom_ttl, from_windns);
+    if (h)
+       *ret = *h;
+
     /** \todo should be the new aliases */
-    return (h ? *ret = *h, TRUE : FALSE);
+    return (h ? TRUE : FALSE);
   }
 
   /* Add the IP to the list even if reverse lookup failed and not
@@ -837,7 +842,7 @@ void W32_CALL DumpHostsCache (void)
 #include <conio.h>
 #endif
 
-#if !defined(_MSC_VER) && !defined(__BORLANDC__)
+#if defined(HAVE_UNISTD_H)
 #include <unistd.h>
 #endif
 

@@ -106,7 +106,7 @@ struct ICMP6_nd_sol {
        ip6_address target;
      };
 
-/*!\union ICMP6_pkt
+/*!\typedef ICMP6_pkt
  */
 typedef union ICMP6_PKT {
         struct ICMP6_unused    unused;

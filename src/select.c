@@ -383,8 +383,8 @@ int W32_CALL select (int nfds, fd_set *read_fds, fd_set *write_fds,
  */
 int W32_CALL poll (struct pollfd *p, int num, int timeout_ms)
 {
-  DWORD   timeout_at;
-  int     i, ret = 0;
+  DWORD  timeout_at = 0;
+  int    i, ret = 0;
 
   SOCK_DEBUGF (("\npoll: n=%d", num));
 
@@ -829,7 +829,7 @@ static int poll_one (int fd, Socket *socket, int events)
 #include <conio.h>
 #endif
 
-#if !defined(_MSC_VER) && !defined(__BORLANDC__)
+#if defined(HAVE_UNISTD_H)
 #include <unistd.h>
 #endif
 
@@ -855,16 +855,16 @@ char *fd_set_str (char *buf, size_t len, const fd_set *fd)
   p += sprintf (p, "%d: ", fd->fd_count);
 #endif
 
-  for (i = 0, num = 0; i < 8*FD_SETSIZE; i++)
+  for (i = 0, num = 0; i < 8 * FD_SETSIZE; i++)
   {
-    if (FD_ISSET(i,fd))
+    if (FD_ISSET(i, fd))
     {
       p += sprintf (p, "%d,", i);
       num++;
     }
     if (p > end - 12)
     {
-      strcat(p, "<overflow>");
+      strcat (p, "<overflow>");
       break;
     }
   }
@@ -878,7 +878,7 @@ void select_dump (int sock_err, int num_fd, const struct timeval *tv,
                   const fd_set *fd_write,
                   const fd_set *fd_except)
 {
-  char buf1[512], buf2[512], buf3[512];
+  char buf1 [512], buf2 [512], buf3 [512];
 
   printf ("select_dump: sock_err %d, num_fd %d, timeout %ld.06%lu\n"
           "\tread-fds:   %s\n"
@@ -897,10 +897,10 @@ int main (int argc, char **argv)
   BOOL   debug     = FALSE;
   double sel_wait  = 0.5;
   int    sel_size  = 1;
-  int    ch;
+  int    c;
 
-  while ((ch = getopt(argc, argv, "s:w:hid?")) != EOF)
-    switch (ch)
+  while ((c = getopt(argc, argv, "s:w:hid?")) != EOF)
+    switch (c)
     {
       case 'h':
            use_8254 = FALSE;
@@ -975,9 +975,10 @@ int main (int argc, char **argv)
     fputc ('.', stderr);
     usleep (100000UL);
 
-    if (FD_ISSET(0,&read[0]))
+    if (FD_ISSET(0, &read[0]))
     {
       int ch = getch();
+
       fputc (ch, stderr);
       if (ch == 'q')
          break;

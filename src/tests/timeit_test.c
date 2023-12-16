@@ -51,11 +51,11 @@ static void generic_swap (void *_a, void *_b, int size)
 
 /**
  * Qsort - sort an array of elements
- * @base:      pointer to data to sort
- * @num:       number of elements
- * @size:      size of each element
- * @cmp_func:  pointer to comparison function
- * @swap_func: pointer to swap function or NULL
+ * \param _base     pointer to data to sort
+ * \param num       number of elements
+ * \param size      size of each element
+ * \param cmp_func  pointer to comparison function
+ * \param swap_func pointer to swap function or NULL
  *
  * This function does a heapsort on the given array. You may provide a
  * swap_func function optimized to your element type.
@@ -79,7 +79,7 @@ int Qsort (void *_base, size_t num, size_t size,
      swap_func = (size == 4 ? u_int32_t_swap : generic_swap);
 
   /* heapify */
-  for (; i >= 0; i -= (int)size)
+  for ( ; i >= 0; i -= (int)size)
   {
     for (r = i; r * 2 + size < (size_t)n; r = c)
     {

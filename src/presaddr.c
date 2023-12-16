@@ -153,8 +153,12 @@ static const char *inet_ntop6 (const u_char *src, char *dst, size_t size)
     if (words[i] == 0)
     {
       if (cur.base == -1)
-           cur.base = i, cur.len = 1;
-      else cur.len++;
+      {
+        cur.base = i;
+        cur.len = 1;
+      }
+      else
+        cur.len++;
     }
     else if (cur.base != -1)
     {
@@ -233,9 +237,9 @@ static const char *inet_ntop6 (const u_char *src, char *dst, size_t size)
  */
 static int inet_pton4 (const char *src, u_char *dst)
 {
-  static const char digits[] = "0123456789";
+  static const char digits [] = "0123456789";
   int    saw_digit, octets, ch;
-  u_char tmp[INADDRSZ];
+  u_char tmp [INADDRSZ];
   u_char *tp;
 
   saw_digit = 0;
@@ -243,16 +247,16 @@ static int inet_pton4 (const char *src, u_char *dst)
   *(tp = tmp) = '\0';
   while ((ch = *src++) != '\0')
   {
-    const char *pch;
+    const char *pch = strchr (digits, ch);
 
-    if ((pch = strchr(digits, ch)) != NULL)
+    if (pch)
     {
       u_int New = *tp * 10 + (pch - digits);
 
       if (New > 255)
          return (0);
       *tp = New;
-      if (! saw_digit)
+      if (!saw_digit)
       {
         if (++octets > 4)
            return (0);

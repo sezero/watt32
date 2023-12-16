@@ -371,7 +371,9 @@ expired:
   if (rc)                /* successfully resolved */
   {
     h = add_hostent6 (h, name, dom_cname, &dom_a6list, &addr, dom_ttl);
-    return (h ? *ret = *h, TRUE : FALSE);
+    if (h)
+       *ret = *h;
+    return (h ? TRUE : FALSE);
   }
 
   /* Add the IP to the list even if DNS failed (but not interrupted by
@@ -504,8 +506,11 @@ static BOOL gethostbyaddr6_internal (const char *addr, struct _hostent6 *ret)
   if (rc)        /* successfully resolved */
   {
     h = add_hostent6 (h, name, NULL, NULL, &ip, dom_ttl);
+    if (h)
+      *ret = *h;
+
     /** \todo should be the new aliases */
-    return (h ? *ret = *h, TRUE : FALSE);
+    return (h ? TRUE : FALSE);
   }
 
   /* Add the IP to the list even if reverse lookup failed and not
@@ -524,15 +529,15 @@ static struct hostent *fill_hostent6 (const struct _hostent6 *h)
   static struct hostent  ret;
   static struct in6_addr addr [MAX_ADDRESSES+1];
   static char  *list [MAX_ADDRESSES+1];
-  static char   hostname [MAX_HOSTLEN];
-  static char  *aliases [MAX_HOST_ALIASES+1];
+  static char   _hostname [MAX_HOSTLEN];
+  static char  *_aliases [MAX_HOST_ALIASES+1];
   int    i;
 
   if (!h->h_name)
      return (NULL);
 
   memset (&addr, 0, sizeof(addr));
-  memcpy (&aliases, h->h_aliases, sizeof(aliases));
+  memcpy (&_aliases, h->h_aliases, sizeof(_aliases));
 
   for (i = 0; i < h->h_num_addr && i < MAX_ADDRESSES; i++)
   {
@@ -542,8 +547,8 @@ static struct hostent *fill_hostent6 (const struct _hostent6 *h)
 
   list[i]         = NULL;
   ret.h_addr_list = list;
-  ret.h_name      = _strlcpy (hostname, h->h_name, sizeof(hostname));
-  ret.h_aliases   = aliases;
+  ret.h_name      = _strlcpy (_hostname, h->h_name, sizeof(_hostname));
+  ret.h_aliases   = _aliases;
   ret.h_addrtype  = AF_INET6;
   ret.h_length    = sizeof (addr[0].s6_addr);
   h_errno         = NETDB_SUCCESS;

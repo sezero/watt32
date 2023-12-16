@@ -595,7 +595,7 @@ int main (void)
 }
 #else  /* rest of file */
 
-#if !defined(_MSC_VER) && !defined(__BORLANDC__)
+#if defined(HAVE_UNISTD_H)
 #include <unistd.h>
 #endif
 

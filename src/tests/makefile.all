@@ -284,9 +284,42 @@ CC_ARGS = $(CC).arg
   export C_INCLUDE_PATH=
   export CPLUS_INCLUDE_PATH=
 
-  COMMON_CFLAGS += -Wno-unused-function \
-                   -Wno-unused-variable \
-                   -Wno-unused-value
+  COMMON_CFLAGS += -Wall                                  \
+                   -Wno-cast-align                        \
+                   -Wno-cast-function-type                \
+                   -Wno-cast-function-type-strict         \
+                   -Wno-cast-qual                         \
+                   -Wno-covered-switch-default            \
+                   -Wno-disabled-macro-expansion          \
+                   -Wno-extra-semi-stmt                   \
+                   -Wno-float-conversion                  \
+                   -Wno-format-non-iso                    \
+                   -Wno-format-nonliteral                 \
+                   -Wno-gnu-zero-variadic-macro-arguments \
+                   -Wno-implicit-fallthrough              \
+                   -Wno-implicit-int-conversion           \
+                   -Wno-implicit-int-float-conversion     \
+                   -Wno-invalid-utf8                      \
+                   -Wno-language-extension-token          \
+                   -Wno-missing-noreturn                  \
+                   -Wno-missing-prototypes                \
+                   -Wno-missing-variable-declarations     \
+                   -Wno-nonportable-system-include-path   \
+                   -Wno-reserved-identifier               \
+                   -Wno-shorten-64-to-32                  \
+                   -Wno-sign-compare                      \
+                   -Wno-sign-conversion                   \
+                   -Wno-switch-enum                       \
+                   -Wno-tautological-type-limit-compare   \
+                   -Wno-undef                             \
+                   -Wno-unreachable-code                  \
+                   -Wno-unreachable-code-break            \
+                   -Wno-unreachable-code-return           \
+                   -Wno-unsafe-buffer-usage               \
+                   -Wno-unused-function                   \
+                   -Wno-unused-macros                     \
+                   -Wno-unused-value                      \
+                   -Wno-unknown-warning-option
 
   WATT_LIB       = $(LIB_DIR)/wattcp_clang.lib
 
@@ -319,16 +352,18 @@ CC_ARGS = $(CC).arg
 
 @elifdef VISUALC CLANG
   define compile_and_link
-    $(call create_response_file, $(CC_ARGS), -c $(COMMON_CFLAGS) $(W32_CFLAGS) -Fo.\\)
+    $(call create_response_file,  $(CC_ARGS), -c $(COMMON_CFLAGS) $(W32_CFLAGS) -Fo.\\)
+    $(call create_response_file2, link.args, $(LDFLAGS) $(notdir $(2:.c=.obj)) $(WATT_LIB) user32.lib advapi32.lib)
     $(CC) @$(CC_ARGS) $(strip $(2))
-    link -out:$(strip $(1)) $(LDFLAGS) $(notdir $(2:.c=.obj)) $(WATT_LIB) user32.lib advapi32.lib
+    link -out:$(strip $(1)) @link.args
     rm -f $(1:.exe=.lib) $(1:.exe=.exp)
   endef
 
   define compile_and_link_ws2
     $(call create_response_file, $(CC_ARGS), -c $(COMMON_CFLAGS) $(NO_W32_CFLAGS) -Fo.\\)
+    $(call create_response_file2, link.args, $(LDFLAGS) $(notdir $(2:.c=.obj)) user32.lib advapi32.lib $(WS2_32_LIB))
     $(CC) @$(CC_ARGS) $(strip $(2))
-    link -out:$(strip $(1)) $(LDFLAGS) $(notdir $(2:.c=.obj)) user32.lib advapi32.lib $(WS2_32_LIB)
+    link -out:$(strip $(1)) @link.args
     rm -f $(1:.exe=.lib) $(1:.exe=.exp)
   endef
 
@@ -782,10 +817,10 @@ define create_response_file
 endef
 
 #
-# For 'wlink' only
+# For 'link' and 'wlink' since arg2 may contain paths with spaces.
 #
 define create_response_file2
-  $(file > $(1), $(2))
+  $(file > $(1),$(2))
 endef
 
 ifeq ($(USE_ASTYLE_FORMAT),1)

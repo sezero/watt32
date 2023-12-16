@@ -121,7 +121,7 @@ struct ICMP_needfrag {
        WORD      next_mtu;
      };
 
-/*!\union ICMP_pkt
+/*!\typedef ICMP_pkt
  */
 typedef union ICMP_PKT {
         struct ICMP_unused     unused;

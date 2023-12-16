@@ -139,6 +139,7 @@ static long  data_end;
 static long  data_length;
 
 enum frag_bits {
+     IS_NONE  = 0x00,
      IS_FRAG  = 0x01,
      IS_LAST  = 0x02,
      IS_FIRST = 0x04
@@ -280,7 +281,7 @@ static __inline BOOL check_frag_ofs (const in_Header *ip, DWORD ofs, DWORD end)
 
 static __inline void set_fbits (DWORD offset, WORD flags)
 {
-  fbits = 0;
+  fbits = IS_NONE;
 
   if (flags & IP_MF)
   {
@@ -289,7 +290,9 @@ static __inline void set_fbits (DWORD offset, WORD flags)
        fbits |= IS_FIRST;
   }
   else if (offset)
-          fbits = (IS_FRAG | IS_LAST);
+  {
+    fbits = (IS_FRAG | IS_LAST);
+  }
 }
 
 /*
@@ -761,7 +764,7 @@ int main (void)
 #undef enable
 #undef disable
 
-#if !defined(_MSC_VER) && !defined(__BORLANDC__)
+#if defined(HAVE_UNISTD_H)
 #include <unistd.h>
 #endif
 

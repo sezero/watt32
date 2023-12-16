@@ -195,7 +195,7 @@ typedef struct arcnet_Packet {
       } arcnet_Packet;
 
 
-/*!\union link_Packet
+/*!\typedef link_Packet
  *
  * The union of all above MAC-headers.
  */

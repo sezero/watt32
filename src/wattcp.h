@@ -685,7 +685,7 @@ typedef struct _raw6_Socket {
         BYTE   rx_data [MAX_IP6_DATA];
       } _raw6_Socket;
 
-/*!\union sock_type
+/*!\typedef sock_type
  *
  * sock_type used for socket I/O.
  */

@@ -420,29 +420,30 @@
   #endif
 #endif
 
-#define TIME_IT(func, args, loops)                           \
-    do {                                                     \
-      volatile uint64        clk_per_loop, T = _get_rdtsc(); \
-      volatile unsigned long abs, dec;                       \
-      volatile long          i, flen;                        \
-                                                             \
-      flen = printf ("Timing %s()", #func);                  \
-      for (i = 0; i < 37-flen; i++)                          \
-          putchar ('.');                                     \
-      fflush (stdout);                                       \
-      check_invd();                                          \
-      for (i = 0; i < (long)loops; i++)                      \
-          if (!func args)                                    \
-             break;                                          \
-      if (i == (long)loops) { /* all loops ran okay */       \
-        clk_per_loop = (_get_rdtsc() - T) / loops;           \
-        abs = (unsigned long) (clk_per_loop/1000ULL);        \
-        dec = (unsigned long) (clk_per_loop % 1000ULL);      \
-        if (clk_per_loop > 1000ULL)                          \
-             printf (" %6lu.%03lu clocks/loop\n", abs, dec); \
-        else printf (" %10lu clocks/loop\n", abs);           \
-      }                                                      \
-    }                                                        \
+#define TIME_IT(func, args, loops)                             \
+    do {                                                       \
+      volatile uint64        _clk_per_loop, T = _get_rdtsc();  \
+      volatile unsigned long _abs, _dec;                       \
+      volatile long          _i, _flen;                        \
+                                                               \
+      _flen = printf ("Timing %s()", #func);                   \
+      for (_i = 0; _i < 37 - _flen; _i++)                      \
+          putchar ('.');                                       \
+      fflush (stdout);                                         \
+      check_invd();                                            \
+      for (_i = 0; _i < (long)loops; _i++)                     \
+          if (!func args)                                      \
+             break;                                            \
+      if (_i == (long)loops)  /* all loops ran okay */         \
+      {                                                        \
+        _clk_per_loop = (_get_rdtsc() - T) / loops;            \
+        _abs = (unsigned long) (_clk_per_loop / 1000ULL);      \
+        _dec = (unsigned long) (_clk_per_loop % 1000ULL);      \
+        if (_clk_per_loop > 1000ULL)                           \
+             printf (" %6lu.%03lu clocks/loop\n", _abs, _dec); \
+        else printf (" %10lu clocks/loop\n", _abs);            \
+      }                                                        \
+    }                                                          \
     while (0)
 
 #endif  /* _SYSDEP_H */

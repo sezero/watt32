@@ -308,7 +308,7 @@ static char *convert_to_ACE (const char *name)
 
   for (i = 0; i < (int)out_len; i++)
   {
-    int c = out_buf[i];
+    c = out_buf [i];
 
     if (c < 0 || c > 127)
     {
@@ -320,7 +320,7 @@ static char *convert_to_ACE (const char *name)
       IDNA_DEBUG (1, ("Punycode not ASCII: %c (%d)\n", c, c));
       return (NULL);
     }
-    out_buf[i] = print_ascii[c];
+    out_buf [i] = print_ascii [c];
   }
   out_buf[i] = '\0';
   IDNA_DEBUG (2, ("punycode_encode: status %d, out_len %lu, out_buf `%s'\n",

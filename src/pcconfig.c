@@ -1157,7 +1157,7 @@ long tcp_parse_file (WFILE f, const struct config_table *cfg)
  */
 int W32_CALL tcp_config_name (char *name, int max)
 {
-  char *path, *temp;
+  char *path = NULL, *temp;
   int   i;
 
   for (i = 0; i < DIM(environ_names); i++)

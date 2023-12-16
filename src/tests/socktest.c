@@ -12,8 +12,8 @@ WORD   test_port = 1234;
 int    sock = -1;
 struct sockaddr_in sock_name;
 
-void AssertFail   (unsigned line);
-int  sock_select   (int sock);
+void AssertFail (unsigned line);
+int  sock_select (void);
 int  W32_CALL sock_loopback (in_Header *ip);
 
 void setup (void)
@@ -44,7 +44,7 @@ int main (void)
 
   do
   {
-    rc = sock_select (sock);
+    rc = sock_select();
   }
   while (rc < 0);
 
@@ -60,7 +60,7 @@ int main (void)
   return (0);
 }
 
-int sock_select (int sock)
+int sock_select (void)
 {
   fd_set write_fd;
   fd_set read_fd;
