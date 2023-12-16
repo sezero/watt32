@@ -1161,8 +1161,9 @@ clean:
 # Will soon history since it's not been updated for years.
 #
 CC      = gcc
-CFLAGS  = -O2 -g -Wall -Wno-strict-aliasing -mthreads -pipe -I. -I../inc \
-          -fdiagnostics-color=never -DWATT32_BUILD -D_WIN32_WINNT=0x0601 -DWINVER=0x0601
+CFLAGS  = -O2 -g -Wall -Wno-strict-aliasing -Wno-unused-function -mthreads -pipe \
+          -I. -I../inc -fdiagnostics-color=never -DWATT32_BUILD \
+          -D_WIN32_WINNT=0x0601 -DWINVER=0x0601
 
 LDFLAGS = -shared -Wl,--enable-stdcall-fixup,--print-map,--sort-common,--cref
 
@@ -1253,7 +1254,7 @@ else
   CFLAGS = -O0 -g2 -fgnu89-inline
 endif
 
-CFLAGS += -Wall -Wundef -Wno-strict-aliasing -I. -I../inc \
+CFLAGS += -Wall -Wundef -Wno-strict-aliasing -Wno-unused-function -I. -I../inc \
           -fdiagnostics-color=never -DWATT32_BUILD -D_WIN32_WINNT=0x0601 -DWINVER=0x0601
 LDFLAGS = -shared -Wl,--enable-stdcall-fixup,--print-map,--sort-common,--cref
 
@@ -1331,6 +1332,7 @@ CC       = gcc
 CFLAGS   = -m$(BITS) -O2 -g -Wall -Wno-unused-function -mthreads \
            -fno-strict-aliasing -static-libgcc -I. -I../inc      \
            -fdiagnostics-color=never -DWATT32_BUILD -D_WIN32_WINNT=0x0601
+
 LDFLAGS  = -m$(BITS) -shared -static-libgcc -Wl,--print-map
 AS       = as
 AFLAGS   = --$(BITS) -ahls
