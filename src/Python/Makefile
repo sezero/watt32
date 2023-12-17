@@ -91,21 +91,21 @@ PY_MAJOR_VER = $(shell $(PYTHON) -c "import sys; print(sys.version_info.major)" 
 PY_MINOR_VER = $(shell $(PYTHON) -c "import sys; print(sys.version_info.minor)" )
 
 ifeq ($(CC),cl)
-  OBJ_DIR = MSVC_obj
+  OBJ_DIR = objects/MSVC
   CFLAGS  = -nologo -MD -Ox -Zi -W3
   RCFLAGS = -nologo -D_MSC_VER
   LDFLAGS = -nologo -debug -dll -map -verbose -incremental:no -nodefaultlib:uuid.lib -libpath:$(PY_ROOT)/libs
   PY_LIB  = $(wildcard $(PY_ROOT)/libs/python$(PY_MAJOR_VER)*.lib)
 
 else ifeq ($(CC),clang-cl)
-  OBJ_DIR = clang_obj
+  OBJ_DIR = objects/clang
   CFLAGS  = -nologo -MD -Ox -Zi -W3
   RCFLAGS = -nologo -D__clang__
   LDFLAGS = -nologo -debug -dll -map -verbose -incremental:no -nodefaultlib:uuid.lib -libpath:$(PY_ROOT)/libs
   PY_LIB  = $(wildcard $(PY_ROOT)/libs/python$(PY_MAJOR_VER)*.lib)
 
 else ifeq ($(CC),gcc)
-  OBJ_DIR = gcc_obj
+  OBJ_DIR = objects/gcc
   CFLAGS  =  -m$(BITS) -Wall -O2 -s
   RCFLAGS = -O COFF -D__MINGW32__ $(WINDRES_FLAGS)
   LDFLAGS = -m$(BITS) -s -shared -static-libgcc -Wl,--print-map
@@ -212,11 +212,11 @@ $(OBJ_DIR)/%.o: %.c | $(OBJ_DIR)
 	$(call C_compile, $@, $<)
 
 $(OBJ_DIR):
-	mkdir $@
+	mkdir --parents $@
 
 clean:
 	rm -f link.tmp check-for-unused-libs.py *.pdb *.pyc vc1*.pdb \
-	   _watt32.{exp,lib,map,pyc} watt32.py watt32.pyo watt32_swig_wrap.c
+	   _watt32.{exp,lib,map,pyc} watt32.py watt32.pyo watt32_swig_wrap.c watt32_swig_wrap.i
 	rm -fr $(OBJ_DIR) __pycache__
 
 vclean realclean: clean
