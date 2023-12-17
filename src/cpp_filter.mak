@@ -114,15 +114,18 @@ ifeq ($(DEBUG_MACROS),1)
   endif
 endif
 
-PREPROCESS_C   = $(CC) -E $(CFLAGS) $(1) | $(PYTHON) $(CPP_FILTER_PY)
-PREPROCESS_CPP = $(CC) -E $(CFLAGS) $(1) | $(PYTHON) $(CPP_FILTER_PY)
+EXTRA_CFLAGS ?=
+
+PREPROCESS_C   = $(CC) -E $(EXTRA_CFLAGS) $(CFLAGS) $(1) | $(PYTHON) $(CPP_FILTER_PY)
+PREPROCESS_CPP = $(CC) -E $(EXTRA_CFLAGS) $(CFLAGS) $(1) | $(PYTHON) $(CPP_FILTER_PY)
 
 ifeq ($(USE_CLANG_FORMAT),1)
   PREPROCESS_C   += | clang-format -style=Mozilla -assume-filename=c
   PREPROCESS_CPP += | clang-format -style=Mozilla -assume-filename=c++
 
 else ifeq ($(USE_ASTYLE),1)
-  PREPROCESS_C += | astyle
+  PREPROCESS_C   += | astyle
+  PREPROCESS_CPP += | astyle
 endif
 
 all: $(CPP_FILTER_PY) $(MAKECMDGOALS)
