@@ -163,7 +163,7 @@
 
 /*
  * When generating a Swig wrapper for Python, misc.c is included
- * in the Swig interface file (watt32_swig.i). Then we must use
+ * in the Swig interface file (Python/watt32.swg). Then we must use
  * whatever mallocer python*.lib was built with.
  */
 #if defined(SWIG)
