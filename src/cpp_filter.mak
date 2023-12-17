@@ -18,23 +18,37 @@
 # This will produce socket.i from socket.c which you can inspect to see
 # what the C-compiler is really given to compile.
 #
-# Requires Python 2+ and optionally:
-#  GNU-indent or clang-format.
+# Requires Python 2+ and optionally Astyle or clang-format.
 #
-USE_INDENT       ?= 0
-USE_CLANG_FORMAT ?= 1
-CPU_BITS         ?= 32
+USE_ASTYLE       ?= 1
+USE_CLANG_FORMAT ?= 0
 MSVC_CHECK       ?= 0
 CLANG_CHECK      ?= 0
 POCC_CHECK       ?= 0
 DJGPP_CHECK      ?= 0
 CYGWIN_CHECK     ?= 0
-PYTHON           ?= f:/ProgramFiler/Python36/python
+PYTHON           ?= py -3
+
+#
+# For 'gcc' + 'clang-cl'; print built-in and macro values.
+#
+# Refs:
+#   https://gcc.gnu.org/onlinedocs/gcc/Preprocessor-Options.html
+#   https://clang.llvm.org/docs/UsersManual.html
+#
+DEBUG_MACROS ?= 0
+
+#
+# Remove all 'line' directives like:
+#  #line 14 "f:/gv/WinKit/Include/10.0.22621.0/ucrt/sys/types.h" 3 for MSVC or
+#  # 14 "f:/gv/WinKit/Include/10.0.22621.0/ucrt/sys/types.h" 3 for gcc / clang-cl
+#
+REMOVE_LINE_DIRECTIVES ?= 0
 
 WATT_ROOT := $(realpath $(WATT_ROOT))
 
 THIS_FILE     = $(firstword $(MAKEFILE_LIST))
-CPP_FILTER_PY = $(realpath $(dir $(THIS_FILE))cpp_filter.py)
+CPP_FILTER_PY = $(dir $(THIS_FILE))cpp-filter.py
 
 ifeq ($(DJGPP_CHECK),1)
   ifeq ($(OS),Windows_NT)
@@ -67,34 +81,37 @@ else ifeq ($(MSVC_CHECK),1)
 
 else ifeq ($(CLANG_CHECK),1)
   CC     = clang-cl
-  CFLAGS = -nologo # -Wall
-  CL=
-  export CL
+  CFLAGS = -nologo -W3 -D_WIN32_WINNT=0x0601
+  export CL=
 
 else ifeq ($(POCC_CHECK),1)
-  # USE_INDENT = 0
   CC     = pocc
   CFLAGS = -Go -X -Tx86-coff -D_M_IX86=1 -W2 \
            -I$(realpath $(PELLESC)\Include) -I$(realpath $(PELLESC)\Include\win)
 
 else  # MinGW, CygWin
   CC     = gcc
-  CFLAGS = -O2 -Wall
+  CFLAGS = -O2 -Wall -D_WIN32_WINNT=0x0601
 
   ifeq ($(CYGWIN_CHECK),1)
     CFLAGS += -DWIN32 -D_WIN32
   endif
 endif
 
-CFLAGS += -DWATT32_BUILD -I$(WATT_ROOT)/inc -I$(WATT_ROOT)/src -I.
+CFLAGS += -DWATT32_BUILD   \
+          -DW32_NAMESPACE= \
+        # -DWATT32_NO_NAMESPACE
 
-CFLAGS += -DW32_NAMESPACE= # -DWATT32_NO_NAMESPACE
+CFLAGS += -I$(WATT_ROOT)/inc \
+          -I$(WATT_ROOT)/src \
+          -I.
 
-#
-# So this makefile can be used from ./Python too.
-#
-ifeq (0,1)
-  CFLAGS += -I$(realpath $(PYTHONHOME))/include
+ifeq ($(DEBUG_MACROS),1)
+  ifeq ($(CC),gcc)
+    CFLAGS += -dD
+  else ifeq ($(CC),clang-cl)
+    CFLAGS += -d1PP
+  endif
 endif
 
 PREPROCESS_C   = $(CC) -E $(CFLAGS) $(1) | $(PYTHON) $(CPP_FILTER_PY)
@@ -104,8 +121,8 @@ ifeq ($(USE_CLANG_FORMAT),1)
   PREPROCESS_C   += | clang-format -style=Mozilla -assume-filename=c
   PREPROCESS_CPP += | clang-format -style=Mozilla -assume-filename=c++
 
-else ifeq ($(USE_INDENT),1)
-  PREPROCESS_C += | indent -st
+else ifeq ($(USE_ASTYLE),1)
+  PREPROCESS_C += | astyle
 endif
 
 all: $(CPP_FILTER_PY) $(MAKECMDGOALS)
@@ -121,15 +138,15 @@ all: $(CPP_FILTER_PY) $(MAKECMDGOALS)
 	@echo 'Look at "$@" for the preprosessed results.'
 
 test:
-	@echo 'I am  $$(THIS_FILE):     "$(THIS_FILE)".'
-	@echo 'I am  $$(CPP_FILTER_PY): "$(CPP_FILTER_PY)".'
-	@echo 'Goals $$(MAKECMDGOALS):  "$(MAKECMDGOALS)".'
-	@echo '$$(CURDIR): "$(CURDIR)".'
+	@echo 'I am $$(THIS_FILE):     "$(THIS_FILE)".'
+	@echo 'I am $$(CPP_FILTER_PY): "$(CPP_FILTER_PY)".'
+	@echo '$$(CURDIR):             "$(CURDIR)".'
+	@echo 'Goals $$(MAKECMDGOALS): "$(MAKECMDGOALS)".'
 
 FORCE:
 
 #
-# Create 'cpp_filter.py' in the directory of $(THIS_FILE)
+# Create 'cpp-filter.py' in the directory of $(THIS_FILE)
 #
 $(CPP_FILTER_PY): $(THIS_FILE)
 	@echo 'Generating $@...'
@@ -144,89 +161,43 @@ $(CPP_FILTER_PY): $(THIS_FILE)
 define _CPP_FILTER_PY
   import sys, os
 
-  try:
-    import ntpath
-  except ImportError as e:
-    print ("Failed to import ntpath: %s" % e)
-    sys.exit(1)
-
-  def _win32_abspath (path):
-    path = ntpath.abspath (path)
-    return path.replace ('\\', '/')
-
-  def skip_cwd (s1, s2):
-    ''' Skip the leading part that is in common with s1 and s2
-    '''
-    i = 0
-    while i < len(s1) and s1[i] == s2[i]:
-       i += 1
-    return s2[i:]
-
-  #
-  # Return long lines into multiple lines breaking at a space.
-  # Add indent on 2nd and following lines.
-  #
-  def wrap_long_line (s, indent = " "):
-    res = ''
-    remaining = 0
-    max_col = 120   # !to-do: figure out the screen width
-    i = 0
-    for word in s.split(" "):
-      if remaining < len(word):
-        if i > 0:
-          res += "\n" + indent
-        remaining = max_col - len(indent)
-      res += word + " "
-      remaining -= len(word) + 1
-      i += 1
-    return res
-
-  ####################################################################
-
-  cwd = _win32_abspath (os.getcwd()) + '/'
-
-  last_line  = '??'
-  last_fname = '??'
-  empty_lines = 0
-
+  empty_lines = debug_lines = removed_lines = 0
   while True:
     line = sys.stdin.readline()
     if not line:
-      break
-    if line.startswith('\n') or line.startswith('\r'):
-      empty_lines += 1
-      continue
+       break
+    line = line.rstrip()
+    if line == "":
+       empty_lines += 1
+       continue
 
-    line = line.replace ("\\\\", "/")
-    fname = None
-    quote = line.find ('\"')
+    #
+    # MSVC or clang-cl 'line' directive
+    #
+    l = line.lstrip()
+    if l.startswith("#line") or l.startswith("# "):
+       if $(REMOVE_LINE_DIRECTIVES):
+          removed_lines += 1
+          continue
 
-    if line.startswith("#line ") and quote > 0:
-      fname = _win32_abspath (line[quote:])
-      last_fname = fname
+       line = line.replace ("\\\\", "/")
 
-    l = line.rstrip()
-    if l != '' and last_line != '':
-      if fname is None or fname != last_fname:
-        if 0:
-          if l.find("__declspec(deprecated("):
-            l = wrap_long_line (l)
-        if 0:
-          print (l, end="")
-        else:
-          print (l)
+    if l.startswith("#define "):
+       debug_lines += 1
 
-        #
-        # Print a newline after a function or struct
-        #
-        if l.endswith('}') or l.endswith('};'):
-          print ("")
+    print (line)
 
-    last_line = l
+    #
+    # Print a newline after a functions or structs
+    #
+    if l == "}" or l == "};":
+       print ("")
 
-  if empty_lines > 0:
-    sys.stderr.write ("Removed %d empty lines.\n" % empty_lines)
-
+  print ("Removed %d empty lines." % empty_lines, file=sys.stderr)
+  if $(REMOVE_LINE_DIRECTIVES):
+     print ("Removed %d line directives." % removed_lines, file=sys.stderr)
+  if $(DEBUG_MACROS):
+     print ("Found %d '#define' lines." % debug_lines, file=sys.stderr)
 endef
 
 

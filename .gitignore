@@ -187,7 +187,7 @@ src/build/
 src/*.mak
 src/chk_gcc.bat
 src/chk_hdr.bat
-src/cpp_filter.py
+src/cpp-filter.py
 src/BOB
 src/chksum0.tas
 src/clang-analyse.bat
