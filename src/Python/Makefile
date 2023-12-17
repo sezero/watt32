@@ -5,6 +5,9 @@
 # Supports MSVC, clang-cl or MinGW (MinGW little tested).
 # Needs SWIG and off-course Python 2/3 to build and test.
 #
+# A 'set SWIG_LIB=<python-root>\Scripts\swig-install\Lib'
+# could be needed for Swig to finds it's modules like 'swig.swg' etc.
+#
 define Usage
 
   Usage:
@@ -71,7 +74,12 @@ WATT32_STATIC ?= 1
 #
 # Add support for BSD sockets?
 #
-USE_SOCKET_API ?= 0
+# Do a:
+#   make CC=clang-cl cpp_swig
+#
+# to inspect the preprocessed Swig code.
+#
+USE_SOCKET_API ?= 1
 
 #
 # Could be set in envronment of on the cmd-line:
@@ -193,30 +201,30 @@ _watt32.pyd: $(OBJ_DIR)/watt32_swig_wrap.o $(OBJ_DIR)/_watt32.res $(W32_LIB) $(P
 $(OBJ_DIR)/_watt32.res: _watt32.rc | $(OBJ_DIR)
 	$(call create_res, $@, $<)
 
-$(OBJ_DIR)/watt32.py: $(OBJ_DIR)/watt32_swig_wrap.c
+watt32.py: watt32_swig_wrap.c
 
-$(OBJ_DIR)/watt32_swig_wrap.c: watt32.swg | $(OBJ_DIR)
+watt32_swig_wrap.c: watt32.swg | $(OBJ_DIR)
 	$(call green_msg, Generating Swig wrapper $@)
 	swig $(SWIG_FLAGS) -o $@ watt32.swg
 	@echo
 
-$(OBJ_DIR)/%.o: $(OBJ_DIR)/%.c | $(OBJ_DIR)
-	$(call compile, $@, $<)
+$(OBJ_DIR)/%.o: %.c | $(OBJ_DIR)
+	$(call C_compile, $@, $<)
 
 $(OBJ_DIR):
 	mkdir $@
 
 clean:
 	rm -f link.tmp check-for-unused-libs.py *.pdb *.pyc vc1*.pdb \
-	   _watt32.{exp,lib,map,pyc} watt32.pyo
+	   _watt32.{exp,lib,map,pyc} watt32.py watt32.pyo watt32_swig_wrap.c
 	rm -fr $(OBJ_DIR) __pycache__
 
 vclean realclean: clean
 	rm -f _watt32.pyd
 
-install: _watt32.pyd $(OBJ_DIR)/watt32.py
-	cp --update $(OBJ_DIR)/watt32.py  $(PY_ROOT)/Lib/site-packages
-	cp --update _watt32.pyd           $(PY_ROOT)/DLLs
+install: _watt32.pyd watt32.py
+	cp --update watt32.py    $(PY_ROOT)/Lib/site-packages
+	cp --update _watt32.pyd  $(PY_ROOT)/DLLs
 ifneq ($(CC),gcc)
 	cp --update _watt32.pdb  $(PY_ROOT)/DLLs
 endif
@@ -231,20 +239,37 @@ check-for-unused-libs.py: Makefile
 	$(file >> $@,if 1:)
 	$(file >> $@,$(check_for_unused_libs_PY))
 
+CPP_FILTER_ARGS = USE_ASTYLE=0       \
+                  USE_CLANG_FORMAT=0 \
+                  DEBUG_MACROS=1     \
+                  CLANG_CHECK=1      \
+                  EXTRA_CFLAGS='$(CFLAGS)'
+
+cpp_swig: watt32_swig_wrap.c FORCE
+	$(call green_msg, Generating watt32_swig_wrap.i with no preprocess filters)
+	$(MAKE) -f ../cpp_filter.mak $(CPP_FILTER_ARGS) watt32_swig_wrap.i
+
+FORCE:
+
 #
 # The dependency must be updated by hand.
 #
-$(OBJ_DIR)/watt32_swig_wrap.c: \
-  ../../inc/sys/w32api.h       \
-  ../wattcp.h                  \
-  ../sock_ini.h                \
-  ../pcdbug.h                  \
-  ../pcicmp.h                  \
-  ../pcdns.h                   \
-  ../pctcp.h                   \
-  ../misc.h                    \
+watt32_swig_wrap_DEPS =  \
+  ../../inc/sys/w32api.h \
+  ../wattcp.h            \
+  ../sock_ini.h          \
+  ../pcdbug.h            \
+  ../pcicmp.h            \
+  ../pcdns.h             \
+  ../pctcp.h             \
+  ../misc.h              \
   ../misc.c
 
+ifeq ($(USE_SOCKET_API),1)
+  watt32_swig_wrap_DEPS += ../socket.h ../socket.c
+endif
+
+watt32_swig_wrap.c: $(watt32_swig_wrap_DEPS)
 
 #
 # GNU-make macros:
@@ -257,7 +282,7 @@ green_msg    = @echo -e "$(BRIGHT_GREEN)$(strip $(1))\e[0m"
 green_msg0   = @echo -e "$(BRIGHT_GREEN)$(1)\e[0m"
 
 ifeq ($(CC),gcc)
-  define compile
+  define C_compile
     $(CC) -c $(CFLAGS) -o $(strip $(1) $(2))
     @echo
   endef
@@ -274,7 +299,7 @@ ifeq ($(CC),gcc)
   endef
 
 else
-  define compile
+  define C_compile
     $(CC) -c $(CFLAGS) -Fo$(strip $(1) $(2))
     @echo
   endef
