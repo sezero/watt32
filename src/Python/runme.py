@@ -21,6 +21,9 @@ except:
 
 opt = None
 
+def cprint (colour, s):
+  print ("%s%s%s" % (colour, s, Colour.RESET))
+
 def __LINE__():
   try:
     raise Exception
@@ -36,7 +39,7 @@ def ping (host):
   num = 0
   if ip == 0:
      err = w32.cvar.dom_errno
-     print ("%sUnknown host %s, dom_errno: %d: %s%s" % (Colour.YELLOW, host, err, dom_strerror(err), Colour.RESET))
+     cprint (Colour.YELLOW, "Unknown host %s, dom_errno: %d: %s" % (host, err, dom_strerror(err)))
      return
 
   while num < 5:
@@ -49,27 +52,34 @@ def ping (host):
     num += 1
     w32.tcp_tick (None)
     if w32._chk_ping (ip, None) != -1:
-       print ("%sGot ICMP echo%s" % (Colour.YELLOW, Colour.RESET))
+       cprint (Colour.YELLOW, "Got ICMP echo")
     Sleep (1000)
 
 #
-# Show the contents of 'watt32.py' (or 'watt32.pyo')
+# Show the contents of object 'x'
 #
-def show_content (opt):
-  print ("%s%s contains:%s" % (Colour.YELLOW, w32.__file__, Colour.WHITE))
-  for s1 in dir(w32):
-    if opt.version < 2 and s1.startswith("_swig"):
-       continue
-    print (" ", s1)
-    if opt.version >= 3:
-       for s2 in dir(s1):
-           if not (s2.startswith("__") and s2.endswith("__")):
-              print ("   ", s2)
+def show_content (opt, x, name):
+  cprint (Colour.YELLOW, "%s contains:" % name)
+  for _x in sorted(dir(x)):
+      if opt.version < 2 and _x.startswith("_swig"):
+         continue
+      cprint (Colour.WHITE, "  " + _x)
   print (Colour.RESET)
 
 def show_version (opt):
   if opt.version >= 2:
-     show_content (opt)
+     show_content (opt, w32, repr(w32.__file__))
+
+  if opt.version >= 3:
+     show_content (opt, w32._SwigNonDynamicMeta, "w32._SwigNonDynamicMeta")
+
+  if opt.version >= 2:
+     if getattr(w32, "sockaddr_in", None):
+        cprint (Colour.WHITE, "Built with '-DUSE_SOCKET_API'")
+        show_content (opt, w32.sockaddr_in, "w32.sockaddr_in")
+     else:
+        cprint (Colour.WHITE, "Not built with '-DUSE_SOCKET_API'\n")
+
   print ("Version:   %s"        % w32.wattcpVersion())
   print ("$(CC):     %s (-D%s)" % (w32.wattcpBuildCCexe(), w32.wattcpBuildCC()))
   print ("$(CFLAGS): %s"        % w32.wattcpBuildCflags())
@@ -78,11 +88,11 @@ def show_version (opt):
   length = 0
   print ("Features:  ", end="")
   for f in features[1:]:
-    print (f + " ", end="")
-    length += len(f)
-    if length > 60:
-       length = 0
-       print ("\n", " "*10, end="")
+      print (f + " ", end="")
+      length += len(f)
+      if length > 60:
+         length = 0
+         print ("\n", " "*10, end="")
   print ("")
   sys.exit (0)
 
