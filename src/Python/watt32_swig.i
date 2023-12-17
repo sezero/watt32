@@ -40,6 +40,7 @@
   #include "pcicmp.h"
   #include "pcdns.h"
   #include "pctcp.h"
+  #include "pcsed.h"
   #include "misc.h"
 %}
 
@@ -58,6 +59,10 @@
 // %include "pcdns.h"
 %include "pctcp.h"
 %include "misc.h"
+
+#if defined(USE_SOCKET_API)
+  %include "../socket.h"
+#endif
 
 #undef udp_Socket
 

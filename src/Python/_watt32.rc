@@ -1,3 +1,9 @@
+/*
+ * Avoid some warnings from 'rc':
+ *   include\pyport.h(491) : warning RC4011: identifier truncated to 'DOUBLE_IS_ARM_MIXED_ENDIAN_IEEE'
+ */
+#define Py_PYTHREAD_H
+
 #include <winver.h>
 #include <Python.h>
 #include <tcp.h>
@@ -19,6 +25,14 @@
   #error "Unsupported compiler"
 #endif
 
+#if (RC_BITS == 32)
+  #define RC_BITNESS "32-bit"
+#elif (RC_BITS == 64)
+  #define RC_BITNESS "64-bit"
+#else
+  #error "'RC_BITS' is not defined"
+#endif
+
 VS_VERSION_INFO VERSIONINFO
   FILEVERSION     RC_VERSION
   PRODUCTVERSION  RC_VERSION
@@ -34,15 +48,15 @@ BEGIN
  /* BLOCK "04090000" */
     BLOCK "040904b0"
     BEGIN
-      VALUE "CompanyName",      "Python " PY_VERSION " library for Watt-32 tcp/ip stack"
+      VALUE "CompanyName",      "Watt-32 tcp/ip stack"
       VALUE "FileDescription",  "Python " PY_VERSION " library for Watt-32 library "
       VALUE "FileVersion",      WATTCP_VER_STRING
       VALUE "InternalName",     "Watt-32 "
       VALUE "OriginalFilename", "_watt32.pyd"
       VALUE "ProductName",      "Watt-32 tcp/ip stack"
-      VALUE "ProductVersion",   WATTCP_VER_STRING " (" BUILDER ")"
+      VALUE "ProductVersion",   WATTCP_VER_STRING " (" BUILDER ", " RC_BITNESS ")"
       VALUE "LegalCopyright",   "This library carries a BSD-style licence.\r\n"
-                                "\t\t\tCopyright 1997-2022, Gisle Vanem <gvanem@yahoo.no>."
+                                "\t\t\tCopyright 1997-2023, Gisle Vanem <gvanem@yahoo.no>."
     END
   END
 

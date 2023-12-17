@@ -69,6 +69,11 @@ endif
 WATT32_STATIC ?= 1
 
 #
+# Add support for BSD sockets?
+#
+USE_SOCKET_API ?= 0
+
+#
 # Could be set in envronment of on the cmd-line:
 #
 PYTHON ?= py -3
@@ -102,7 +107,8 @@ else
   $(error $(Usage))
 endif
 
-RCFLAGS += -I../../inc \
+RCFLAGS += -DRC_BITS=$(BITS) \
+           -I../../inc       \
            -I$(PY_ROOT)/include
 
 CFLAGS  += -I.. -I../../inc     \
@@ -119,6 +125,10 @@ CFLAGS  += -I.. -I../../inc     \
 #   swig/python detected a memory leak of type 'DWORD *', no destructor found.
 #
 CFLAGS += -DSWIG_PYTHON_SILENT_MEMLEAK
+
+ifeq ($(USE_SOCKET_API),1)
+  CFLAGS += -DUSE_SOCKET_API
+endif
 
 ifneq ($(CC),cl)
   CFLAGS += -Wno-unused-function \
