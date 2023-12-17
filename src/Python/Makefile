@@ -82,14 +82,14 @@ ifeq ($(CC),cl)
   CFLAGS  = -nologo -MD -Ox -Zi -W3
   RCFLAGS = -nologo -D_MSC_VER
   LDFLAGS = -nologo -debug -dll -map -verbose -incremental:no -nodefaultlib:uuid.lib -libpath:$(PY_ROOT)/libs
-  PY_LIB  = $(wildcard $(PY_ROOT)/libs/python$(PY_MAJOR_VER).lib)
+  PY_LIB  = $(wildcard $(PY_ROOT)/libs/python$(PY_MAJOR_VER)*.lib)
 
 else ifeq ($(CC),clang-cl)
   OBJ_DIR = clang_obj
   CFLAGS  = -nologo -MD -Ox -Zi -W3
   RCFLAGS = -nologo -D__clang__
   LDFLAGS = -nologo -debug -dll -map -verbose -incremental:no -nodefaultlib:uuid.lib -libpath:$(PY_ROOT)/libs
-  PY_LIB  = $(wildcard $(PY_ROOT)/libs/python$(PY_MAJOR_VER).lib)
+  PY_LIB  = $(wildcard $(PY_ROOT)/libs/python$(PY_MAJOR_VER)*.lib)
 
 else ifeq ($(CC),gcc)
   OBJ_DIR = gcc_obj
@@ -242,7 +242,7 @@ $(OBJ_DIR)/watt32_swig_wrap.c: \
 # This assumes you have a MSys/Cygwin's 'echo.exe' program with ANSI colour support.
 #
 BRIGHT_GREEN = \e[1;32m
-BRIGHT_WHITE = \e[1;45;37m
+BRIGHT_WHITE = \e[1;37m
 green_msg    = @echo -e "$(BRIGHT_GREEN)$(strip $(1))\e[0m"
 green_msg0   = @echo -e "$(BRIGHT_GREEN)$(1)\e[0m"
 
