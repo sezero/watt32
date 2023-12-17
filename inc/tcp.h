@@ -187,9 +187,9 @@ W32_FUNC int    W32_CALL sock_fputs      (const char *text, FILE *stream);
 
 W32_FUNC VoidProc W32_CALL sock_yield    (tcp_Socket *s, VoidProc fn);
 
-W32_FUNC int MS_CDECL sock_printf (sock_type *s, const char *fmt, ...)  W32_ATTR_PRINTF(2,3);
+W32_FUNC int MS_CDECL sock_printf (sock_type *s, _Printf_format_string_ const char *fmt, ...)  W32_ATTR_PRINTF(2, 3);
 
-W32_FUNC int MS_CDECL sock_scanf (sock_type *s, const char *fmt, ...)   W32_ATTR_SCANF(2,3);
+W32_FUNC int MS_CDECL sock_scanf (sock_type *s, _Scanf_format_string_ const char *fmt, ...)    W32_ATTR_SCANF(2, 3);
 
 /*
  * TCP or UDP specific stuff, must be used for open's and listens, but
@@ -533,7 +533,7 @@ W32_FUNC DWORD W32_CALL DHCP_get_server (void);
 /*
  * Various function-pointer hooks etc.
  */
-W32_DATA int (MS_CDECL *_printf) (const char *, ...)  W32_ATTR_PRINTF(1,2);
+W32_DATA int (MS_CDECL *_printf) (_Printf_format_string_ const char *, ...)  W32_ATTR_PRINTF(1, 2);
 
 W32_DATA int  (W32_CALL *_outch) (char c);
 W32_DATA void (W32_CALL *wintr_chain) (void);

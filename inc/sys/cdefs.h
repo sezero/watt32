@@ -108,6 +108,20 @@
   #define W32_ARG_NONNULL(_1)
 #endif
 
+/**
+ * Defined in newer <sal.h> for MSVC.
+ *
+ * Used by the `cl` compiler to check arguments in a `printf()` /
+ * `scanf()` type function with `const char *fmt, ...` arguments.
+ */
+#ifndef _Printf_format_string_
+#define _Printf_format_string_
+#endif
+
+#ifndef _Scanf_format_string_
+#define _Scanf_format_string_
+#endif
+
 /* Warn on deprecated type/func.
  */
 #if defined(__GNUC__) || defined(__clang__)

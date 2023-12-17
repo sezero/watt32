@@ -27,9 +27,10 @@ extern   void dbug_flush (void);
 
 #if !defined(SWIG)
   #if defined(__POCC__)
-    extern _CRTCHK(printf,1,2) int dbug_printf (const char *fmt, ...);
+    extern _CRTCHK(printf, 1, 2) int dbug_printf (const char *fmt, ...);
   #else
-    extern int MS_CDECL            dbug_printf (const char *fmt, ...) W32_ATTR_PRINTF (1, 2);
+    extern int MS_CDECL  dbug_printf (_Printf_format_string_
+                                      const char *fmt, ...) W32_ATTR_PRINTF (1, 2);
   #endif
 #endif
 

@@ -9,9 +9,10 @@
  */
 #if defined(USE_DEBUG) && defined(USE_BSD_API)
   #if defined(__POCC__)
-    extern _CRTCHK(printf,2,3) int _sock_debugf (const char *fmt, ...);
+    extern _CRTCHK(printf, 2, 3) int _sock_debugf (const char *fmt, ...);
   #else
-    extern int MS_CDECL            _sock_debugf (const char *fmt, ...) W32_ATTR_PRINTF (1,2);
+    extern int MS_CDECL _sock_debugf (_Printf_format_string_
+                                      const char *fmt, ...) W32_ATTR_PRINTF (1, 2);
   #endif
 
   extern void  _sock_dbug_flush  (void);

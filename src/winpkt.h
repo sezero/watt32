@@ -123,7 +123,8 @@ extern UINT        winpkt_trace_level;
             winpkt_trace (args, ## __VA_ARGS__); \
           } while (0)
 
-  extern void winpkt_trace (const char *fmt, ...) W32_ATTR_PRINTF (1,2);
+  extern void winpkt_trace (_Printf_format_string_
+                            const char *fmt, ...) W32_ATTR_PRINTF (1, 2);
   extern void winpkt_trace_fclose (void);
 
 #else
