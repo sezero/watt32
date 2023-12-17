@@ -92,7 +92,7 @@ install:
 build_script:
     - cmd: appveyor-script.bat build_src
     - cmd: appveyor-script.bat build_bin
-  # - cmd: appveyor-script.bat build_python
+    - cmd: appveyor-script.bat build_python
 
 test_script:
    # - cmd: set PATH=c:\Python34;%PATH% & set USE_CURL=1 & python.exe appveyor-script.py build_tests

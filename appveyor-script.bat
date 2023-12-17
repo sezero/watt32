@@ -89,6 +89,7 @@ set MINGW64=%APPVEYOR_BUILD_FOLDER_UNIX%
 ::
 set DJGPP=%APPVEYOR_BUILD_FOLDER_UNIX%/CI-temp
 set DJGPP_PREFIX=%DJGPP%/bin/i586-pc-msdosdjgpp
+set 7Z=7z x -y
 
 ::
 :: Set env-var for building with Watcom 2.0
@@ -413,10 +414,13 @@ exit /b 0
 
   %_ECHO% "\n\e[1;33mRunning test 'cpu.exe' ---------------------------------------------------------------\e[0m"
   cpu.exe
+
   %_ECHO% "\n\e[1;33mRunning test 'cpuspeed.exe 1 1' ------------------------------------------------------\e[0m"
   cpuspeed.exe 1 1
+
   %_ECHO% "\n\e[1;33mRunning test 'swap.exe' --------------------------------------------------------------\e[0m"
   swap.exe
+
   %_ECHO% "\n\e[1;33mRunning test 'chksum.exe -s' ---------------------------------------------------------\e[0m"
   chksum.exe -s
 
@@ -429,22 +433,22 @@ exit /b 0
   exit /b 0
 
 ::
-:: Try to build the '_watt32.pyd' module for 32-bit
+:: Try to build the '_watt32.pyd' module
 ::
 :build_python
   cd src\Python
 
-  if %BUILDER%-%CPU%. == visualc-x86.  (
+  if %BUILDER%-%CPU%. == visualc.  (
     %_ECHO% "\e[1;33m[%CPU%]: Building 'build_python' for 'BUILDER=visualc'.\e[0m"
-    make PYTHON="py -3" CC=cl
+    make PYTHON=python.exe CC=cl
 
-  ) else if %BUILDER%-%CPU%. == clang-x86. (
+  ) else if %BUILDER%-%CPU%. == clang. (
     %_ECHO% "\e[1;33m[%CPU%]: Building 'build_python' for 'BUILDER=clang-cl'.\e[0m"
-    make PYTHON="py -3" CC=clang-cl (
+    make PYTHON=python.exe CC=clang-cl (
 
-  ) else if %BUILDER%-%CPU%. == mingw64-x86. (
+  ) else if %BUILDER%-%CPU%. == mingw64. (
     %_ECHO% "\e[1;33m[%CPU%]: Building 'build_python' for 'BUILDER=MinGW64'.\e[0m"
-    make PYTHON="py -3" CC=gcc
+    make PYTHON=python.exe CC=gcc
 
   ) else (
     %_ECHO% "\e[1;33m[%CPU%]Not doing 'build_python' for 'BUILDER=%BUILDER%'.\e[0m"
