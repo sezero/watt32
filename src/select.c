@@ -252,20 +252,6 @@ int W32_CALL select_s (int nfds, fd_set *readfds, fd_set *writefds,
 
     } /* end of for loop; all sockets checked at least once */
 
-    /* WATT_YIELD() sometimes hangs for approx 250msec under Win-XP.
-     * Don't yield for "small" timeouts.
-     */
-#if (!ALWAYS_YIELD)
-    if (!timeout || timercmp(timeout,&sel_min_block,>))
-#endif
-    {
-      if (ret_count == 0)
-      {
-        WATT_YIELD();
-        tcp_tick (NULL);
-      }
-    }
-
     if (timeout)
     {
       gettimeofday2 (&now, NULL);
@@ -355,6 +341,16 @@ int W32_CALL select_s (int nfds, fd_set *readfds, fd_set *writefds,
       SOCK_ERRNO (EINTR);
       ret_count = -1;
       break;
+    }
+
+    /* WATT_YIELD() sometimes hangs for approx 250msec under Win-XP.
+     * Don't yield for "small" timeouts.
+     */
+#if (!ALWAYS_YIELD)
+    if (!timeout || timercmp(timeout,&sel_min_block,>))
+#endif
+    {
+      WATT_YIELD();
     }
   }
 
