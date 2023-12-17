@@ -47,8 +47,6 @@
 #pragma stack_size_warn (16000)    /* ~3*MAX_SOCKETS */
 #endif
 
-#define ALWAYS_YIELD  0
-
 #ifndef STDIN_FILENO
 #define STDIN_FILENO  0
 #endif
@@ -60,13 +58,6 @@
 #ifndef STDERR_FILENO
 #define STDERR_FILENO 2
 #endif
-
-
-/**
- * The smallest time for \b not yielding or calling tcp_tick().
- * \todo Should be configurable.
- */
-static struct timeval sel_min_block = { 0, 500000 }; /* 0.5 sec */
 
 /*
  * Select sockets for read, write or exceptions
@@ -343,15 +334,7 @@ int W32_CALL select_s (int nfds, fd_set *readfds, fd_set *writefds,
       break;
     }
 
-    /* WATT_YIELD() sometimes hangs for approx 250msec under Win-XP.
-     * Don't yield for "small" timeouts.
-     */
-#if (!ALWAYS_YIELD)
-    if (!timeout || timercmp(timeout,&sel_min_block,>))
-#endif
-    {
-      WATT_YIELD();
-    }
+    WATT_YIELD();
   }
 
   _sock_sig_restore();
