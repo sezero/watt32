@@ -27,12 +27,12 @@ endef
 #   PY_MINOR_VER: 7.
 #
 #   %WATT_ROOT%\src\Python> make CC=cl PYTHON="py -3.6" py_info
-#   PY_ROOT:      f:/ProgramFiler/Python36.
+#   PY_ROOT:      F:/ProgramFiler/Python36.
 #   PY_MAJOR_VER: 3.
 #   PY_MINOR_VER: 6.
 #
 #   %WATT_ROOT%\src\Python> make CC=cl PYTHON="py -3.9" py_info
-#   PY_ROOT:      f:/ProgramFiler/Python36.
+#   PY_ROOT:      F:/ProgramFiler/Python39.
 #   PY_MAJOR_VER: 3.
 #   PY_MINOR_VER: 9.
 #
