@@ -195,9 +195,9 @@ $(OBJ_DIR)/_watt32.res: _watt32.rc | $(OBJ_DIR)
 
 $(OBJ_DIR)/watt32.py: $(OBJ_DIR)/watt32_swig_wrap.c
 
-$(OBJ_DIR)/watt32_swig_wrap.c: watt32_swig.i | $(OBJ_DIR)
+$(OBJ_DIR)/watt32_swig_wrap.c: watt32.swg | $(OBJ_DIR)
 	$(call green_msg, Generating Swig wrapper $@)
-	swig $(SWIG_FLAGS) -o $@ watt32_swig.i
+	swig $(SWIG_FLAGS) -o $@ watt32.swg
 	@echo
 
 $(OBJ_DIR)/%.o: $(OBJ_DIR)/%.c | $(OBJ_DIR)
