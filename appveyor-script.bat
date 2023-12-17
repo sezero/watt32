@@ -438,20 +438,20 @@ exit /b 0
 :build_python
   cd src\Python
 
-  if %BUILDER%-%CPU%. == visualc.  (
+  if %BUILDER%. == visualc.  (
     %_ECHO% "\e[1;33m[%CPU%]: Building 'build_python' for 'BUILDER=visualc'.\e[0m"
     make PYTHON=python.exe CC=cl
 
-  ) else if %BUILDER%-%CPU%. == clang. (
+  ) else if %BUILDER%. == clang. (
     %_ECHO% "\e[1;33m[%CPU%]: Building 'build_python' for 'BUILDER=clang-cl'.\e[0m"
     make PYTHON=python.exe CC=clang-cl (
 
-  ) else if %BUILDER%-%CPU%. == mingw64. (
+  ) else if %BUILDER%. == mingw64. (
     %_ECHO% "\e[1;33m[%CPU%]: Building 'build_python' for 'BUILDER=MinGW64'.\e[0m"
     make PYTHON=python.exe CC=gcc
 
   ) else (
-    %_ECHO% "\e[1;33m[%CPU%]Not doing 'build_python' for 'BUILDER=%BUILDER%'.\e[0m"
+    %_ECHO% "\e[1;33m[%CPU%]: Not doing 'build_python' for 'BUILDER=%BUILDER%'.\e[0m"
   )
 
   exit /b 0
