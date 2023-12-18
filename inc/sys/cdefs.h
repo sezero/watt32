@@ -109,11 +109,14 @@
 #endif
 
 /**
- * Defined in newer <sal.h> for MSVC.
+ * The below `_x_format_string_` defines are defined in newer <sal.h> for MSVC.
+ * Which are included almost everywhere; including <stdio.h>.
  *
  * Used by the `cl` compiler to check arguments in a `printf()` /
  * `scanf()` type function with `const char *fmt, ...` arguments.
  */
+#include <stdio.h>
+
 #ifndef _Printf_format_string_
 #define _Printf_format_string_
 #endif
