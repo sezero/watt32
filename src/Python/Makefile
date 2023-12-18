@@ -55,6 +55,11 @@ export CL=
 #
 CPU ?= x86
 
+#
+# This could invoke 'swig.exe' via a 'swig.bat' by a 'set SWIG=swig.bat'.
+#
+SWIG ?= swig
+
 ifeq ($(CPU),x86)
   BITS          = 32
   WINDRES_FLAGS = --target=pe-i386
@@ -205,7 +210,7 @@ watt32.py: watt32_swig_wrap.c
 
 watt32_swig_wrap.c: watt32.swg | $(OBJ_DIR)
 	$(call green_msg, Generating Swig wrapper $@)
-	swig $(SWIG_FLAGS) -o $@ watt32.swg
+	$(SWIG) $(SWIG_FLAGS) -o $@ watt32.swg
 	@echo
 
 $(OBJ_DIR)/%.o: %.c | $(OBJ_DIR)
