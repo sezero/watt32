@@ -3,10 +3,10 @@ if not %1. == clean. call configur.bat all
 if %1. == clean.     call configur.bat clean
 
 echo ---- running djgpp.mak %1 ---- > all_dos.log
-make  -f djgpp.mak %1 >&> all_dos.log
+make -f djgpp.mak %1 >&> all_dos.log
 
 echo ---- running highc.mak %1 ---- >> all_dos.log
-maker -f highc.mak %1  >> all_dos.log
+make -f highc.mak %1 >> all_dos.log
 
 echo ---- running watcom_s.mak %1 ---- >> all_dos.log
 wmake -h -f watcom_s.mak %1 >> all_dos.log
