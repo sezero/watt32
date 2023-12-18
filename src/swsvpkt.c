@@ -415,10 +415,10 @@ static void WINAPI ReceiveComplete (
 }
 
 static const struct search_list ccode_list[] = {
-                  { IOCTL_GETINFO,          "IOCTL_GETINFO" },
-                  { IOCTL_GETMACADDR,       "IOCTL_GETMACADDR" },
-                  { IOCTL_GETDESC,          "IOCTL_GETDESC" },
-                  { OID_GEN_DRIVER_VERSION, "OID_GEN_DRIVER_VERSION" }
+                  { (DWORD) IOCTL_GETINFO,          "IOCTL_GETINFO" },
+                  { (DWORD) IOCTL_GETMACADDR,       "IOCTL_GETMACADDR" },
+                  { (DWORD) IOCTL_GETDESC,          "IOCTL_GETDESC" },
+                  { (DWORD) OID_GEN_DRIVER_VERSION, "OID_GEN_DRIVER_VERSION" }
                 };
 
 /*

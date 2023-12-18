@@ -70,7 +70,7 @@ CODE prioritynames[] = {
         { LOG_EMERG,      "panic"   },      /* DEPRECATED */
         { LOG_WARNING,    "warn"    },      /* DEPRECATED */
         { LOG_WARNING,    "warning" },
-        { -1,             NULL      }
+        { (u_long) -1,    NULL      }
       };
 
 CODE facilitynames[] = {
@@ -97,7 +97,7 @@ CODE facilitynames[] = {
         { LOG_LOCAL5,    "local5"   },
         { LOG_LOCAL6,    "local6"   },
         { LOG_LOCAL7,    "local7"   },
-        { -1,            NULL       }
+        { (u_long) -1,   NULL       }
       };
 
 /*

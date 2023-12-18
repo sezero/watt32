@@ -98,8 +98,8 @@ int _w32_errno = 0;
   void cdecl CheckCpuType (void)
   {
     x86_type = 6;
-    x86_hard_math = 1;
-    x86_capability = -1;   /* All flags on! */
+    x86_hard_math  = 1;
+    x86_capability = (DWORD) -1;   /* All flags on! */
     strcpy (x86_vendor_id, "GenuineIntel");
   }
 #endif

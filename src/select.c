@@ -110,7 +110,7 @@ int W32_CALL select_s (int nfds, fd_set *readfds, fd_set *writefds,
   fd_set tmp_read  [NUM_SOCK_FDSETS];
   fd_set tmp_write [NUM_SOCK_FDSETS];
   fd_set tmp_except[NUM_SOCK_FDSETS];
-  struct timeval starttime, expiry, now;
+  struct timeval starttime, now, expiry = {0, 0 };
 
   int  num_fd    = nfds;
   int  ret_count = 0;

@@ -279,9 +279,9 @@ void W32_CALL __fp_nquery (const u_char *msg, int len, FILE *file)
          cp = p_cdnname (cp, msg, len, file);
       else
       {
-        char name[MAXDNAME];
-        int  n = dn_expand (msg, msg+len, cp, name, sizeof(name));
+        char name [MAXDNAME];
 
+        n = dn_expand (msg, msg+len, cp, name, sizeof(name));
         if (n < 0)
              cp = NULL;
         else cp += n;

@@ -117,7 +117,7 @@ static char  dump_fname [MAX_PATHLEN] = "$(TEMP)\\winpkt_dump.txt";
 #define NdisMediumNull  -1
 
 static const struct search_list logical_media[] = {
-     { NdisMediumNull,         "Unknown?" },
+     { (DWORD) NdisMediumNull, "Unknown?" },
      { NdisMedium802_3,        "802.3" },
      { NdisMedium802_5,        "802.5" },
      { NdisMediumFddi,         "FDDI" },

@@ -116,7 +116,7 @@ int W32_CALL getnameinfo (const struct sockaddr *sa, socklen_t salen,
 {
   static BOOL init = FALSE;
   struct afd *afd;
-  sa_family_t family = -1;
+  sa_family_t family = (sa_family_t) -1;
   DWORD       v4a;
   WORD        port;
   char        numserv[512];

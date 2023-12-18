@@ -635,7 +635,7 @@ unsigned sock_packet_transmit (Socket *socket, const void *buf, unsigned len,
   if (len <= _pkt_ip_ofs)
   {
     SOCK_ERRNO (EINVAL);
-    return (-1);
+    return (unsigned) -1;
   }
   tx = _eth_formatpacket (sa ? &sa->sll_addr : NULL,
                           sa ? sa->sll_protocol : 0);
@@ -644,7 +644,7 @@ unsigned sock_packet_transmit (Socket *socket, const void *buf, unsigned len,
   memcpy (tx, buf, len);
   rc = _eth_send (len - _pkt_ip_ofs, NULL, __FILE__, __LINE__);
   if (rc <= 0)
-     return (-1);
+     return (unsigned) -1;
 
   ARGSUSED (socket);
   ARGSUSED (tolen);   /* already checked by caller */

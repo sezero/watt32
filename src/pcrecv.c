@@ -254,7 +254,7 @@ int W32_CALL sock_recv_from (sock_type *s, DWORD *hisip, WORD *hisport,
 
   p = oldest;
   if (p->buf_len < 0)  /* a 0-byte probe packet */
-     len = -1;
+     len = (unsigned) -1;
   else
   {
     len = min ((unsigned)p->buf_len, len);
