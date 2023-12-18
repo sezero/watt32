@@ -291,6 +291,7 @@ CC_ARGS = $(CC).arg
                    -Wno-cast-qual                         \
                    -Wno-covered-switch-default            \
                    -Wno-disabled-macro-expansion          \
+                   -Wno-documentation                     \
                    -Wno-extra-semi-stmt                   \
                    -Wno-float-conversion                  \
                    -Wno-format-non-iso                    \
