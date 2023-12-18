@@ -47,8 +47,6 @@
 #pragma stack_size_warn (16000)    /* ~3*MAX_SOCKETS */
 #endif
 
-#define ALWAYS_YIELD  0
-
 #ifndef STDIN_FILENO
 #define STDIN_FILENO  0
 #endif
@@ -60,13 +58,6 @@
 #ifndef STDERR_FILENO
 #define STDERR_FILENO 2
 #endif
-
-
-/**
- * The smallest time for \b not yielding or calling tcp_tick().
- * \todo Should be configurable.
- */
-static struct timeval sel_min_block = { 0, 500000 }; /* 0.5 sec */
 
 /*
  * Select sockets for read, write or exceptions
@@ -185,23 +176,13 @@ int W32_CALL select_s (int nfds, fd_set *readfds, fd_set *writefds,
   /* Not safe to run sock_daemon() (or other "tasks") now
    */
   _sock_crit_start();
-
-  /* If application catches same signals we do, we must exit
-   * gracefully from the do-while and for loops below.
-   */
-  if (_sock_sig_setup() < 0)
-     goto select_intr;
+  _sock_sig_setup();
 
   /*
    * Loop until specified timeout expires or event(s) satisfied.
    */
   for (loop_1st = TRUE, loops = 1;; loop_1st = FALSE, loops++)
   {
-    /* Poll for caught signals (SIGINT/SIGALRM)
-     */
-    if (_sock_sig_pending())
-       goto select_intr;
-
     tcp_tick (NULL);
 
     for (s = 0; s < num_fd; s++)
@@ -262,20 +243,6 @@ int W32_CALL select_s (int nfds, fd_set *readfds, fd_set *writefds,
 
     } /* end of for loop; all sockets checked at least once */
 
-    /* WATT_YIELD() sometimes hangs for approx 250msec under Win-XP.
-     * Don't yield for "small" timeouts.
-     */
-#if (!ALWAYS_YIELD)
-    if (!timeout || timercmp(timeout,&sel_min_block,>))
-#endif
-    {
-      if (ret_count == 0)
-      {
-        WATT_YIELD();
-        tcp_tick (NULL);
-      }
-    }
-
     if (timeout)
     {
       gettimeofday2 (&now, NULL);
@@ -329,7 +296,7 @@ int W32_CALL select_s (int nfds, fd_set *readfds, fd_set *writefds,
         timeout->tv_usec = (long)remaining % 1000000UL;
 #endif
       }
-      goto select_ok;
+      break;
     }
 
     if (expired)
@@ -354,16 +321,22 @@ int W32_CALL select_s (int nfds, fd_set *readfds, fd_set *writefds,
              FD_CLR (s, exceptfds);
 
       ret_count = 0;   /* should already be 0 */
-      goto select_ok;
+      break;
     }
+
+    /* Poll for caught signals (SIGINT/SIGALRM)
+     */
+    if (_sock_sig_pending())
+    {
+      SOCK_DEBUGF ((", EINTR"));
+      SOCK_ERRNO (EINTR);
+      ret_count = -1;
+      break;
+    }
+
+    WATT_YIELD();
   }
 
-select_intr:
-  SOCK_DEBUGF ((", EINTR"));
-  SOCK_ERRNO (EINTR);
-  ret_count = -1;
-
-select_ok:
   _sock_sig_restore();
   _sock_crit_stop();
 
@@ -440,32 +413,31 @@ int W32_CALL poll (struct pollfd *p, int num, int timeout_ms)
       ++ret;
     }
 
-    /* Poll for caught signals (SIGINT/SIGALRM)
-     */
-    if (_sock_sig_pending())
-       goto poll_intr;
-
     if (ret || timeout_ms == 0)
     {
       SOCK_DEBUGF ((", ret=%d", ret));
-      goto poll_ok;
+      break;
     }
 
     if (timeout_ms > 0 && chk_timeout (timeout_at))
     {
       SOCK_DEBUGF ((", timeout!"));
-      goto poll_ok;
+      break;
+    }
+
+    /* Poll for caught signals (SIGINT/SIGALRM)
+     */
+    if (_sock_sig_pending())
+    {
+      SOCK_DEBUGF ((", EINTR"));
+      SOCK_ERRNO (EINTR);
+      ret = -1;
+      break;
     }
 
     WATT_YIELD();
   }
 
-poll_intr:
-  SOCK_DEBUGF ((", EINTR"));
-  SOCK_ERRNO (EINTR);
-  ret = -1;
-
-poll_ok:
   _sock_sig_restore();
 
   return (ret);
