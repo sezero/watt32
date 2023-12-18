@@ -596,7 +596,7 @@ const char * W32_CALL wattcpBuildCC (void)
 #else
       strreplace ('\n', 0, w32_cflags2);
       strreplace ('\\','/', w32_cflags2);
-      strtrim (w32_cflags2, buf, sizeof(buf));
+      strtrim (w32_cflags2, buf, sizeof(w32_cflags2));
 #endif
       done = 1;
     }
