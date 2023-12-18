@@ -69,6 +69,11 @@ set TEE=%TEE% --append
 set BITS=64
 if %CPU%. == x86. set BITS=32
 
+::
+:: Delete all watt-32.res file to force today's "Build-date: "
+::
+del /Q /S build\watt-32.res >&> NUL
+
 set MAKE_CMD=%BCCDIR%\bin\make.exe -nologo -f bcc_w.mak
 call :do_make
 
