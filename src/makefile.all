@@ -1069,9 +1069,6 @@ CFLAGS = -I. -I../inc -I$(PHARLAP)/include -w3 -g -O2 -DWATT32_BUILD \
          -Hoff=Epilog_trace -Hpragma=Offwarn(257)                    \
          -Hpragma=Offwarn(572) -Hpragma=Offwarn(578) -Hpragma=Offwarn(491)
 
-AS     = tasm32
-AFLAGS = -DDOSX -mx -m2 -t -l
-AR     = 386lib -nobanner
 
 TARGETS = $(STAT_LIB)
 
@@ -1079,14 +1076,25 @@ all: $(PKT_STUB) $(OBJPATH)cflags.h $(OBJPATH)cflagsbf.h $(TARGETS)
 	@echo All done
 
 $(STAT_LIB): $(OBJS)
+ifeq ($(OS),Windows_NT)
+	@echo -nologo -machine:x86 > $(OBJPATH)lib.arg
+	@echo $(OBJS)             >> $(OBJPATH)lib.arg
+	lib -nologo -out:$(STAT_LIB) @$(OBJPATH)lib.arg
+else
 	@echo -nowarn -nobackup -twocase -pagesize 32 > $(OBJPATH)lib.arg
 	@echo -replace $(OBJS)                       >> $(OBJPATH)lib.arg
-	$(AR) $(STAT_LIB) @$(OBJPATH)lib.arg
+	386lib -nobanner $(STAT_LIB) @$(OBJPATH)lib.arg
+endif
 
-$(OBJPATH)cpumodel.obj: cpumodel.asm
-	$(AS) $(AFLAGS) $<, $(OBJDIR_)\cpumodel.obj
+ifeq ($(OS),Windows_NT)
+  $(OBJPATH)cpumodel.obj: cpumodel.asm
+	ml -c -nologo -DDOSX -Zi -coff -Fo.\$(OBJDIR_)\cpumodel.obj $<
+else
+  $(OBJPATH)cpumodel.obj: cpumodel.asm
+	tasm32 -DDOSX -mx -m2 -t -l $<, $(OBJDIR_)\cpumodel.obj
+endif
 
-$(OBJPATH)%.obj: %.c $(C_ARGS)
+$(OBJPATH)%.obj: %.c | $(C_ARGS)
 	$(CC) @$(C_ARGS) -o $@ $<
 
 -include $(OBJPATH)watt32.dep
