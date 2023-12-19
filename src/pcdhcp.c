@@ -1153,6 +1153,8 @@ int DHCP_do_boot (void)
     cfg_saved = write_config() > 0;
     if (!DAEMON_ADD (dhcp_fsm)) /* add "background" daemon */
        return (0);
+
+    putc('\n', stderr);
     return (1);
   }
   return (0);
