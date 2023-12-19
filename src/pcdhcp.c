@@ -1024,8 +1024,6 @@ static void W32_CALL dhcp_fsm (void)
           __FUNCTION__, DWORD_CAST(send_timeout), state_name());
 #endif
 
-  WATT_YIELD();
-
   if (sock_dataready(sock))
   {
     int len = sock_fastread (sock, (BYTE*)&dhcp_in, sizeof(dhcp_in));
@@ -1143,6 +1141,8 @@ int DHCP_do_boot (void)
       if (now > timeout)                /* timeout reached */
          break;
     }
+
+    WATT_YIELD();
   }
 
   got_offer = FALSE;   /* ready for next cycle */
