@@ -530,7 +530,7 @@ static int DHCP_offer (const struct dhcp *in)
                opt[1] % 4 == 0)         /* length = n * 4 */
            {
              ip = intel (*(DWORD*)(opt+2));   /* select 1st host */
-             _strlcpy (syslog_host_name, _inet_ntoa(NULL,ip),
+             _strlcpy (syslog_host_name, _inet_ntoa(NULL, ip),
                        sizeof(syslog_host_name));
              TRACE (("Syslog:    %s\n", syslog_host_name));
            }
@@ -555,7 +555,7 @@ static int DHCP_offer (const struct dhcp *in)
            */
            len = min (opt[1], sizeof(hostname));
            memcpy (hostname, opt+2, len);
-           hostname[len] = '\0';
+           hostname [len] = '\0';
            TRACE (("Host name:  `%s'\n", hostname));
            break;
 
@@ -693,7 +693,7 @@ static int DHCP_offer (const struct dhcp *in)
  */
 static int DHCP_is_ack (void)
 {
-  const BYTE *opt = (const BYTE*) &dhcp_in.dh_opt[4];
+  const BYTE *opt = (const BYTE*) &dhcp_in.dh_opt [4];
 
   return (opt[0] == DHCP_OPT_MSG_TYPE && opt[1] == 1 && opt[2] == DHCP_ACK);
 }
@@ -703,7 +703,7 @@ static int DHCP_is_ack (void)
  */
 static int DHCP_is_nack (void)
 {
-  const BYTE *opt = (const BYTE*) &dhcp_in.dh_opt[4];
+  const BYTE *opt = (const BYTE*) &dhcp_in.dh_opt [4];
 
   return (opt[0] == DHCP_OPT_MSG_TYPE && opt[1] == 1 && opt[2] == DHCP_NAK);
 }
@@ -856,7 +856,7 @@ static void DHCP_state_REQUESTING (int event)
      *  handler. Once set to 0, we have to wait for rollover to resend the
      *  above request if it is lost for some reason
      */
-    send_timeout = set_timeout (Random(4000,6000));
+    send_timeout = set_timeout (Random(4000, 6000));
   }
   else if (event == EVENT_ACK)
   {
@@ -866,7 +866,7 @@ static void DHCP_state_REQUESTING (int event)
     {
       my_ip_addr = 0;     /* decline from 0.0.0.0 */
       DHCP_release_decline (DHCP_DECLINE, "IP is not free");
-      send_timeout = set_timeout (Random(4000,6000));
+      send_timeout = set_timeout (Random(4000, 6000));
       DHCP_state   = DHCP_state_INIT;
     }
     else
@@ -882,7 +882,7 @@ static void DHCP_state_REQUESTING (int event)
   }
   else if (event == EVENT_NAK)
   {
-    send_timeout = set_timeout (Random(4000,6000));
+    send_timeout = set_timeout (Random(4000, 6000));
     my_ip_addr = 0UL;
     DHCP_state = DHCP_state_INIT;
   }
@@ -905,7 +905,7 @@ static void DHCP_state_REBINDING (int event)
   }
   else if (event == EVENT_NAK)
   {
-    send_timeout = set_timeout (Random(4000,6000));
+    send_timeout = set_timeout (Random(4000, 6000));
     my_ip_addr = 0UL;
     DHCP_state = DHCP_state_INIT;
   }
@@ -943,7 +943,7 @@ static void DHCP_state_RENEWING (int event)
   else if (event == EVENT_NAK)
   {
     TRACE (("Got DHCP nack while renewing\n"));
-    send_timeout = set_timeout (Random(4000,6000));
+    send_timeout = set_timeout (Random(4000, 6000));
     my_ip_addr = 0;
     DHCP_state = DHCP_state_INIT;
   }
@@ -959,7 +959,7 @@ static void DHCP_state_SELECTING (int event)
   if (event == EVENT_OFFER && !got_offer && DHCP_offer(&dhcp_in))
   {
     TRACE (("Got DHCP offer\n"));
-    send_timeout = set_timeout (Random(100,500));
+    send_timeout = set_timeout (Random(100, 500));
 
     if (dhcp_renewal == 0L)
         dhcp_renewal = dhcp_iplease / 2;     /* default T1 time */
@@ -1012,7 +1012,7 @@ static void DHCP_state_REBOOTING (int event)
   }
   else if (event == EVENT_NAK)
   {
-    send_timeout = set_timeout (Random(4000,6000));
+    send_timeout = set_timeout (Random(4000, 6000));
     DHCP_state = DHCP_state_INIT;
   }
 }
@@ -1023,11 +1023,6 @@ static void DHCP_state_REBOOTING (int event)
  */
 static void W32_CALL dhcp_fsm (void)
 {
-#if 0  /* test */
-  printf ("In %s(): send_timeout: %lu, state: %s\n",
-          __FUNCTION__, DWORD_CAST(send_timeout), state_name());
-#endif
-
   if (sock_dataready(sock))
   {
     int len = sock_fastread (sock, (BYTE*)&dhcp_in, sizeof(dhcp_in));
@@ -1113,21 +1108,15 @@ int DHCP_do_boot (void)
 
   erase_config();            /* delete old configuration */
 
-#if 0
-  /* kick start DISCOVER message after 100 msec.
-   */
-  send_timeout = set_timeout (100);
-#else
   /* kick start DISCOVER message now please
    */
   send_timeout = (DWORD)-1;
-#endif
 
   if (DHCP_state != DHCP_state_RENEWING &&
       DHCP_state != DHCP_state_REBINDING)
      DHCP_state = DHCP_state_INIT;
 
-  last = time(NULL);
+  last = time (NULL);
   timeout = last + (dhcp_timeout * max_retries) + 1;
 
   while (DHCP_state != DHCP_state_BOUND)
@@ -1138,14 +1127,14 @@ int DHCP_do_boot (void)
     if (discover_loops >= max_retries)  /* retries exhaused */
        break;
 
-    now = time(NULL);
+    now = time (NULL);
     if (last != now)
     {
-      last = now, putc('.', stderr);    /* indicate activity */
-      if (now > timeout)                /* timeout reached */
+      last = now;
+      putc ('.', stderr);    /* indicate activity */
+      if (now > timeout)     /* timeout reached */
          break;
     }
-
     WATT_YIELD();
   }
 
@@ -1155,10 +1144,13 @@ int DHCP_do_boot (void)
   if (my_ip_addr)
   {
     cfg_saved = write_config() > 0;
-    if (!DAEMON_ADD (dhcp_fsm)) /* add "background" daemon */
+
+    /* add "background" daemon. For a DHCP-RENEWAL etc.
+     */
+    if (!DAEMON_ADD (dhcp_fsm))
        return (0);
 
-    putc('\n', stderr);
+    putc ('\n', stderr);
     return (1);
   }
   return (0);
@@ -1257,7 +1249,7 @@ static int set_request_list (char *options)
   BYTE  *list, *start, *tok, *end;
   char  *tok_buf = NULL;
 
-  if (init || (list = calloc(maxreq,1)) == NULL)
+  if (init || (list = calloc(maxreq, 1)) == NULL)
      return (0);
 
   init  = TRUE;
@@ -1325,7 +1317,7 @@ static int set_user_class (const char *value)
   char  *list_end;
   const char *value_end;
 
-  if (init || (list = (char*)calloc(maxreq,1)) == NULL)
+  if (init || (list = (char*)calloc(maxreq, 1)) == NULL)
      return (0);
 
   init = TRUE;
@@ -1356,7 +1348,7 @@ static int set_user_class (const char *value)
     size_t i;
     for (i = 0; i < user_class.size; i++)
     {
-      int ch = user_class.data[i];
+      int ch = user_class.data [i];
 
       if (isprint(ch))
            printf ("%c", ch);
@@ -1520,12 +1512,12 @@ static BOOL eval_timers (void)
 {
   time_t now = time (NULL);
 #if defined(USE_DEBUG)
-  char ct_buf[30];
+  char ct_buf [30];
 #endif
 
-  TRACE (("DHCP: IP-lease expires  %s", ctime_r(&cfg_dhcp_iplease,ct_buf)));
-  TRACE (("DHCP: rebinding expires %s", ctime_r(&cfg_dhcp_rebind,ct_buf)));
-  TRACE (("DHCP: renewal expires   %s", ctime_r(&cfg_dhcp_renewal,ct_buf)));
+  TRACE (("DHCP: IP-lease expires  %s", ctime_r(&cfg_dhcp_iplease, ct_buf)));
+  TRACE (("DHCP: rebinding expires %s", ctime_r(&cfg_dhcp_rebind, ct_buf)));
+  TRACE (("DHCP: renewal expires   %s", ctime_r(&cfg_dhcp_renewal, ct_buf)));
 
   if (cfg_dhcp_iplease < now)
        dhcp_iplease = DHCP_MIN_LEASE;
@@ -1671,33 +1663,33 @@ static int std_write_config (void)
        goto fail;
   }
 
-  rc += fprintf (file, "# This file saved at %.20s\n#\n", ctime_r(&now,ct_buf)+4);
+  rc += fprintf (file, "# This file saved at %.20s\n#\n", ctime_r(&now, ct_buf)+4);
 
   tim = dhcp_iplease + now;
   rc += fprintf (file, "DHCP.LEASE    = %-20lu # lease expires  %.20s\n",
-                 (u_long)tim, ctime_r(&tim,ct_buf)+4);
+                 (u_long)tim, ctime_r(&tim, ct_buf)+4);
 
   tim = dhcp_renewal + now;
   rc += fprintf (file, "DHCP.RENEW    = %-20lu # renew expires  %.20s\n",
-                 (u_long)tim, ctime_r(&tim,ct_buf)+4);
+                 (u_long)tim, ctime_r(&tim, ct_buf)+4);
 
   tim = dhcp_rebind + now;
   rc += fprintf (file,
                  "DHCP.REBIND   = %-20lu # rebind expires %.20s\n"
                  "DHCP.MY_IP    = %-20s # assigned ip-address\n",
-                 (u_long)tim, ctime_r(&tim,ct_buf)+4, _inet_ntoa(buf,my_ip_addr));
+                 (u_long)tim, ctime_r(&tim, ct_buf)+4, _inet_ntoa(buf, my_ip_addr));
 
   rc += fprintf (file, "DHCP.NETMASK  = %-20s # assigned netmask\n",
-                 _inet_ntoa(buf,sin_mask));
+                 _inet_ntoa(buf, sin_mask));
 
   rc += fprintf (file, "DHCP.GATEWAY  = %-20s # assigned gateway\n",
-                 _inet_ntoa(buf,router));
+                 _inet_ntoa(buf, router));
 
   rc += fprintf (file, "DHCP.NAMESERV = %-20s # assigned nameserver\n",
-                 _inet_ntoa(buf,nameserver));
+                 _inet_ntoa(buf, nameserver));
 
   rc += fprintf (file, "DHCP.SERVER   = %-20s # DHCP server\n",
-                 _inet_ntoa(buf,dhcp_server));
+                 _inet_ntoa(buf, dhcp_server));
 
   rc += fprintf (file, "DHCP.HOSTNAME = %-20s # assigned hostname\n",
                  hostname);
