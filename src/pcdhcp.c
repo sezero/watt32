@@ -1024,8 +1024,6 @@ static void W32_CALL dhcp_fsm (void)
           __FUNCTION__, DWORD_CAST(send_timeout), state_name());
 #endif
 
-  WATT_YIELD();
-
   if (sock_dataready(sock))
   {
     int len = sock_fastread (sock, (BYTE*)&dhcp_in, sizeof(dhcp_in));
@@ -1110,8 +1108,6 @@ int DHCP_do_boot (void)
   discover_loops = 0;
 
   erase_config();            /* delete old configuration */
-  if(!DAEMON_ADD (dhcp_fsm)) /* add "background" daemon */
-    return (0);
 
 #if 0
   /* kick start DISCOVER message after 100 msec.
@@ -1133,6 +1129,8 @@ int DHCP_do_boot (void)
   while (DHCP_state != DHCP_state_BOUND)
   {
     tcp_tick (NULL);
+    dhcp_fsm ();
+
     if (discover_loops >= max_retries)  /* retries exhaused */
        break;
 
@@ -1143,6 +1141,8 @@ int DHCP_do_boot (void)
       if (now > timeout)                /* timeout reached */
          break;
     }
+
+    WATT_YIELD();
   }
 
   got_offer = FALSE;   /* ready for next cycle */
@@ -1151,6 +1151,10 @@ int DHCP_do_boot (void)
   if (my_ip_addr)
   {
     cfg_saved = write_config() > 0;
+    if (!DAEMON_ADD (dhcp_fsm)) /* add "background" daemon */
+       return (0);
+
+    putc('\n', stderr);
     return (1);
   }
   return (0);

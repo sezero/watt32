@@ -273,8 +273,8 @@ int daemon_run (void)
           r->running = FALSE;
           rc++;
         }
+    daemon_timer = set_timeout (DAEMON_PERIOD);
   }
-  daemon_timer = set_timeout (DAEMON_PERIOD);
   return (rc);
 }
 
