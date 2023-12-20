@@ -15,6 +15,9 @@ export CL=
 #
 ifneq ($(APPVEYOR_PROJECT_NAME),)
   MAKEFLAGS += --warn-undefined-variables
+else
+  VCToolsInstallDir ?=
+  WindowsSdkVer     ?=
 endif
 
 #
