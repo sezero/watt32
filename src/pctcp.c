@@ -1178,11 +1178,6 @@ _udp_Socket *_udp_handler (const in_Header *ip, BOOL broadcast)
   data = (const BYTE*) (udp+1);
   len -= sizeof(*udp);
 
-  /* Figure out the pcdhcp.c problems
-   */
-  if (udp->srcPort == 67 || udp->dstPort == 67)
-     TRACE_CONSOLE (1, "DHCP-data len: %d\n", len);
-
   if (s->protoHandler)
   {
     if (is_ip4)
@@ -1406,6 +1401,7 @@ WORD W32_CALL tcp_tick (sock_type *s)
     TRACE_CONSOLE (1, "tcp_tick() reentered\n");
     return (s ? s->tcp.ip_type : 0);
   }
+
   tick_active++;
 
 #if !defined(USE_UDP_ONLY)
