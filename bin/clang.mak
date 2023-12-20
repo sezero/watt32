@@ -82,7 +82,11 @@ CFLAGS += -W3 -O2 -I../inc -D_CRT_SECURE_NO_WARNINGS -D_CRT_NONSTDC_NO_WARNINGS 
 #
 CFLAGS += -Wno-invalid-source-encoding
 
-LDFLAGS = -nologo -map -machine:$(CPU)
+LDFLAGS = -nologo -map -verbose    \
+          -machine:$(CPU)          \
+          -nodefaultlib:uuid.lib   \
+          -nodefaultlib:libcmt.lib \
+          -nodefaultlib:libcmtd.lib
 
 #
 # Since either a 32-bit or a 64-bit 'clang-cl.exe' can be used
@@ -109,6 +113,12 @@ endif
 
 ifeq ($(USE_UBSAN),1)
   CFLAGS += -fsanitize=undefined
+
+  #
+  # This causes Undefined Behavior to cause an Illegal Instruction.
+  # Turn on/off at own will.
+  #
+  # CFLAGS += -fsanitize-trap=undefined
 endif
 
 ifneq ($(USE_ASAN)$(USE_UBSAN),00)
@@ -134,6 +144,21 @@ ifneq ($(USE_ASAN)$(USE_UBSAN),00)
   #
   LDFLAGS += -inferasanlibs \
              -libpath:"$(CLANG_ROOT)/lib/clang/$(CLANG_MAJOR_VER)/lib/windows"
+
+  #
+  # The above '-inferasanlibs' seems to do nothing for 'USE_UBSAN=1'.
+  # Add this library excplicitly with the full path.
+  #
+  ifeq ($(USE_UBSAN),1)
+    ifeq ($(CPU),x86)
+      UBSAN_LIB = "$(CLANG_ROOT)/lib/clang/$(CLANG_MAJOR_VER)/lib/windows/clang_rt.ubsan_standalone-i386.lib"
+    else
+      UBSAN_LIB = "$(CLANG_ROOT)/lib/clang/$(CLANG_MAJOR_VER)/lib/windows/clang_rt.ubsan_standalone-x86_64.lib"
+    endif
+
+    $(info Appending UBSAN library '$(UBSAN_LIB)')
+    EX_LIBS += $(UBSAN_LIB)
+  endif
 endif
 
 
@@ -148,13 +173,11 @@ all: $(PROGS)
 
 con-test.exe: w32-test.c $(WATT_LIB)
 	$(CC) -c $(CFLAGS) w32-test.c
-	link $(LDFLAGS) -subsystem:console -out:$@ w32-test.obj $(WATT_LIB) $(EX_LIBS)
-	@echo
+	$(call link_EXE, $@, -subsystem:console w32-test.obj $(WATT_LIB) $(EX_LIBS))
 
 gui-test.exe: w32-test.c $(WATT_LIB)
 	$(CC) -c -DIS_GUI=1 $(CFLAGS) w32-test.c
-	link $(LDFLAGS) -subsystem:windows -out:$@ w32-test.obj $(WATT_LIB) $(EX_LIBS)
-	@echo
+	$(call link_EXE, $@, -subsystem:windows w32-test.obj $(WATT_LIB) $(EX_LIBS))
 
 TRACERT_CFLAGS = $(CFLAGS) -DIS_WATT32 # -DPROBE_PROTOCOL=IPPROTO_TCP
 
@@ -166,19 +189,17 @@ endif
 
 tracert.exe: tracert.c geoip.c IP2Location.c $(WATT_LIB)
 	$(CC) -c $(TRACERT_CFLAGS) tracert.c geoip.c IP2Location.c
-	link $(LDFLAGS) -out:$@ tracert.obj geoip.obj IP2Location.obj $(WATT_LIB) $(EX_LIBS)
-	@echo
+	$(call link_EXE, $@, tracert.obj geoip.obj IP2Location.obj $(WATT_LIB) $(EX_LIBS))
 
 %.exe: %.c $(WATT_LIB)
 	$(CC) -c $(CFLAGS) $<
-	link $(LDFLAGS) -out:$*.exe $*.obj $(WATT_LIB) $(EX_LIBS)
-	@echo
+	$(call link_EXE, $@, $*.obj $(WATT_LIB) $(EX_LIBS))
 
 check_CPU:
 	@echo "Building for CPU=$(CPU)."
 
 clean:
-	rm -f $(PROGS)
+	rm -f $(PROGS) link.tmp
 
 SOURCES = ping.c    popdump.c rexec.c   tcpinfo.c cookie.c   \
           daytime.c dayserv.c finger.c  host.c    lpq.c      \
@@ -188,6 +209,24 @@ SOURCES = ping.c    popdump.c rexec.c   tcpinfo.c cookie.c   \
 
 depend:
 	$(CC) $(CFLAGS) -E -showIncludes $(SOURCES) > .depend.clang
+
+#
+# GNU-make macros:
+#
+# The following assumes you have MSys/Cygwin's echo with colour support.
+#
+BRIGHT_GREEN = \e[1;32m
+colour_msg   = @echo -e "$(1)\e[0m"
+green_msg    = $(call colour_msg,$(BRIGHT_GREEN)$(strip $(1)))
+
+define link_EXE
+  $(call green_msg, Linking $(1))
+  link -out:$(strip $(1)) $(LDFLAGS) $(2) > link.tmp
+  @cat link.tmp >> $(1:.exe=.map)
+  @rm -f $(1:.exe=.exp) $(1:.exe=.lib)
+  @echo
+endef
+
 
 -include .depend.clang
 
