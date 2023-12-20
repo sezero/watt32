@@ -938,6 +938,12 @@ endif
 ifeq ($(USE_UBSAN),1)
   RCFLAGS += -DUSE_UBSAN
   CFLAGS  += -DUSE_UBSAN -fsanitize=undefined
+
+  #
+  # This causes Undefined Behavior to cause an Illegal Instruction.
+  # Turn on/off at own will.
+  #
+  # CFLAGS += -fsanitize-trap=undefined
 endif
 
 ifneq ($(USE_ASAN)$(USE_UBSAN),00)
@@ -977,6 +983,21 @@ AR      += -ignore:4221
 LDFLAGS += -subsystem:console,5.02
 
 EX_LIBS = user32.lib advapi32.lib
+
+#
+# The above '-inferasanlibs' seems to do nothing for 'USE_UBSAN=1'.
+# Add this library excplicitly with the full path.
+#
+ifeq ($(USE_UBSAN),1)
+  ifeq ($(CPU),x86)
+    UBSAN_LIB = "$(CLANG_ROOT)/lib/clang/$(CLANG_MAJOR_VER)/lib/windows/clang_rt.ubsan_standalone-i386.lib"
+  else
+    UBSAN_LIB = "$(CLANG_ROOT)/lib/clang/$(CLANG_MAJOR_VER)/lib/windows/clang_rt.ubsan_standalone-x86_64.lib"
+  endif
+
+  $(info Appending UBSAN library '$(UBSAN_LIB)')
+  EX_LIBS += $(UBSAN_LIB)
+endif
 
 @ifdef DEBUG
 STAT_LIB = ../lib/$(CPU)/wattcp_clang_d.lib
@@ -1030,10 +1051,10 @@ $(WATT_DLL): $(OBJS) $(RESOURCE) $(LINK_ARGS)
 	link -out:$@ -implib:$(IMP_LIB) $(LDFLAGS) @$(LINK_ARGS)
 	rm -f $(IMP_LIB:.lib=.exp)
 
-$(OBJPATH)%.obj: %.c $(C_ARGS)
+$(OBJPATH)%.obj: %.c | $(C_ARGS)
 	$(CC) @$(C_ARGS) -Fo./$@ $<
 
-$(OBJPATH)%.obj: %.cpp $(C_ARGS)
+$(OBJPATH)%.obj: %.cpp | $(C_ARGS)
 	$(CC) -TP -EHsc @$(C_ARGS) -Fo./$@ $<
 
 $(OBJPATH)%.obj: %.asm
