@@ -170,7 +170,7 @@ static enum eth_init_result open_win10pcap_adapter (const char *name);
 static enum eth_init_result open_wanpacket_adapter (const char *name);
 static enum eth_init_result open_swsvpkt_adapter (const char *name);
 
-static BOOL get_if_stat_swsvpkt (const struct SwsVpktUsr *usr, BOOL *is_up);
+static BOOL get_if_stat_swsvpkt (const void *u, BOOL *is_up);
 static BOOL get_perm_mac_address (void *mac);
 static BOOL get_interface_mtu (DWORD *mtu);
 static void show_link_details (void);
@@ -978,8 +978,8 @@ int W32_CALL pkt_send (const void *tx, int length)
     if (rc == length)
        break;
 #else
-    struct SwsVpktUsr *sws_usr = (struct SwsVpktUsr*)_pkt_inf->adapter;
-    const  ADAPTER    *adapter = (const ADAPTER*)_pkt_inf->adapter;
+    struct SwsVpktUsr *sws_usr = (struct SwsVpktUsr*) _pkt_inf->adapter;
+    const  ADAPTER    *adapter = (const ADAPTER*) _pkt_inf->adapter;
 
     if (_eth_SwsVpkt ? SwsVpktSend(sws_usr, tx, length) :
                        PacketSendPacket(adapter, tx, length))
@@ -1067,10 +1067,11 @@ int W32_CALL pkt_get_rcv_mode (void)
   return (rc);
 }
 
-static BOOL get_stats_pcap (const ADAPTER *adapter,
+static BOOL get_stats_pcap (const void *a,
                             struct PktStats *stats,
                             struct PktStats *total)
 {
+  const ADAPTER *adapter = a;
   struct {
     PACKET_OID_DATA oidData;
     DWORD           value;
@@ -1131,13 +1132,13 @@ no_total:
   return (TRUE);
 }
 
-static BOOL get_stats_swsvpkt (const struct SwsVpktUsr *usr,
+static BOOL get_stats_swsvpkt (const void *usr,
                                struct PktStats *stats,
                                struct PktStats *total)
 {
   memset (stats, 0, sizeof(*stats));
   memset (total, 0, sizeof(*total));  /* not known */
-  return SwsVpktGetStatistics (usr, stats);
+  return SwsVpktGetStatistics ((const struct SwsVpktUsr*)usr, stats);
 }
 
 /*
@@ -1219,8 +1220,9 @@ static BOOL get_perm_mac_address (void *mac)
   return (*_pkt_inf->get_mac_op) (_pkt_inf->adapter, mac);
 }
 
-static BOOL get_if_mtu_pcap (const ADAPTER *adapter, DWORD *mtu)
+static BOOL get_if_mtu_pcap (const void *a, DWORD *mtu)
 {
+  const ADAPTER *adapter = a;
   struct {
     PACKET_OID_DATA oidData;
     DWORD           mtu;
@@ -1236,8 +1238,9 @@ static BOOL get_if_mtu_pcap (const ADAPTER *adapter, DWORD *mtu)
   return (TRUE);
 }
 
-static BOOL get_if_mtu_generic (const void *adapter, DWORD *mtu)
+static BOOL get_if_mtu_generic (const void *a, DWORD *mtu)
 {
+  const void *adapter = a;
   *mtu = ETH_MAX;
   ARGSUSED (adapter);
   return (TRUE);
@@ -1250,8 +1253,9 @@ static BOOL get_interface_mtu (DWORD *mtu)
   return (*_pkt_inf->get_if_mtu_op) (_pkt_inf->adapter, mtu);
 }
 
-static BOOL get_if_type_pcap (const ADAPTER *adapter, WORD *type)
+static BOOL get_if_type_pcap (const void *a, WORD *type)
 {
+  const ADAPTER *adapter = a;
   struct {
     PACKET_OID_DATA oidData;
     DWORD           link;
@@ -1267,17 +1271,21 @@ static BOOL get_if_type_pcap (const ADAPTER *adapter, WORD *type)
   return (TRUE);
 }
 
-static BOOL get_if_type_swsvpkt (const struct SwsVpktUsr *usr, WORD *type)
+static BOOL get_if_type_swsvpkt (const void *u, WORD *type)
 {
+  const struct SwsVpktUsr *usr = u;
+
   *type = PDCLASS_ETHER;   /** \todo Fix me */
+  ARGSUSED (u);
   ARGSUSED (usr);
   return (TRUE);
 }
 
 /* Query the NIC driver for the adapter description
  */
-static BOOL get_descr_pcap (const ADAPTER *adapter, char *buf, size_t max)
+static BOOL get_descr_pcap (const void *a, char *buf, size_t max)
 {
+  const ADAPTER *adapter = a;
   struct {
     PACKET_OID_DATA oidData;
     char            descr[512];
@@ -1293,13 +1301,14 @@ static BOOL get_descr_pcap (const ADAPTER *adapter, char *buf, size_t max)
   return (TRUE);
 }
 
-static BOOL get_descr_swsvpkt (const struct SwsVpktUsr *usr, char *buf, size_t max)
+static BOOL get_descr_swsvpkt (const void *u, char *buf, size_t max)
 {
-  return SwsVpktGetDescription (usr, buf, max);
+  return SwsVpktGetDescription ((const struct SwsVpktUsr*) u, buf, max);
 }
 
-static BOOL get_if_speed_pcap (const ADAPTER *adapter, DWORD *Mbit_s)
+static BOOL get_if_speed_pcap (const void *a, DWORD *Mbit_s)
 {
+  const ADAPTER *adapter = a;
   struct {
     PACKET_OID_DATA oidData;
     DWORD           speed;
@@ -1347,8 +1356,9 @@ static BOOL get_phys_media (int *media)
 }
 #endif
 
-static BOOL get_if_stat_pcap (const ADAPTER *adapter, BOOL *is_up)
+static BOOL get_if_stat_pcap (const void *a, BOOL *is_up)
 {
+  const ADAPTER *adapter = a;
   struct {
     PACKET_OID_DATA oidData;
     DWORD           connected;
@@ -1364,8 +1374,9 @@ static BOOL get_if_stat_pcap (const ADAPTER *adapter, BOOL *is_up)
   return (TRUE);
 }
 
-static BOOL get_if_stat_swsvpkt (const struct SwsVpktUsr *usr, BOOL *is_up)
+static BOOL get_if_stat_swsvpkt (const void *u, BOOL *is_up)
 {
+  const struct SwsVpktUsr *usr = u;
   struct SwsVpktAdapterState state;
 
   memset (&state, '\0', sizeof(state));
@@ -1544,12 +1555,12 @@ static enum eth_init_result open_winpcap_adapter (const char *name)
   _pkt_inf->send_op         = (func_send)    PacketSendPacket;
   _pkt_inf->recv_op         = (func_recv)    PacketReceivePacket;
   _pkt_inf->get_mac_op      = (func_get_mac) PacketGetMacAddress;
-  _pkt_inf->get_stats_op    = (func_get_stats)    get_stats_pcap;
-  _pkt_inf->get_if_stat_op  = (func_get_if_stat)  get_if_stat_pcap;
-  _pkt_inf->get_if_type_op  = (func_get_if_type)  get_if_type_pcap;
-  _pkt_inf->get_if_speed_op = (func_get_if_speed) get_if_speed_pcap;
-  _pkt_inf->get_if_mtu_op   = (func_get_if_mtu)   get_if_mtu_pcap;
-  _pkt_inf->get_descr_op    = (func_get_descr)    get_descr_pcap;
+  _pkt_inf->get_stats_op    = get_stats_pcap;
+  _pkt_inf->get_if_stat_op  = get_if_stat_pcap;
+  _pkt_inf->get_if_type_op  = get_if_type_pcap;
+  _pkt_inf->get_if_speed_op = get_if_speed_pcap;
+  _pkt_inf->get_if_mtu_op   = get_if_mtu_pcap;
+  _pkt_inf->get_descr_op    = get_descr_pcap;
   _pkt_inf->get_drv_ver_op  = PacketGetDriverVersion;
   _pkt_inf->api_name        = "WinPcap";
   _pkt_inf->sys_drvr_name   = "NPF.sys";
@@ -1579,12 +1590,12 @@ static enum eth_init_result open_npcap_adapter (const char *name)
   _pkt_inf->send_op         = (func_send)    PacketSendPacket;
   _pkt_inf->recv_op         = (func_recv)    PacketReceivePacket;
   _pkt_inf->get_mac_op      = (func_get_mac) PacketGetMacAddress;
-  _pkt_inf->get_stats_op    = (func_get_stats)    get_stats_pcap;
-  _pkt_inf->get_if_stat_op  = (func_get_if_stat)  get_if_stat_pcap;
-  _pkt_inf->get_if_type_op  = (func_get_if_type)  get_if_type_pcap;
-  _pkt_inf->get_if_speed_op = (func_get_if_speed) get_if_speed_pcap;
-  _pkt_inf->get_if_mtu_op   = (func_get_if_mtu)   get_if_mtu_pcap;
-  _pkt_inf->get_descr_op    = (func_get_descr)    get_descr_pcap;
+  _pkt_inf->get_stats_op    = get_stats_pcap;
+  _pkt_inf->get_if_stat_op  = get_if_stat_pcap;
+  _pkt_inf->get_if_type_op  = get_if_type_pcap;
+  _pkt_inf->get_if_speed_op = get_if_speed_pcap;
+  _pkt_inf->get_if_mtu_op   = get_if_mtu_pcap;
+  _pkt_inf->get_descr_op    = get_descr_pcap;
   _pkt_inf->get_drv_ver_op  = PacketGetDriverVersion;
   _pkt_inf->api_name        = "NPcap";
   _pkt_inf->sys_drvr_name   = "NPCAP.sys";
@@ -1614,12 +1625,12 @@ static enum eth_init_result open_win10pcap_adapter (const char *name)
   _pkt_inf->send_op         = (func_send)    PacketSendPacket;
   _pkt_inf->recv_op         = (func_recv)    PacketReceivePacket;
   _pkt_inf->get_mac_op      = (func_get_mac) PacketGetMacAddress;
-  _pkt_inf->get_stats_op    = (func_get_stats)    get_stats_pcap;
-  _pkt_inf->get_if_stat_op  = (func_get_if_stat)  get_if_stat_pcap;
-  _pkt_inf->get_if_type_op  = (func_get_if_type)  get_if_type_pcap;
-  _pkt_inf->get_if_speed_op = (func_get_if_speed) get_if_speed_pcap;
-  _pkt_inf->get_if_mtu_op   = (func_get_if_mtu)   get_if_mtu_pcap;
-  _pkt_inf->get_descr_op    = (func_get_descr)    get_descr_pcap;
+  _pkt_inf->get_stats_op    = get_stats_pcap;
+  _pkt_inf->get_if_stat_op  = get_if_stat_pcap;
+  _pkt_inf->get_if_type_op  = get_if_type_pcap;
+  _pkt_inf->get_if_speed_op = get_if_speed_pcap;
+  _pkt_inf->get_if_mtu_op   = get_if_mtu_pcap;
+  _pkt_inf->get_descr_op    = get_descr_pcap;
   _pkt_inf->get_drv_ver_op  = PacketGetDriverVersion;
   _pkt_inf->api_name        = "Win10Pcap";
   _pkt_inf->sys_drvr_name   = "Win10Pcap.sys";
@@ -1678,15 +1689,15 @@ static enum eth_init_result open_swsvpkt_adapter (const char *name)
     return (WERR_NO_DRIVER);
   }
   _pkt_inf->adapter        = sw_usr;
-  _pkt_inf->send_op        = (func_send)        SwsVpktSend;
-  _pkt_inf->close_op       = (func_close)       SwsVpktClose;
-  _pkt_inf->get_mac_op     = (func_get_mac)     SwsVpktGetMacAddress;
-  _pkt_inf->get_descr_op   = (func_get_descr)   get_descr_swsvpkt;
-  _pkt_inf->get_stats_op   = (func_get_stats)   get_stats_swsvpkt;
-  _pkt_inf->get_if_mtu_op  = (func_get_if_mtu)  get_if_mtu_generic;
-  _pkt_inf->get_if_type_op = (func_get_if_type) get_if_type_swsvpkt;
-  _pkt_inf->get_if_stat_op = (func_get_if_stat) get_if_stat_swsvpkt;
-  _pkt_inf->get_drv_ver_op =                    SwsVpktGetDriverVersion;
+  _pkt_inf->send_op        = (func_send)    SwsVpktSend;
+  _pkt_inf->close_op       = (func_close)   SwsVpktClose;
+  _pkt_inf->get_mac_op     = (func_get_mac) SwsVpktGetMacAddress;
+  _pkt_inf->get_descr_op   = get_descr_swsvpkt;
+  _pkt_inf->get_stats_op   = get_stats_swsvpkt;
+  _pkt_inf->get_if_mtu_op  = get_if_mtu_generic;
+  _pkt_inf->get_if_type_op = get_if_type_swsvpkt;
+  _pkt_inf->get_if_stat_op = get_if_stat_swsvpkt;
+  _pkt_inf->get_drv_ver_op = SwsVpktGetDriverVersion;
   _pkt_inf->api_name       = "SwsVpkt";
   _pkt_inf->sys_drvr_name  = "SwsVpkt.sys";
 

@@ -1019,6 +1019,21 @@ extern const char *short_strerror (int errnum);
 
 #define UNCONST(type, var, val)   (*(type *)&(var)) = val
 
+/*
+ * Used to turn off some clang UBSAN checks.
+ * Use like:
+ *   CLANG_NO_SANITIZE ("undefined") int func (void)
+ *
+ * in the *implementation*.
+ *
+ * Ref: https://clang.llvm.org/docs/UndefinedBehaviorSanitizer.html#disabling-instrumentation-with-attribute-no-sanitize-undefined
+ */
+#if defined(__clang__) && defined(USE_UBSAN)
+  #define CLANG_NO_SANITIZE(x) __attribute__((no_sanitize(x)))
+#else
+  #define CLANG_NO_SANITIZE(x)
+#endif
+
 #ifdef __cplusplus
 };
 #endif
