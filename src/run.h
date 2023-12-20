@@ -42,6 +42,7 @@ extern void rundown_dump (void);
 extern int  daemon_run   (void);
 extern void daemon_clear (void);
 
+extern DWORD daemon_timeout (DWORD timeout);
 
 #define STARTUP_ADD(func,order) \
         startup_add (func, #func, order, __FILE__, __LINE__)

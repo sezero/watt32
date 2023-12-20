@@ -150,6 +150,17 @@ void rundown_run (void)
   }
 }
 
+/**
+ * Set a new timeout and return the old timeout-value.
+ */
+DWORD daemon_timeout (DWORD timeout)
+{
+  DWORD old = daemon_timer;
+
+  daemon_timer = set_timeout (timeout);
+  return (old);
+}
+
 #if defined(USE_DEBUG)
 /**
  * Dump 'exit_list[]' list.
@@ -263,17 +274,19 @@ int daemon_run (void)
     int    i;
 
     for (i = 0, r = daemon_list; i < DIM(daemon_list); i++, r++)
-        if (r->func && !r->running)
-        {
-          if (r->name)
-               TRACE_CONSOLE (3, "Running daemon %d (%s)\n", i, r->name);
-          else TRACE_CONSOLE (3, "Running daemon %d (%p)\n", i, r->func);
-          r->running = TRUE;
-          (*r->func)();
-          r->running = FALSE;
-          rc++;
-        }
-    daemon_timer = set_timeout (DAEMON_PERIOD);
+    {
+      if (r->func && !r->running)
+      {
+        if (r->name)
+             TRACE_CONSOLE (3, "Running daemon %d (%s)\n", i, r->name);
+        else TRACE_CONSOLE (3, "Running daemon %d (%p)\n", i, r->func);
+        r->running = TRUE;
+        (*r->func)();
+        r->running = FALSE;
+        rc++;
+      }
+    }
+    daemon_timeout (DAEMON_PERIOD); /* (re)start 'daemon_timer' */
   }
   return (rc);
 }
