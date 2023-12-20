@@ -65,6 +65,10 @@
  *    Fixes for Linux dhcp servers: parse dhcp options in ACK msgs.
  *    Changed DHCP_do_boot() to handle renew and rebind as well as init.
  *    Renegotiate lease if past the renew or rebind times.
+ *
+ *  \version 0.95: Dec 20, 2023:
+ *    J.W. Jagersma - Improved DHCP bootstrap performance
+ *                  - Improved DHCP daemon stability on non-Pentium builds
  */
 
 #include <stdio.h>
