@@ -1034,6 +1034,16 @@ extern const char *short_strerror (int errnum);
   #define CLANG_NO_SANITIZE(x)
 #endif
 
+/**
+ * \def _aligned_malloc()
+ * `_aligned_malloc()` is missing in Cygwin and Watcom.
+ */
+#if defined(__CYGWIN__)
+  #define _aligned_malloc(_size, _alignment)  aligned_alloc (_alignment, _size)
+#elif defined(__WATCOMC__)
+  #define _aligned_malloc(_size, _alignment)  malloc (_size)
+#endif
+
 #ifdef __cplusplus
 };
 #endif
