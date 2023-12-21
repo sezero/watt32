@@ -2249,8 +2249,9 @@ static void dbug_dump (const void *sock, const in_Header *ip,
   if (use_ods)
      dbug_putc ('\n');   /* !! Why do I need this? */
 
-  if (dbg_print_size)     /* debug.rx_size = 1 */
-       snprintf (sz_buf, sizeof(sz_buf), ", size %u", _eth_last.rx.size);
+  if (dbg_print_size)    /* debug.rx_size = 1 */
+       snprintf (sz_buf, sizeof(sz_buf), ", size %u",
+                 out ? _eth_last.tx.size : _eth_last.rx.size);
   else sz_buf[0] = '\0';
 
   dbug_printf ("\n%s: %s (%u), time %s%s%s\n",
