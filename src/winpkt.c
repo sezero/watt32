@@ -402,7 +402,7 @@ int W32_CALL pkt_eth_init (mac_address *mac_addr)
   if (!_watt_no_config || _watt_user_config_fn)
      parse_config_pass_1();
 
-  _pkt_inf = calloc (sizeof(*_pkt_inf), 1);
+  _pkt_inf = _aligned_malloc (sizeof(*_pkt_inf), sizeof(DWORD));
   if (!_pkt_inf)
   {
     (*_printf) (_LANG("Failed to allocate DRIVER data.\n"));
@@ -410,6 +410,7 @@ int W32_CALL pkt_eth_init (mac_address *mac_addr)
     return (WERR_NO_MEM);
   }
 
+  memset (_pkt_inf, '\0', sizeof(*_pkt_inf));
 #if defined(USE_DEBUG)
   if (winpkt_trace_level > 0 && dump_fname[0])
   {
