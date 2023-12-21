@@ -161,6 +161,19 @@
   #endif
 #endif
 
+/**
+ * A weird issue with `CC=clang-cl` and `USE_UBSAN=1` causes the
+ * compiler to crash when including `iconv/cp437.h` from `idna.c`!
+ * Hence disable IDNA.
+ *
+ * \note
+ *  `USE_UBSAN=1` is not set here but in the generated `clang_*.mak` files.
+ *  Enable UBSAN by e.g. `make -f clang-release_64.mak USE_UBSAN=1`
+ */
+#if defined(__clang__) && defined(USE_UBSAN)
+  #undef USE_IDNA
+#endif
+
 /*
  * When generating a Swig wrapper for Python, misc.c is included
  * in the Swig interface file (Python/watt32.swg). Then we must use
