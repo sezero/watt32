@@ -78,7 +78,7 @@ else
   LIB_SUFFIX =
 endif
 
-CFLAGS += -W3 -O2 -I../inc -D_CRT_SECURE_NO_WARNINGS -D_CRT_NONSTDC_NO_WARNINGS -D_CRT_OBSOLETE_NO_WARNINGS
+CFLAGS += -W3 -O2 -Zi -Zo -I../inc -D_CRT_SECURE_NO_WARNINGS -D_CRT_NONSTDC_NO_WARNINGS -D_CRT_OBSOLETE_NO_WARNINGS
 
 #
 # Because of 'country.c'
@@ -86,6 +86,7 @@ CFLAGS += -W3 -O2 -I../inc -D_CRT_SECURE_NO_WARNINGS -D_CRT_NONSTDC_NO_WARNINGS 
 CFLAGS += -Wno-invalid-source-encoding
 
 LDFLAGS = -nologo -map -verbose    \
+          -debug                   \
           -machine:$(CPU)          \
           -nodefaultlib:uuid.lib   \
           -nodefaultlib:libcmt.lib \
@@ -115,6 +116,10 @@ ifeq ($(USE_ASAN),1)
 endif
 
 ifeq ($(USE_UBSAN),1)
+  #
+  # The list of UBSAN checks for Clang:
+  #   https://clang.llvm.org/docs/UndefinedBehaviorSanitizer.html#ubsan-checks
+  #
   CFLAGS += -fsanitize=undefined
 
   #
@@ -122,6 +127,13 @@ ifeq ($(USE_UBSAN),1)
   # Turn on/off at own will.
   #
   # CFLAGS += -fsanitize-trap=undefined
+
+  #
+  # Turn these checks off:
+  #
+  CFLAGS += -fno-sanitize=alignment \
+            -fno-sanitize=function  \
+            -fno-sanitize=shift
 endif
 
 ifneq ($(USE_ASAN)$(USE_UBSAN),00)
