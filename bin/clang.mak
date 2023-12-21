@@ -111,11 +111,14 @@ else
 endif
 
 ifeq ($(USE_ASAN),1)
-  CFLAGS += -fsanitize=address \
+  CFLAGS += -DUSE_ASAN         \
+            -fsanitize=address \
             -fsanitize-recover=address
 endif
 
 ifeq ($(USE_UBSAN),1)
+  CFLAGS += -DUSE_UBSAN
+
   #
   # The list of UBSAN checks for Clang:
   #   https://clang.llvm.org/docs/UndefinedBehaviorSanitizer.html#ubsan-checks
