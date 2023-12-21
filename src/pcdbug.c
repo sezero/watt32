@@ -198,6 +198,7 @@ static struct {
  */
 BOOL dbg_mode_all    = 1;
 BOOL dbg_print_stat  = 1;
+BOOL dbg_print_size  = 0;
 BOOL dbg_dns_details = 1;
 
 #if defined(USE_GZIP)
@@ -410,7 +411,7 @@ static __inline BOOL match_ip6_dest (const in6_Header *ip)
  */
 static __inline const char *do_check_sum (WORD value, const void *p, int len)
 {
-  static char buf[20];
+  static char buf [20];
   WORD   chk = CHECKSUM (p, len);
 
   sprintf (buf, "%04X (%s)", value, (chk == 0xFFFF) ? "ok" : "ERROR");
@@ -766,6 +767,7 @@ static void ip4_dump (const in_Header *ip)
   WORD  ihl, flg;
   DWORD ofs;
   int   opt_len;
+  const char *chk_ok;
 
   ofs = intel16 (ip->frag_ofs);
   flg = (WORD) (ofs & ~IP_OFFMASK);
@@ -796,13 +798,16 @@ static void ip4_dump (const in_Header *ip)
     return;
   }
 
-  dbug_printf ("       IHL %u, ver %u, tos%s, len %u,"
-               " ttl %u, prot %s, chksum %s\n"
+  dbug_printf ("       IHL %u, ver %u, tos%s, len %u,",
+               ihl, (BYTE)ip->ver, type_of_service(ip->tos),
+               intel16(ip->length));
+
+  chk_ok = do_check_sum (ip->checksum, ip, ihl);
+  dbug_printf (" ttl %u, prot %s, chksum %s\n"
                "       id %04X, ofs %lu",
-               ihl, (BYTE)ip->ver, type_of_service(ip->tos), intel16(ip->length),
-               (BYTE)ip->ttl, ip4_protocol (ip->proto),
-               do_check_sum (ip->checksum, ip, ihl),
-               intel16 (ip->identification), (u_long)ofs);
+               (BYTE)ip->ttl, ip4_protocol(ip->proto), chk_ok,
+               intel16(ip->identification), (u_long)ofs);
+  dbug_flush();
 
   if (flg & IP_CE)
      dbug_write (", CE");
@@ -1730,7 +1735,7 @@ static const char *udp_tcp_checksum (const in_Header  *ip,
   ph.dst    = ip->destination;
   ph.length = intel16 (len);
 
-  if (CHECKSUM(&ph,sizeof(ph)) == 0xFFFF)
+  if (CHECKSUM(&ph, sizeof(ph)) == 0xFFFF)
      return ("ok");
   return ("ERROR");
 }
@@ -2178,6 +2183,7 @@ static void dbug_dump (const void *sock, const in_Header *ip,
                        const char *fname, unsigned line, BOOL out)
 {
   static BOOL print_once = FALSE;
+  char   sz_buf [30];
   int    err;
 
   WATT_ASSERT (ip);
@@ -2243,9 +2249,13 @@ static void dbug_dump (const void *sock, const in_Header *ip,
   if (use_ods)
      dbug_putc ('\n');   /* !! Why do I need this? */
 
-  dbug_printf ("\n%s: %s (%u), time %s%s\n",
+  if (dbg_print_size)     /* debug.rx_size = 1 */
+       snprintf (sz_buf, sizeof(sz_buf), ", size %u", _eth_last.rx.size);
+  else sz_buf[0] = '\0';
+
+  dbug_printf ("\n%s: %s (%u), time %s%s%s\n",
                outbound ? "Transmitted" : "Received",
-               fname, line, elapsed_str(now),
+               fname, line, elapsed_str(now), sz_buf,
                is_looped(ip) ? ", Link-layer loop!" : "");
 
   /* Either PDCLASS_ETHER, PDCLASS_TOKEN, PDCLASS_FDDI or PDCLASS_ARCNET
@@ -2716,6 +2726,7 @@ static void W32_CALL dbug_cfg_parse (const char *name, const char *value)
              { "LINEBUF", ARG_ATOI, (void*)&dbg_linebuf     },
              { "FILTER",  ARG_FUNC, (void*)set_debug_filter },
              { "PROTO",   ARG_FUNC, (void*)set_debug_proto  },
+             { "RX_SIZE", ARG_ATOI, (void*)&dbg_print_size  },
              { "STAT",    ARG_ATOI, (void*)&dbg_print_stat  },
              { "DNS",     ARG_ATOI, (void*)&dbg_dns_details },
              { "PCAP",    ARG_ATOI, (void*)&pcap_mode       },
