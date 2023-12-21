@@ -940,6 +940,19 @@ ifeq ($(USE_UBSAN),1)
   CFLAGS  += -DUSE_UBSAN -fsanitize=undefined
 
   #
+  # At run-time, it's best to add a 'set UBSAN_OPTIONS=print_stacktrace=1'
+  # to your environment to make sense of the UBSAN check output.
+  #
+  # The list of UBSAN checks for Clang:
+  #   https://clang.llvm.org/docs/UndefinedBehaviorSanitizer.html#ubsan-checks
+  #
+  # Turn these checks off:
+  #
+  CFLAGS += -fno-sanitize=alignment \
+            -fno-sanitize=function  \
+            -fno-sanitize=object-size
+
+  #
   # This causes Undefined Behavior to cause an Illegal Instruction.
   # Turn on/off at own will.
   #

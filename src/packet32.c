@@ -1041,7 +1041,6 @@ BOOL PacketExitModule (void)
  * parameter 'buf'.
  *
  */
-CLANG_NO_SANITIZE ("undefined")
 UINT MS_CDECL PacketReceivePacket (const ADAPTER *adapter, void *buf, UINT buf_len)
 {
   HANDLE handle;
@@ -1080,7 +1079,6 @@ UINT PacketSendPacket (const ADAPTER *adapter, const void *buf, UINT len)
   return (sent);
 }
 
-CLANG_NO_SANITIZE ("undefined")
 BOOL PacketGetMacAddress (const ADAPTER *adapter, void *mac)
 {
   struct {
