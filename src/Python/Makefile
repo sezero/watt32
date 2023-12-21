@@ -223,6 +223,7 @@ clean:
 	rm -f link.tmp check-for-unused-libs.py *.pdb *.pyc vc1*.pdb \
 	   _watt32.{exp,lib,map,pyc} watt32.py watt32.pyo watt32_swig_wrap.c watt32_swig_wrap.i
 	rm -fr $(OBJ_DIR) __pycache__
+	- @rmdir objects 2> /dev/null
 
 vclean realclean: clean
 	rm -f _watt32.pyd
