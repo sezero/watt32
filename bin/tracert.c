@@ -345,8 +345,12 @@
 #pragma warn -stu-
 #endif
 
-#define MAXPACKET       1500    /* max ip packet size */
-#define MINPACKET       (sizeof(struct opacket) - sizeof(struct ether_header))
+/*
+ * ETH/IP packet sizes.
+ */
+#define ETH_HEADER_SZ   sizeof(struct ether_header)
+#define MAX_IP_SZ       1500
+#define MIN_IP_SZ       (sizeof(struct opacket) - ETH_HEADER_SZ)
 #define SRC_PORT        1030
 #define MAX_IPOPTLEN    40      /* 15*4 - 20 */
 #define MAX_SKIP        50
@@ -732,14 +736,14 @@ int main (int argc, char **argv)
   if (*argv)
   {
     data_len = atoi (*argv);
-    if (data_len < MINPACKET || data_len > MAXPACKET)
-       Exit ("packet size range is %d - %d.", MINPACKET, MAXPACKET);
+    if (data_len < MIN_IP_SZ || data_len > MAX_IP_SZ)
+       Exit ("packet size range is %d - %d.", MIN_IP_SZ, MAX_IP_SZ);
   }
   else
   {
     if (mtu_disc)
-         data_len = MAXPACKET;
-    else data_len = MINPACKET;
+         data_len = MAX_IP_SZ;
+    else data_len = MIN_IP_SZ;
   }
 
   whereto = htonl (lookup_host(hostname, NULL));
@@ -780,10 +784,10 @@ int main (int argc, char **argv)
     memcpy (&optlist[4], &gw_hosts[1], optlen-4);
   }
 
-  if (data_len < MINPACKET + optlen)
+  if (data_len < MIN_IP_SZ + optlen)
   {
     /* The chosen size is too small to fit everything...make it bigger: */
-    data_len = MINPACKET + optlen;
+    data_len = MIN_IP_SZ + optlen;
   }
 
   if (verbose && inet_addr(hostname) != INADDR_NONE)
@@ -906,7 +910,7 @@ int send_probe (int ttl, int tos)
     tcp->th_dport = htons (dport);
     tcp->th_flags = TH_SYN;
     tcp->th_off   = th_len / 4;
-    tcp->th_win   = htons (MAXPACKET);
+    tcp->th_win   = htons (MAX_IP_SZ);
     tcp->th_x2    = 0;
     tcp->th_urp   = 0;
     tcp->th_sum   = 0;
@@ -924,7 +928,7 @@ int send_probe (int ttl, int tos)
 #endif
 
   memcpy ((void*)buf, ip, data_len);
-  rc = _eth_send ((WORD) (data_len + sizeof(struct ether_header)),
+  rc = _eth_send ((WORD) (data_len + ETH_HEADER_SZ),
                   NULL, __FILE__, __LINE__);
   seqnum += 5;
   return (rc);
@@ -1029,7 +1033,7 @@ struct ip *WaitReply (DWORD timeout)
 
   while (1)
   {
-    static BYTE buf [MAXPACKET];
+    static BYTE ebuf [MAX_IP_SZ + ETH_HEADER_SZ];
     int    bcast;
     WORD   packet_type;
     BYTE  *packet = _eth_arrived (&packet_type, &bcast);
@@ -1049,8 +1053,8 @@ struct ip *WaitReply (DWORD timeout)
       continue;
     }
 
-    memcpy (buf, packet - _pkt_ip_ofs, sizeof(buf));
-    ip = (struct ip*) (buf + _pkt_ip_ofs);
+    memcpy (ebuf, packet - _pkt_ip_ofs, MAX_IP_SZ);
+    ip = (struct ip*) (ebuf + _pkt_ip_ofs);
     _eth_free (packet);
 
     if (W32_NAMESPACE(debug_recv))
@@ -1133,7 +1137,7 @@ void CheckReply (const struct ip *ip, int ttl, int probe, int seq, double delta_
 
   if (different)
   {
-    char buf[100];
+    char buf [100];
     char *p = buf;
 
     p += snprintf (buf, sizeof(buf), " %-*s", 30-indent, GetAddress(src));
