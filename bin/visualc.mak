@@ -81,6 +81,15 @@ LIBS    = $(WATTLIB)
 CFLAGS = $(CFLAGS) -wd4244 -wd4267
 !endif
 
+!if "$(USE_ASAN)." == "1."
+#
+# A reference for using ASAN with MSVC:
+#   https://devblogs.microsoft.com/cppblog/msvc-address-sanitizer-one-dll-for-all-runtime-configurations/
+#
+CFLAGS  = $(CFLAGS) -fsanitize=address -DUSE_ASAN
+LDFLAGS = $(LDFLAGS) -inferasanlibs
+!endif
+
 PROGRAMS = popdump.exe  rexec.exe    tcpinfo.exe cookie.exe  \
            daytime.exe  dayserv.exe  finger.exe  host.exe    \
            lpq.exe      lpr.exe      ntime.exe   ph.exe      \

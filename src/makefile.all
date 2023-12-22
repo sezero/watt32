@@ -746,6 +746,22 @@ AS     = ml
 AFLAGS = -c -nologo -DDOSX -Zi -coff
 @endif
 
+!if "$(USE_ASAN)" == "1"
+RCFLAGS = $(RCFLAGS) -DUSE_ASAN
+CFLAGS  = $(CFLAGS)  -DUSE_ASAN -fsanitize=address
+
+#
+# The default for 'x86 / Release' is 'clang_rt.asan_dynamic_runtime_thunk-i386.lib'
+# (and clang_rt.asan_dbg_dynamic_runtime_thunk-i386.lib for 'x86 / Debug')
+#
+# Let the linker select the ASAN libraries.
+#
+# A reference for using ASAN with MSVC:
+#   https://devblogs.microsoft.com/cppblog/msvc-address-sanitizer-one-dll-for-all-runtime-configurations/
+#
+LDFLAGS = $(LDFLAGS) -inferasanlibs
+!endif
+
 @ifdef DEBUG
 STAT_LIB  = ..\lib\$(CPU)\wattcpvc_d.lib
 IMP_LIB   = ..\lib\$(CPU)\wattcpvc_imp_d.lib
@@ -895,11 +911,13 @@ CFLAGS += -Wno-\#pragma-messages
 
 #
 # Use "Address Sanitizer"?
+# Only for VISUALC and CLANG supports this.
 #
 USE_ASAN  ?= 0
 
 #
 # Use "Undefined Behavior Sanitizer (UBSan)"?
+# Currently only 'clang-cl' supports this.
 #
 USE_UBSAN ?= 0
 
