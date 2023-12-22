@@ -2568,11 +2568,17 @@ static void AddEntry (void)
 
 /**
  * Comparision routine needed by quick-sort and bsearch routines.
- * Don't use unsigned arithmetic.
  */
-static int MS_CDECL Compare (const struct Elem *a, const struct Elem *b)
+static int MS_CDECL Compare (const void *_a, const void *_b)
 {
-  return ((long)a->crc - (long)b->crc);
+  const struct Elem *a = _a;
+  const struct Elem *b = _b;
+
+  if (a->crc > b->crc)
+     return (1);
+  if (a->crc < b->crc)
+     return (-1);
+  return (0);
 }
 
 /**
