@@ -46,18 +46,20 @@ const char *wattcpCopyright = "See COPYRIGHT.H for details";
   static const char *msvc_get_patch_build (void);
 #endif
 
-#if defined(__clang__)
-  #if defined(USE_ASAN)
-    #define ASAN_COMPILED  ", ASAN"
-  #else
-    #define ASAN_COMPILED  ""
-  #endif
+/*
+ * Only possible with '__clang__' or '_MSC_VER >= 1839'?
+ * (some Visual Studio 2022 version)
+ */
+#if defined(USE_ASAN)
+  #define ASAN_COMPILED  ", ASAN"
+#else
+  #define ASAN_COMPILED  ""
+#endif
 
-  #if defined(USE_UBSAN)
-    #define UBSAN_COMPILED  ", UBSAN"
-  #else
-    #define UBSAN_COMPILED  ""
-  #endif
+#if defined(USE_UBSAN)
+  #define UBSAN_COMPILED  ", UBSAN"
+#else
+  #define UBSAN_COMPILED  ""
 #endif
 
 
@@ -219,7 +221,7 @@ const char * W32_CALL wattcpVersion (void)
   #if (_MSC_VER >= 1000)     /* Visual-C 4+ */
     p += sprintf (p, "Microsoft Visual-C %d.%d%s (%s, %s), ",
                   (_MSC_VER / 100), _MSC_VER % 100, msvc_get_patch_build(),
-                  DBG_RELEASE, msvc_check_fastcall());
+                  DBG_RELEASE ASAN_COMPILED UBSAN_COMPILED, msvc_check_fastcall());
 
   #else /* DOS only */
     p += sprintf (p, "Microsoft Quick-C %d.%d",
