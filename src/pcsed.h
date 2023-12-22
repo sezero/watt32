@@ -116,11 +116,20 @@ typedef struct llc_Header {
           } snap;
           struct {
             BYTE  snap_ui;
-            BYTE  snap_orgcode[3];
-            BYTE  snap_ethertype[2];
+            BYTE  snap_orgcode [3];
+            BYTE  snap_ethertype [2];
           } snap_ether;
         } ctl;
       } llc_Header;
+
+/* Just pretend IEEE 802.3 encapsulated data could this:
+*/
+#define LLC_MAX_DATA (ETH_MAX_DATA - sizeof(llc_Header))
+
+typedef struct llc_Packet {
+        llc_Header head;
+        BYTE       data [LLC_MAX_DATA];
+      } llc_Packet;
 
 /**
  * From Xinu, tr.h
@@ -194,6 +203,42 @@ typedef struct arcnet_Packet {
         BYTE          data [ARCNET_MAX_DATA];
       } arcnet_Packet;
 
+/**
+ * \typedef ax25_Header
+ * From Wireshark; epan/dissectors/packet-ax25.c
+ *
+ * Incomplete.
+ */
+#define AX25_ADDR_LEN  7
+
+typedef struct ax25_Header {
+        char dest      [AX25_ADDR_LEN];  /* Destination address */
+        char source    [AX25_ADDR_LEN];  /* Source address */
+        char digis [8] [AX25_ADDR_LEN];  /* Digi string */
+      } ax25_Header;
+
+typedef struct ax25_Packet {
+        ax25_Header  head;
+        BYTE         data [AX25_MAX_DATA];
+      } ax25_Packet;
+
+/**
+ * \typedef pppoe_Header
+ * The PPPOE header (RFC-2561) excluding Ether-header.
+ */
+typedef struct pppoe_Header {
+        BYTE  ver  : 4;
+        BYTE  type : 4;
+        BYTE  code;
+        WORD  session;
+        WORD  length;
+      } pppoe_Header;
+
+typedef struct pppoe_Packet {
+        pppoe_Header  head;
+        BYTE          data [PPPOE_MAX_DATA];  /* higher level proto at data[2] */
+      } pppoe_Packet;
+
 
 /*!\typedef link_Packet
  *
@@ -205,8 +250,11 @@ typedef union link_Packet {
         struct fddi_Packet   fddi;  /* _pktdevclass = PDCLASS_FDDI  */
         struct arcnet_Packet arc;   /* _pktdevclass = PDCLASS_ARCNET */
         struct ip_Packet     ip;    /* _pktdevclass = PDCLASS_PPP/PDCLASS_SLIP */
+        struct pppoe_Packet  pppoe; /* _pktdevclass = PDCLASS_ETHER */
+        struct ax25_Packet   ax25;  /* _pktdevclass = PDCLASS_AX25; untested */
         struct vlan_Packet   vlan;  /* not supported */
       } link_Packet;
+
 
 #include <sys/pack_off.h>           /* restore default packing */
 

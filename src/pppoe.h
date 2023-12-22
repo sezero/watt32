@@ -28,28 +28,8 @@
 #define PPPOE_TAG_AC_SYSTEM_ERR  0x0202
 #define PPPOE_TAG_GENERIC_ERR    0x0203
 
-#define PPPOE_HDR_SIZE      6   /* ver/type,code,session,length */
-#define PPPOE_TAG_HDR_SIZE  4   /* type,length header */
-
-/*
- * The PPPOE header (RFC-2561) excluding Ether-header.
- */
-W32_CLANG_PACK_WARN_OFF()
-
-#include <sys/pack_on.h>
-
-typedef struct pppoe_Packet {
-        BYTE  ver  : 4;
-        BYTE  type : 4;
-        BYTE  code;
-        WORD  session;
-        WORD  length;
-        BYTE  data [PPPOE_MAX_DATA];  /* higher level proto at data[2] */
-      } pppoe_Packet;
-
-#include <sys/pack_off.h>
-
-W32_CLANG_PACK_WARN_DEF()
+#define PPPOE_HDR_SIZE      6   /* ver/type, code, session, length */
+#define PPPOE_TAG_HDR_SIZE  4   /* type, length header */
 
 extern void  pppoe_init (void);
 extern void  pppoe_exit (void);
