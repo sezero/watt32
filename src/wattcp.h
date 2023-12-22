@@ -179,26 +179,26 @@ struct ulong_long {
  */
 #define ETH_MAX_DATA     1500
 #define ETH_MIN          60
-#define ETH_MAX          (ETH_MAX_DATA + sizeof(eth_Header))
+#define ETH_MAX          (ETH_MAX_DATA + sizeof(eth_Header))    /* == 1514 */
 
-#define TOK_MAX_DATA     ETH_MAX_DATA  /* could be much larger */
-#define TOK_MIN          sizeof(tok_Header)
-#define TOK_MAX          (TOK_MAX_DATA + sizeof(tok_Header))
+#define TOK_MAX_DATA     ETH_MAX_DATA                           /* could be much larger */
+#define TOK_MIN          sizeof(tok_Header)                     /* == 22 */
+#define TOK_MAX          (TOK_MAX_DATA + sizeof(tok_Header))    /* == 1522 */
 
-#define FDDI_MAX_DATA    ETH_MAX_DATA  /* really is 4470 */
-#define FDDI_MIN         (3 + sizeof(fddi_Header))
-#define FDDI_MAX         (FDDI_MAX_DATA + sizeof(fddi_Header))
+#define FDDI_MAX_DATA    ETH_MAX_DATA                           /* really is 4470 */
+#define FDDI_MIN         (3 + sizeof(fddi_Header))              /* == 24 */
+#define FDDI_MAX         (FDDI_MAX_DATA + sizeof(fddi_Header))  /* == 1521 */
 
 #define ARCNET_MAX_DATA  512    /* Long frame or Exception frame */
 #define ARCNET_MIN       257
-#define ARCNET_MAX       (ARCNET_MAX_DATA + sizeof(arcnet_Header))
+#define ARCNET_MAX       (ARCNET_MAX_DATA + sizeof(arcnet_Header))  /* == 522 */
 
 #define AX25_MAX_DATA    ETH_MAX_DATA
-#define AX25_MIN         sizeof(ax25_Header)
-#define AX25_MAX         (AX25_MAX_DATA + sizeof(ax25_Header))
+#define AX25_MIN         sizeof(ax25_Header)                        /* == 70 */
+#define AX25_MAX         (AX25_MAX_DATA + sizeof(ax25_Header))      /* == 1570 */
 
 #define PPPOE_MAX_DATA   (ETH_MAX_DATA - 8)
-#define PPPOE_MIN        sizeof(pppoe_Header)
+#define PPPOE_MIN        sizeof(pppoe_Header)                       /* == 6 */
 #define PPPOE_MAX        (PPPOE_MAX_DATA + sizeof(pppoe_Header))
 
 #define VLAN_MAX_DATA    (ETH_MAX_DATA - 4)
