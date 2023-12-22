@@ -14,23 +14,19 @@
 #include "misc.h"
 #include "misc_str.h"
 
-#if defined(_WIN64)
+#if defined(_WIN32)                 /* This includes '_WIN64' too */
   #if defined(_DEBUG)
-    #define DBG_RELEASE  "debug"
+    #define DBG_RELEASE  "debug"    /* MSVC / clang-cl only */
   #else
     #define DBG_RELEASE  "release"
   #endif
-  #undef  VARIANT
-  #define VARIANT        " Win64"
+#endif
+
+#if defined(_WIN64)
+  #define VARIANT   " Win64"
 
 #elif defined(_WIN32) || defined(WIN32)
-  #if defined(_DEBUG)
-    #define DBG_RELEASE  "debug"       /* Only with MSVC */
-  #else
-    #define DBG_RELEASE  "release"
-  #endif
-  #undef  VARIANT
-  #define VARIANT        " Win32"
+  #define VARIANT   " Win32"
 
 #else
   #define VARIANT   ""
@@ -49,6 +45,21 @@ const char *wattcpCopyright = "See COPYRIGHT.H for details";
   static const char *msvc_check_fastcall (void);
   static const char *msvc_get_patch_build (void);
 #endif
+
+#if defined(__clang__)
+  #if defined(USE_ASAN)
+    #define ASAN_COMPILED  ", ASAN"
+  #else
+    #define ASAN_COMPILED  ""
+  #endif
+
+  #if defined(USE_UBSAN)
+    #define UBSAN_COMPILED  ", UBSAN"
+  #else
+    #define UBSAN_COMPILED  ""
+  #endif
+#endif
+
 
 /**
  * Return string for Watt-32 version.
@@ -180,7 +191,7 @@ const char * W32_CALL wattcpVersion (void)
 
 #elif defined(__clang__)
   p += sprintf (p, "clang %d.%d.%d (%s), ",
-                __clang_major__, __clang_minor__, __clang_patchlevel__, DBG_RELEASE);
+                __clang_major__, __clang_minor__, __clang_patchlevel__, DBG_RELEASE ASAN_COMPILED UBSAN_COMPILED);
 
 #elif defined(_MSC_VER)
   /*
