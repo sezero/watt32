@@ -1479,7 +1479,7 @@ struct token {
        const char *s;
      };
 
-struct token ppp_type2str[] = {
+const struct token ppp_type2str[] = {
              { PPP_IP,    "IP"    },
              { PPP_IPV6,  "IP6"   },
              { PPP_IPX,   "IPX"   },
@@ -1502,7 +1502,7 @@ struct token ppp_type2str[] = {
  */
 static const char *tok2str (const struct token *lp, const char *fmt, int v)
 {
-  static char buf[128];
+  static char buf [128];
 
   while (lp->s)
   {
@@ -1518,7 +1518,7 @@ static const char *tok2str (const struct token *lp, const char *fmt, int v)
 
 static const char *pppoe_get_tag (const BYTE *tag)
 {
-  static char buf[100];
+  static char buf [100];
   char  *p = buf;
   WORD   type = *(WORD*)tag;
   int    len  = intel16 (*(WORD*)(tag+2));
@@ -1529,13 +1529,13 @@ static const char *pppoe_get_tag (const BYTE *tag)
          return ("end");
 
     case PPPOE_TAG_SERVICE_NAME:
-         len = min (len, SIZEOF(buf)-12);
-         sprintf (buf, "service-name `%.*s'", len, tag+PPPOE_TAG_HDR_SIZE);
+         len = min (len, SIZEOF(buf) - 12);
+         sprintf (buf, "service-name `%.*s'", len, tag + PPPOE_TAG_HDR_SIZE);
          break;
 
     case PPPOE_TAG_AC_NAME:
-         len = min (len, SIZEOF(buf)-12);
-         sprintf (buf, "AC-name `%.*s'", len, tag+PPPOE_TAG_HDR_SIZE);
+         len = min (len, SIZEOF(buf) - 12);
+         sprintf (buf, "AC-name `%.*s'", len, tag + PPPOE_TAG_HDR_SIZE);
          break;
 
     case PPPOE_TAG_AC_COOKIE:
@@ -1633,31 +1633,32 @@ const char *pppoe_get_code (WORD code)
   }
 }
 
-static __inline int pppoe_head_dump (const struct pppoe_Packet *pppoe,
+static __inline int pppoe_head_dump (const struct pppoe_Header *head,
                                      const char *proto)
 {
-  WORD len = intel16 (pppoe->length);
+  WORD len = intel16 (head->length);
 
-  if (pppoe->ver != 1 || pppoe->type != 1 || len > PPPOE_MAX_DATA)
+  if (head->ver != 1 || head->type != 1 || len > PPPOE_MAX_DATA)
   {
     dbug_printf ("PPPOE:  bogus header: ver %u, type %u, len %u\n",
-                 pppoe->ver, pppoe->type, len);
+                 head->ver, head->type, len);
     return (0);
   }
   return dbug_printf ("PPPOE:  %s, len %u, code %s (%04X), session %d\n",
-                      proto, len, pppoe_get_code(pppoe->code), pppoe->code,
-                      intel16(pppoe->session));
+                      proto, len, pppoe_get_code(head->code), head->code,
+                      intel16(head->session));
 }
 
 static int pppoe_disc_dump (const struct pppoe_Packet *pppoe)
 {
-  WORD  tlen = intel16 (pppoe->length);
+  WORD  tlen;
   const BYTE *tags;
 
-  if (!pppoe_head_dump(pppoe, "Discovery"))
+  if (!pppoe_head_dump(&pppoe->head, "Discovery"))
      return (1);
 
   tags = (const BYTE*) &pppoe->data[0];
+  tlen = intel16 (pppoe->head.length);
   while (tlen > 0)
   {
     WORD tag_len = intel16 (*(WORD*)(tags+2));
@@ -1674,15 +1675,15 @@ static int pppoe_sess_dump (const void *sock, const struct pppoe_Packet *pppoe)
   WORD  proto, len;
   const BYTE *buf;
 
-  if (!pppoe_head_dump(pppoe, "Session"))
+  if (!pppoe_head_dump(&pppoe->head, "Session"))
      return (1);
 
-  len   = intel16 (pppoe->length) - 2;
+  len   = intel16 (pppoe->head.length) - 2;
   proto = intel16 (*(WORD*)&pppoe->data[0]);
   buf   = &pppoe->data[2];
 
   dbug_printf ("        Protocol %04X (%s)\n", proto,
-               tok2str(ppp_type2str,"%u??",proto));
+               tok2str(ppp_type2str, "%u??", proto));
 
   if (proto == PPP_IP)
   {
@@ -2310,12 +2311,12 @@ static void dbug_dump (const void *sock, const in_Header *ip,
 #if defined(USE_PPPOE)
     if (type == PPPOE_DISC_TYPE)
     {
-      pppoe_disc_dump ((const struct pppoe_Packet*)pkt->eth.data);
+      pppoe_disc_dump ((const struct pppoe_Packet*) pkt->eth.data);
       goto quit;
   }
     if (type == PPPOE_SESS_TYPE)
     {
-      pppoe_sess_dump (sock, (const struct pppoe_Packet*)pkt->eth.data);
+      pppoe_sess_dump (sock, (const struct pppoe_Packet*) pkt->eth.data);
       goto quit;
     }
 #endif
@@ -3467,14 +3468,14 @@ static unsigned lcp_dump (const BYTE *bp)
 
                case LCP_AUTHPROTO:
                     arg = intel16 (*(WORD*)p);
-                    dbug_printf (tok2str (lcpauth2str, "AUTH-%x", arg));
+                    dbug_printf ("%s", tok2str (lcpauth2str, "AUTH-%x", arg));
                     if (opt_length >= 5)
                        dbug_printf (" %s", tok2str(lcpchap2str, "%x", p[0]));
                     break;
 
                case LCP_QUALPROTO:
                     arg = intel16 (*(WORD*)p);
-                    dbug_printf (tok2str(lcpqual2str, "QUAL-%x", arg));
+                    dbug_printf ("%s", tok2str(lcpqual2str, "QUAL-%x", arg));
                     break;
 
                case LCP_ASYNCMAP:

@@ -192,16 +192,16 @@ static void split_mac (struct pkt_split *ps, const void *ptr)
   }
   else if (type == PPPOE_DISC_TYPE)
   {
-    pppoe_Packet *pppoe = (pppoe_Packet*)&pkt->eth.data[0];
+    pppoe_Packet *pppoe = (pppoe_Packet*) &pkt->eth.data[0];
 
     ps++;
     ps->type = TYPE_PPPOE_DISC;
     ps->data = pppoe;
-    ps->len  = intel16 (pppoe->length);
+    ps->len  = intel16 (pppoe->head.length);
   }
   else if (type == PPPOE_SESS_TYPE)
   {
-    const pppoe_Packet *pppoe = (const pppoe_Packet*)&pkt->eth.data[0];
+    const pppoe_Packet *pppoe = (const pppoe_Packet*) &pkt->eth.data[0];
     WORD                proto = intel16 (*(WORD*)&pppoe->data[0]);
 
     ps++;
@@ -210,7 +210,7 @@ static void split_mac (struct pkt_split *ps, const void *ptr)
     ps->len  = PPPOE_HDR_SIZE;
     if (proto == intel16(PPP_IP))
     {
-      ip = (const in_Header*)&pppoe->data[2];
+      ip = (const in_Header*) &pppoe->data[2];
       split_ip4 (++ps, ip);
       return;
     }

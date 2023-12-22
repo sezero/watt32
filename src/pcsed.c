@@ -362,7 +362,7 @@ int W32_CALL _eth_send (WORD len, const void *sock, const char *file, unsigned l
   {
     pppoe_Packet *pppoe = (pppoe_Packet*) TX_BUF()->eth.data;
 
-    pppoe->length = intel16 (len+2);
+    pppoe->head.length = intel16 (len+2);
     len += PPPOE_HDR_SIZE + 2;      /* add 2 for protocol */
   }
 #endif

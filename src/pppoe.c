@@ -225,10 +225,11 @@ int pppoe_handler (const pppoe_Packet *pkt)
   const BYTE *buf;
   const void *src;
   const void *dst;
+  const pppoe_Header *head = &pkt->head;
   WORD  proto, len;
   BOOL  bcast, delivered = FALSE;
 
-  if (pkt->type != 1 || pkt->ver != 1)
+  if (head->type != 1 || head->ver != 1)
      return (0);
 
   src   = MAC_SRC (pkt);
@@ -238,39 +239,39 @@ int pppoe_handler (const pppoe_Packet *pkt)
 
   if (proto == PPPOE_SESS_TYPE && state == STATE_SESSION)
   {
-    if (pkt->code    == PPPOE_CODE_SESS &&
-        pkt->session == session         &&
-        !bcast                          &&
+    if (head->code    == PPPOE_CODE_SESS &&
+        head->session == session         &&
+        !bcast                           &&
         !memcmp(dst, _eth_addr, _eth_mac_len) &&  /* to us? */
         !memcmp(src, ac_mac_addr, _eth_mac_len))
     {
-      len = intel16 (pkt->length);
-      buf = &pkt->data[0];
+      len = intel16 (head->length);
+      buf = (const BYTE*) (head + 1);
       ppp_input (buf, len);    /* assume ppp_input() traces it */
       delivered = TRUE;
     }
   }
   else if (!bcast && proto == PPPOE_DISC_TYPE && state == STATE_DISCOVERY)
   {
-    if (pkt->code == PPPOE_CODE_PADO)          /* Offer (can this be bcast?) */
+    if (head->code == PPPOE_CODE_PADO)     /* Offer (can this be bcast?) */
     {
       got_PADO = TRUE;
       memcpy (ac_mac_addr, src, _eth_mac_len);
     }
-    else if (pkt->code == PPPOE_CODE_PADT &&  /* Terminate */
-             pkt->session == session)
+    else if (head->code == PPPOE_CODE_PADT &&  /* Terminate */
+             head->session == session)
     {
       if (cfg.trace)
          outsnl (_LANG("PPPoE: session terminated"));
       got_PADT = TRUE;
       session  = 0;
     }
-    else if (pkt->code == PPPOE_CODE_PADS)    /* Session-confirmation */
+    else if (head->code == PPPOE_CODE_PADS)    /* Session-confirmation */
     {
       got_PADS = TRUE;
-      session  = pkt->session;
+      session  = head->session;
     }
-    else if (pkt->code == PPPOE_CODE_PADM)    /* Message (what to do?) */
+    else if (head->code == PPPOE_CODE_PADM)    /* Message (what to do?) */
     {
       got_PADM = TRUE;
     }
@@ -287,7 +288,7 @@ int pppoe_handler (const pppoe_Packet *pkt)
 BOOL pppoe_is_up (const void *dest)
 {
 #if 1
-  if (!cfg.enable || memcmp(dest,ac_mac_addr,_eth_mac_len))
+  if (!cfg.enable || memcmp(dest, ac_mac_addr, _eth_mac_len))
      return (FALSE);
   return (session != 0 && !got_PADT);
 #else
@@ -312,7 +313,7 @@ static WORD build_pad (struct pppoe_Packet *pkt, WORD code)
     if (cfg.service_name[0])
     {
       srv_len = strlen (cfg.service_name);
-      srv_len = min (srv_len, sizeof(pkt->data)-2-PPPOE_TAG_HDR_SIZE);
+      srv_len = min (srv_len, sizeof(pkt->data)-2 - PPPOE_TAG_HDR_SIZE);
       memcpy (tags+2, cfg.service_name, srv_len);
     }
     *(WORD*) tags = intel16 (srv_len);
@@ -337,11 +338,11 @@ static int pppoe_send_disc (int code)
   pkt = (pppoe_Packet*) _eth_formatpacket (&ac_mac_addr[0], PPPOE_DISC_TYPE);
   len = build_pad (pkt, code);
 
-  pkt->ver     = 1;
-  pkt->type    = 1;
-  pkt->code    = code;
-  pkt->session = session;
-  pkt->length  = intel16 (len);
+  pkt->head.ver     = 1;
+  pkt->head.type    = 1;
+  pkt->head.code    = code;
+  pkt->head.session = session;
+  pkt->head.length  = intel16 (len);
 
 #if defined(USE_DEBUG)
   if (cfg.trace)
@@ -360,11 +361,11 @@ int pppoe_send_sess (const void *sock, const BYTE *buf, WORD len)
 
   pkt = (pppoe_Packet*) _eth_formatpacket (&ac_mac_addr[0], PPPOE_SESS_TYPE);
 
-  pkt->ver     = 1;
-  pkt->type    = 1;
-  pkt->code    = PPPOE_CODE_SESS;
-  pkt->session = session;
-  pkt->length  = intel16 (len);
+  pkt->head.ver     = 1;
+  pkt->head.type    = 1;
+  pkt->head.code    = PPPOE_CODE_SESS;
+  pkt->head.session = session;
+  pkt->head.length  = intel16 (len);
 
   memcpy (pkt->data, buf, len);
   return _eth_send (len + PPPOE_HDR_SIZE, sock, __FILE__, __LINE__);
@@ -382,11 +383,11 @@ void *pppoe_mac_format (union link_Packet *tx)
   memcpy (&tx->eth.head.source[0], _eth_addr, sizeof(mac_address));
 
   tx->eth.head.type = PPPOE_SESS_TYPE;
-  pppoe->ver     = 1;
-  pppoe->type    = 1;
-  pppoe->code    = PPPOE_CODE_SESS;
-  pppoe->session = session;
-  _pkt_ip_ofs    = sizeof(eth_Header) + PPPOE_HDR_SIZE + 2; /* !! see _eth_send() */
+  pppoe->head.ver     = 1;
+  pppoe->head.type    = 1;
+  pppoe->head.code    = PPPOE_CODE_SESS;
+  pppoe->head.session = session;
+  _pkt_ip_ofs = sizeof(eth_Header) + PPPOE_HDR_SIZE + 2; /* !! see _eth_send() */
   *(WORD*) &pppoe->data[0] = intel16 (PPP_IP);
   return (void*) &pppoe->data[2];
 }
