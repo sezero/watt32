@@ -1697,6 +1697,39 @@ void FATAL_HANDLER (UINT stk)
 
 #if defined(TEST_PROG)
 
+#define PRINT_SIZE(_struct) \
+        do {                \
+          int len = printf ("sizeof (struct %s):", #_struct);        \
+          printf ("%*s %4zu\n", 30-len, "", sizeof(struct _struct)); \
+       } while (0)
+
+static void print_pkt_sizes (void)
+{
+  PRINT_SIZE (arcnet_Header);
+  PRINT_SIZE (arcnet_Packet);
+
+  PRINT_SIZE (ax25_Header);
+  PRINT_SIZE (ax25_Packet);
+
+  PRINT_SIZE (eth_Header);
+  PRINT_SIZE (eth_Packet);
+
+  PRINT_SIZE (llc_Header);
+  PRINT_SIZE (llc_Packet);
+
+  PRINT_SIZE (pppoe_Header);
+  PRINT_SIZE (pppoe_Packet);
+
+  PRINT_SIZE (tok_Header);
+  PRINT_SIZE (tok_Packet);
+
+  PRINT_SIZE (fddi_Header);
+  PRINT_SIZE (fddi_Packet);
+
+  PRINT_SIZE (vlan_Header);
+  PRINT_SIZE (vlan_Packet);
+}
+
 #if defined(WIN32) || defined(WIN64)
 static void itoa_tests (void)
 {
@@ -1777,6 +1810,7 @@ int main (void)
   RUNDOWN_ADD (foo_70, 70);
   debug_on = 2;
   rundown_run();
+  print_pkt_sizes();
   return (0);
 }
 #endif /* TEST_PROG */
