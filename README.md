@@ -7,7 +7,7 @@ original [`README`](README) file.
 
 And also the [`README.TOO`](README.TOO) file.
 
-Refer the [`install`](install) file for how to build and use the Watt-32 library.
+Refer the [`INSTALL`](INSTALL) file for how to build and use the Watt-32 library.
 
 ## Thanks
 
@@ -30,7 +30,7 @@ list of people that have contributed:
 | Francisco Pastor      | <fpastor.etra-id@etra.es>     | memory leak in accept()        |
 | Doug Kaufmann         | <dkaufman@rahul.net>          | Break handling, testing        |
 | Ken Yap               | <ken@nlc.net.au>              | Ported ttcp/syslogd/rdate etc. |
-| Riccardo De Agostini  | <riccardo.de.agostini@isielettronica.it> | Fixes and enhancement of pcconfig.c parser. DHCP transient config-hook. DHCP config to battery                RAM.              |
-| Jir� Mal�k            ??                            | Many fixes for Watcom version. |
-| J.W. Jagersma         jwjagersma@gmail.com          | Many Pull Requests for fixes of the BSD-socket API. And for djgpp and even MacOS! |
+| Riccardo De Agostini  | <riccardo.de.agostini@isielettronica.it> | Fixes and enhancement of pcconfig.c parser. DHCP transient config-hook. DHCP config to battery RAM.               |
+| Jiří Malák            | ??                     | Many fixes for Watcom version. |
+| J.W. Jagersma         | jwjagersma@gmail.com   | Many Pull Requests for fixes of the BSD-socket API, DHCP-client, fixes for djgpp and even MacOS! |
 | Andrew Wu:            | Taiwan                      | The djgpp cross-compiler for Windows: https://github.com/andrewwutw/build-djgpp/releases/ |
