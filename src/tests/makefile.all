@@ -21,9 +21,8 @@ default: all
 #
 # For the C-preprocessing rule below.
 #
-USE_ASTYLE_FORMAT ?= 1
-USE_CLANG_FORMAT  ?= 1
-PYTHON            ?= py -3
+USE_ASTYLE ?= 1
+PYTHON     ?= py -3
 
 #
 # Use the 'Winsock-tracing' library:
@@ -785,7 +784,7 @@ udp_test_w.exe: sysdep.h
 # Command to generate a nicer C preprocessed output
 # with the help of a generated 'cpp-filter.py' and optionally 'clang-format' or 'astyle'.
 #
-# A 'USE_ASTYLE_FORMAT = 1' needs 'astyle.exe' on PATH and a '%HOME/.astylerc'.
+# A 'USE_ASTYLE = 1' needs 'astyle.exe' on PATH and a '%HOME/.astylerc'.
 #
 # Use as e.g.:
 #   make -f clang_32.mak cpu.i
@@ -793,13 +792,13 @@ udp_test_w.exe: sysdep.h
 # to see the gory details of what gets compiled.
 #
 udp_srv_w.i: udp_srv.c cpp-filter.py FORCE
-	$(call C_preprocess, $(COMMON_CFLAGS) $(NO_W32_CFLAGS), $<, $@)
+	$(call C_preprocess, $@, $<, $(COMMON_CFLAGS) $(NO_W32_CFLAGS))
 
 udp_test_w.i: udp_test.c cpp-filter.py FORCE
-	$(call C_preprocess, $(COMMON_CFLAGS) $(NO_W32_CFLAGS), $<, $@)
+	$(call C_preprocess, $@, $<, $(COMMON_CFLAGS) $(NO_W32_CFLAGS))
 
 %.i: %.c cpp-filter.py FORCE
-	$(call C_preprocess, $(COMMON_CFLAGS) $(W32_CFLAGS), $<, $@)
+	$(call C_preprocess, $@, $<, $(COMMON_CFLAGS) $(W32_CFLAGS))
 
 FORCE:
 
@@ -825,39 +824,24 @@ define create_response_file2
   $(file > $(1),$(2))
 endef
 
-ifeq ($(USE_ASTYLE_FORMAT),1)
-  define C_preprocess
-    $(file  > $(3),/* The preprocessed and AStyle'd output of '$(strip $(2))':)
-    $(file >> $(3), * $(CC) -E)
-    @$(foreach f, $(1), $(file >> $(3), * $(f)))
-    $(file >> $(3), *---------------------------------------------------------)
-    $(file >> $(3), */)
-    $(CC) -E $(1) $(2) | $(PYTHON) cpp-filter.py | astyle >> $(3)
-    @echo
-  endef
-
-else ifeq ($(USE_CLANG_FORMAT),1)
-  define C_preprocess
-    $(file  > $(3),/* The preprocessed and clang-format'd output of '$(strip $(2))':)
-    $(file >> $(3), * $(CC) -E)
-    @$(foreach f, $(1), $(file >> $(3), * $(f)))
-    $(file >> $(3), *---------------------------------------------------------)
-    $(file >> $(3), */)
-    $(CC) -E $(1) $(2) | $(PYTHON) cpp-filter.py | clang-format -style=Mozilla -assume-filename=c >> $(3)
-    @echo
-  endef
-
+ifeq ($(USE_ASTYLE),1)
+  pp_comment = The preprocessed and AStyle'd output of '$(filter %.c, $(1))':
+  pp_filter  = | astyle
 else
-  define C_preprocess
-    $(file  > $(3),/* The preprocessed output of '$(strip $(2))':)
-    $(file >> $(3), * $(CC) -E)
-    @$(foreach f, $(1), $(file >> $(3), * $(f)))
-    $(file >> $(3), *---------------------------------------------------------)
-    $(file >> $(3), */)
-    $(CC) -E $(1) $(2) | $(PYTHON) cpp-filter.py >> $(3)
-    @echo
-  endef
+  pp_comment = The raw preprocessed output of '$(filter %.c, $(1))':
+  pp_filter  =
 endif
+
+define C_preprocess
+  $(file  > $(1),/* $(call pp_comment, $(2)))
+  $(file >> $(1), * $(CC) -E)
+  @$(foreach f, $(3), $(file >> $(1), * $(f)))
+  $(file >> $(1), *---------------------------------------------------------)
+  $(file >> $(1), */)
+  $(CC) -E $(3) $(2) | $(PYTHON) cpp-filter.py $(pp_filter) >> $(1)
+  @echo
+endef
+
 
 #
 # A Python "C-preprocess filter".
