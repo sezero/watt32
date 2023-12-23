@@ -59,8 +59,6 @@ int kbhit (void)
 /*
  * Copied from ../winmisc.c
  */
-static HANDLE stdin_hnd = INVALID_HANDLE_VALUE;
-
 static int is_real_key (const INPUT_RECORD *k)
 {
   if (k->EventType != KEY_EVENT)
@@ -82,14 +80,19 @@ static int is_real_key (const INPUT_RECORD *k)
 
 int kbhit (void)
 {
+  static HANDLE stdin_hnd = INVALID_HANDLE_VALUE;
+  static int    done = 0;
   INPUT_RECORD r;
   DWORD num;
 
-  if (stdin_hnd == INVALID_HANDLE_VALUE)
+  if (!done)
   {
     stdin_hnd = GetStdHandle (STD_INPUT_HANDLE);
-    return kbhit();
+    done = 1;
   }
+
+  if (stdin_hnd == INVALID_HANDLE_VALUE) /* Can't tell */
+     return (0);
 
   while (1)
   {
