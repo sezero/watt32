@@ -514,7 +514,7 @@ Follow these steps closely:
       E.g. SET WATTCP.CFG=c:\net\watt\bin
            SET ETC=c:\net\watt\bin
 
-   NOTE: no trailing `\' at end of value (allthough wouldn'‘t hurt).
+   NOTE: no trailing `\' at end of value (allthough wouldn'?t hurt).
          Change the paths or environment variables in `WATTCP.CFG' to
          match your setup.
 
@@ -574,5 +574,3 @@ There are still bugs. Especially with the BSD-socket API:
   is received in some tcp segments. I don't know if this is a bug in the
   protocol debugger (pcdbug.c) or in PPPD. However, Watt-32 doesn't support
   OOB or urgent data.
-
-
