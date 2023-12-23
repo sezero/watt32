@@ -43,8 +43,8 @@ OUI_BOTTOM = r"""
 
 static size_t num_oui_values = %d;
 
-/* Comparision routine needed by bsearch() routines.
- * Use signed arithmetic.
+/*
+ * Comparision routine needed by bsearch() routines.
  *
  * This function MUST be 'cdecl' except for OpenWatcom.
  */
@@ -54,17 +54,21 @@ static size_t num_oui_values = %d;
   #define CALL_CONV  cdecl
 #endif
 
-static int CALL_CONV compare (const struct tok *a, const struct tok *b)
+static int CALL_CONV compare (const void *_a, const void *_b)
 {
-  return ((long)a->v - (long)b->v);
-}
+  const struct tok *a = _a;
+  const struct tok *b = _b;
 
-typedef int (*CompareFunc) (const void *, const void *);
+  if (a->v > b->v)
+     return (1);
+  if (a->v < b->v)
+     return (-1);
+  return (0);
+}
 
 const char *oui_val_to_name (unsigned oui)
 {
-  const struct tok *t = bsearch (&oui, oui_values, num_oui_values, sizeof(*t),
-                                 (CompareFunc)compare);
+  const struct tok *t = bsearch (&oui, oui_values, num_oui_values, sizeof(*t), compare);
   return (t ? t->s : "Unknown OUI");
 }
 """
