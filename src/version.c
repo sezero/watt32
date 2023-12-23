@@ -726,12 +726,19 @@ static const char *capabilities[] = {
 #if defined(USE_SCTP)
            "SCTP",
 #endif
+#if defined(USE_ASAN)
+           "ASAN",
+#endif
+#if defined(USE_UBSAN)
+           "UBSAN",
+#endif
            NULL
          };
 
 /**
  * Return compiled-in capabilities and features.
- * These features are set in "config.h"
+ * These features are set in "config.h" or in
+ * the generated "*.mak" file.
  */
 const char * W32_CALL wattcpCapabilities (void)
 {
