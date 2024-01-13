@@ -290,8 +290,7 @@ static int inet_pton4 (const char *src, u_char *dst)
  *   - does not touch `dst' unless it's returning 1.
  *   - `::' in a full address is silently ignored.
  *
- * \author Paul Vixie, 1996.
- * \n\b credit: inspired by Mark Andrews.
+ * \author Paul Vixie, 1996. Credit: inspired by Mark Andrews.
  */
 static int inet_pton6 (const char *src, u_char *dst)
 {

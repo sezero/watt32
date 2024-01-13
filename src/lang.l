@@ -461,7 +461,7 @@ static void W32_CALL lang_exit (void)
  * Initialize the linked list for language.
  *
  * The wattcp.cfg entry has format LANGUAGE = lang,language-file
- * e.g. "LANGUAGE = de,$(ETC)\language.txt"
+ * e.g. `LANGUAGE = de,$(ETC)\language.txt`
  *
  * Language-code MUST be two characters (see ISO 639 list above).
  *

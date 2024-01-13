@@ -212,7 +212,9 @@ void W32_CALL ReopenHostFile (void)
 /**
  * Return the next (non-commented) line from the host-file.
  * Format is:
+ *  ```
  *  ip-address host-name [alias..] {\n | # ..}
+ *  ```
  */
 struct hostent *W32_CALL gethostent (void)
 {
