@@ -209,6 +209,7 @@ if %BUILDER%. == clang. (
   call :install_CLANG_%BITS%
   cd src
   call configur.bat clang
+  call :show_clang_info
   %_ECHO% "\e[1;33m[%CPU%]: Building release:\e[0m"
   make -f clang-release_%BITS%.mak
   exit /b
@@ -444,7 +445,7 @@ exit /b 0
 
   ) else if %BUILDER%. == clang. (
     %_ECHO% "\e[1;33m[%CPU%]: Building 'build_python' for 'BUILDER=clang-cl'.\e[0m"
-    make PYTHON=python.exe CC=clang-cl (
+    make PYTHON=python.exe CC=clang-cl
 
   ) else if %BUILDER%. == mingw64. (
     %_ECHO% "\e[1;33m[%CPU%]: Building 'build_python' for 'BUILDER=MinGW64'.\e[0m"
@@ -599,6 +600,15 @@ exit /b 0
 :show_gcc_info
   %_ECHO% "\e[1;33m[%CPU%]: gcc version-info:\e[0m"
   gcc -v
+  echo.
+  exit /b
+
+::
+:: Ditto for 'clang-cl'
+::
+:show_clang_info
+  %_ECHO% "\e[1;33m[%CPU%]: clang-cl version-info:\e[0m"
+  clang-cl -v
   echo.
   exit /b
 
