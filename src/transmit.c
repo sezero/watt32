@@ -108,7 +108,8 @@ int W32_CALL writev_s (int s, const struct iovec *vector, size_t count)
                     0, NULL, 0, FALSE);
     if (len < 0)
     {
-      bytes = -1;
+      if (bytes == 0)
+         bytes = -1;
       break;
     }
     bytes += len;
@@ -174,7 +175,8 @@ int W32_CALL sendmsg (int s, const struct msghdr *msg, int flags)
                     msg->msg_namelen, TRUE);
     if (len < 0)
     {
-      bytes = -1;
+      if (bytes == 0)
+         bytes = -1;
       break;
     }
     bytes += len;

@@ -288,7 +288,8 @@ int W32_CALL recvmsg (int s, struct msghdr *msg, int flags)
                    (size_t*)&msg->msg_namelen);
     if (len < 0)
     {
-      bytes = -1;
+      if (bytes == 0)
+         bytes = -1;
       break;
     }
     bytes += len;
@@ -345,7 +346,8 @@ int W32_CALL readv_s (int s, const struct iovec *vector, size_t count)
                    0, NULL, NULL);
     if (len < 0)
     {
-      bytes = -1;
+      if (bytes == 0)
+         bytes = -1;
       break;
     }
     bytes += len;
