@@ -47,17 +47,17 @@ PYTHON     ?= py -3
 @endif
 
 #
-# Set to 1 if "USE_IPV6" is defined in ../config.h
+# Set to 1 if "USE_x" is defined in ../config.h
 #
 # Use '$(eval $(shell grep -m1 'define USE_IPV6' ../config.h))' ?
 #
-USE_IPV6 = 1
+USE_IDNA ?= 0
+USE_IPV6 ?= 1
 
 PROGRAMS = bind.exe     \
            fingerd.exe  \
            geteth.exe   \
            gethost.exe  \
-           idna.exe     \
            ioctl.exe    \
            ip4_frag.exe \
            language.exe \
@@ -66,8 +66,15 @@ PROGRAMS = bind.exe     \
            misc.exe     \
            pcconfig.exe
 
+ifeq ($(USE_IDNA),1)
+  PROGRAMS += idna.exe
+endif
+
 ifeq ($(USE_IPV6),1)
-  PROGRAMS += get_ai.exe get_ni.exe gethost6.exe presaddr.exe
+  PROGRAMS += get_ai.exe   \
+              get_ni.exe   \
+              gethost6.exe \
+              presaddr.exe
 endif
 
 @ifndef SMALL LARGE
@@ -92,21 +99,24 @@ endif
 @endif
 
 @ifndef SMALL
-  PROGRAMS += swap.exe timeit_test.exe
+  PROGRAMS += swap.exe \
+              timeit_test.exe
 @endif
 
 @ifndef WIN32 WIN64 SMALL LARGE WATCOM SMALL32
   #
   # For MSDOS only, but not for Watcom (small, large)
   #
-  PROGRAMS += oldstuff.exe ttime2.exe
+  PROGRAMS += oldstuff.exe \
+              ttime2.exe
 @endif
 
 #
 # Pure Winsock version of some programs:
 #
 @ifdef WIN32 WIN64
-  PROGRAMS += udp_srv_w.exe udp_test_w.exe
+  PROGRAMS += udp_srv_w.exe \
+              udp_test_w.exe
 @endif
 
 @ifdef DJGPP
@@ -133,7 +143,7 @@ endif
     BIN_PREFIX =
   endif
 
-  TINY_C = tiny.c
+  TINY_C    = tiny.c
   PROGRAMS += fsext.exe
 @endif
 
@@ -150,6 +160,9 @@ W32_CFLAGS = -DWATT32 -DTEST_PROG -DWATT32_STATIC -I.. -I../../inc
 NO_W32_CFLAGS = -D_Windows
 
 @ifdef IS_GCC
+  #
+  # Settings for IS_GCC:
+  #
   CC            = $(BIN_PREFIX)gcc
   LDFLAGS       = -Wl,--print-map,--sort-common
   COMMON_CFLAGS = -O2 -g -W -Wall      \
@@ -186,6 +199,21 @@ NO_W32_CFLAGS = -D_Windows
   endef
 
 @elifdef VISUALC CLANG
+  #
+  # TODO:
+  #
+  # a 'USE_ASAN=x' here should match a 'USE_ASAN=x' in the
+  # generated '../clang*.mak' or 'visualc*.mak' files. How?
+  #
+  # The best fix now is simply to do:
+  #  make -f clang_64.mak USE_ASAN=1 USE_UBSAN=1 clean all
+  #
+  USE_ASAN  ?= 0
+  USE_UBSAN ?= 0
+
+  #
+  # Settings for VISUALC + CLANG:
+  #
   COMMON_CFLAGS = -nologo -W3 -MD -Zi -Ot    \
                   -D_CRT_SECURE_NO_WARNINGS  \
                   -D_CRT_NONSTDC_NO_WARNINGS \
@@ -207,6 +235,14 @@ NO_W32_CFLAGS = -D_Windows
   LDFLAGS += -libpath:"$(VCToolsInstallDir)\lib\$(CPU)" \
              -libpath:"$(WindowsSdkDir)\lib\$(WindowsSdkVer)\ucrt\$(CPU)" \
              -libpath:"$(WindowsSdkDir)\lib\$(WindowsSdkVer)\um\$(CPU)"
+
+  ifeq ($(USE_ASAN),1)
+    COMMON_CFLAGS += -DUSE_ASAN         \
+                     -fsanitize=address \
+                     -fsanitize-recover=address
+    LDFLAGS += -inferasanlibs
+  endif
+
 @endif
 
 @ifdef VISUALC CLANG MINGW64 CYGWIN
@@ -322,7 +358,23 @@ CC_ARGS = $(CC).arg
                    -Wno-unused-value                      \
                    -Wno-unknown-warning-option
 
-  WATT_LIB       = $(LIB_DIR)/wattcp_clang.lib
+  WATT_LIB = $(LIB_DIR)/wattcp_clang.lib
+
+  ifeq ($(USE_UBSAN),1)
+    CFLAGS += -DUSE_UBSAN             \
+              -fsanitize=undefined    \
+              -fno-sanitize=alignment \
+              -fno-sanitize=function  \
+              -fno-sanitize=object-size
+
+    $(info Appending UBSAN library to 'WATT_LIB')
+
+    ifeq ($(CPU),x86)
+      OS_LIBS += "$(CLANG_ROOT)/lib/clang/$(CLANG_MAJOR_VER)/lib/windows/clang_rt.ubsan_standalone-i386.lib"
+    else
+      OS_LIBS += "$(CLANG_ROOT)/lib/clang/$(CLANG_MAJOR_VER)/lib/windows/clang_rt.ubsan_standalone-x86_64.lib"
+    endif
+  endif
 
 @elifdef WATCOM
   @ifdef SMALL
