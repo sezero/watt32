@@ -257,7 +257,7 @@ BOOL tcp_cbreak_off (void)
 
 #if defined(TEST_PROG)
 
-void usage (char *argv0)
+void usage (const char *argv0)
 {
   printf ("Usage: %s normal | nobrk | graceful\n", argv0);
   exit (-1);
