@@ -120,7 +120,7 @@ static int get_portmatch (const struct addrinfo *, const char *);
 static int get_port (struct addrinfo *, const char *, int);
 static const struct afd *find_afd (int);
 
-static const char *ai_errlist[] = {
+static const char *ai_errlist [] = {
   "Success",
   "Address family for hostname not supported",    /* EAI_ADDRFAMILY */
   "Temporary failure in name resolution",         /* EAI_AGAIN      */
@@ -179,7 +179,7 @@ char * W32_CALL gai_strerror (int ecode)
 {
   if (ecode < 0 || ecode > EAI_MAX)
      ecode = EAI_MAX;
-  return (char*) ai_errlist[ecode];
+  return (char*) ai_errlist [ecode];
 }
 
 /*
@@ -194,7 +194,7 @@ int W32_CALL if_nametoindex (const char *if_name)
 
   __get_ifname (name);
   id = name [strlen(name)] - '0';
-  if (!stricmp(if_name,name))
+  if (!stricmp(if_name, name))
      return (id+1);
   return (0);
 }
@@ -270,14 +270,13 @@ static void afd_list_init (BOOL ip6_prio)
   static const char in4addr_loopback[] = { 127, 0, 0, 1 };
   static const char in4addr_addrany[]  = { 0, 0, 0, 0 };
 #if !defined(USE_IPV6)
-  static const struct in6_addr in6addr_loopback = {{ 0,0,0,0,0,0,0,0,
-                                                     0,0,0,0,0,0,0,1 }};
-  static const struct in6_addr in6addr_any      = {{ 0,0,0,0,0,0,0,0,
-                                                     0,0,0,0,0,0,0,0 }};
+  static const struct in6_addr in6addr_loopback = {{ 0, 0, 0, 0, 0, 0, 0, 0,
+                                                     0, 0, 0, 0, 0, 0, 0, 1 }};
+  static const struct in6_addr in6addr_any      = {{ 0, 0, 0, 0, 0, 0, 0, 0,
+                                                     0, 0, 0, 0, 0, 0, 0, 0 }};
 #endif
 
-
-  int    i = (ip6_prio ? 0 : 1);
+  int i = (ip6_prio ? 0 : 1);
 
   memset (&afd_list, 0, sizeof(afd_list));
 
@@ -508,7 +507,7 @@ bad:
   free_addrinfo (sentinel.ai_next);
   if (res)
      *res = NULL;
-  SOCK_DEBUGF ((": %s", ai_errlist[error]));
+  SOCK_DEBUGF ((": %s", ai_errlist [error]));
   return (error);
 }
 
@@ -524,7 +523,7 @@ static int explore_fqdn (const struct addrinfo *pai, const char *_hostname,
   struct hostent   *hp = NULL;
   struct addrinfo   sentinel, *cur;
   const struct afd *afd;
-  int             af, i, error = 0;
+  int               af, i, error = 0;
 
 #ifdef TEST_PROG
   SOCK_DEBUGF (("\nexplore_fqdn"));
@@ -678,6 +677,7 @@ static int explore_null (const struct addrinfo *pai, const char *servname,
   if (pai->ai_flags & AI_PASSIVE)
   {
     GET_AI (cur->ai_next, afd, afd->a_addrany);
+
     /* xxx meaningless?
      * GET_CANONNAME(cur->ai_next, "anyaddr");
      */
@@ -686,6 +686,7 @@ static int explore_null (const struct addrinfo *pai, const char *servname,
   else
   {
     GET_AI (cur->ai_next, afd, afd->a_loopback);
+
     /* xxx meaningless?
      * GET_CANONNAME(cur->ai_next, "localhost");
      */
@@ -828,7 +829,7 @@ static int explore_numeric_scope (const struct addrinfo *pai,
   switch (pai->ai_family)
   {
     case AF_INET6:
-         scope = __scope_ascii_to_id (cp+1);
+         scope = __scope_ascii_to_id (cp + 1);
          if (scope == 0)
             return (EAI_NONAME);
          break;
@@ -1020,10 +1021,10 @@ int main (void)
 
 static void dump_addrinfo (const struct addrinfo *ai)
 {
-  for (; ai; ai = ai->ai_next)
+  for ( ; ai; ai = ai->ai_next)
   {
-    const struct sockaddr_in  *sa4 = (const struct sockaddr_in*)ai->ai_addr;
-    const struct sockaddr_in6 *sa6 = (const struct sockaddr_in6*)ai->ai_addr;
+    const struct sockaddr_in  *sa4 = (const struct sockaddr_in*) ai->ai_addr;
+    const struct sockaddr_in6 *sa6 = (const struct sockaddr_in6*) ai->ai_addr;
     int   af = ai->ai_family;
     char  buf [INET6_ADDRSTRLEN];
 

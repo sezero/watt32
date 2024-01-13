@@ -38,7 +38,7 @@
 #endif
 
 #if defined(USE_DEBUG)
-  #define TRACE(level,arg)                              \
+  #define TRACE(level, arg)                             \
           do {                                          \
             if (trace_level >= level && dynip_enable) { \
                (*_printf) arg;                          \
@@ -46,7 +46,7 @@
             }                                           \
           } while (0)
 #else
-  #define TRACE(level,arg)  ((void)0)
+  #define TRACE(level, arg)  ((void)0)
 #endif
 
 struct URL {
@@ -72,7 +72,7 @@ static struct URL dyndns = { (char*) "members.dyndns.com",
 static struct URL chkip = { NULL, NULL, 0, FALSE };
 
 static char   resp_buf [2048];
-static void (W32_CALL *prev_hook) (const char*, const char*);
+static void (W32_CALL *prev_hook) (const char *key, const char *value);
 
 static int get_url (const char *host, int port, const char *path,
                     const char *user_pass);
@@ -83,7 +83,6 @@ static int         chkip_method (const char *value);
 static int         dyndns_params (const char *value);
 static void        url_free (struct URL *url);
 static BOOL        url_parse (struct URL *res, const char *url);
-
 
 /**
  * Parser for DYNIP configuration.
@@ -132,7 +131,7 @@ void dynip_init (void)
  * Do this at most once each hour:
  *
  * 1. Get our WAN ip (<wan-ip> below) by fetching:
- *    http://checkip.dyndns.com/  or  http://ipdetect.dnspark.com/
+ *    http://checkip.dyndns.com/  or http://ipdetect.dnspark.com/
  *
  * 2. Send HTTP request to members.dyndns.com:
  *    GET /nic/update?system=dyndns&hostname=<host-name>&myip=<wan-ip> HTTP/1.1
@@ -179,8 +178,8 @@ int dynip_exec (void)
   if (!dyn_myhostname[0] || !dyndns.get_req)
      return (0);
 
-  for (num_arg = 0, p = strstr(dyndns.get_req,"%s"); p;
-       p = strstr(p+1,"%s"))
+  for (num_arg = 0, p = strstr(dyndns.get_req, "%s"); p;
+       p = strstr (p + 1, "%s"))
       num_arg++;
 
   if (num_arg != 1 && num_arg != 2)
@@ -218,7 +217,7 @@ static const char *parse_myip_address (const char *orig)
 {
   const char *body, *end, *ret, *p;
   char  *buf;
-  static char res[20];
+  static char res [20];
 
   buf = strdup (orig);
   if (!buf)
@@ -250,13 +249,13 @@ static const char *parse_myip_address (const char *orig)
 
   /* Find an IP-address between 'p' and 'end'
    */
-  TRACE (2, ("p: `%s', len %d\n", p, (int)(end-p)));
+  TRACE (2, ("p: `%s', len %d\n", p, (int)(end - p)));
   ret = NULL;
 
   for ( ; *p && p < end; p++)
       if (isdigit((int)*p) && aton(p))
       {
-        ret = _strlcpy (res, p, min(end-p+1,SIZEOF(res)));
+        ret = _strlcpy (res, p, min(end - p + 1, SIZEOF(res)));
         break;
       }
   free (buf);
@@ -271,23 +270,23 @@ static int parse_dyndns_response (const char *buf)
   TRACE (1, ("DynDNS resp: `%s'\n", buf));
 
 #if 0
-  if (!strncmp(buf,"nohost",6))
+  if (!strncmp(buf, "nohost", 6))
      ;
-  if (!strncmp(buf,"noauth",6))
+  if (!strncmp(buf, "noauth", 6))
      ;
-  if (!strncmp(buf,"notfqdn",7))
+  if (!strncmp(buf, "notfqdn", 7))
      ;
-  if (!strncmp(buf,"nochg",5))
+  if (!strncmp(buf, "nochg", 5))
      ;
-  if (!strncmp(buf,"good",4))
+  if (!strncmp(buf, "good", 4))
      ;
-  if (!strncmp(buf,"!yours",6))
+  if (!strncmp(buf, "!yours", 6))
      ;
-  if (!strncmp(buf,"abuse",5))
+  if (!strncmp(buf, "abuse", 5))
      ;
-  if (!strncmp(buf,"numhost",7))
+  if (!strncmp(buf, "numhost", 7))
      ;
-  if (!strncmp(buf,"dnserr",6))
+  if (!strncmp(buf, "dnserr", 6))
      ;
 #endif
   ARGSUSED (buf);
@@ -314,8 +313,8 @@ static BOOL url_parse (struct URL *res, const char *url)
   p = strstr (url, "://");
   if (p)
   {
-    _strlcpy (scheme, url, min(SIZEOF(scheme), p-url+1));
-    if (stricmp(scheme,"http"))
+    _strlcpy (scheme, url, min(SIZEOF(scheme), p - url + 1));
+    if (stricmp(scheme, "http"))
     {
       TRACE (1, ("Unsupported scheme `%s'\n", scheme));
       return (FALSE);
@@ -334,12 +333,13 @@ static BOOL url_parse (struct URL *res, const char *url)
     p = strchr (buf, ':');
     if (p)
     {
-      res->port = atoi (p+1);
+      res->port = atoi (p + 1);
       *p = '\0';
     }
     res->host = strdup (buf);
     res->on_heap = TRUE;
     p = strchr (url, '/');
+
     res->get_req = p ? strdup (p) : strdup ("/");
     TRACE (2, ("url_parse: host `%s', port %u, req `%s'\r\n",
                res->host, res->port, res->get_req));
@@ -422,11 +422,7 @@ static int dyndns_params (const char *value)
 #define HTTPVER_10  "HTTP/1.0"
 #define HTTPVER_11  "HTTP/1.1"
 
-#if defined(__CYGWIN__)
-  #define STARTS_WITH(s, what)  (strncasecmp (s, what, sizeof(what)-1) == 0)
-#else
-  #define STARTS_WITH(s, what)  (strnicmp (s, what, sizeof(what)-1) == 0)
-#endif
+#define STARTS_WITH(s, what)  (strnicmp (s, what, sizeof(what)-1) == 0)
 
 static int base64encode (const char *in, char *out, size_t out_len)
 {
@@ -494,14 +490,14 @@ static BOOL get_header (void *sock, long *cont_len_ptr)
   }
   TRACE (1, ("HTTP: `%.*s'\r\n", len, buf));
 
-  if (!STARTS_WITH(buf,HTTPVER_10) &&  /* no HTTP/1.[01]? */
-      !STARTS_WITH(buf,HTTPVER_11))
+  if (!STARTS_WITH(buf, HTTPVER_10) &&  /* no HTTP/1.[01]? */
+      !STARTS_WITH(buf, HTTPVER_11))
   {
     TRACE (1, ("Not a HTTP/1.[01] server\n"));
     return (FALSE);
   }
 
-  s = buf + sizeof(HTTPVER_10)-1;
+  s = buf + sizeof(HTTPVER_10) - 1;
   i = strspn (s, " \t");
   if (i == 0)        /* no whitespace? */
   {
@@ -533,13 +529,13 @@ static BOOL get_header (void *sock, long *cont_len_ptr)
   {
     TRACE (1, ("HTTP: `%.*s'\r\n", len, buf));
     s = buf;
-    if (STARTS_WITH(s,"Content-Length:"))
+    if (STARTS_WITH(s, "Content-Length:"))
     {
       s += sizeof("Content-Length:") - 1;
       content_length = atol (s);
     }
 #if 0
-    else if (STARTS_WITH(s,"Transfer-encoding: chunked"))
+    else if (STARTS_WITH(s, "Transfer-encoding: chunked"))
     {
       TRACE (1, ("Chunked encoding not supported\n"));
       return (FALSE);
@@ -636,8 +632,9 @@ static int get_url (const char *host, int port, const char *path,
   {
     while (sock_dataready(sock) > 0)
     {
-      int i = sock_gets (sock, (BYTE*)(resp_buf+length),
-                         sizeof(resp_buf)-1-length);
+      int i = sock_gets (sock, (BYTE*)(resp_buf + length),
+                         sizeof(resp_buf) - 1 - length);
+
       TRACE (1, ("%s", resp_buf+length));
       length += i;
       if (length > SIZEOF(resp_buf))

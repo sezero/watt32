@@ -147,11 +147,10 @@ int _w32_errno = 0;
 #define MAKE_CS_WRITABLE() ((void)0)   /*!< \todo Make CS writable */
 #define UNDO_CS_ACCESS()   ((void)0)   /*!< \todo Make CS read-only */
 
-
 #if defined(USE_DEBUG) && defined(__BORLANDC__) && (defined(__SMALL__) || defined(__LARGE__))
 STATIC void test_stk_check (void)
 {
-  char buf[1000];
+  char buf [1000];
   sprintf (buf, "In test_stk_check(): CS:IP %04X:%04X\n",
            _CS, FP_OFF(test_stk_check));
   puts (buf);
@@ -188,16 +187,16 @@ unsigned short W32_CDECL _w32_intel16 (unsigned short val)
 
 #if (DOSX) && defined(CS_WRITABLE)
 static const BYTE bswap32[] = {
-             0x8B,0x44,0x24,0x04,       /* mov eax,[esp+4] */
-             0x0F,0xC8,                 /* bswap eax       */
-             0xC3                       /* ret             */
+             0x8B, 0x44, 0x24, 0x04,    /* mov eax, [esp+4] */
+             0x0F, 0xC8,                /* bswap eax        */
+             0xC3                       /* ret              */
            };
 
 static const BYTE bswap16[] = {
-             0x8B,0x44,0x24,0x04,       /* mov eax,[esp+4] */
-             0x0F,0xC8,                 /* bswap eax       */
-             0xC1,0xE8,0x10,            /* shr eax,16      */
-             0xC3                       /* ret             */
+             0x8B, 0x44, 0x24, 0x04,    /* mov eax, [esp+4] */
+             0x0F, 0xC8,                /* bswap eax        */
+             0xC1, 0xE8, 0x10,          /* shr eax, 16      */
+             0xC3                       /* ret              */
            };
 
 /*
@@ -230,14 +229,13 @@ DWORD get_day_num (void)
 #else
   struct dosdate_t d;
 
-  memset (&d, 0, sizeof(d));
+  memset (&d, '\0', sizeof(d));
   _dos_getdate (&d);
   --d.month;
   --d.day;
-  return ((d.year-1970) * 365 + d.month * 31 + d.day);
+  return ((d.year - 1970) * 365 + d.month * 31 + d.day);
 #endif
 }
-
 
 #if (DOSX) && defined(__MSDOS__)
 /*
@@ -301,7 +299,7 @@ static BOOL RDTSC_enabled (void)
  * doesn't match REGPACK of the C-lib, intr() will probably cause a
  * crash.
  */
-#define OffsetOf(x) (unsigned)&(x)
+#define OffsetOf(x) (unsigned) &(x)
 
 static BOOL check_reg_struct (void)
 {
@@ -440,15 +438,15 @@ void W32_CALL init_misc (void)
   printf ("qword_str(1234): '%s'\n", qword_str(1234ULL));
   printf ("qword_str(123456789): '%s'\n", qword_str(123456789ULL));
   printf ("qword_str(-123456789): '%s'\n", qword_str(-123456789ULL));
-  printf ("qword_str(LLONG_MAX+1): '%s'\n", qword_str(LLONG_MAX+1ULL));
+  printf ("qword_str(LLONG_MAX+1): '%s'\n", qword_str(LLONG_MAX + 1ULL));
   exit (0);
 #endif
 }
 
 /**
  * WIN32: Open an existing file (or create) in share-mode but deny other
- *   processes to write to the file. On Watcom, fopen() already seems to
- *   open with SH_DENYWR internally.
+ *        processes to write to the file. On Watcom, fopen() already seems to
+ *        open with SH_DENYWR internally.
  *
  * MSDOS/Watcom/CygWin: simply call fopen().
  */
@@ -465,7 +463,7 @@ FILE *fopen_excl (const char *file, const char *mode)
        flags |= _O_APPEND;
   else flags |= _O_TRUNC;
 
-  if (mode[strlen(mode)-1] == 'b')
+  if (mode[strlen(mode) - 1] == 'b')
      flags |= O_BINARY;
 
   fd = _sopen (file, flags, SH_DENYWR, S_IREAD | S_IWRITE);
@@ -532,7 +530,7 @@ static int __cdecl crtdbg_report (int type, char *message, int *ret_val)
   fprintf (stderr, "%s: %s\n", report_name(type), message);
   got_crt_assert = (type == _CRT_ASSERT);
 
-  if (message && !strnicmp(message,"Run-Time Check",14))  /* 'cl -EHsc -RTCc' causes these */
+  if (message && !strnicmp(message, "Run-Time Check", 14))  /* 'cl -EHsc -RTCc' causes these */
      got_crt_assert = 1;
 
   if (got_crt_assert)
@@ -548,7 +546,7 @@ static void __cdecl crtdbg_exit (void)
 #if defined(USE_STACKWALKER)
   CONTEXT ctx;
 
-  memset (&ctx, 0, sizeof(ctx));
+  memset (&ctx, '\0', sizeof(ctx));
   if (got_crt_assert)
   {
     ctx.ContextFlags = CONTEXT_FULL;
@@ -673,7 +671,7 @@ void assert_fail (const char *file, unsigned line, const char *what)
 #endif  /* WIN32 */
 
 #if defined(SNPRINTF)
-  len = SNPRINTF (_watt_assert_buf, sizeof(_watt_assert_buf)-1,
+  len = SNPRINTF (_watt_assert_buf, sizeof(_watt_assert_buf) - 1,
 #else
   len = sprintf (_watt_assert_buf,
 #endif
@@ -797,18 +795,25 @@ const char *dos_extender_name (void)
 {
 #if (DOSX & DOS4GW)
   return dos4gw_extender_name();
+
 #elif (DOSX & DJGPP)
   return ("djgpp");
+
 #elif (DOSX & PHARLAP)
   return ("PharLap");
+
 #elif (DOSX & POWERPAK)
   return ("PowerPak");
+
 #elif (DOSX & X32VM)
   return ("X32VM");
+
 #elif defined(_WIN64)
   return ("Win64");
+
 #elif (DOSX & WINWATT)
   return ("Win32");
+
 #else
   return (NULL);
 #endif
@@ -845,7 +850,8 @@ void os_yield (void)
   if (!watt_kbhit() && do_yield)  /* watt_kbhit() to enable ^C generation */
   {
     IREGS reg;
-    memset (&reg, 0, sizeof(reg));
+
+    memset (&reg, '\0', sizeof(reg));
     reg.r_ax = 0x1680;
     GEN_INTERRUPT (0x2F, &reg);
     do_yield = (loBYTE(reg.r_ax) != 0x80);
@@ -956,7 +962,7 @@ long W32_CALL watt_filelength (int fd)
  */
 const char *list_lookup (DWORD type, const struct search_list *list, int num)
 {
-  static char buf[15];
+  static char buf [15];
 
   while (num > 0 && list->name)
   {
@@ -971,7 +977,7 @@ const char *list_lookup (DWORD type, const struct search_list *list, int num)
 
 const char *list_lookupX (DWORD type, const struct search_list *list, int num)
 {
-  static char buf[15];
+  static char buf [15];
 
   while (num > 0 && list->name)
   {
@@ -990,7 +996,7 @@ const char *list_lookupX (DWORD type, const struct search_list *list, int num)
  */
 const char *MAC_address (const void *addr)
 {
-  static char buf[2][25];
+  static char buf [2][25];
   static int  idx = 0;
   char  *rc = buf [idx];
   char  *p  = rc;
@@ -1015,7 +1021,7 @@ const char *MAC_address (const void *addr)
  */
 const char *dword_str (DWORD val)
 {
-  static char buf[20];
+  static char buf [20];
   char   tmp[20];
 
   if (val < 1000UL)
@@ -1413,7 +1419,7 @@ BOOL is_big_endian (void)
 
 struct cmd_block {
        BYTE len;
-       char buf[256];
+       char buf [256];
      };
 
 #include <sys/pack_off.h>
@@ -1734,7 +1740,7 @@ static void print_pkt_sizes (void)
 static void itoa_tests (void)
 {
   extern char *_w32_itoa (int val, char *buf, int radix); /* winmisc.c */
-  char buf[20];
+  char buf [20];
   int  i, val[] = {10, 100, 9999, -10001, 12345678 };
 
   for (i = 0; i < DIM(val); i++)
@@ -1749,7 +1755,7 @@ static BOOL get_mem_strat (BYTE *strat)
 {
   IREGS reg;
 
-  memset (&reg, 0, sizeof(reg));
+  memset (&reg, '\0', sizeof(reg));
   reg.r_ax = 0x5800;
   GEN_INTERRUPT (0x21, &reg);
   if (reg.r_flags & CARRY_BIT)
@@ -1762,7 +1768,7 @@ static BOOL set_mem_strat (BYTE strat)
 {
   IREGS reg;
 
-  memset (&reg, 0, sizeof(reg));
+  memset (&reg, '\0', sizeof(reg));
   reg.r_ax = 0x5801;
   reg.r_bx = strat;
   GEN_INTERRUPT (0x21, &reg);

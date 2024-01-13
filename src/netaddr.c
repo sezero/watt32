@@ -43,9 +43,9 @@
  */
 char * W32_CALL _inet_ntoa (char *s, DWORD ip)
 {
-  static char buf[4][20];
-  static int idx = 0;
-  char *p = s;
+  static char buf [4][20];
+  static int  idx = 0;
+  char  *p = s;
 
   if (!p)
   {
@@ -54,11 +54,11 @@ char * W32_CALL _inet_ntoa (char *s, DWORD ip)
   }
   itoa ((int)(ip >> 24), p, 10);
   strcat (p, ".");
-  itoa ((int)(ip >> 16) & 0xFF, strchr(p,'\0'), 10);
+  itoa ((int)(ip >> 16) & 0xFF, strchr(p, '\0'), 10);
   strcat (p, ".");
-  itoa ((int)(ip >> 8) & 0xFF, strchr(p,'\0'), 10);
+  itoa ((int)(ip >> 8) & 0xFF, strchr(p, '\0'), 10);
   strcat (p, ".");
-  itoa ((int)(ip & 0xFF), strchr(p,'\0'), 10);
+  itoa ((int)(ip & 0xFF), strchr(p, '\0'), 10);
   return (p);
 }
 
@@ -73,11 +73,10 @@ DWORD W32_CALL _inet_addr (const char *s)
 
   if (isaddr(s))
      return aton (s);
-  if (isaddr_dotless(s,&addr))
+  if (isaddr_dotless(s, &addr))
      return (addr);
   return (0);
 }
-
 
 /**
  * Converts [a.b.c.d] or a.b.c.d to 32 bit IPv4 address.
@@ -88,7 +87,7 @@ DWORD W32_CALL aton (const char *str)
 {
   DWORD ip = 0;
   int   i;
-  char *s = (char*)str;
+  char *s = (char*) str;
 
   if (*s == '[')
      ++s;
@@ -148,7 +147,7 @@ BOOL W32_CALL isaddr (const char *str)
  */
 BOOL W32_CALL isaddr_dotless (const char *str, DWORD *ip)
 {
-  char  buf[10] = { 0 };
+  char  buf [10] = { 0 };
   int   ch, i = 0;
   DWORD addr;
 
@@ -159,7 +158,7 @@ BOOL W32_CALL isaddr_dotless (const char *str, DWORD *ip)
 
     if (isdigit(ch))
     {
-      buf[i++] = ch;
+      buf [i++] = ch;
       continue;
     }
     if (ch == ' ' || ch == '[' || ch == ']')
@@ -167,7 +166,7 @@ BOOL W32_CALL isaddr_dotless (const char *str, DWORD *ip)
     return (FALSE);
   }
 
-  buf[i] = '\0';
+  buf [i] = '\0';
   addr = atol (buf);
   if (addr == 0)
      return (FALSE);
@@ -205,16 +204,16 @@ char * W32_CALL inet_ntoa (struct in_addr addr)
  */
 const char *_inet_atoeth (const char *src, eth_address *p_eth)
 {
-  BYTE *eth = (BYTE*)p_eth;
+  BYTE *eth = (BYTE*) p_eth;
 
 #if (DOSX)
   int  tmp [sizeof(eth_address)];
   BOOL ok, colon = (src[2] == ':');
 
-  ok = colon ? (sscanf(src,"%02x:%02x:%02x:%02x:%02x:%02x",
+  ok = colon ? (sscanf(src, "%02x:%02x:%02x:%02x:%02x:%02x",
                        &tmp[0], &tmp[1], &tmp[2],
                        &tmp[3], &tmp[4], &tmp[5]) == DIM(tmp)) :
-               (sscanf(src,"%02x-%02x-%02x-%02x-%02x-%02x",
+               (sscanf(src, "%02x-%02x-%02x-%02x-%02x-%02x",
                        &tmp[0], &tmp[1], &tmp[2],
                        &tmp[3], &tmp[4], &tmp[5]) == DIM(tmp));
   if (!ok)
@@ -228,12 +227,12 @@ const char *_inet_atoeth (const char *src, eth_address *p_eth)
   eth [5] = tmp [5];
   src = strrchr(src, colon ? ':' : '-') + 3;
 #else
-  eth [0] = atox (src-2);      /*   xx:xx:xx:xx:xx:xx */
-  eth [1] = atox (src+1);      /* ^src-2              */
-  eth [2] = atox (src+4);      /*    ^src+1           */
-  eth [3] = atox (src+7);
-  eth [4] = atox (src+10);
-  eth [5] = atox (src+13);
+  eth [0] = atox (src - 2);      /*   xx:xx:xx:xx:xx:xx */
+  eth [1] = atox (src + 1);      /* ^src-2              */
+  eth [2] = atox (src + 4);      /*    ^src+1           */
+  eth [3] = atox (src + 7);
+  eth [4] = atox (src + 10);
+  eth [5] = atox (src + 13);
 
   src += strlen ("xx:xx:xx:xx:xx:xx");
 #endif
@@ -256,7 +255,7 @@ int W32_CALL inet_aton (const char *name, struct in_addr *addr)
 {
   u_long ip = inet_addr (name);
 
-  if (ip == INADDR_NONE && strcmp(name,"255.255.255.255"))
+  if (ip == INADDR_NONE && strcmp(name, "255.255.255.255"))
      return (0);
   addr->s_addr = ip;
   return (1);
@@ -409,7 +408,7 @@ const char *_inet6_ntoa (const void *ip)
    */
   idx &= 3;
   rc = (char*) inet_ntop (AF_INET6, ip, rc, sizeof(buf[0]));
-  return (const char*)rc;
+  return (const char*) rc;
 }
 
 /**
@@ -423,7 +422,7 @@ const ip6_address *_inet6_addr (const char *str)
 
   if (!inet_pton(AF_INET6, str, &ip6))
      return (NULL);
-  return (const ip6_address*)ip6;
+  return (const ip6_address*) ip6;
 }
 
 /*
@@ -480,7 +479,7 @@ int W32_CALL ascii2addr (int af, const char *ascii, void *result)
  */
 char * W32_CALL addr2ascii (int af, const void *addrp, int len, char *buf)
 {
-  static char staticbuf[64];    /* 64 for AF_LINK > 16 for AF_INET */
+  static char staticbuf [64];    /* 64 for AF_LINK > 16 for AF_INET */
 
   if (!buf)
      buf = staticbuf;
@@ -493,7 +492,7 @@ char * W32_CALL addr2ascii (int af, const void *addrp, int len, char *buf)
            SOCK_ERRNO (ENAMETOOLONG);
            return (NULL);
          }
-         strcpy (buf, inet_ntoa (*(const struct in_addr *) addrp));
+         strcpy (buf, inet_ntoa (*(const struct in_addr*) addrp));
          break;
 
     case AF_LINK:
@@ -502,7 +501,7 @@ char * W32_CALL addr2ascii (int af, const void *addrp, int len, char *buf)
            SOCK_ERRNO (ENAMETOOLONG);
            return (NULL);
          }
-         strcpy (buf, link_ntoa ((const struct sockaddr_dl *) addrp));
+         strcpy (buf, link_ntoa ((const struct sockaddr_dl*) addrp));
          break;
 
     default:
@@ -575,7 +574,7 @@ int mask_len (DWORD mask)
      */
     #define POPCOUNT(x)  _mm_popcnt_u32 (x)
   #else
-    #error Help!!
+    #error "Help!!"
   #endif
 #endif
 
@@ -591,7 +590,7 @@ static DWORD bit_set (DWORD v)
   if (have_popcnt == -1)
      have_popcnt = (x86_have_cpuid && (x86_capability & X86_CAPA_MMX));
   if (have_popcnt)
-     return  POPCOUNT(v);
+     return POPCOUNT (v);
 
   /* Fall through */
 #endif

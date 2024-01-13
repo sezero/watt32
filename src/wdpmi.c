@@ -65,32 +65,32 @@
 #endif
 
 #if defined(DMC386)
-  #define int386     int86_real
-  #define int386x    int86x_real
-  #define AX_REG(r)  r.x.ax
-  #define BX_REG(r)  r.x.bx
-  #define CX_REG(r)  r.x.cx
-  #define DX_REG(r)  r.x.dx
-  #define EAX_REG(r) r.e.eax
-  #define EBX_REG(r) r.e.ebx
-  #define ECX_REG(r) r.e.ecx
-  #define EDX_REG(r) r.e.edx
-  #define ESI_REG(r) r.e.esi
-  #define EDI_REG(r) r.e.edi
-  #define CARRY(r)   (r.x.cflag & 1)
+  #define int386      int86_real
+  #define int386x     int86x_real
+  #define AX_REG(r)   r.x.ax
+  #define BX_REG(r)   r.x.bx
+  #define CX_REG(r)   r.x.cx
+  #define DX_REG(r)   r.x.dx
+  #define EAX_REG(r)  r.e.eax
+  #define EBX_REG(r)  r.e.ebx
+  #define ECX_REG(r)  r.e.ecx
+  #define EDX_REG(r)  r.e.edx
+  #define ESI_REG(r)  r.e.esi
+  #define EDI_REG(r)  r.e.edi
+  #define CARRY(r)    (r.x.cflag & 1)
 
 #else
-  #define AX_REG(r)  r.w.ax
-  #define BX_REG(r)  r.w.bx
-  #define CX_REG(r)  r.w.cx
-  #define DX_REG(r)  r.w.dx
-  #define EAX_REG(r) r.x.eax
-  #define EBX_REG(r) r.x.ebx
-  #define ECX_REG(r) r.x.ecx
-  #define EDX_REG(r) r.x.edx
-  #define ESI_REG(r) r.x.esi
-  #define EDI_REG(r) r.x.edi
-  #define CARRY(r)   (r.w.cflag & 1)
+  #define AX_REG(r)   r.w.ax
+  #define BX_REG(r)   r.w.bx
+  #define CX_REG(r)   r.w.cx
+  #define DX_REG(r)   r.w.dx
+  #define EAX_REG(r)  r.x.eax
+  #define EBX_REG(r)  r.x.ebx
+  #define ECX_REG(r)  r.x.ecx
+  #define EDX_REG(r)  r.x.edx
+  #define ESI_REG(r)  r.x.esi
+  #define EDI_REG(r)  r.x.edi
+  #define CARRY(r)    (r.w.cflag & 1)
 #endif
 
 #if (DOSX & (DOS4GW|POWERPAK))
@@ -106,9 +106,9 @@ WORD __dpmi_errno = 0;        /* last DPMI error */
 WORD causeway_ver = 0;        /* major=MSB, minor=LSB */
 BOOL dos32a_nullptr_chk = 0;  /* NULL-ptr traps active */
 
-#define DOS32A_SIGN  (('I'<<24) + ('D'<<16) + ('3'<<8) + ('2'<<0))
-#define PMODEW_SIGN  (('P'<<24) + ('M'<<16) + ('D'<<8) + ('W'<<0))
-#define WDOSX_SIGN   (('W'<<24) + ('D'<<16) + ('S'<<8) + ('X'<<0))
+#define DOS32A_SIGN  (('I' << 24) + ('D' << 16) + ('3' << 8) + ('2' << 0))
+#define PMODEW_SIGN  (('P' << 24) + ('M' << 16) + ('D' << 8) + ('W' << 0))
+#define WDOSX_SIGN   (('W' << 24) + ('D' << 16) + ('S' << 8) + ('X' << 0))
 
 #if (DOSX & DOS4GW) && defined(WATCOM386) && defined(USE_EXCEPT_HANDLER)
   static struct FAULT_STRUC exc_struct;
@@ -197,7 +197,7 @@ BOOL dpmi_is_causeway (void)
      return (FALSE);
 
   movedata (s.es, r.x.ebx, _my_ds(), (unsigned)&sign, sizeof(sign));
-  if (!memcmp(sign,"CAUSEWAY",8))
+  if (!memcmp(sign, "CAUSEWAY", 8))
   {
     causeway_ver = (sign[8] << 8) + sign[9];
     return (TRUE);
@@ -215,11 +215,11 @@ BOOL dpmi_is_causeway (void)
   segread (&s);
   int386x (0x21, &r, &r, &s);
 
-  rp = MK_FP (s.es, EBX_REG(r)-10);
+  rp = MK_FP (s.es, EBX_REG(r) - 10);
 
   if (s.es && SelReadable(s.es)    &&
       EAX_REG(r) < GET_LIMIT(s.es) &&
-      !_fstrncmp(rp,"CAUSEWAY",8))
+      !_fstrncmp(rp, "CAUSEWAY", 8))
   {
     rp += 8;
     causeway_ver = (rp[0] << 8) + rp[1];
@@ -243,7 +243,7 @@ BOOL dpmi_is_hxdos (void)
   EDI_REG(reg) = (DWORD) &buf;
   int386 (0x31, &reg, &reg);
 #endif
-  return !strncmp(buf+2,"HDPMI",5);
+  return (strncmp(buf + 2, "HDPMI", 5) == 0);
 }
 
 /*
@@ -253,16 +253,22 @@ const char *dos4gw_extender_name (void)
 {
   if (dpmi_is_causeway())
      return ("CAUSEWAY");
+
   if (dpmi_is_wdosx())
      return ("WDOSX");
+
   if (dpmi_is_pmodew())
      return ("PMODEW");
+
   if (dpmi_is_hxdos())
      return ("HXDOS");
+
   if (dpmi_is_dos32a())
      return ("DOS32A");
+
   if (dpmi_is_dos4gw())
      return ("DOS4GW");
+
   return ("DOS4GW");  /* assume the rest are DOS4GW compatible */
 }
 
@@ -301,7 +307,7 @@ int dpmi_except_handler (exceptionHook exc_func)
   int386 (0x31, &r, &r);
 
   user_exc_hook = exc_func;
-  memset (&exc_struct, 0, sizeof(exc_struct));
+  memset (&exc_struct, '\0', sizeof(exc_struct));
   dpmi_lock_region ((void*)&exc_struct, sizeof(exc_struct));
   dpmi_lock_region ((void*)exception_main, 100);
   return (1);
@@ -312,7 +318,6 @@ int dpmi_except_handler (exceptionHook exc_func)
 #endif
 }
 #endif /* !(DOSX & POWERPAK) */
-
 
 void *dpmi_get_real_vector (int intr)
 {
@@ -380,7 +385,7 @@ int dpmi_lock_region (void *address, unsigned length)
   union REGS r;
   DWORD base, linear;
 
-  if (!dpmi_get_base_address(MY_CS(),&base))
+  if (!dpmi_get_base_address(MY_CS(), &base))
      return (0);
 
   linear = base + (DWORD)address;
@@ -405,7 +410,7 @@ int dpmi_unlock_region (void *address, unsigned length)
   union REGS r;
   DWORD base, linear;
 
-  if (!dpmi_get_base_address(MY_CS(),&base))
+  if (!dpmi_get_base_address(MY_CS(), &base))
      return (0);
 
   linear = base + (DWORD)address;
@@ -432,7 +437,7 @@ int dpmi_real_interrupt (int intr, IREGS *reg)
   struct SREGS s;
 
   __dpmi_errno = 0;
-  memset (&r, 0, sizeof(r));
+  memset (&r, '\0', sizeof(r));
   segread (&s);
   EAX_REG(r) = 0x300;
   EBX_REG(r) = intr;
@@ -459,7 +464,7 @@ int dpmi_real_call_retf (IREGS *reg)
   struct SREGS s;
 
   __dpmi_errno = 0;
-  memset (&r, 0, sizeof(r));
+  memset (&r, '\0', sizeof(r));
   segread (&s);
   EAX_REG(r) = 0x301;
   EBX_REG(r) = 0;
@@ -530,7 +535,7 @@ int int386x (int intno, union REGS *ireg, union REGS *oreg, struct SREGS *sreg)
   rm_reg.r_gs = 0;     /* needed? */
   rm_reg.r_fs = 0;     /* needed? */
 
-  if (real_interrupt(intno,&rm_reg) < 0)
+  if (real_interrupt(intno, &rm_reg) < 0)
   {
     oreg->x.cflag |= 1; /* Set carry bit */
     return (-1);
@@ -682,7 +687,7 @@ void stack_rewind (DWORD start, DWORD base)
         else _printk ("%04X ",     *argv++);
       }
     }
-    eip     = *(context+1);  /* get next return address */
+    eip     = *(context + 1);  /* get next return address */
     context = next;
   }
   _printk ("\r\n");

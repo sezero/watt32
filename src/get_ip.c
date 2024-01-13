@@ -67,8 +67,10 @@ getipnodebyname (const char *name, int af, int flags, int *error)
   struct hostent *he2 = NULL;
   struct in_addr  in4;
   struct in6_addr in6;
-  BOOL   have_v4 = TRUE, have_v6 = TRUE;
-  BOOL   v4 = FALSE, v6 = FALSE;
+  BOOL   have_v4 = TRUE;
+  BOOL   have_v6 = TRUE;
+  BOOL   v4 = FALSE;
+  BOOL   v6 = FALSE;
   int    tmp_err;
 
   SOCK_DEBUGF (("\ngetipnodebyname: %s ", name));
@@ -245,8 +247,7 @@ void W32_CALL freehostent (struct hostent *he)
   if (!he->h_name)   /* possible double freeing */
      return;
 
-  free (he->h_name);
-  he->h_name = NULL;
+  DO_FREE (he->h_name);
 
   for (p = he->h_addr_list[0]; p; p++)
       free (p);
@@ -269,7 +270,7 @@ static struct hostent *copyandmerge (const struct hostent *he1,
   char **cpp, **npp;
 
 #if !defined(USE_IPV6)
-  BYTE in6addr_mapped[12];
+  BYTE in6addr_mapped [12];
 
   WATT_ASSERT (af != AF_INET6);
 #endif
