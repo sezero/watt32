@@ -666,7 +666,7 @@ static int W32_CALL write_func (const void *buf, size_t length)
   return (0);
 }
 
-void usage (char *argv0)
+void usage (const char *argv0)
 {
   printf ("Usage: %s [[-d] [-n] [-a] [-h host] [-f file]\n"
           "\t\t [-i ip] [-m mask]] [-t timeout] [-r retry]\n"
