@@ -133,7 +133,7 @@ static int write_pcap_packet (const void *pkt, BOOL out);
 #endif
 
 
-static void (W32_CALL *prev_hook) (const char*, const char*) = NULL;
+static void (W32_CALL *prev_hook) (const char *, const char *) = NULL;
 
 static jmp_buf dbg_jmp;
 static char    dbg_name [MAX_PATHLEN+1] = "WATTCP.DBG";
@@ -295,7 +295,7 @@ void dbug_open (void)
 #if !defined(__BORLANDC__)  /* buggy output with this */
   else if (dbg_linebuf)
   {
-    static char buf[256];
+    static char buf [256];
     setvbuf (dbg_file.stream, buf, _IOLBF, sizeof(buf));
   }
 #endif
@@ -472,7 +472,7 @@ static __inline const char *ip4_protocol (BYTE prot)
  */
 static const char *type_of_service (BYTE tos)
 {
-  static char buf[30];
+  static char buf [30];
   char  *p = buf;
 
   if (tos == 0)
@@ -510,7 +510,7 @@ static const char *type_of_service (BYTE tos)
  */
 static __inline const char *RTT_str (DWORD rtt, DWORD now)
 {
-  static char buf[40];
+  static char buf [40];
 
   if (rtt == 0UL || rtt < now)
      return ("--");      /* RTT timer stopped */
@@ -556,13 +556,13 @@ static void dump_addr_port (const char      *proto,
 
     if (outbound)
          dbug_printf ("%s:   %s (%d) -> %s (%d), sock %" ADDR_FMT "\n", proto,
-                      _inet_ntoa(NULL,my_ip_addr),  sk->myport,
-                      _inet_ntoa(NULL,sk->hisaddr), sk->hisport,
+                      _inet_ntoa(NULL, my_ip_addr),  sk->myport,
+                      _inet_ntoa(NULL, sk->hisaddr), sk->hisport,
                       ADDR_CAST(sock));
 
     else dbug_printf ("%s:   %s (%d) -> %s (%d), sock %" ADDR_FMT "\n", proto,
-                      _inet_ntoa(NULL,sk->hisaddr), sk->hisport,
-                      _inet_ntoa(NULL,my_ip_addr),  sk->myport,
+                      _inet_ntoa(NULL, sk->hisaddr), sk->hisport,
+                      _inet_ntoa(NULL, my_ip_addr),  sk->myport,
                       ADDR_CAST(sock));
   }
 }
@@ -614,15 +614,14 @@ static void dump_addr6_port (const char       *proto,
 
   else if (outbound)
        dbug_printf ("%s:   %s (%d) -> %s (%d)\n", proto,
-                    _inet6_ntoa(&in6addr_my_ip),sk->myport,
-                    _inet6_ntoa(sk->his6addr),  sk->hisport);
+                    _inet6_ntoa(&in6addr_my_ip), sk->myport,
+                    _inet6_ntoa(sk->his6addr), sk->hisport);
 
   else dbug_printf ("%s:   %s (%d) -> %s (%d)\n", proto,
-                    _inet6_ntoa(sk->his6addr),  sk->hisport,
-                    _inet6_ntoa(&in6addr_my_ip),sk->myport);
+                    _inet6_ntoa(sk->his6addr), sk->hisport,
+                    _inet6_ntoa(&in6addr_my_ip), sk->myport);
 }
 #endif
-
 
 /*----------------------------------------------------------------------*/
 
@@ -826,7 +825,7 @@ static void ip4_dump (const in_Header *ip)
   dbug_putc ('\n');
   opt_len = ihl - sizeof(*ip);
   if (opt_len > 0)
-     dump_ip_opt (ip+1, opt_len);
+     dump_ip_opt (ip + 1, opt_len);
 }
 
 /*----------------------------------------------------------------------*/
@@ -851,8 +850,8 @@ static int ip4_orig_dump (const in_Header *this_ip,
   }
 
   dbug_printf ("  Orig IP: %s -> %s\n",
-               _inet_ntoa(NULL,intel(orig_ip->source)),
-               _inet_ntoa(NULL,intel(orig_ip->destination)));
+               _inet_ntoa(NULL, intel(orig_ip->source)),
+               _inet_ntoa(NULL, intel(orig_ip->destination)));
 
   ofs = (intel16(orig_ip->frag_ofs) & IP_OFFMASK) << 3;
 
@@ -871,12 +870,14 @@ static int ip4_orig_dump (const in_Header *this_ip,
   else if (orig_ip->proto == TCP_PROTO && icmp_len - ihl >= 4)
   {
     const tcp_Header *tcp = (const tcp_Header*) ((const BYTE*)orig_ip + ihl);
+
     dbug_printf ("           TCP: port %u -> %u\n",
                  intel16(tcp->srcPort), intel16(tcp->dstPort));
   }
   else if (orig_ip->proto == UDP_PROTO && icmp_len - ihl >= 4)
   {
     const udp_Header *udp = (const udp_Header*) ((const BYTE*)orig_ip + ihl);
+
     dbug_printf ("           UDP: port %u -> %u\n",
                  intel16(udp->srcPort), intel16(udp->dstPort));
   }
@@ -893,7 +894,7 @@ static int icmp4_dump (const in_Header *ip)
   WORD  len  = in_GetHdrLen (ip);
   const ICMP_PKT *icmp = (const ICMP_PKT*) ((const BYTE*)ip + len);
   const char     *type_str, *chk_ok;
-  char  buf[200] = "";
+  char  buf [200] = "";
   char *p = buf;
   int   type, code;
 
@@ -1024,22 +1025,17 @@ static int igmp_dump (const in_Header *ip)
   const IGMPv2_packet *igmp2 = (const IGMPv2_packet*) igmp0;
   const IGMPv3_packet *igmp3 = (const IGMPv3_packet*) igmp0;
   WORD  igmp_len             = intel16 (ip->length) - hdr_len;
-  BOOL  is_v[4]              = { FALSE, FALSE, FALSE, FALSE };
+  BOOL  is_v [4]             = { FALSE, FALSE, FALSE, FALSE };
 
   if (igmp_len == sizeof(*igmp1) && igmp1->version == 1) /* 8 byte */
-      is_v[1] = TRUE;
-
+       is_v[1] = TRUE;
   else if (igmp_len == sizeof(*igmp2))                   /* 8 byte */
-      is_v[2] = TRUE;
-
+       is_v[2] = TRUE;
   else if (igmp_len == sizeof(*igmp0))                   /* 16 byte */
-      is_v[0] = TRUE;
-
+       is_v[0] = TRUE;
   else if (igmp_len >= sizeof(*igmp3))                   /* >= 14 byte, multiple of 4 (14,18,22..) */
-      is_v[3] = TRUE;
-
-  else
-      return dbug_printf ("IGMP:  Header length %u??\n", igmp_len);
+       is_v[3] = TRUE;
+  else return dbug_printf ("IGMP:  Header length %u??\n", igmp_len);
 
   if (is_v[0])
      return igmp0_dump (igmp0, igmp_len);
@@ -1160,7 +1156,7 @@ static int sctp_dump (const in_Header *ip4, const in6_Header *ip6)
   else
   {
     len  = intel16 (ip6->len);
-    len  = min (len, MAX_IP6_DATA-sizeof(*ip6));
+    len  = min (len, MAX_IP6_DATA - sizeof(*ip6));
     head = (const struct sctp_Header*) (ip6 + 1);
   }
 
@@ -1181,7 +1177,7 @@ static int sctp_dump (const in_Header *ip4, const in6_Header *ip6)
     dbug_printf ("       no chunks!!, len %u\n", (unsigned)len);
     return (0);
   }
-  chunk = (const struct sctp_ChunkDesc*) (head+1);
+  chunk = (const struct sctp_ChunkDesc*) (head + 1);
 
   for (chunk_cnt = 1; len > 0; chunk_cnt++)
   {
@@ -1193,7 +1189,7 @@ static int sctp_dump (const in_Header *ip4, const in6_Header *ip6)
 
     if (chunk_len < sizeof(*chunk))
     {
-      dbug_printf ("%d) [Bad chunk length %u]\n", chunk_cnt+1, chunk_len);
+      dbug_printf ("%d) [Bad chunk length %u]\n", chunk_cnt + 1, chunk_len);
       break;
     }
     dbug_printf ("       chunk %d: [%s], len %d, flag 0x%02X\n",
@@ -1201,7 +1197,7 @@ static int sctp_dump (const in_Header *ip4, const in6_Header *ip6)
                  chunk_len, chunk->chunkFlg);
 
     if (chunk->chunkID == SCTP_INITIATION || chunk->chunkID == SCTP_INITIATION_ACK)
-       sctp_dump_init ((const struct sctp_Initiation*)(chunk+1), chunk_end);
+       sctp_dump_init ((const struct sctp_Initiation*)(chunk + 1), chunk_end);
 
     align = chunk_len % 4;
     if (align != 0)
@@ -1242,7 +1238,7 @@ static unsigned ip4_payload_dump (const void *sock, const in_Header *ip)
     WORD  hlen       = in_GetHdrLen (ip);
     WORD  len        = intel16 (ip->length) - hlen;
     const BYTE *data = (const BYTE*)ip + hlen;
-    return dump_data (data, min(len, (WORD)(MAX_IP4_DATA-hlen)));
+    return dump_data (data, min(len, (WORD)(MAX_IP4_DATA - hlen)));
   }
   return (0);
 }
@@ -1285,7 +1281,7 @@ static const char *ip6_next_hdr (BYTE nxt)
 
 static const char *icmp6_options (const BYTE *opt, int tot_len)
 {
-  static char buf[50];
+  static char buf [50];
   char  *p = buf;
   int    len, val;
 
@@ -1320,7 +1316,7 @@ static int icmp6_dump (const in6_Header *ip)
   const union ICMP6_PKT *icmp = (const union ICMP6_PKT*) (ip + 1);
   unsigned    len      = intel16 (ip->len);
   unsigned    type     = icmp->unused.type;
-  char        buf[200] = "";
+  char        buf [200] = "";
   char       *p   = buf;
   const BYTE *opt = NULL;
   int         rc;
@@ -1420,7 +1416,7 @@ static int icmp6_dump (const in6_Header *ip)
   rc = dbug_printf ("ICMP6: %s, code %d\n"
                     "       chksum %04X (%s)\n",
                     buf, icmp->unused.code, icmp->unused.checksum,
-                    _ip6_icmp_checksum(ip,icmp,len) ? "ok" : "ERROR");
+                    _ip6_icmp_checksum(ip, icmp, len) ? "ok" : "ERROR");
   if (opt)
       rc += dbug_printf ("       Opt: %s\n", opt);
   return (rc);
@@ -1439,9 +1435,8 @@ static int ip6_header_dump (const in6_Header *ip)
                      ip6_src, src_type, ip6_dst, dst_type);
   len += dbug_printf ("       ver %d, pri %d, flow %d,%d,%d, len %u, "
                       "next-hdr %s (%u), hop-lim %d\n",
-                      ip->ver, ip->pri, ip->flow_lbl[0],
-                      ip->flow_lbl[1], ip->flow_lbl[2], intel16(ip->len),
-                      ip6_next_hdr(ip->next_hdr), ip->next_hdr, ip->hop_limit);
+                      ip->ver, ip->pri, ip->flow_lbl [0], ip->flow_lbl [1], ip->flow_lbl [2],
+                      intel16(ip->len), ip6_next_hdr(ip->next_hdr), ip->next_hdr, ip->hop_limit);
   return (len);
 }
 
@@ -1464,8 +1459,9 @@ static unsigned ip6_payload_dump (const void *sock, const in6_Header *ip)
   if (debug.IP)    /* dump IPv6-network protocols as hex */
   {
     WORD len = intel16 (ip->len);
-    len = min (len, MAX_IP6_DATA-sizeof(*ip));
-    return dump_data (ip+1, len);
+
+    len = min (len, MAX_IP6_DATA - sizeof(*ip));
+    return dump_data (ip + 1, len);
   }
   return (0);
 }
@@ -1541,7 +1537,7 @@ static const char *pppoe_get_tag (const BYTE *tag)
     case PPPOE_TAG_AC_COOKIE:
          p   += sprintf (p, "AC-cookie ");
          tag += PPPOE_TAG_HDR_SIZE;
-         while (len > 0 && p < buf+sizeof(buf)-4)
+         while (len > 0 && p < buf + sizeof(buf) - 4)
          {
            p += sprintf (p, "%02X-", *tag & 255);
            tag++;
@@ -1553,7 +1549,7 @@ static const char *pppoe_get_tag (const BYTE *tag)
     case PPPOE_TAG_HOST_UNIQ:
          p   += sprintf (p, "host-uniq ");
          tag += PPPOE_TAG_HDR_SIZE;
-         while (len > 0 && p < buf+sizeof(buf)-4)
+         while (len > 0 && p < buf + sizeof(buf) - 4)
          {
            p += sprintf (p, "%02X-", *tag & 255);
            tag++;
@@ -1571,19 +1567,21 @@ static const char *pppoe_get_tag (const BYTE *tag)
          break;
 
     case PPPOE_TAG_HOST_URL:
-         len = min (len, SIZEOF(buf)-12);
-         sprintf (buf, "host URL `%.*s'", len, tag+PPPOE_TAG_HDR_SIZE);
+         len = min (len, SIZEOF(buf) - 12);
+         sprintf (buf, "host URL `%.*s'", len, tag + PPPOE_TAG_HDR_SIZE);
          break;
 
     case PPPOE_TAG_MOTM:
-         len = min (len, SIZEOF(buf)-12);
+         len = min (len, SIZEOF(buf) - 12);
          sprintf (buf, "msg-of-the-minute `%.*s'",
-                  len, tag+PPPOE_TAG_HDR_SIZE);
+                  len, tag + PPPOE_TAG_HDR_SIZE);
          break;
 
     case PPPOE_TAG_IP_ROUTE_ADD:
          {
-           char  buf1[20], buf2[20], buf3[20];
+           char  buf1 [20];
+           char  buf2 [20];
+           char  buf3 [20];
            const char *dest_net  = _inet_ntoa (buf1, intel(*(DWORD*)(tag+4)));
            const char *dest_mask = _inet_ntoa (buf2, intel(*(DWORD*)(tag+8)));
            const char *gateway   = _inet_ntoa (buf3, intel(*(DWORD*)(tag+12)));
@@ -1687,7 +1685,7 @@ static int pppoe_sess_dump (const void *sock, const struct pppoe_Packet *pppoe)
 
   if (proto == PPP_IP)
   {
-    const in_Header *ip = (const in_Header*)buf;
+    const in_Header *ip = (const in_Header*) buf;
 
     _inet_ntoa (ip4_src, intel(ip->source));
     _inet_ntoa (ip4_dst, intel(ip->destination));
@@ -1718,7 +1716,7 @@ static const char *udp_tcp_checksum (const in_Header  *ip,
   tcp_PseudoHeader ph;
   int              len;
 
-  memset (&ph, 0, sizeof(ph));
+  memset (&ph, '\0', sizeof(ph));
   if (udp)
   {
     len = intel16 (udp->length);
@@ -1826,7 +1824,7 @@ static int udp6_dump (const _udp_Socket *sock, const in6_Header *ip)
                intel16(udp->length), intel16(udp->checksum), chk_ok);
 
   if (udplen >= sizeof(struct DNS_Header) &&
-      is_dns_packet(udp->srcPort,udp->dstPort))
+      is_dns_packet(udp->srcPort, udp->dstPort))
      return dns_dump (data, udplen, 0);
   return dump_data (data, udplen);
 }
@@ -1842,7 +1840,7 @@ static int tcp_dump (const _tcp_Socket *sock, const in_Header *ip)
   WORD  hlen;
   WORD  iplen, dlen, olen;
   DWORD win, ack, seq;
-  char  flgBuf [4*8+1] = { 0 };
+  char  flg_buf [4*8+1] = { 0 };
 
 #if defined(USE_IPV6)
   const in6_Header *ip6 = (const in6_Header*) ip;
@@ -1880,14 +1878,14 @@ static int tcp_dump (const _tcp_Socket *sock, const in_Header *ip)
   if (frag_status && !(frag_status & IS_FIRST))
      return dump_data (tcp, iplen);
 
-  if (tcp->flags & tcp_FlagACK)  strcat (flgBuf, " ACK");
-  if (tcp->flags & tcp_FlagFIN)  strcat (flgBuf, " FIN");
-  if (tcp->flags & tcp_FlagSYN)  strcat (flgBuf, " SYN");
-  if (tcp->flags & tcp_FlagPUSH) strcat (flgBuf, " PSH");
-  if (tcp->flags & tcp_FlagRST)  strcat (flgBuf, " RST");
-  if (tcp->flags & tcp_FlagURG)  strcat (flgBuf, " URG");
-  if (tcp->flags & tcp_FlagECN)  strcat (flgBuf, " ECN");
-  if (tcp->flags & tcp_FlagCWR)  strcat (flgBuf, " CWR");
+  if (tcp->flags & tcp_FlagACK)  strcat (flg_buf, " ACK");
+  if (tcp->flags & tcp_FlagFIN)  strcat (flg_buf, " FIN");
+  if (tcp->flags & tcp_FlagSYN)  strcat (flg_buf, " SYN");
+  if (tcp->flags & tcp_FlagPUSH) strcat (flg_buf, " PSH");
+  if (tcp->flags & tcp_FlagRST)  strcat (flg_buf, " RST");
+  if (tcp->flags & tcp_FlagURG)  strcat (flg_buf, " URG");
+  if (tcp->flags & tcp_FlagECN)  strcat (flg_buf, " ECN");
+  if (tcp->flags & tcp_FlagCWR)  strcat (flg_buf, " CWR");
 
   if (!frag_status || (frag_status & IS_FIRST))
   {
@@ -1914,7 +1912,7 @@ static int tcp_dump (const _tcp_Socket *sock, const in_Header *ip)
 
   dbug_printf ("       flags%s, win %lu, chksum %04X (%s), urg %u\n"
                "                  SEQ %10lu,  ACK %10lu\n",
-               flgBuf, (u_long)win, intel16(tcp->checksum), chk_ok,
+               flg_buf, (u_long)win, intel16(tcp->checksum), chk_ok,
                intel16(tcp->urgent), (u_long)seq, (u_long)ack);
   if (sock)
   {
@@ -1987,15 +1985,15 @@ static int tcp_dump (const _tcp_Socket *sock, const in_Header *ip)
 
   olen = (WORD) (hlen - sizeof(*tcp));
   if (olen > 0)
-     dump_tcp_opt (tcp+1, olen, ack);
+     dump_tcp_opt (tcp + 1, olen, ack);
 
   if (dlen > sizeof(struct DNS_Header) &&
-      is_dns_packet(tcp->srcPort,tcp->dstPort))
+      is_dns_packet(tcp->srcPort, tcp->dstPort))
   {
     WORD dns_len = intel16 (*(WORD*)data);
 
-    if (dns_len == dlen-2)
-       return dns_dump (data+2, dns_len, dns_len);
+    if (dns_len == dlen - 2)
+       return dns_dump (data + 2, dns_len, dns_len);
   }
   return dump_data (data, dlen);
 }
@@ -2018,7 +2016,7 @@ static BOOL dbug_filter (void)
 
              if (filter.MAC && !match_link_destination(&eth->destination))
                 return (FALSE);
-             if (filter.LOOP && !memcmp(&eth->source,_eth_addr,_eth_mac_len))
+             if (filter.LOOP && !memcmp(&eth->source, _eth_addr, _eth_mac_len))
                 return (FALSE);
            }
            break;
@@ -2030,7 +2028,7 @@ static BOOL dbug_filter (void)
 
              if (filter.MAC && !match_link_destination(&tok->destination))
                 return (FALSE);
-             if (filter.LOOP && !memcmp(&tok->source,_eth_addr,_eth_mac_len))
+             if (filter.LOOP && !memcmp(&tok->source, _eth_addr, _eth_mac_len))
                 return (FALSE);
            }
            break;
@@ -2042,7 +2040,7 @@ static BOOL dbug_filter (void)
 
              if (filter.MAC && !match_link_destination(&fddi->destination))
                 return (FALSE);
-             if (filter.LOOP && !memcmp(&fddi->source,_eth_addr,_eth_mac_len))
+             if (filter.LOOP && !memcmp(&fddi->source, _eth_addr, _eth_mac_len))
                 return (FALSE);
            }
            break;
@@ -2054,7 +2052,7 @@ static BOOL dbug_filter (void)
 
              if (filter.ARP && !match_arp_rarp(arp))
                 return (FALSE);
-             if (filter.LOOP && !memcmp(&arp->srcEthAddr,_eth_addr,_eth_mac_len))
+             if (filter.LOOP && !memcmp(&arp->srcEthAddr, _eth_addr, _eth_mac_len))
                 return (FALSE);
            }
            return (debug.ARP);
@@ -2066,7 +2064,7 @@ static BOOL dbug_filter (void)
 
              if (filter.RARP && !match_arp_rarp(rarp))
                 return (FALSE);
-             if (filter.LOOP && !memcmp(&rarp->srcEthAddr,_eth_addr,_eth_mac_len))
+             if (filter.LOOP && !memcmp(&rarp->srcEthAddr, _eth_addr, _eth_mac_len))
                 return (FALSE);
            }
            return (debug.RARP);
@@ -2114,10 +2112,10 @@ static BOOL dbug_filter (void)
 
 static const char *pcdbug_driver_ver (void)
 {
-  static char buf[30];
-  WORD major, minor, unused, build;
+  static char buf [30];
+  WORD   major, minor, unused, build;
 
-  if (!pkt_get_drvr_ver(&major,&minor,&unused,&build))
+  if (!pkt_get_drvr_ver(&major, &minor, &unused, &build))
      return ("?");
 
 #if defined(_WIN32)  /* NPF.SYS/SwsVpkt.sys ver e.g. 3.1.0.22 */
@@ -2131,7 +2129,7 @@ static const char *pcdbug_driver_ver (void)
 
 static const char *pcdbug_api_ver (void)
 {
-  static char buf[10];
+  static char buf [10];
   WORD   ver;
 
   /* DOS:   return pktdrvr API version (1.09 hopefully).
@@ -2253,7 +2251,7 @@ static void dbug_dump (const void *sock, const in_Header *ip,
   if (dbg_print_size)    /* debug.rx_size = 1 */
        snprintf (sz_buf, sizeof(sz_buf), ", size %u",
                  out ? _eth_last.tx.size : _eth_last.rx.size);
-  else sz_buf[0] = '\0';
+  else sz_buf [0] = '\0';
 
   dbug_printf ("\n%s: %s (%u), time %s%s%s\n",
                outbound ? "Transmitted" : "Received",
@@ -2292,7 +2290,7 @@ static void dbug_dump (const void *sock, const in_Header *ip,
       /* !! could be NetBeui, VLAN etc. */
       dbug_printf ("LLC:   unsupported\n");
       if (debug.LLC)
-         dump_data (llc+1, intel16(type));
+         dump_data (llc + 1, intel16(type));
       goto quit;
     }
 
@@ -2374,7 +2372,7 @@ ip6_dmp:
   {
     WORD len = intel16 (ip->length);
     dbug_printf ("IP?:   ver %d\n", ip->ver);
-    dump_data (ip, min(ETH_MAX_DATA,len));
+    dump_data (ip, min(ETH_MAX_DATA, len));
   }
 
 quit:
@@ -2420,7 +2418,7 @@ static void dump_ip_opt (const void *opt_p, int len)
 
   dbug_write ("       Options:");
 
-  while (opt < start+len && num_opt < 10)
+  while (opt < start + len && num_opt < 10)
   {
     switch (*opt)  /* Note: IP-option includes copy/class bits */
     {
@@ -2436,18 +2434,18 @@ static void dump_ip_opt (const void *opt_p, int len)
       case IPOPT_RR:
            dbug_write (" RR");
            num = *(opt+1) - 3;
-           num = min (num, len-1);
+           num = min (num, len - 1);
            for (i = 0; i < num; i += sizeof(DWORD))
            {
              val32 = intel (*(DWORD*)(opt+3+i));
-             dbug_printf (" %s", _inet_ntoa(NULL,val32));
+             dbug_printf (" %s", _inet_ntoa(NULL, val32));
            }
            break;
 
       case IPOPT_TS:
            ip = intel (*(DWORD*)(opt+4));
            ts = intel (*(DWORD*)(opt+8));
-           dbug_printf (" TS <%s/%lus..>", _inet_ntoa(NULL,ip), (u_long)ts);
+           dbug_printf (" TS <%s/%lus..>", _inet_ntoa(NULL, ip), (u_long)ts);
            break;
 
       case IPOPT_SECURITY:
@@ -2469,11 +2467,11 @@ static void dump_ip_opt (const void *opt_p, int len)
       case IPOPT_SSRR:
            dbug_write (*opt == IPOPT_LSRR ? " LSRR" : " SSRR");
            num = *(opt+1) - 3;
-           num = min (num, len-1);
+           num = min (num, len - 1);
            for (i = 0; i < num; i += sizeof(DWORD))
            {
-             DWORD route = intel (*(DWORD*)(opt+3+i));
-             dbug_printf (" %s", _inet_ntoa(NULL,route));
+             DWORD route = intel (*(DWORD*)(opt + 3 + i));
+             dbug_printf (" %s", _inet_ntoa(NULL, route));
            }
            break;
 
@@ -2500,7 +2498,7 @@ static void dump_tcp_opt (const void *opt_p, int len, DWORD ack)
 
   dbug_write ("       Options:");
 
-  while (opt < start+len && num_opt < 10)
+  while (opt < start + len && num_opt < 10)
   {
     switch (*opt)
     {
@@ -2526,15 +2524,15 @@ static void dump_tcp_opt (const void *opt_p, int len, DWORD ack)
       case TCPOPT_SACK:
            dbug_write (" SACK ");
            num = (*(opt+1) - 2) / SIZEOF(DWORD);
-           num = min (num, len/SIZEOF(DWORD));
+           num = min (num, len / SIZEOF(DWORD));
 
            for (i = 0; i < num; i++)
            {
              DWORD origin  = intel (*(DWORD*)(opt+2+4*i));
              DWORD relsize = intel (*(DWORD*)(opt+6+4*i));
-             dbug_printf ("blk %d {%ld/%ld}, ", i+1,
-                          (long)(ack-origin-1),
-                          (long)(ack-origin+relsize));
+             dbug_printf ("blk %d {%ld/%ld}, ", i + 1,
+                          (long)(ack - origin - 1),
+                          (long)(ack - origin + relsize));
            }
            break;
 
@@ -2629,7 +2627,7 @@ static DWORD dump_data (const void *data_p, UINT datalen)
     else len += dbug_printf ("       %04X: ", ofs);
 
     for (j = 0; j < 16 && j+ofs < datalen; j++)
-        len += dbug_printf ("%02X%c", (unsigned)data[j+ofs],
+        len += dbug_printf ("%02X%c", (unsigned)data [j + ofs],
                             j == 7 ? '-' : ' ');  /* no beeps */
 
     for ( ; j < 16; j++)       /* pad line to 16 positions */
@@ -2766,7 +2764,7 @@ static void W32_CALL dbug_cfg_parse (const char *name, const char *value)
 int MS_CDECL dbug_printf (const char *format, ...)
 {
   va_list arg;
-  int len = 0;
+  int     len = 0;
 
 #if defined(_WIN32)
   if (use_ods)
@@ -2940,7 +2938,7 @@ static void W32_CALL dbug_exit (void)
          dbug_printf ("\nTerminating on SIGINT\n");
       if (_watt_assert_buf[0])
          dbug_printf ("\n%s\n", _watt_assert_buf);
-      _watt_assert_buf[0] = '\0';
+      _watt_assert_buf [0] = '\0';
     }
   }
   dbug_close();
@@ -2950,10 +2948,10 @@ static void W32_CALL dbug_exit (void)
   {
     struct stat st;
 
-    if (stat(dbg_name,&st) == 0 && st.st_size > 0)
+    if (stat(dbg_name, &st) == 0 && st.st_size > 0)
        (*_printf) (" \ngzip compression: %lu raw, %lu compressed (%lu%%)\n",
                    (u_long)bytes_raw, (u_long)st.st_size,
-                   (u_long)(100 - (100*st.st_size)/bytes_raw));
+                   (u_long)(100 - (100*st.st_size) / bytes_raw));
   }
 #endif
 
@@ -2964,13 +2962,13 @@ static void W32_CALL dbug_exit (void)
 /**
  * Debug of DNS (udp) records
  *
- * \author Mike Borella <mike_borella@mw.3com.com>
+ * \author Mike Borella \code {mike_borella@mw.3com.com}
  *
- * Changed for Watt-32 and pcdbug.c by G.Vanem 1998 <gvanem@yahoo.no>
+ * \note Changed for Watt-32 and pcdbug.c by G.Vanem 1998 \code {gvanem@yahoo.no}
  *
  * \todo parse the SRV resource record (RFC 2052)
  */
-static const char *dns_opcodes[16] = {
+static const char *dns_opcodes [16] = {
             "standard",       /* DNS_OP_QUERY */
             "inverse",        /* DNS_OP_INVERSE */
             "server status",
@@ -2989,7 +2987,7 @@ static const char *dns_opcodes[16] = {
             "op 15??"
           };
 
-static const char *dns_responses[16] = {
+static const char *dns_responses [16] = {
             "no error",         /* DNS_SRV_OK */
             "format error",     /* DNS_SRV_FORM */
             "server error",     /* DNS_SRV_FAIL */
@@ -3120,7 +3118,7 @@ static unsigned dns_dump (const BYTE *bp, unsigned length, unsigned dns_len)
   t = i;
   while (i > 0)
   {
-    dbug_printf ("       Answer %d: ", t-i+1);
+    dbug_printf ("       Answer %d: ", t - i + 1);
     body = dns_resource (body, bp, end_p);
     CHK_BOGUS (body);
     i--;
@@ -3132,7 +3130,7 @@ static unsigned dns_dump (const BYTE *bp, unsigned length, unsigned dns_len)
   t = i;
   while (i > 0)
   {
-    dbug_printf ("       Auth %d: ", t-i+1);
+    dbug_printf ("       Auth %d: ", t - i + 1);
     body = dns_resource (body, bp, end_p);
     CHK_BOGUS (body);
     i--;
@@ -3144,7 +3142,7 @@ static unsigned dns_dump (const BYTE *bp, unsigned length, unsigned dns_len)
   t = i;
   while (i > 0)
   {
-    dbug_printf ("       Additional %d: ", t-i+1);
+    dbug_printf ("       Additional %d: ", t - i + 1);
     body = dns_resource (body, bp, end_p);
     CHK_BOGUS (body);
     i--;
@@ -3192,7 +3190,7 @@ static const BYTE *dns_resource (const BYTE *p, const BYTE *bp, const BYTE *ep)
          {
            ip = _inet_ntoa (NULL, intel(*(DWORD*)p));
            dbug_printf ("         IP4 address: %s, proto %u, port %u\n",
-                        ip, *(p+4), intel16(*(WORD*)(p+5)));
+                        ip, *(p+4), intel16(*(WORD*)(p + 5)));
          }
          else
            dbug_printf ("         IP4 address: bogus reslen %u\n", reslen);
@@ -3430,17 +3428,17 @@ static const struct token lcpchap2str[] = {
  */
 static unsigned lcp_dump (const BYTE *bp)
 {
-  WORD  lcp_code, lcp_id, lcp_length, arg;
+  WORD        lcp_code, lcp_id, lcp_length, arg;
   const BYTE *lcp_data, *p;
-  unsigned len = 0;
+  unsigned    len = 0;
 
-  lcp_code   = bp[0];
-  lcp_id     = bp[1];
+  lcp_code   = bp [0];
+  lcp_id     = bp [1];
   lcp_length = intel16 (*(WORD*)(bp+2));
   lcp_data   = bp + 4;
 
   len += dbug_printf ("LCP:   %s id=0x%02x ",
-                      tok2str(ncp_code2str,"LCP-#%d",lcp_code), lcp_id);
+                      tok2str(ncp_code2str,"LCP-#%d", lcp_code), lcp_id);
 
   switch (lcp_code)
   {
@@ -3456,7 +3454,7 @@ static unsigned lcp_dump (const BYTE *bp)
            BYTE opt_length = p[1];
 
            p += 2;
-           dbug_printf ("<%s ", tok2str(lcp_option2str,"option-#%d",opt_type));
+           dbug_printf ("<%s ", tok2str(lcp_option2str, "option-#%d", opt_type));
            if (opt_length)
            {
              switch (opt_type)
@@ -3507,7 +3505,7 @@ static unsigned lcp_dump (const BYTE *bp)
 
     case PROTREJ:
          arg = intel16 (*(WORD*)lcp_data);
-         dbug_printf ("prot=%s", tok2str(ppp_type2str, "PROT-%#x",arg));
+         dbug_printf ("prot=%s", tok2str(ppp_type2str, "PROT-%#x", arg));
          break;
 
     case CODEREJ:
@@ -3540,9 +3538,9 @@ static unsigned ccp_dump (const BYTE *bp)
  */
 static unsigned ipcp_dump (const BYTE *bp)
 {
-  WORD  ipcp_code, ipcp_id, ipcp_length;
+  WORD        ipcp_code, ipcp_id, ipcp_length;
   const BYTE *ipcp_data, *p;
-  unsigned len = 0;
+  unsigned    len = 0;
 
   ipcp_code   = bp[0];
   ipcp_id     = bp[1];
@@ -3550,7 +3548,7 @@ static unsigned ipcp_dump (const BYTE *bp)
   ipcp_data   = bp + 4;
 
   len += dbug_printf ("IPCP:  %s id=0x%02x ",
-                      tok2str(ncp_code2str,"IPCP-#%d",ipcp_code), ipcp_id);
+                      tok2str(ncp_code2str, "IPCP-#%d", ipcp_code), ipcp_id);
 
   switch (ipcp_code)
   {
@@ -3567,21 +3565,21 @@ static unsigned ipcp_dump (const BYTE *bp)
            DWORD addr;
 
            p += 2;
-           dbug_printf ("<%s ", tok2str(ipcp_option2str,"option-#%d",opt_type));
+           dbug_printf ("<%s ", tok2str(ipcp_option2str, "option-#%d", opt_type));
            if (opt_length)
            {
              switch (opt_type)
              {
                case IPCP_ADDRS:
                     addr = intel (*(DWORD*)p);
-                    dbug_printf ("addrs %s ", _inet_ntoa(NULL,addr));
+                    dbug_printf ("addrs %s ", _inet_ntoa(NULL, addr));
                     addr = intel (*(DWORD*)(p+4));
-                    dbug_printf ("%s", _inet_ntoa(NULL,addr));
+                    dbug_printf ("%s", _inet_ntoa(NULL, addr));
                     break;
 
                case IPCP_ADDR:
                     addr = intel (*(DWORD*)p);
-                    dbug_printf ("addr %s", _inet_ntoa(NULL,addr));
+                    dbug_printf ("addr %s", _inet_ntoa(NULL, addr));
                     break;
 
                case IPCP_COMPRTYPE:
@@ -3591,13 +3589,13 @@ static unsigned ipcp_dump (const BYTE *bp)
                case IPCP_MS_DNS1:
                case IPCP_MS_DNS2:
                     addr = intel (*(DWORD*)p);
-                    dbug_printf ("MS-DNS %s", _inet_ntoa(NULL,addr));
+                    dbug_printf ("MS-DNS %s", _inet_ntoa(NULL, addr));
                     break;
 
                case IPCP_MS_WINS1:
                case IPCP_MS_WINS2:
                     addr = intel (*(DWORD*)p);
-                    dbug_printf ("MS-WINS %s", _inet_ntoa(NULL,addr));
+                    dbug_printf ("MS-WINS %s", _inet_ntoa(NULL, addr));
                     break;
 
                default:
@@ -3667,7 +3665,7 @@ static int write_pcap_header (void)
   size_t rc;
 
   gettimeofday2 (&tv, &tz);
-  memset (&pf_hdr, 0, sizeof(pf_hdr));
+  memset (&pf_hdr, '\0', sizeof(pf_hdr));
 
   pf_hdr.magic         = TCPDUMP_MAGIC;
   pf_hdr.version_major = PCAP_VERSION_MAJOR;
@@ -3695,7 +3693,7 @@ static int write_pcap_packet (const void *pkt, BOOL out)
   struct pcap_pkt_header  pc_hdr;
   size_t hlen, pkt_len, rc;
 
-  memset (&pc_hdr, 0, sizeof(pc_hdr));
+  memset (&pc_hdr, '\0', sizeof(pc_hdr));
 
   if (out)
   {
@@ -3841,7 +3839,7 @@ const char *cpu_get_model (int type, int model)
 {
   const  char *p = NULL;
   const  char *vendor = x86_vendor_id;
-  static char buf[12];
+  static char buf [12];
 
   if (!x86_have_cpuid)
      return ("unknown");
