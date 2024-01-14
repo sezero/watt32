@@ -392,7 +392,7 @@ MAKE_FILE = bcc_f.mak
   CC     = $(BCCDIR)\bin\bcc32c
   C_ARGS = $(OBJPATH)bcc32c.arg
   CFLAGS = # -fcolor-diagnostics-
-  BRC32  = $(BCCDIR)\bin\rc -nologo
+  BRC32  = $(BCCDIR)\bin\rc
 !endif
 
 #
@@ -462,7 +462,7 @@ $(WATT_DLL): $(OBJS) $(RESOURCE) $(OBJPATH)objects.arg
 	- @del $(WATT_DLL)
 	- @del $(IMP_LIB)
 	$(CC) $(LDFLAGS) -e$(WATT_DLL) @$(OBJPATH)objects.arg
-	$(BCCDIR)\bin\implib -nologo $(IMP_LIB) $(WATT_DLL)
+	$(BCCDIR)\bin\implib $(IMP_LIB) $(WATT_DLL)
 	- @del $(WATT_DLL:.dll=.tds)
 	@echo
 
