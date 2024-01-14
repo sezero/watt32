@@ -1907,7 +1907,7 @@ static int tcp_write (_tcp_Socket *s, const BYTE *data, UINT len)
       /* Transmit if first segment or reached min (socket_MSS,MSS).
        */
       if (s->tx_datalen == len ||
-          s->tx_datalen >= min(s->max_seg,_mss))
+          s->tx_datalen - s->send_una >= min(s->max_seg,_mss))
            rc = TCP_SEND (s);
       else rc = TCP_SENDSOON (s);
     }
