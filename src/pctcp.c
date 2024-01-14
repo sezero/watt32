@@ -3087,7 +3087,7 @@ void W32_CALL sock_flush (sock_type *s)
     _tcp_Socket *tcp = &s->tcp;
 
     tcp->sockmode &= ~SOCK_MODE_LOCAL;
-    if (tcp->tx_datalen > 0)
+    if (tcp->tx_datalen > tcp->send_una)
     {
       tcp->flags |= tcp_FlagPUSH;
       if (s->tcp.send_una == 0)  /* !! S. Lawson - only if data not moving */
