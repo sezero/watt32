@@ -408,13 +408,22 @@ static int tcp_estab_state (_tcp_Socket **sp, const in_Header *ip,
    *  -- Joe <jdhagen@itis.com>
    */
   len -= (tcp->offset << 2);
-  if ((ldiff > 0 && s->tx_datalen > 0) || len > 0)
+
+  /* Peer ACKed some of our data, continue sending more.
+   */
+  if (ldiff > 0 && s->tx_datalen > s->send_una)
+     goto send_now;
+
+  /* Send ACK for received data.
+   */
+  if (len > 0)
   {
     /* Need to ACK and update window, but how urgent ??
      * We need a better criteria for doing Fast-ACK.
      */
-    if (ldiff > 0 || s->adv_win < s->max_seg)
+    if (s->adv_win < s->max_seg)
     {
+    send_now:
       TRACE_FILE ("tcp_estab_state (%u): FastACK: ldiff %ld, "
                   "UNA %ld, MS-right %ld\n",
                   __LINE__, ldiff, s->send_una,
