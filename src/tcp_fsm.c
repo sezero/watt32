@@ -217,7 +217,8 @@ static int tcp_synsent_state (_tcp_Socket **sp, const in_Header *ip,
     if (is_ip4 && ip->tos > s->tos)
        s->tos = ip->tos;
 
-    s->flags   = tcp_FlagACK;
+    s->flags  &= tcp_FlagPUSH;
+    s->flags  |= tcp_FlagACK;
     s->timeout = set_timeout (tcp_TIMEOUT);
 
     /* SYN+ACK means connection established, else SYNREC
@@ -356,7 +357,8 @@ static int tcp_estab_state (_tcp_Socket **sp, const in_Header *ip,
   if (s->send_una < 0)
       s->send_una = 0;
 
-  s->flags = tcp_FlagACK;
+  s->flags &= tcp_FlagPUSH;
+  s->flags |= tcp_FlagACK;
 
   if (is_ip4)
        len = intel16 (ip->length) - in_GetHdrLen (ip);
@@ -430,7 +432,6 @@ static int tcp_estab_state (_tcp_Socket **sp, const in_Header *ip,
                   s->missed_seq[0] != s->missed_seq[1] ?
                   (u_long)(s->missed_seq[0] - s->recv_next) : 0);
       s->karn_count = 0;
-      s->flags |= tcp_FlagPUSH;
       TCP_SEND (s);
       did_tx = TRUE;
 

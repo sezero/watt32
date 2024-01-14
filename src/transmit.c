@@ -493,8 +493,14 @@ static int tcp_transmit (Socket *socket, const void *buf, unsigned len,
       return (-1);
     }
     if (in_len != len)
-       SOCK_DEBUGF ((" [%u]", len)); /* trace "len=x [y]" */
+    {
+      sk->tcp.sockmode |= SOCK_MODE_LOCAL; /* don't set push bit yet */
+      SOCK_DEBUGF ((" [%u]", len));        /* trace "len=x [y]" */
+    }
   }
+
+  if (sk->tcp.locflags & LF_NOPUSH)
+     sk->tcp.sockmode |= SOCK_MODE_LOCAL;
 
 #if defined(USE_IPV6)
   if (socket->so_family == AF_INET6)
