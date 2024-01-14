@@ -2951,7 +2951,7 @@ int W32_CALL sock_write (sock_type *s, const BYTE *data, int len)
   size_t remain  = len;
   int    written = 0;
 
-  while (remain > 0)
+  while (1)
   {
     switch (s->udp.ip_type)
     {
@@ -2986,6 +2986,9 @@ int W32_CALL sock_write (sock_type *s, const BYTE *data, int len)
     }
     data   += written;
     remain -= written;
+
+    if (remain == 0)
+       break;
 
     if (s->udp.usr_yield)
         (*s->udp.usr_yield)();
