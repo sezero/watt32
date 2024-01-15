@@ -1907,7 +1907,7 @@ static int tcp_write (_tcp_Socket *s, const BYTE *data, UINT len)
       /* Transmit if first segment or reached min (socket_MSS,MSS).
        */
       if (s->tx_datalen == len ||
-          s->tx_datalen >= min(s->max_seg,_mss))
+          s->tx_datalen - s->send_una >= min(s->max_seg,_mss))
            rc = TCP_SEND (s);
       else rc = TCP_SENDSOON (s);
     }
@@ -3087,7 +3087,7 @@ void W32_CALL sock_flush (sock_type *s)
     _tcp_Socket *tcp = &s->tcp;
 
     tcp->sockmode &= ~SOCK_MODE_LOCAL;
-    if (tcp->tx_datalen > 0)
+    if (tcp->tx_datalen > tcp->send_una)
     {
       tcp->flags |= tcp_FlagPUSH;
       if (s->tcp.send_una == 0)  /* !! S. Lawson - only if data not moving */
