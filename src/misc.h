@@ -659,7 +659,7 @@ extern const char *short_strerror (int errnum);
    */
 
 #else
-  #error Help, unknown target.
+  #error "Help, unknown target."
 #endif
 
 
@@ -1042,6 +1042,16 @@ extern const char *short_strerror (int errnum);
   #define _aligned_malloc(_size, _alignment)  aligned_alloc (_alignment, _size)
 #elif defined(__WATCOMC__)
   #define _aligned_malloc(_size, _alignment)  malloc (_size)
+#endif
+
+/*
+ * The MinGW compiler (espesially the one used on AppVeyor), does not understand
+ * '%llu' as used in 'ADDR_FMT'. And '%4zu' as used in the 'PRINT_SIZE()' macro.
+  Just turn these warnings off globally.
+ */
+#if defined(__MINGW32__) && defined(TEST_PROG)
+  #pragma GCC diagnostic ignored  "-Wformat"
+  #pragma GCC diagnostic ignored  "-Wformat-extra-args"
 #endif
 
 #ifdef __cplusplus
