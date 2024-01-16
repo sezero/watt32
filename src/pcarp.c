@@ -1142,9 +1142,12 @@ static void route_check_timeouts (BOOL check_dynamic_entries)
     if (i < --route_top_dynamic)
     {
       route_move_entry (i--, route_top_dynamic); /* fill hole */
-      /* (i backed up a step so 'new' slot is rechecked) */
-      re = route_list + i;
-      re->flags &= ~ROUTE_FLG_USED;
+      if (i >= 1)
+      {
+        /* 'i' backed up a step so 'new' slot is rechecked */
+        re = route_list + i;
+        re->flags &= ~ROUTE_FLG_USED;
+      }
     }
   }
 }
@@ -2088,7 +2091,7 @@ void W32_CALL _arp_debug_dump (void)
 
 static const char *get_ARP_flags (WORD flg)
 {
-  static char buf[50];
+  static char buf [50];
   char  *p;
 
   buf[0] = '\0';
@@ -2100,7 +2103,7 @@ static const char *get_ARP_flags (WORD flg)
      strcat (buf, "DYN,");
   if (flg & ARP_FLG_FIXED)
      strcat (buf, "FIXED,");
-  p = strrchr (buf,',');
+  p = strrchr (buf, ',');
   if (p)
      *p = '\0';
   return (buf);
@@ -2120,7 +2123,7 @@ static const char *get_route_flags (WORD flg)
      strcat (buf, "DYN, ");
   if (flg & ROUTE_FLG_FIXED)
      strcat (buf, "FIXED,");
-  p = strrchr (buf,',');
+  p = strrchr (buf, ',');
   if (p)
      *p = '\0';
   return (buf);
