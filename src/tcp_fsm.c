@@ -411,7 +411,7 @@ static int tcp_estab_state (_tcp_Socket **sp, const in_Header *ip,
 
   /* Peer ACKed some of our data, continue sending more.
    */
-  if (ldiff > 0 && s->tx_datalen > s->send_una)
+  if (ldiff > 0 && s->tx_datalen > (unsigned long)s->send_una)
      goto send_now;
 
   /* Send ACK for received data.
