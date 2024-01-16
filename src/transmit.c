@@ -104,8 +104,10 @@ int W32_CALL writev_s (int s, const struct iovec *vector, size_t count)
 
   for (i = 0; i < count; i++)
   {
+    int flags = (i + 1 == count ? 0 : MSG_MORE);
+
     len = transmit (NULL, s, vector[i].iov_base, vector[i].iov_len,
-                    0, NULL, 0, FALSE);
+                    flags, NULL, 0, FALSE);
     if (len < 0)
     {
       if (bytes == 0)
@@ -172,8 +174,10 @@ int W32_CALL sendmsg (int s, const struct msghdr *msg, int flags)
 
   for (i = bytes = 0; i < count; i++)
   {
+    int flags2 = flags | (i + 1 == count ? 0 : MSG_MORE);
+
     len = transmit (NULL, s, iov[i].iov_base, iov[i].iov_len,
-                    flags, (struct sockaddr*)msg->msg_name,
+                    flags2, (struct sockaddr*)msg->msg_name,
                     msg->msg_namelen, TRUE);
     if (len < 0)
     {
@@ -219,6 +223,7 @@ static __inline void msg_eor_close (Socket *socket)
  *   MSG_OOB                                           (not supported)
  *   MSG_WAITALL   Wait till room in tx-buffer         (not supported)
  *   MSG_NOSIGNAL  ??                                  (not supported)
+ *   MSG_MORE      Avoid flushing, don't set PUSH bit
  */
 static int transmit (const char *func, int s, const void *buf, unsigned len,
                      int flags, const struct sockaddr *to, int tolen,
@@ -497,8 +502,14 @@ static int tcp_transmit (Socket *socket, const void *buf, unsigned len,
       return (-1);
     }
     if (in_len != len)
-       SOCK_DEBUGF ((" [%u]", len)); /* trace "len=x [y]" */
+    {
+      sk->tcp.sockmode |= SOCK_MODE_LOCAL; /* don't set push bit yet */
+      SOCK_DEBUGF ((" [%u]", len));        /* trace "len=x [y]" */
+    }
   }
+
+  if ((flags & MSG_MORE) || (sk->tcp.locflags & LF_NOPUSH))
+     sk->tcp.sockmode |= SOCK_MODE_LOCAL;
 
 #if defined(USE_IPV6)
   if (socket->so_family == AF_INET6)

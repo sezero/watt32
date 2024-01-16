@@ -237,6 +237,7 @@ struct sockproto {
 #define MSG_CTRUNC      0x20            /* control data lost before delivery */
 #define MSG_WAITALL     0x40            /* wait for full request or error */
 #define MSG_NOSIGNAL    0x80            /* don't raise SIGPIPE on reset */
+#define MSG_MORE        0x100           /* avoid flush, don't set PUSH bit */
 
 #define MSG_MAXIOVLEN   16
 

@@ -1871,13 +1871,22 @@ static int tcp_read (_tcp_Socket *s, BYTE *buf, int maxlen)
 static int tcp_write (_tcp_Socket *s, const BYTE *data, UINT len)
 {
   UINT room;
+  BYTE push = 0;
 
   if (s->state != tcp_StateESTAB)
      return (0);
 
   room = s->max_tx_data - s->tx_datalen - 1;
   if (len > room)
-      len = room;
+  {
+    len = room;
+    if (len > 0)                /* partial write, don't set PUSH bit yet */
+    {
+      push = s->flags & tcp_FlagPUSH;
+      s->flags &= ~tcp_FlagPUSH;
+    }
+  }
+
   if (len > 0)
   {
     int rc = 0;
@@ -1894,11 +1903,9 @@ static int tcp_write (_tcp_Socket *s, const BYTE *data, UINT len)
          s->datatimer = set_timeout (1000*sock_data_timeout); /* EE 99.08.23 */
     else s->datatimer = 0;
 
-    if (s->sockmode & SOCK_MODE_LOCAL) /* queue up data, flush on next write */
-    {
-      s->sockmode &= ~SOCK_MODE_LOCAL;
-      return (len);
-    }
+    if ((s->sockmode & SOCK_MODE_LOCAL) && /* queue up data */
+        len < room)                        /* only flush if buffer is full */
+       return (len);
 
     if (!(s->sockmode & SOCK_MODE_NAGLE))   /* Nagle mode off */
        rc = TCP_SEND (s);
@@ -1911,6 +1918,9 @@ static int tcp_write (_tcp_Socket *s, const BYTE *data, UINT len)
            rc = TCP_SEND (s);
       else rc = TCP_SENDSOON (s);
     }
+
+    s->flags |= push;
+
     if (rc < 0)
        return (-1);
   }
@@ -2417,7 +2427,7 @@ int _tcp_send (_tcp_Socket *s, const char *file, unsigned line)
 
     s->adv_win    = s->max_rx_data - s->rx_datalen;    /* Our new advertised recv window */
     tcp->window   = intel16 ((WORD)s->adv_win);
-    tcp->flags    = (BYTE) s->flags;
+    tcp->flags    = (BYTE) (s->flags & ~tcp_FlagPUSH);
     tcp->unused   = 0;
     tcp->checksum = 0;
     tcp->urgent   = 0;
@@ -2450,10 +2460,16 @@ int _tcp_send (_tcp_Socket *s, const char *file, unsigned line)
       if (s->tx_queuelen)
            memcpy (data, s->tx_queue+start_data, send_data_len);
       else memcpy (data, s->tx_data +start_data, send_data_len);
-    }
 
-    if (s->locflags & LF_NOPUSH)
-       tcp->flags &= ~tcp_FlagPUSH;
+      if (send_data_len == send_tot_data &&
+          (s->flags & tcp_FlagPUSH))
+      {
+        /* Set PUSH bit on last segment.
+         */
+        tcp->flags |= tcp_FlagPUSH;
+        s->flags &= ~tcp_FlagPUSH;
+      }
+    }
 
 #if defined(USE_TCP_MD5)
     finalise_md5_sign (ip, tcp, tcp_len-sizeof(*tcp), s->secret);
@@ -2709,7 +2725,8 @@ int _tcp_keepalive (_tcp_Socket *tcp)
 
   tcp->recv_next  = tcp->send_next;
   tcp->send_next  = tcp->send_next + tcp->send_una - 1;
-  tcp->flags      = tcp_FlagACK;
+  tcp->flags     &= tcp_FlagPUSH;
+  tcp->flags     |= tcp_FlagACK;
   tcp->karn_count = 2;
   tcp->tx_datalen = 1;   /* BSD 4.2 requires data to respond to a keepalive */
   tcp->tx_data[0] = '0';
@@ -2939,7 +2956,7 @@ int W32_CALL sock_fastread (sock_type *s, BYTE *buf, int len)
 
 /**
  * Writes data and returns length written.
- *  \note         sends with PUSH-bit (flush data).
+ *  \note         sends with PUSH-bit, unless sock_noflush() is used.
  *  \note         repeatedly calls 's->usr_yield'.
  *  \note         UDP packetsare sent in chunks of MTU-28.
  *  \retval 0     if some error in lower layer.
@@ -2957,7 +2974,8 @@ int W32_CALL sock_write (sock_type *s, const BYTE *data, int len)
     {
 #if !defined(USE_UDP_ONLY)
       case TCP_PROTO:
-           s->tcp.flags |= tcp_FlagPUSH;
+           if (!(s->tcp.sockmode & SOCK_MODE_LOCAL))
+              s->tcp.flags |= tcp_FlagPUSH;
            written = tcp_write (&s->tcp, data, remain);
            break;
 #endif
@@ -2982,7 +3000,8 @@ int W32_CALL sock_write (sock_type *s, const BYTE *data, int len)
     if (written < 0)
     {
       s->udp.err_msg = _LANG ("Tx Error");
-      return (0);
+      len = 0;
+      break;
     }
     data   += written;
     remain -= written;
@@ -2995,14 +3014,22 @@ int W32_CALL sock_write (sock_type *s, const BYTE *data, int len)
     else WATT_YIELD();
 
     if (!tcp_tick(s))
-       return (0);  /* !! should be 'len - remain' ? */
+    {
+      len = 0;     /* !! should be 'len - remain' ? */
+      break;
+    }
   }
+
+  if (s->tcp.ip_type == TCP_PROTO)
+    s->tcp.sockmode &= ~SOCK_MODE_LOCAL;
+
   return (len);
 }
 
 /**
  * Simpler, non-blocking (non-looping) version of sock_write().
  * \note UDP writes may truncate; check the return value.
+ * \note PUSH bit must be set manually with sock_flushnext().
  */
 int W32_CALL sock_fastwrite (sock_type *s, const BYTE *data, int len)
 {
@@ -3016,6 +3043,7 @@ int W32_CALL sock_fastwrite (sock_type *s, const BYTE *data, int len)
 #if !defined(USE_UDP_ONLY)
     case TCP_PROTO:
          len = tcp_write (&s->tcp, data, len);
+         s->tcp.sockmode &= ~SOCK_MODE_LOCAL;
          return (len < 0 ? 0 : len);
 #endif
   }
@@ -3073,10 +3101,7 @@ int W32_CALL sock_enqueue (sock_type *s, const BYTE *data, int len)
 void W32_CALL sock_noflush (sock_type *s)
 {
   if (s->tcp.ip_type == TCP_PROTO)
-  {
-    s->tcp.flags &= ~tcp_FlagPUSH;
-    s->tcp.sockmode |= SOCK_MODE_LOCAL;
-  }
+     s->tcp.sockmode |= SOCK_MODE_LOCAL;
 }
 
 /**
