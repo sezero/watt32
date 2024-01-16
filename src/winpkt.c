@@ -643,7 +643,9 @@ int W32_CALL pkt_release (void)
   if (_eth_winpcap || _eth_win10pcap)
      DO_FREE (_pkt_inf->npf_buf);
 
-  DO_FREE (_pkt_inf);
+  if (_pkt_inf)
+     _aligned_free (_pkt_inf);
+  _pkt_inf = NULL;
 
   if (_eth_winpcap || _eth_win10pcap)
      PacketExitModule();
