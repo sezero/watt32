@@ -247,7 +247,7 @@ char *_strlcpy (char *dst, const char *src, size_t len)
 /**
  * Return pointer to first non-blank (space/tab) in a string.
  */
-char *strltrim (char *s)
+char *strltrim (const char *s)
 {
   WATT_ASSERT (s != NULL);
 

@@ -7,7 +7,7 @@ extern  char   *_strlcpy    (char *dst, const char *src, size_t len);
 extern  char   *strreplace  (int ch1, int ch2, char *str);
 extern  size_t  strntrimcpy (char *dst, const char *src, size_t len);
 extern  char   *strrtrim    (char *src);
-extern  char   *strltrim    (char *src);
+extern  char   *strltrim    (const char *src);
 extern  char   *strtrim     (const char *orig, char *dest, size_t len);
 extern  char   *strreverse  (char *src);
 extern  BYTE    atox        (const char *src);
