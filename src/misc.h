@@ -1037,11 +1037,17 @@ extern const char *short_strerror (int errnum);
 /**
  * \def _aligned_malloc()
  * `_aligned_malloc()` is missing in Cygwin and Watcom.
+ *
+ * \def _aligned_free()
+ * `_aligned_free()` is missing in Cygwin and Watcom.
  */
 #if defined(__CYGWIN__)
   #define _aligned_malloc(_size, _alignment)  aligned_alloc (_alignment, _size)
+  #define _aligned_free(ptr)                  free (ptr)
+
 #elif defined(__WATCOMC__)
   #define _aligned_malloc(_size, _alignment)  malloc (_size)
+  #define _aligned_free(ptr)                  free (ptr)
 #endif
 
 /*
