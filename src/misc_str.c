@@ -26,6 +26,14 @@
           __modify [__ax];
 #endif
 
+/** From Windows-Kit's <ctype.h> comment:
+ *   The C Standard specifies valid input to a ctype function ranges from -1 to 255.
+ */
+#define VALID_CH(c)  ((c) >= -1 && (c) <= 255)
+
+#define ISASCII(c)   isascii ((int)(c))
+#define ISSPACE(c)   (ISASCII (c) && isspace ((int)(c)))
+
 /*
  * Print a single character to stdout.
  */
@@ -243,7 +251,7 @@ char *strltrim (const char *s)
 {
   WATT_ASSERT (s != NULL);
 
-  while (s[0] && s[1] && isspace((int)s[0]))
+  while (s[0] && s[1] && VALID_CH((int)s[0]) && ISSPACE(s[0]))
        s++;
   return (char*)s;
 }
@@ -254,15 +262,21 @@ char *strltrim (const char *s)
 char *strrtrim (char *s)
 {
   size_t n;
+  int    ch;
 
   WATT_ASSERT (s != NULL);
 
   n = strlen (s);
-  while (n)
+  if (n > 0)
   {
-    if (!isspace((int)s[--n]))
-       break;
-    s[n] = '\0';
+    n--;
+    while (n)
+    {
+      ch = (int)s [n];
+      if (VALID_CH(ch) && !isspace(ch))
+         break;
+      s [n--] = '\0';
+    }
   }
   return (s);
 }
@@ -280,16 +294,16 @@ char *strtrim (const char *orig, char *dest, size_t len)
 
   for (i = j = 0; i < len && j < len-1; i++)
   {
-    ch = orig[i];
-    if (isspace(ch) && isspace(last))
+    ch = orig [i];
+    if (ISSPACE(ch) && ISSPACE(last))
     {
       last = ch;
       continue;
     }
-    dest[j++] = ch;
+    dest [j++] = ch;
     last = ch;
   }
-  dest[j] = '\0';
+  dest [j] = '\0';
   return (dest);
 }
 
@@ -328,13 +342,13 @@ size_t strntrimcpy (char *dst, const char *src, size_t n)
 
   if (n && s[0])
   {
-    while (isspace((int)*s))
+    while (ISSPACE(*s))
           ++s;
     len = strlen (s);
     if (len)
     {
       const char *e = &s[len-1];
-      while (isspace((int)*e))
+      while (ISSPACE(*e))
       {
         --e;
         --len;
@@ -403,7 +417,7 @@ int isstring (const char *str, size_t len)
     if (!isprint(*str++))
     {
       str--;
-      if (!isspace(*str++))
+      if (!ISSPACE(*str++))
          return (0);
     }
   }
