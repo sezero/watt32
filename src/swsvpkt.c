@@ -41,11 +41,11 @@ static struct {
        uint64  tx_errors;
      } sws_stat;
 
-static DWORD WINAPI WorkerThread (void *);
-static void  WINAPI StartReceivingApc (ULONG_PTR);
-static void  WINAPI ReceiveComplete (DWORD, DWORD, OVERLAPPED*);
-static void  WINAPI ResubmitRxBufferApc (ULONG_PTR);
-static BOOL         QueueBuffer (struct SwsVpktUsr*, struct SRxBuffer*);
+static DWORD WINAPI WorkerThread (void *priv_data);
+static void  WINAPI StartReceivingApc (ULONG_PTR context);
+static void  WINAPI ReceiveComplete (DWORD error, DWORD bytes, OVERLAPPED *overlapped);
+static void  WINAPI ResubmitRxBufferApc (ULONG_PTR context);
+static BOOL         QueueBuffer (struct SwsVpktUsr *pkt, struct SRxBuffer *rx_buf);
 
 /*
  * Open a handle to the packet driver
@@ -134,7 +134,7 @@ struct SwsVpktUsr *SwsVpktOpen (const char *szName,
  */
 BOOL SwsVpktClose (struct SwsVpktUsr *pPacket)
 {
-  char res[100] = { '\0' };
+  char res [100] = { '\0' };
   BOOL rc = FALSE;
 
   winpkt_trace_func = "SwsVpktClose";
@@ -193,8 +193,7 @@ UINT SwsVpktSend (struct SwsVpktUsr *pPacket,
   {
     /* Wait for completion */
     sent = 0;
-    GetOverlappedResult (pPacket->hDevice, &pPacket->txOverlap,
-                         &sent, TRUE);
+    GetOverlappedResult (pPacket->hDevice, &pPacket->txOverlap, &sent, TRUE);
     overlapped = TRUE;
   }
   if (sent)
@@ -233,13 +232,12 @@ BOOL SwsVpktGetAdapterState (const struct SwsVpktUsr *usr,
   memset (&info, '\0', sizeof(info));
 
   /* Get adapter info */
-  rc = SwsVpktDeviceRequest(
-          usr->hDevice,               /* Device handle */
-          (DWORD)IOCTL_GETINFO,       /* IOCTL code */
-          NULL, 0,                    /* -> input buffer & size */
-          &info,                      /* -> output buffer */
-          sizeof(info),               /* input buffer size */
-          NULL);                      /* Bytes returned */
+  rc = SwsVpktDeviceRequest (usr->hDevice,           /* Device handle */
+                             (DWORD)IOCTL_GETINFO,   /* IOCTL code */
+                             NULL, 0,                /* -> input buffer & size */
+                             &info,                  /* -> output buffer */
+                             sizeof(info),           /* input buffer size */
+                             NULL);                  /* Bytes returned */
   if (rc)
   {
     state->isPowerOn        =  info.bPowerOn;
@@ -260,13 +258,12 @@ BOOL SwsVpktGetAdapterState (const struct SwsVpktUsr *usr,
 BOOL SwsVpktGetMacAddress (const struct SwsVpktUsr *pPacket, mac_address *pMac)
 {
   /* Get the device type etc */
-  return SwsVpktDeviceRequest (
-              pPacket->hDevice,             /* Device handle */
-              (DWORD)IOCTL_GETMACADDR,      /* IOCTL code */
-              NULL, 0,                      /* -> input buffer & size */
-              pMac,                         /* -> output buffer */
-              sizeof(*pMac),                /* output buffer size */
-              NULL);                        /* Bytes returned */
+  return SwsVpktDeviceRequest (pPacket->hDevice,         /* Device handle */
+                               (DWORD)IOCTL_GETMACADDR,  /* IOCTL code */
+                               NULL, 0,                  /* -> input buffer & size */
+                               pMac,                     /* -> output buffer */
+                               sizeof(*pMac),            /* output buffer size */
+                               NULL);                    /* Bytes returned */
 }
 
 /*
@@ -275,13 +272,12 @@ BOOL SwsVpktGetMacAddress (const struct SwsVpktUsr *pPacket, mac_address *pMac)
  */
 BOOL SwsVpktGetDescription (const struct SwsVpktUsr *pPacket, char *descr, size_t max)
 {
-  return SwsVpktDeviceRequest (
-           pPacket->hDevice,             /* Device handle */
-           (DWORD)IOCTL_GETDESC,         /* IOCTL code */
-           NULL, 0,                      /* -> input buffer & size */
-           descr,                        /* -> output buffer */
-           max,                          /* output buffer size */
-           NULL);                        /* Bytes returned */
+  return SwsVpktDeviceRequest (pPacket->hDevice,      /* Device handle */
+                               (DWORD)IOCTL_GETDESC,  /* IOCTL code */
+                               NULL, 0,               /* -> input buffer & size */
+                               descr,                 /* -> output buffer */
+                               max,                   /* output buffer size */
+                               NULL);                 /* Bytes returned */
 
 }
 
@@ -290,19 +286,18 @@ BOOL SwsVpktGetDescription (const struct SwsVpktUsr *pPacket, char *descr, size_
  */
 BOOL SwsVpktGetNDISversion (const struct SwsVpktUsr *pPacket, DWORD *ver)
 {
-  return SwsVpktDeviceRequest (
-           pPacket->hDevice,             /* Device handle */
-           OID_GEN_DRIVER_VERSION,       /* IOCTL code */
-           NULL, 0,                      /* -> input buffer & size */
-           ver,                          /* -> output buffer */
-           sizeof(*ver),                 /* output buffer size */
-           NULL);                        /* Bytes returned */
+  return SwsVpktDeviceRequest (pPacket->hDevice,        /* Device handle */
+                               OID_GEN_DRIVER_VERSION,  /* IOCTL code */
+                               NULL, 0,                 /* -> input buffer & size */
+                               ver,                     /* -> output buffer */
+                               sizeof(*ver),            /* output buffer size */
+                               NULL);                   /* Bytes returned */
 }
 
 /*
  * Return swsVpkt.sys file-version.
  */
-static char swsVpkt_ver[64] = "?";
+static char swsVpkt_ver [64] = "?";
 
 const char *SwsVpktGetDriverVersion (void)
 {
@@ -316,7 +311,7 @@ const char *SwsVpktGetDriverVersion (void)
  */
 static DWORD WINAPI WorkerThread (void *pv)
 {
-  struct SwsVpktUsr *pPacket = (struct SwsVpktUsr*)pv;
+  struct SwsVpktUsr *pPacket = (struct SwsVpktUsr*) pv;
 
   /* Execute IO completion callbacks and APC's until exit */
   while (!pPacket->iWorkerExit)
@@ -333,7 +328,7 @@ static DWORD WINAPI WorkerThread (void *pv)
  */
 static void WINAPI StartReceivingApc (ULONG_PTR ulContext)
 {
-  struct SwsVpktUsr *pPacket = (struct SwsVpktUsr*)ulContext;
+  struct SwsVpktUsr *pPacket = (struct SwsVpktUsr*) ulContext;
   UINT   i;
 
   /* Submit all read buffers */
@@ -425,11 +420,15 @@ static const struct search_list ccode_list[] = {
  * Make a synchronous DeviceIoControl call to a handle opened
  * using FILE_FLAG_OVERLAPPED
  */
-BOOL SwsVpktDeviceRequest2 (HANDLE hDevice, DWORD dwIoControlCode,
-                           const void *lpInBuffer, DWORD nInBufferSize,
-                           void *lpOutBuffer, DWORD nOutBufferSize,
-                           DWORD *lpBytesReturned,
-                           const char *file, unsigned line)
+BOOL SwsVpktDeviceRequest2 (HANDLE     hDevice,
+                            DWORD      dwIoControlCode,
+                           const void *lpInBuffer,
+                           DWORD       nInBufferSize,
+                           void       *lpOutBuffer,
+                           DWORD       nOutBufferSize,
+                           DWORD      *lpBytesReturned,
+                           const char *file,
+                           unsigned    line)
 {
   BOOL       bResult;
   HANDLE     hEvent;
@@ -454,7 +453,7 @@ BOOL SwsVpktDeviceRequest2 (HANDLE hDevice, DWORD dwIoControlCode,
     return (FALSE);
   }
 
-  memset (&overlap, 0, sizeof(overlap));
+  memset (&overlap, '\0', sizeof(overlap));
   overlap.hEvent = hEvent;
 
   if (!lpBytesReturned)

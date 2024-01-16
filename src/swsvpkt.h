@@ -127,18 +127,18 @@ extern BOOL SwsVpktGetNDISversion (const struct SwsVpktUsr *usr,
 
 extern const char *SwsVpktGetDriverVersion (void);
 
-extern BOOL SwsVpktDeviceRequest2 (HANDLE hDevice,
-                                   DWORD dwIoControlCode,
+extern BOOL SwsVpktDeviceRequest2 (HANDLE      hDevice,
+                                   DWORD       dwIoControlCode,
                                    const void *lpInBuffer,
-                                   DWORD nInBufferSize,
-                                   void *lpOutBuffer,
-                                   DWORD nOutBufferSize,
-                                   DWORD *lpBytesReturned,
+                                   DWORD       nInBufferSize,
+                                   void       *lpOutBuffer,
+                                   DWORD       nOutBufferSize,
+                                   DWORD      *lpBytesReturned,
                                    const char *file,
-                                   unsigned line);
+                                   unsigned    line);
 
-#define SwsVpktDeviceRequest(dev,code,in_buf,in_size,out_buf,out_size,bytes_ret) \
-        SwsVpktDeviceRequest2 (dev,code,in_buf,in_size,out_buf,out_size,bytes_ret, \
+#define SwsVpktDeviceRequest(dev, code, in_buf, in_size, out_buf, out_size, bytes_ret) \
+        SwsVpktDeviceRequest2 (dev, code, in_buf, in_size, out_buf, out_size, bytes_ret, \
                                __FILE__, __LINE__)
 
 #endif

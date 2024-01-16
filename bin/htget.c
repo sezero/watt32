@@ -76,18 +76,16 @@ tcp_Socket *sock;
 
 struct tm *mtime;
 int        output;
-int        headeronly      = 0;
-int        debugMode       = 0;
-int        verboseMode     = 0;
+int        header_only     = 0;
+int        debug_mode      = 0;
+int        verbose_mode    = 0;
 int        ifModifiedSince = 0;
-char      *outputfile      = NULL;
-char      *userPass        = NULL;
-char      *dayname         = "SunMonTueWedThuFriSat";
-char      *monthname       = "JanFebMarAprMayJunJulAugSepOctNovDec";
-char       proxy_host[80]  = { 0 };
+char      *output_file     = NULL;
+char      *user_pass       = NULL;
+char       proxy_host [80] = { 0 };
 int        proxy_port      = 0;
 
-void (W32_CALL *prev_hook) (const char*, const char*);
+void (W32_CALL *prev_hook) (const char *key, const char *value);
 
 void base64encode (const char *in, char *out)
 {
@@ -195,7 +193,7 @@ long header (const char *path)
     contentlength = -1L;
   }
 
-  if (headeronly)
+  if (header_only)
   {
     write (output, buffer, len);
     write (output, "\r\n", 2);
@@ -204,7 +202,7 @@ long header (const char *path)
   /* eat up the other header lines here */
   while ((len = sock_getline(sock, buffer, BUFFERSIZE)) > 0)
   {
-    if (headeronly)
+    if (header_only)
     {
       write (output, buffer, len);
       write (output, "\r\n", 2);
@@ -237,14 +235,16 @@ static void W32_CALL callback (void)
 
 int htget (const char *host, int port, const char *path)
 {
-#ifndef SAVE_SPACE
+#if !defined(SAVE_SPACE)
   struct in_addr a, b;
 #endif
+  static const char *dayname   = "SunMonTueWedThuFriSat";
+  static const char *monthname = "JanFebMarAprMayJunJulAugSepOctNovDec";
   DWORD  hostaddr;
   int    status = 0;
   int    connected = 0;
   int    completed = 0;
-  int    i, use_proxy = proxy_host[0] != 0;
+  int    i, use_proxy = (proxy_host[0] != 0);
   long   length, contentlength = 0L;
   const  char *name;
   char  *buf = buffer;
@@ -262,7 +262,7 @@ int htget (const char *host, int port, const char *path)
     return (1);
   }
 
-#ifndef SAVE_SPACE
+#if !defined(SAVE_SPACE)
   a.s_addr = intel (my_ip_addr);      /* A-side is me   */
   inet_aton (host, &b);               /* B-side is host */
 
@@ -293,7 +293,7 @@ int htget (const char *host, int port, const char *path)
   if (use_proxy && proxy_port && proxy_host[0])
      port = proxy_port;
 
-  if (debugMode)
+  if (debug_mode)
      printf ("%s:%d%s\n", host, port, path);
 
   if (!tcp_open(sock, 0, hostaddr, port, NULL))
@@ -311,7 +311,7 @@ int htget (const char *host, int port, const char *path)
   completed = 1;
   sock_tick (sock, &status);      /* in case they sent reset */
 
-  if (verboseMode)
+  if (verbose_mode)
      puts ("Sending HTTP GET/HEAD request");
 
   if (proxy_host[0])
@@ -320,20 +320,20 @@ int htget (const char *host, int port, const char *path)
 
   buf += sprintf (buf, "%s %s " HTTPVER "\r\n"
                   "User-Agent: " PROGRAM "-DOS/" VERSION "\r\n",
-                  headeronly ? "HEAD" : "GET", url);
+                  header_only ? "HEAD" : "GET", url);
 
   /* Append a "Host: " header (unless proxied)
    */
   if (name == host)
      buf += sprintf (buf, "Host: %s\r\n", host);
 
-  if (userPass)
+  if (user_pass)
   {
     char pass [100];
 
-    base64encode (userPass, pass);
-    if (debugMode)
-       printf ("%s => %s\n", userPass, pass);
+    base64encode (user_pass, pass);
+    if (debug_mode)
+       printf ("%s => %s\n", user_pass, pass);
 
     buf += sprintf (buf, "Authorization: Basic %s\r\n", pass);
   }
@@ -349,7 +349,7 @@ int htget (const char *host, int port, const char *path)
                     monthname + 3*mtime->tm_mon,
                     mtime->tm_year + 1900,
                     mtime->tm_hour, mtime->tm_min, mtime->tm_sec);
-    if (debugMode || verboseMode)
+    if (debug_mode || verbose_mode)
        puts (mod);
   }
 
@@ -358,30 +358,30 @@ int htget (const char *host, int port, const char *path)
 
   contentlength = header (path);
 
-  if (contentlength >= 0L && !headeronly)
+  if (contentlength >= 0L && !header_only)
   {
     /* We wait until the last moment to open the output file.
      * If any specified so that we won't overwrite the file
      * in case of error in contacting server.
      */
-    if (outputfile)
+    if (output_file)
     {
-      FILE *of = fopen (outputfile, "wb");
+      FILE *of = fopen (output_file, "wb");
 
       if (!of)
       {
-        perror (outputfile);
+        perror (output_file);
         goto close_up;
       }
       output = fileno (of);
     }
 
     length = 0L;
-    while ((i = sock_read(sock,(BYTE*)buffer,BUFFERSIZE)) > 0)
+    while ((i = sock_read(sock, (BYTE*)buffer, BUFFERSIZE)) > 0)
     {
       write (output, buffer, i);
       length += i;
-      if (verboseMode)
+      if (verbose_mode)
       {
         printf ("Got %lu bytes\r", length);
         fflush (stdout);
@@ -440,9 +440,9 @@ static void Exit (const char *str)
 
 void W32_CALL cnf_hook (const char *name, const char *value)
 {
-  if (!strcmp(name,"HTTP.PROXY"))
+  if (!strcmp(name, "HTTP.PROXY"))
   {
-    if (sscanf(value,"%[^:]:%d",proxy_host,&proxy_port) != 2)
+    if (sscanf(value, "%[^:]:%d", proxy_host, &proxy_port) != 2)
        Exit ("Config error: syntax is HTTP_PROXY=<host>:<port>");
   }
   else if (prev_hook)
@@ -469,22 +469,22 @@ int MS_CDECL main (int argc, char **argv)
                  puts (wattcpVersion());
                  return (0);
 
-       case 'v': verboseMode = 1;
+       case 'v': verbose_mode = 1;
                  break;
 
-       case 'd': debugMode++;
+       case 'd': debug_mode++;
                  break;
 
-       case 'h': headeronly = 1;
+       case 'h': header_only = 1;
                  break;
 
        case 'm': ifModifiedSince = 1;
                  break;
 
-       case 'o': outputfile = optarg;
+       case 'o': output_file = optarg;
                  break;
 
-       case 'p': userPass = optarg;
+       case 'p': user_pass = optarg;
                  break;
 
        default : usage();
@@ -511,15 +511,15 @@ int MS_CDECL main (int argc, char **argv)
   if (STARTS_WITH(argv[0], "http://"))
      argv[0] += sizeof("http://") - 1;
 
-  path = strchr (argv[0],'/');
+  path = strchr (argv[0], '/');
   if (path == NULL)   /* separate out the path */
   {
-    host = argv[0];
+    host = argv [0];
     path = "/";       /* top directory */
   }
   else
   {
-    host = calloc (path-argv[0]+1, 1);
+    host = calloc (path - argv[0] + 1, 1);
     if (!host)
     {
       printf (PROGRAM ": Out of memory\n");
@@ -531,7 +531,7 @@ int MS_CDECL main (int argc, char **argv)
 
 
   /* do we have a port number? */
-  s = strchr (host,':');
+  s = strchr (host, ':');
   if (s)
   {
     *s++ = '\0';
@@ -542,19 +542,20 @@ int MS_CDECL main (int argc, char **argv)
   {
     struct stat statbuf;
 
-    /* allow only if no -h and -o file specified and file exists */
-    if (headeronly || outputfile == 0 || stat(outputfile,&statbuf) < 0)
+    /* allow only if no -h and -o file specified and file exists
+     */
+    if (header_only || !output_file || stat(output_file, &statbuf) < 0)
         ifModifiedSince = 0;
-    else if (verboseMode)
+    else if (verbose_mode)
     {
       mtime = gmtime (&statbuf.st_mtime);
-      printf ("%s last modified %s", outputfile,asctime(mtime));
+      printf ("%s last modified %s", output_file, asctime(mtime));
     }
   }
 
-  if (debugMode)
+  if (debug_mode)
   {
-    tcp_set_debug_state (1);
+    tcp_set_debug_state (debug_mode);
     dbug_init();
   }
 
@@ -565,20 +566,20 @@ int MS_CDECL main (int argc, char **argv)
   set_cnf_hook();
   sock_init();
 
-  if (debugMode > 1)
-     debug_on = debugMode;
+  if (debug_mode > 1)
+     debug_on = debug_mode;
 
   output = fileno (stdout);
   status = htget (host, port, path);
 
   /* MS's VCRuntime doesn't like this.
    */
-  if (output != fileno(stdout) && stricmp(outputfile,"NUL"))
+  if (output != fileno(stdout) && stricmp(output_file, "NUL"))
      close (output);
   free (buffer);
   free (sock);
   if (host_alloc)
-    free (host);
+     free (host);
 
   return (status);
 }
