@@ -546,7 +546,7 @@ int W32_CALL pkt_eth_init (mac_address *mac_addr)
     _pkt_forced_rxmode &= 0xFFFF;     /* clear bits not set via ARG_ATOX_W */
     if (_pkt_forced_rxmode == 0 || !legal_recv_mode(_pkt_forced_rxmode))
     {
-      TRACE_CONSOLE (0, "Illegal Rx-mode (0x%02X) specified. Forcing default mode (0x%02X).\n",
+      TRACE_CONSOLE (1, "Illegal Rx-mode (0x%02X) specified. Forcing default mode (0x%02X).\n",
                      _pkt_forced_rxmode, RXMODE_DEFAULT);
       _pkt_forced_rxmode = RXMODE_DEFAULT;
     }
@@ -931,17 +931,19 @@ struct pkt_rx_element *pkt_poll_recv (void)
   if (!_pkt_inf)
      return (NULL);
 
-#if 0
-  {
-    DWORD status = 0;
+#if defined(_DEBUG) || defined(USE_ASAN)
+  /*
+   * Some strange issue sometimes causes
+   * winpcap_recv_thread() to return prematurely.
+   */
+  DWORD status = 0;
 
-    GetExitCodeThread (_pkt_inf->recv_thread, &status);
-    if (status != STILL_ACTIVE && !thr_stopped)
-    {
-      TRACE_CONSOLE (2, "winpcap_recv_thread() is dead. status: %lXh\n", status);
-      _pkt_inf->thread_stopped = 1;
-      Sleep (100);
-    }
+  GetExitCodeThread (_pkt_inf->recv_thread, &status);
+  if (status != STILL_ACTIVE && !thr_stopped)
+  {
+    TRACE_CONSOLE (1, "winpcap_recv_thread() is dead. status: %lXh\n", status);
+    _pkt_inf->thread_stopped = 1;
+    Sleep (100);
   }
 #endif
 
