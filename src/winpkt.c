@@ -807,8 +807,11 @@ static DWORD __stdcall winpcap_recv_thread (void *arg)
     total_len = (*_pkt_inf->recv_op) (_pkt_inf->adapter, pkt, pkt_len);
     if (total_len <= sizeof(*bp))
     {
-      rc = 2;
-      break;
+     /*
+      * This is not critical. PacketReceivePacket() will sometimes return 0.
+      * Just loop again and wait for more data.
+      */
+      continue;
     }
 
     ENTER_CRIT();
@@ -817,7 +820,7 @@ static DWORD __stdcall winpcap_recv_thread (void *arg)
          pkt < pkt_end;
          pkt += Packet_WORDALIGN(cap_len+hdr_len), chunk++)
     {
-      struct pkt_ringbuf    *q;
+      struct pkt_ringbuf *q;
 
       q  = &_pkt_inf->pkt_queue;
       bp = (const struct bpf_hdr*) pkt;
@@ -925,23 +928,25 @@ struct pkt_rx_element *pkt_poll_recv (void)
 {
   struct pkt_ringbuf    *q;
   struct pkt_rx_element *rc = NULL;
-  const char  *out;
-  BOOL  empty;
+  const char *out;
+  BOOL        empty, e_rc;
+  DWORD       status = 0;
 
   if (!_pkt_inf)
      return (NULL);
 
-#if defined(_DEBUG) || defined(USE_ASAN)
+#if 0
   /*
-   * Some strange issue sometimes causes
-   * winpcap_recv_thread() to return prematurely.
+   * Some strange issue could cause `winpcap_recv_thread()` to return prematurely.
    */
-  DWORD status = 0;
+  e_rc = GetExitCodeThread (_pkt_inf->recv_thread, &status);
 
-  GetExitCodeThread (_pkt_inf->recv_thread, &status);
+  if (e_rc && status != STILL_ACTIVE)
+     TRACE_CONSOLE (1, "GetExitCodeThread(), status: %08lXh, thr_stopped: %d\n",
+                    status, thr_stopped);
+
   if (status != STILL_ACTIVE && !thr_stopped)
   {
-    TRACE_CONSOLE (1, "winpcap_recv_thread() is dead. status: %lXh\n", status);
     _pkt_inf->thread_stopped = 1;
     Sleep (100);
   }
@@ -960,6 +965,9 @@ struct pkt_rx_element *pkt_poll_recv (void)
     rc = (struct pkt_rx_element*) out;
     rc->tstamp_get = win_get_perf_count();
   }
+
+  (void) status;
+  (void) e_rc;
   return (rc);
 }
 
