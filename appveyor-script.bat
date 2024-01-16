@@ -419,11 +419,18 @@ exit /b 0
   %_ECHO% "\n\e[1;33mRunning test 'cpuspeed.exe 1 1' ------------------------------------------------------\e[0m"
   cpuspeed.exe 1 1
 
-  %_ECHO% "\n\e[1;33mRunning test 'swap.exe' --------------------------------------------------------------\e[0m"
-  swap.exe
-
   %_ECHO% "\n\e[1;33mRunning test 'chksum.exe -s' ---------------------------------------------------------\e[0m"
   chksum.exe -s
+
+  ::
+  :: Not built for 'BUILDER==cygwin'
+  ::
+  if exist swap.exe (
+     %_ECHO% "\n\e[1;33mRunning test 'swap.exe' --------------------------------------------------------------\e[0m"
+     swap.exe
+     %_ECHO% "\n\e[1;33mRunning test 'swap.exe -o' -----------------------------------------------------------\e[0m"
+     swap.exe -o
+  )
 
   exit /b 0
 
