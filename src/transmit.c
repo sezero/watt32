@@ -113,6 +113,8 @@ int W32_CALL writev_s (int s, const struct iovec *vector, size_t count)
       break;
     }
     bytes += len;
+    if ((unsigned)len != vector[i].iov_len)
+       break;
   }
 
   SOCK_DEBUGF ((", total %d", bytes));  /* writing 0 byte is not an error */
@@ -180,6 +182,8 @@ int W32_CALL sendmsg (int s, const struct msghdr *msg, int flags)
       break;
     }
     bytes += len;
+    if ((unsigned)len != iov[i].iov_len)
+       break;
   }
   SOCK_DEBUGF ((", total %d", bytes));
   return (bytes);
