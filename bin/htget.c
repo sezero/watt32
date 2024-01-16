@@ -92,7 +92,6 @@ void (W32_CALL *prev_hook) (const char*, const char*);
 void base64encode (const char *in, char *out)
 {
   int    c1, c2, c3;
-  int    len = 0;
   static char basis_64[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"\
                            "abcdefghijklmnopqrstuvwxyz0123456789+/";
   while (*in)
@@ -109,24 +108,20 @@ void base64encode (const char *in, char *out)
     }
     *out++ = basis_64 [c1 >> 2];
     *out++ = basis_64 [((c1 & 0x3) << 4) | ((c2 & 0xF0) >> 4)];
-    len += 2;
     if (c2 == 0 && c3 == 0)
     {
       *out++ = '=';
       *out++ = '=';
-      len += 2;
     }
     else if (c3 == 0)
     {
       *out++ = basis_64 [((c2 & 0xF) << 2) | ((c3 & 0xC0) >> 6)];
       *out++ = '=';
-      len += 2;
     }
     else
     {
       *out++ = basis_64 [((c2 & 0xF) << 2) | ((c3 & 0xC0) >> 6)];
       *out++ = basis_64 [c3 & 0x3F];
-      len += 2;
     }
   }
   *out = '\0';
