@@ -544,6 +544,10 @@ static int set_tcp_opt (_tcp_Socket *tcp, int opt, const void *val, int len)
          else tcp->locflags &= ~LF_NOOPT;
          break;
 
+    case 3:
+         SOCK_DEBUGF (("TCP_AUTO_OP/autotuning: %d, not implemented", on));
+         return (-1);
+
     default:
          SOCK_ERRNO (ENOPROTOOPT);
          return (-1);
