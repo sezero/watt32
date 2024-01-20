@@ -583,11 +583,27 @@ C_ARGS    = $(OBJPATH)wcc.arg
 
 AFLAGS += -zq -w3 -d1 -I"../inc"
 CFLAGS += -zq -wx -DWATT32_BUILD -I. -I"../inc"
+
 @ifdef DEBUG
 CFLAGS += -d2
 @else
 CFLAGS += -d1
 @endif
+
+#
+# transmit.c(338): Warning! W201: Unreachable code
+#
+CFLAGS += -wcd=201
+
+#
+# winpkt.c(932): Warning! W200: 'e_rc' has been referenced but never assigned a value
+#
+CFLAGS += -wcd=200
+
+#
+# winpkt.c(1563): Warning! W202: Symbol 'open_npcap_adapter' has been defined, but not referenced
+#
+CFLAGS += -wcd=202
 
 #
 # WCC386-flags used:
