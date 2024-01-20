@@ -499,6 +499,12 @@ CC_ARGS = $(CC).arg
   COMMON_CFLAGS += -zq -wx -zm -d1 -fr=NUL -I$(WATCOM)\h -I$(WATCOM)\h\nt
 
   #
+  # W201: Unreachable code
+  # W202: Symbol 'x' has been defined, but not referenced
+  #
+  COMMON_CFLAGS += -wcd=201 -wcd=202
+
+  #
   # Watcom does not like '/' in it's arguments.
   # 'wlink' generates this:
   #   Error! E2030: file clib3s.lib(dstrt386): multiple starting addresses found, already defined in clib3s.lib(cstrtwnt)
