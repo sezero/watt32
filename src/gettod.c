@@ -50,8 +50,6 @@
 #include "win_dll.h"
 #include "gettod.h"
 
-#define STEVES_PATCHES 1
-
 #if defined(WIN32)
   #include <sys/timeb.h>
 #else
@@ -463,26 +461,19 @@ int W32_CALL gettimeofday2 (struct timeval *tv, struct timezone *tz)
 
   if (has_8254)
   {
+    static uint64 last = 0;
     static time_t secs = 0;           /* seconds since midnight */
     uint64 usecs = microsec_clock();  /* usec day-clock */
 
-#if STEVES_PATCHES
-    secs = time (NULL);
-#else
-    static uint64 last = 0;
     if (secs == 0 || usecs < last)    /* not init or wrapped */
     {
       secs = time (NULL);
       secs -= (secs % (24*3600));
     }
     last = usecs;
-#endif
+
     tv->tv_usec = (long) (usecs % U64_SUFFIX(1000000));
-#if STEVES_PATCHES
-    tv->tv_sec = (time_t) secs;
-#else
     tv->tv_sec = (time_t) ((usecs - tv->tv_usec) / U64_SUFFIX(1000000) + (uint64)secs);
-#endif
     tv->tv_sec += utc_offset;
 
     if (tz)
