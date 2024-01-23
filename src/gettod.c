@@ -462,19 +462,18 @@ int W32_CALL gettimeofday2 (struct timeval *tv, struct timezone *tz)
   if (has_8254)
   {
     static uint64 last = 0;
-    static time_t secs = 0;           /* seconds since midnight */
+    static time_t secs = 0;           /* UTC time() at midnight, local time */
     uint64 usecs = microsec_clock();  /* usec day-clock */
 
     if (secs == 0 || usecs < last)    /* not init or wrapped */
     {
       secs = time (NULL);
-      secs -= (secs % (24*3600));
+      secs -= usecs / 1000000UL;
     }
     last = usecs;
 
     tv->tv_usec = (long) (usecs % U64_SUFFIX(1000000));
     tv->tv_sec = (time_t) ((usecs - tv->tv_usec) / U64_SUFFIX(1000000) + (uint64)secs);
-    tv->tv_sec += utc_offset;
 
     if (tz)
        get_zone (tz, tv->tv_sec);
