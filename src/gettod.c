@@ -311,7 +311,7 @@ int W32_CALL W32_NAMESPACE (gettimeofday) (struct timeval *tv, struct timezone *
 static __inline uint64 microsec_clock (void)
 {
   DWORD  hi;
-  long   lo;
+  WORD   lo;
   uint64 rc;
 
   do
