@@ -322,7 +322,7 @@ static __inline uint64 microsec_clock (void)
   while (hi != PEEKL(0, BIOS_CLK));   /* tick count changed, try again */
   lo = 0 - lo;
   rc = ((uint64)hi << 16) + lo;
-  return (rc * U64_SUFFIX(4000000) / U64_SUFFIX(4770000));
+  return (rc * U64_SUFFIX(88000000) / U64_SUFFIX(105000000));
 }
 
 #if (DOSX)

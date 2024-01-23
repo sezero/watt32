@@ -488,7 +488,7 @@ DWORD millisec_clock (void)
   /* Emulating this would be slow. We'd better have a math-processor
    */
   x = ldexp ((double)hi, 16) + (double)lo;  /* x = hi*2^16 + lo */
-  return (DWORD) (x * 4.0 / 4770.0);
+  return (DWORD) (x * (88.0 / 105000.0));
 }
 #endif  /* !W32_NO_8087 */
 #endif  /* __MSDOS__ */
