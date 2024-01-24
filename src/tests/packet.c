@@ -42,31 +42,43 @@ static void print_header (void)
   puts ("sk proto: type , eth-src");
 }
 
-static int packet_recv (int s)
+static void packet_recv (int sk)
 {
-  struct sockaddr_ll addr;
-  const struct ether_header eth;
+  struct sockaddr_ll         addr;
+  const struct ether_header  eth;
   int   addr_len = sizeof(addr);
-  int   len = recvfrom (s, (char*)&eth, sizeof(eth), 0,
-                        (struct sockaddr*)&addr, &addr_len);
+  const char *eth_src = NULL;
 
-  printf ("%d  %04Xh: %s, %02X:%02X:%02X:%02X:%02X:%02X\n",
-          s, ntohs(addr.sll_protocol), pkt_type(addr.sll_pkttype),
+  recvfrom (sk, (char*)&eth, sizeof(eth), 0,
+            (struct sockaddr*)&addr, &addr_len);
+
+#if 0 /* todo: Add the name from '/etc/ethers' */
+  eth_src = ether_ntohost (eth.ether_shost);
+#endif
+
+  printf ("%d  %04Xh: %s, %02X:%02X:%02X:%02X:%02X:%02X %s\n",
+          sk, ntohs(addr.sll_protocol), pkt_type(addr.sll_pkttype),
           eth.ether_shost[0], eth.ether_shost[1],
           eth.ether_shost[2], eth.ether_shost[3],
-          eth.ether_shost[4], eth.ether_shost[5]);
-  return (len);
+          eth.ether_shost[4], eth.ether_shost[5],
+          eth_src ? eth_src : "");
 }
 
 int main (int argc, char **argv)
 {
   BOOL quit = FALSE;
-  int  s1, s2;
+  int  ch, s1, s2;
 
-  printf ("Linux style AF_PACKET example. Press ESC to quit\n");
+  printf ("Linux style AF_PACKET example. Press ESC or 'q' to quit\n");
 
-  if (argc > 1 && !strcmp(argv[1], "-d"))
-     dbug_init();
+  if (argc >= 2 && !strcmp(argv[1], "-d"))
+  {
+    /* A "debug.filter = none" in '$(WATTCP.CFG)/wattcp.cfg'
+     * is need to see everything that comes in.
+     * All TCP-packets would belong to 'NO_SOCKETS'.
+     */
+    dbug_init();
+  }
 
   s1 = socket (AF_PACKET, SOCK_PACKET, 0);
   if (s1 < 0)
@@ -94,7 +106,7 @@ int main (int argc, char **argv)
     FD_SET (s1, &rd);
     FD_SET (s2, &rd);
     FD_SET (STDIN_FILENO, &rd);
-    num = max (s1,s2) + 1;
+    num = max (s1, s2) + 1;
 
     if (select_s(num, &rd, NULL, NULL, &tv) < 0)
     {
@@ -102,13 +114,17 @@ int main (int argc, char **argv)
       quit = TRUE;
     }
 
-    if (FD_ISSET(STDIN_FILENO,&rd) && getch() == 27)
-       quit = TRUE;
+    if (FD_ISSET(STDIN_FILENO, &rd))
+    {
+      ch = getch();
+      if (ch == 'q' || ch == 27)
+         quit = TRUE;
+    }
 
-    if (FD_ISSET(s1,&rd))
+    if (FD_ISSET(s1, &rd))
        packet_recv (s1);
 
-    if (FD_ISSET(s2,&rd))
+    if (FD_ISSET(s2, &rd))
        packet_recv (s2);
   }
 
