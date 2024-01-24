@@ -1,7 +1,7 @@
 /*
  * A test for how Watt-32 handles creating many sockets.
  * Study the wattcp.sk file (and/or MSVC CRTDBG report)
- * for mem-leaks.
+ * for memory leaks.
  */
 #include <assert.h>
 
@@ -17,7 +17,6 @@ int  *socks = NULL;
 void setup (void)
 {
   printf ("eatsock: %s\n", wattcpVersion());
-  printf ("CFLAGS: %s\n", wattcpBuildCflags());
   dbug_init();
   sock_init();
 
@@ -30,8 +29,6 @@ void setup (void)
   }
 #endif
 }
-
-/*--------------------------------------------------------------------------*/
 
 static int get_sock_type (const char *type)
 {
@@ -48,7 +45,7 @@ static int get_sock_type (const char *type)
 
 void Usage (const char *argv0)
 {
-  printf ("Usage: %s <num-sockets> <SOCK_DGRAM | SOCK_STREAM | SOCK_RAW | SOCK_PACKET>",
+  printf ("Usage: %s <num-sockets> <SOCK_DGRAM | SOCK_STREAM | SOCK_RAW | SOCK_PACKET>\n",
           argv0);
   exit (0);
 }
@@ -116,7 +113,7 @@ int main (int argc, char **argv)
   }
   free (socks);
 
-  puts ("Waiting for SOCK_STREAM sockets to die. Press any key to exit.");
+  printf ("Waiting for %s sockets to die. Press any key to exit.\n", argv[2]);
   while (!kbhit())
   {
     Wait (100);

@@ -221,7 +221,7 @@ int W32_CALL bind (int s, const struct sockaddr *myaddr, socklen_t namelen)
 #endif  /* USE_BSD_API */
 
 /*
- * A small test djgpp program
+ * A small test program
  */
 #if defined(TEST_PROG)
 #if !defined(USE_BSD_API)
@@ -233,7 +233,10 @@ int main (void)
 #else  /* rest of file */
 
 #define MY_PORT_ID  6060
-#undef  close
+
+#if !defined(__DJGPP__)
+#define close(s) close_s (s)
+#endif
 
 #if !defined(__CYGWIN__)
 #include <conio.h>
@@ -248,8 +251,9 @@ int main (void)
 int main (int argc, char **argv)
 {
   struct sockaddr_in addr;
-  int    sock, quit;
+  int    sock, quit = 0;
 
+  printf ("bind() test-program. Press ESC or 'q' to quit\n");
   dbug_init();
 
   sock = socket (AF_INET, SOCK_DGRAM, IPPROTO_UDP);
@@ -262,7 +266,7 @@ int main (int argc, char **argv)
   memset (&addr, 0, sizeof(addr));
   addr.sin_family = AF_INET;
 
-  if (argc >= 2 && !strcmp(argv[1],"-frag")) /* test Tx of large datagrams */
+  if (argc >= 2 && !strcmp(argv[1], "--frag"))   /* test Tx of large datagrams */
   {
     #define CHUNK_SIZE 500
     char    data [3*CHUNK_SIZE];
@@ -278,7 +282,7 @@ int main (int argc, char **argv)
        perror ("sendto");
 
     close (sock);
-    return (-1);
+    return (0);
   }
 
   /* INADDR_ANY will take all the address of the system
@@ -301,8 +305,6 @@ int main (int argc, char **argv)
     return (-1);
   }
 #endif
-
-  quit = 0;
 
   while (!quit)
   {
@@ -330,7 +332,7 @@ int main (int argc, char **argv)
     if (FD_ISSET(STDIN_FILENO, &fd_read))
     {
       int ch = getch();
-      quit = (ch == 27);
+      quit = (ch == 'q' || ch == 27);
       fputc (ch, stderr);
     }
 

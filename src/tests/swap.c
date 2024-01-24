@@ -36,10 +36,10 @@ static volatile long   swap_size = 10000;
 
 static const char *get_clk_calls (uint64 delta)
 {
-  static char buf[50];
+  static char buf [50];
 
   snprintf (buf, sizeof(buf), "(%5" U64_FMT " clocks per 1000 calls)",
-            4000*delta/(loops*swap_size));
+            4000 * delta / (loops * swap_size));
   return (buf);
 }
 
@@ -211,8 +211,8 @@ static void test_swap_speed (const char *buf)
   gettimeofday2 (&now, NULL);
 
   printf ("time ....%.6fs %s\n",
-          timeval_diff(&now, &start)/1E6,
-          get_clk_calls(get_rdtsc()-start64));
+          timeval_diff(&now, &start) / 1E6,
+          get_clk_calls(get_rdtsc() - start64));
 
   /*---------------------------------------------------------------*/
   printf ("Timing naked_cdecl_ntohl().......... ");
@@ -225,8 +225,8 @@ static void test_swap_speed (const char *buf)
 
   gettimeofday2 (&now, NULL);
   printf ("time ....%.6fs %s\n",
-          timeval_diff(&now, &start)/1E6,
-          get_clk_calls(get_rdtsc()-start64));
+          timeval_diff(&now, &start) / 1E6,
+          get_clk_calls(get_rdtsc() - start64));
 
   /*---------------------------------------------------------------*/
   printf ("Timing naked_fastcall_ntohl()....... ");
@@ -235,12 +235,12 @@ static void test_swap_speed (const char *buf)
   start64 = get_rdtsc();
 
   for (i = 0; i < loops; i++)
-      naked_fastcall_ntohl (buf, swap_size/4);
+      naked_fastcall_ntohl (buf, swap_size / 4);
 
   gettimeofday2 (&now, NULL);
   printf ("time ....%.6fs %s\n",
-          timeval_diff(&now, &start)/1E6,
-          get_clk_calls(get_rdtsc()-start64));
+          timeval_diff(&now, &start) / 1E6,
+          get_clk_calls(get_rdtsc() - start64));
 
   /*---------------------------------------------------------------*/
   printf ("Timing intrin_byteswap()............ ");
@@ -249,13 +249,13 @@ static void test_swap_speed (const char *buf)
   start64 = get_rdtsc();
 
   for (i = 0; i < loops; i++)
-      if (!intrin_byteswap(buf, swap_size/4))
+      if (!intrin_byteswap(buf, swap_size / 4))
          return;
 
   gettimeofday2 (&now, NULL);
   printf ("time ....%.6fs %s\n",
-          timeval_diff(&now, &start)/1E6,
-          get_clk_calls(get_rdtsc()-start64));
+          timeval_diff(&now, &start) / 1E6,
+          get_clk_calls(get_rdtsc() - start64));
 }
 
 static void test_swap_speed2 (const char *buf)
@@ -294,12 +294,12 @@ static void sigill_handler2 (int sig)
 #elif defined(_MSC_VER) && (defined(_M_IA64) || defined(_M_X64))
   /*
    * A 'VMLOAD machine instruction':
-   *   https://docs.microsoft.com/en-us/cpp/intrinsics/svm-vmload?view=vs-2019
+   *   https://learn.microsoft.com/en-us/cpp/intrinsics/svm-vmload?view=msvc-170
    * Try it and see what it does.
    */
   void do_ill_op (void)
   {
-    __svm_vmload(0);
+    __svm_vmload (0);
   }
 
 #elif defined(__BORLANDC__)
@@ -355,7 +355,7 @@ int cdecl main (int argc, char **argv)
 
   buf = alloca (swap_size);
   for (i = 0; i < swap_size; i++)
-      buf[i] = i;
+      buf [i] = i;
 
   test_swap_speed (buf);
   test_swap_speed2 (buf);

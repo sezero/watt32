@@ -28,11 +28,11 @@ int main (int argc, char **argv)
      dbug_init();
 #endif
 
-  int fd = socket(PF_INET, SOCK_STREAM, 0);
+  int fd = socket (PF_INET, SOCK_STREAM, 0);
   if (fd < 0)
   {
     PERROR ("socket()");
-    return 1;
+    return (1);
   }
 
   int opt = 1;
@@ -80,11 +80,11 @@ int main (int argc, char **argv)
     goto fail;
   }
 
-  printf("connected!\n");
-  close(fd);
-  return 0;
+  printf ("connected!\n");
+  close (fd);
+  return (0);
 
 fail:
-  close(fd);
-  return 1;
+  close (fd);
+  return (1);
 }

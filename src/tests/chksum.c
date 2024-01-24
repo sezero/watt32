@@ -19,7 +19,7 @@ long ip_size = 10000;
 
   const char *get_clk_calls (void)
   {
-    static char buf[30];
+    static char buf [30];
 
     if (!has_rdtsc)
        return ("");
@@ -30,7 +30,7 @@ long ip_size = 10000;
 
   const char *get_usec_calls (void)
   {
-    static char buf[30];
+    static char buf [30];
     uint64 clocks;
     double usec;
 

@@ -10,7 +10,7 @@ int main (int argc, char **argv)
   int i;
 
 #ifdef __MSDOS__
-  if (argc > 1 && !strcmp(argv[1],"-t"))
+  if (argc > 1 && !strcmp(argv[1], "-t"))
      init_timer_isr();
 #else
   (void) argc;

@@ -127,7 +127,7 @@ int main (int argc, char **argv)
 
     printf ("\007got packet from %s\n", inet_ntoa(their_addr.sin_addr));
     printf ("packet is %d bytes long\n", numbytes);
-    buf[numbytes] = '\0';
+    buf [numbytes] = '\0';
     printf ("packet contains \"%s\"\n", buf);
 
     /*  --- Reply to this message (echo) */

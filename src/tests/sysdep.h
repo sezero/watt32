@@ -82,7 +82,7 @@
     static void WS_init (void)
     {
       memset (&wsa_state, 0, sizeof(wsa_state));
-      if (WSAStartup(MAKEWORD(1,1),&wsa_state) != 0)
+      if (WSAStartup(MAKEWORD(1, 1), &wsa_state) != 0)
       {
         fprintf (stderr, "Unable to start WinSock, error code=%d\n", WSAGetLastError());
         exit (1);
@@ -111,13 +111,13 @@
   #undef  kbhit
   #define kbhit()                       watt_kbhit()
   #define write(s, buf, len)            write_s (s, buf, len)
-  #define close(s)                      close_s(s)
-  #define select(num, rd, wr, exc, tv)  select_s(num, rd, wr, exc, tv)
+  #define close(s)                      close_s (s)
+  #define select(num, rd, wr, exc, tv)  select_s (num, rd, wr, exc, tv)
 #endif
 
 #if defined(_WIN32)
   #include <windows.h>
-  #define sleep(x)  Sleep((x)*1000)
+  #define sleep(s)  Sleep ((s) * 1000)
 #endif
 
 #if defined(__CYGWIN__)
@@ -147,9 +147,9 @@
 
 #ifndef IOCTLSOCKET
   #ifdef _Windows
-    #define IOCTLSOCKET(s, cmd, val_p)  ioctlsocket(s, cmd, (u_long*)val_p)
+    #define IOCTLSOCKET(s, cmd, val_p)  ioctlsocket (s, cmd, (u_long*)val_p)
   #else
-    #define IOCTLSOCKET(s, cmd, val_p)  ioctlsocket(s, cmd, (char*)val_p)
+    #define IOCTLSOCKET(s, cmd, val_p)  ioctlsocket (s, cmd, (char*)val_p)
   #endif
 #endif
 
@@ -197,7 +197,7 @@
 #else
 
   /*
-   * Use this if no version is provider for 'MSDOS' targets in '../timer.c'
+   * Use this if no version is provided for 'MSDOS' targets in '../timer.c'
    */
   #if defined(W32_NO_8087)
   inline double W32_CALL timeval_diff (const struct timeval *newer, const struct timeval *older)

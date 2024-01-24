@@ -19,7 +19,7 @@
 #define DEFAULT_MSG   "This is only a test"
 #define MSGBUFSIZE    256
 
-int send_udp (char *message, int len, struct sockaddr_in *addr)
+int send_udp (const char *message, int len, struct sockaddr_in *addr)
 {
   int ret, fd = socket (AF_INET, SOCK_DGRAM, 0);
 

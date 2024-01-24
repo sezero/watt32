@@ -142,7 +142,7 @@ int cdecl main (void)
   for (i = 0; i < NUM_INTS; i++)
   {
     r = (r * 725861) % 6599;
-    a[i] = r;
+    a [i] = r;
   }
 
   TIME_IT (qsort2, (a, NUM_INTS, sizeof(int), cmpint), NUM_LOOPS);

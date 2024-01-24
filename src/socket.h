@@ -121,7 +121,7 @@
   #define MAX_DGRAMS        5              /* # of datagrams for broadcast */
   #define MAX_RAW_BUFS      5              /* # of _raw_Socket in list */
   #define MAX_RAW6_BUFS     5              /* # of _raw6_Socket in list */
-  #define MAX_PACKET_BUFS   10
+  #define MAX_PACKET_BUFS   10             /* # of elements in sock_packet_pool. Todo: make this configurable */
   #define MAX_SOCKETS       5000           /* # of sockets to handle */
   #define MAX_TCP_RECV_BUF  (1024*1024-1)  /* Max size for SO_RCVBUF */
 #else

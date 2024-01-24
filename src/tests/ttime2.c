@@ -15,7 +15,7 @@ static int BCDtoDecimal (int in)
   result = 0;
   for (d = 3 ; d >= 0 ; d--)
   {
-    nu = (int)(rest/p16);
+    nu = (int)(rest / p16);
     rest   -= nu * p16;
     result += nu * p10;
     p16 >>= 4;

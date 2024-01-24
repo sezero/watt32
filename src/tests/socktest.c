@@ -6,7 +6,7 @@
 #include <rpc/types.h>
 
 #undef  assert
-#define assert(x) ((x) ? (void)0 : AssertFail(__LINE__))
+#define assert(x) ((x) ? (void)0 : AssertFail (__LINE__))
 
 WORD   test_port = 1234;
 int    sock = -1;

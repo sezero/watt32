@@ -22,7 +22,7 @@ int _crt0_startup_flags =
 char **__crt0_glob_function (char *arg)
 {
   (void)arg;
-  return (char**)0;
+  return (NULL);
 }
 
 void __crt0_load_environment_file (char *app_name)
@@ -34,7 +34,6 @@ void __crt0_load_environment_file (char *app_name)
                   __dpmi_error);
     else fprintf (stderr, "Enabled near-pointers okay\n");
   }
-  (void)app_name;
-  return;
+  (void) app_name;
 }
 
