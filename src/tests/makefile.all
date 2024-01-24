@@ -602,7 +602,11 @@ pull-request-79.exe: pull-request-79.c
 	@echo
 
 pull-request-79_w.exe: pull-request-79.c
-	$(call compile_and_link_ws2, $@, -D_WIN32_WINNT=0x0600 $<)
+	$(call compile_and_link_ws2, $@, $<)
+	@echo
+
+NetServerGetInfo.exe: NetServerGetInfo.c
+	$(call compile_and_link_ws2, $@, $<)
 	@echo
 
 #

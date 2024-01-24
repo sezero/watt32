@@ -234,5 +234,4 @@ wget-log
 gcc-cdecl.c
 hc_test.c
 ip_frag.cc
-NetServerGetInfo.c
 check-for-unused-libs.py
