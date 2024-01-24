@@ -50,8 +50,6 @@
 #include "win_dll.h"
 #include "gettod.h"
 
-#define STEVES_PATCHES 1
-
 #if defined(WIN32)
   #include <sys/timeb.h>
 #else
@@ -313,7 +311,7 @@ int W32_CALL W32_NAMESPACE (gettimeofday) (struct timeval *tv, struct timezone *
 static __inline uint64 microsec_clock (void)
 {
   DWORD  hi;
-  long   lo;
+  WORD   lo;
   uint64 rc;
 
   do
@@ -324,7 +322,7 @@ static __inline uint64 microsec_clock (void)
   while (hi != PEEKL(0, BIOS_CLK));   /* tick count changed, try again */
   lo = 0 - lo;
   rc = ((uint64)hi << 16) + lo;
-  return (rc * U64_SUFFIX(4000000) / U64_SUFFIX(4770000));
+  return (rc * U64_SUFFIX(88000000) / U64_SUFFIX(105000000));
 }
 
 #if (DOSX)
@@ -463,27 +461,19 @@ int W32_CALL gettimeofday2 (struct timeval *tv, struct timezone *tz)
 
   if (has_8254)
   {
-    static time_t secs = 0;           /* seconds since midnight */
+    static uint64 last = 0;
+    static time_t secs = 0;           /* UTC time() at midnight, local time */
     uint64 usecs = microsec_clock();  /* usec day-clock */
 
-#if STEVES_PATCHES
-    secs = time (NULL);
-#else
-    static uint64 last = 0;
     if (secs == 0 || usecs < last)    /* not init or wrapped */
     {
       secs = time (NULL);
-      secs -= (secs % (24*3600));
+      secs -= usecs / 1000000UL;
     }
     last = usecs;
-#endif
-    tv->tv_usec = (long) (usecs % U64_SUFFIX(1000000));
-#if STEVES_PATCHES
-    tv->tv_sec = (time_t) secs;
-#else
-    tv->tv_sec = (time_t) ((usecs - tv->tv_usec) / U64_SUFFIX(1000000) + (uint64)secs);
-#endif
-    tv->tv_sec += utc_offset;
+
+    tv->tv_usec = usecs % 1000000UL;
+    tv->tv_sec = (usecs - tv->tv_usec) / 1000000UL + secs;
 
     if (tz)
        get_zone (tz, tv->tv_sec);
