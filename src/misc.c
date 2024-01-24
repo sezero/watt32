@@ -423,9 +423,9 @@ void W32_CALL init_misc (void)
 #endif  /* DOSX && __MSDOS__ */
 
 #if defined(WIN32)
-  srand (GetTickCount()); /* should be redundant */
+  srand (GetTickCount());      /* should be redundant */
 #else
-  srand (PEEKW(0,0x46C)); /* initialize rand() using BIOS clock */
+  srand (PEEKW(0, BIOS_CLK));  /* initialize rand() using BIOS clock */
 #endif
 
   /* init_misc() is called from gettimeofday2(). So don't do all this

@@ -33,10 +33,19 @@
   extern uint64 win_get_perf_count (void);
 
 #else
-  /*
+  /**
    * System clock at BIOS location 40:6C (dword). Counts upwards.
    */
   #define BIOS_CLK 0x46C
+
+  /**
+   * Number of BIOS-ticks in one day; used in `ms_clock()` for MSDOS only.
+   * The BIOS needs approx. 18.2 ticks per second for it's time-functions.
+   * (approx 54.94 msec per tick).
+   *
+   * \ref https://www.cs.fsu.edu/~baker/realtime/restricted/notes/rtc2.html
+   */
+  #define BIOS_TICKS_DAY 1573067UL
 
   #define init_timer_isr  W32_NAMESPACE (init_timer_isr)
   #define exit_timer_isr  W32_NAMESPACE (exit_timer_isr)

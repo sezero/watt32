@@ -530,7 +530,7 @@ DWORD W32_CALL set_timeout (DWORD msec)
     if (msec > 55)
        ticks = msec / 55UL;
  /* ret = ticks + ms_clock();  !!!! try this */
-    ret = ticks + date + PEEKL (0,BIOS_CLK);
+    ret = ticks + date + PEEKL (0, BIOS_CLK);
   }
 #endif /* HAVE_UINT64 || WIN32 */
 
@@ -566,11 +566,7 @@ BOOL W32_CALL chk_timeout (DWORD value)
     char   hour;
 
     now  = (DWORD) PEEKL (0, BIOS_CLK);
-#if 1
     hour = (char)(now >> 16U);
-#else
-    hour = (char)(now/65543.33496093);  /* Jan De Geeter 17.12.01 */
-#endif
 
     if (hour != oldHour)
     {
@@ -593,6 +589,7 @@ BOOL W32_CALL chk_timeout (DWORD value)
       return (now_ms + date_ms >= value);
     }
 #endif
+
     now += date;            /* date extend current time */
     return (now >= value);  /* return true if expired */
   }
@@ -780,13 +777,11 @@ const char *elapsed_str (DWORD val)
  * The following was contributed by
  * "Alain" <alainm@pobox.com>
  */
-#define TICKS_DAY 1573067UL   /* Number of ticks in one day */
-
 DWORD ms_clock (void)
 {
   static DWORD lastTick, tickOffset;
   static char  firstTime = 1;
-  DWORD  tick = PEEKL (0, 0x46C);
+  DWORD  tick = PEEKL (0, BIOS_CLK);
 
   if (firstTime)
   {
@@ -795,7 +790,7 @@ DWORD ms_clock (void)
     return (0);
   }
   if (lastTick > tick)        /* day changed */
-     tickOffset -= TICKS_DAY;
+     tickOffset -= BIOS_TICKS_DAY;
   lastTick = tick;
   return (tick - tickOffset);
 }
@@ -822,7 +817,7 @@ static void Wait_N_ticks (int num)
   {
     DWORD time = PEEKL (0, BIOS_CLK);
 
-    while (time == PEEKL(0,BIOS_CLK))
+    while (time == PEEKL(0, BIOS_CLK))
     {
 #ifdef __DJGPP__
       ENABLE();    /* CWSDPMI requires this! */
