@@ -88,8 +88,10 @@
 #endif
 
 #ifdef OPENWATCOM_15
-  #define HAVE_STRCASECMP
-  #define HAVE_STRNCASECMP
+  #define HAVE_STRCASECMP     1
+  #define HAVE_STRNCASECMP    1
+  #define HAVE_UTIME_H        1
+  #define HAVE_STRUCT_UTIMBUF 1
 #endif
 
 #define HAVE_GETHOSTBYNAME 1
