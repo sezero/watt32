@@ -38,7 +38,7 @@ RM = rm -f
 RM = del
 !endif
 
-COMMON_CFLAGS = -zq -wx -I"../inc" -fo=.obj -zm -s
+COMMON_CFLAGS = -zq -wx -I"../inc" -fo=.obj -zm -s -wcd=202
 DBG_CFLAGS = -d1
 
 #
