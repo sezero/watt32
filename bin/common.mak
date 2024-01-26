@@ -210,20 +210,20 @@ wcc386.arg: $(PREREQUISITES) Makefile $(WATT_ROOT)\bin\common.mak
 | $<
 
 clean:
-           @del *.obj
-           @del *.o32
-           @del *.wo
-           @del *.map
-           @del bcc.arg
-           @del bcc32.arg
-           @del hc386.arg
-           @del wcc386.arg
-           @del wlink.arg
-           @del make*.@@@
+           - @del *.obj
+           - @del *.o32
+           - @del *.wo
+           - @del *.map
+           - @del bcc.arg
+           - @del bcc32.arg
+           - @del hc386.arg
+           - @del wcc386.arg
+           - @del wlink.arg
+           - @del make*.@@@
 
 vclean veryclean scrub: clean
-           @del $(BORLAND_EXE)
-           @del $(PHARLAP_EXP)
-           @del $(WATCOM_EXE)
+           - @del $(BORLAND_EXE)
+           - @del $(PHARLAP_EXP)
+           - @del $(WATCOM_EXE)
 
 
