@@ -87,6 +87,11 @@
   #define HAVE_UINT64
 #endif
 
+/**< Ass-u-me for now that all compilers have 64-bit ints
+ */
+#undef  HAVE_UINT64
+#define HAVE_UINT64
+
 struct ulong_long {
        DWORD lo;
        DWORD hi;
