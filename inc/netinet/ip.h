@@ -44,7 +44,7 @@
 #include <netinet/in_systm.h>
 #endif
 
-#if defined(__TURBOC__) || defined(__BORLANDC__)
+#if defined(__BORLANDC__)
 #pragma warn -bbf-   /* "Bitfields must be signed or unsigned int" warning */
 #endif
 
@@ -191,7 +191,7 @@ W32_CLANG_PACK_WARN_DEF()
 
 #define IP_MSS          576             /* default maximum segment size */
 
-#if defined(__TURBOC__) || defined(__BORLANDC__)
+#if defined(__BORLANDC__)
 #pragma warn -bbf.
 #endif
 

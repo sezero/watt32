@@ -221,8 +221,8 @@
   #define MS_CDECL
 #endif
 
-#if ((defined(__STDC__) && __STDC__) || defined(__cplusplus) || \
-    defined(__TURBOC__)) && !defined(__CYGWIN__)
+#if ((defined(__STDC__) && __STDC__) || defined(__cplusplus)) && \
+    !defined(__CYGWIN__)
 
   #if defined(__cplusplus)
     #define __inline      inline        /* convert to C++ keyword */

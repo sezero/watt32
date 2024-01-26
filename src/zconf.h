@@ -186,7 +186,7 @@
 #    endif
 #  endif
 #  if (defined(__SMALL__) || defined(__MEDIUM__))
-     /* Turbo C small or medium model */
+     /* MSDOS: small or medium model */
 #    define SMALL_MEDIUM
 #    ifdef __BORLANDC__
 #      define FAR _far

@@ -180,17 +180,6 @@ const char * W32_CALL wattcpVersion (void)
     strcpy (p, ", ");
   #endif
 
-#elif defined(__TURBOC__)
-  p += sprintf (p, "Turbo C %X.%X", (__TURBOC__ >> 8) - 1, __TURBOC__ & 0xFF);
-
-  #if defined(__SMALL__)
-    strcpy (p, " (small model), ");
-  #elif defined(__LARGE__)
-    strcpy (p, " (large model), ");
-  #else
-    strcpy (p, ", ");
-  #endif
-
 #elif defined(__clang__)
   p += sprintf (p, "clang %d.%d.%d (%s), ",
                 __clang_major__, __clang_minor__, __clang_patchlevel__, DBG_RELEASE ASAN_COMPILED UBSAN_COMPILED);
@@ -351,16 +340,6 @@ const char * W32_CALL wattcpVersion (void)
     #define CFLAGS         "build/borland/small/cflags.h"
     #define CFLAGS_BUF     "build/borland/small/cflagsbf.h"
     #define CC_PROG        "bcc"
-  #endif
-
-#elif defined(__TURBOC__)  /* No longer supported */
-  #define CC_DEFINE        "__TURBOC__"
-  #define CC_PROG          "tcc"
-
-  #if defined(__SMALL__)
-    #define CFLAGS         "build/turboc/small/cflags.h"
-  #elif defined(__LARGE__)
-    #define CFLAGS         "build/turboc/large/cflags.h"
   #endif
 
 #elif defined(__DMC__)

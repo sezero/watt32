@@ -1118,7 +1118,7 @@ void W32_CALL sock_sig_exit (const char *msg, int sig)
   sig = 0;
 #endif
 
-#if (defined(__BORLANDC__) || defined(__TURBOC__)) && !defined(__FLAT__) && !defined(WIN32)
+#if defined(__BORLANDC__) && !defined(__FLAT__) && !defined(WIN32)
   if (_stklen < 0x1000)
       _stklen = 0x1000;   /* avoid stack-overflow during exit() */
 #endif

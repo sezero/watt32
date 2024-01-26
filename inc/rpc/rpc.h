@@ -40,32 +40,32 @@
 #ifndef __RPC_RPC_H
 #define __RPC_RPC_H
 
-#include <rpc/types.h>		/* some typedefs */
+#include <rpc/types.h>          /* some typedefs */
 
 /* external data representation interfaces */
-#include <rpc/xdr.h>		/* generic (de)serializer */
+#include <rpc/xdr.h>            /* generic (de)serializer */
 
 /* Client side only authentication */
-#include <rpc/auth.h>		/* generic authenticator (client side) */
+#include <rpc/auth.h>           /* generic authenticator (client side) */
 
 /* Client side (mostly) remote procedure call */
-#include <rpc/clnt.h>		/* generic rpc stuff */
+#include <rpc/clnt.h>           /* generic rpc stuff */
 
 /* semi-private protocol headers */
-#include <rpc/rpc_msg.h>	/* protocol for rpc messages */
-#include <rpc/auth_uni.h>      /* protocol for unix style cred */
+#include <rpc/rpc_msg.h>        /* protocol for rpc messages */
+#include <rpc/auth_uni.h>       /* protocol for unix style cred */
 
 /*
  *  Uncomment-out the next line if you are building the rpc library with
  *  DES Authentication (see the README file in the secure_rpc/ directory).
  */
 #if 1
-#include <rpc/auth_des.h>	/* protocol for des style cred */
+#include <rpc/auth_des.h>       /* protocol for des style cred */
 #endif
 
 /* Server side only remote procedure callee */
-#include <rpc/svc.h>		/* service manager and multiplexer */
-#include <rpc/svc_auth.h>	/* service side authenticator */
+#include <rpc/svc.h>            /* service manager and multiplexer */
+#include <rpc/svc_auth.h>       /* service side authenticator */
 
 /*
  * COMMENT OUT THE NEXT INCLUDE (or add to the #ifndef) IF RUNNING ON
@@ -76,8 +76,8 @@
 
 struct rpcent {
       char    *r_name;        /* name of server for this rpc program */
-      char    **r_aliases;    /* alias list */
-      long    r_number;       /* rpc program number. */
+      char   **r_aliases;     /* alias list */
+      long     r_number;      /* rpc program number. */
 };                            /* Must be 32-bit for small/large model */
 
 __BEGIN_DECLS
@@ -88,7 +88,7 @@ extern struct rpcent *getrpcent     (void);
 extern void setrpcent (int);
 extern void endrpcent (void);
 
-#if defined(__MSDOS__) || defined(__TURBOC__) || defined(__HIGHC__) || \
+#if defined(__MSDOS__) || defined(__HIGHC__) || \
     defined(__DJGPP__) || defined(__WATCOMC__)
 
   /* from RPC-DOS v0.1Alpha by Mike Durkin <mdurkin@tsoft.net> */

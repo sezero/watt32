@@ -1,7 +1,4 @@
 /*!\file sock_io.c
- *
- * some sock_xx() functions moved from pctcp.c due
- * to memory contraints under Turbo-C
  */
 
 #include <stdio.h>
@@ -29,7 +26,6 @@ BYTE W32_CALL sock_putc (sock_type *s, BYTE c)
   sock_write (s, &c, 1);
   return (c);
 }
-
 
 /*
  * sock_puts - does not append carriage return in binary mode
@@ -75,7 +71,6 @@ int W32_CALL sock_puts (sock_type *s, const BYTE *data)
   }
   return (len);
 }
-
 
 /*
  * sock_gets - read a {\r|\n} terminated string from a UDP/TCP socket.

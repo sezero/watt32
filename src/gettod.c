@@ -61,8 +61,6 @@
  */
 #if defined(__WATCOMC__)
   #define _timezone timezone
-#elif defined(__TURBOC__) && (__TURBOC__ <= 0x410)  /* TCC/BCC <= 3.1 */
-  #define _timezone timezone
 #elif defined(__POCC__) || defined(__AVR__)
   #define _timezone 0
 #elif defined(_MSC_VER) && (_MSC_VER <= 600)

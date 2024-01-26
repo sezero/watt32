@@ -95,9 +95,6 @@
   #endif
   #include <sys/borlandc.err>
 
-#elif defined(__TURBOC__)
-  #include <sys/turboc.err>
-
 #elif defined(__WATCOMC__)
   #include <sys/watcom.err>
 

@@ -14,6 +14,6 @@
 #elif defined(__DMC__)
   /* #pragma ..  */
 
-#elif (defined(__TURBOC__) || defined(__BORLANDC__)) && !defined(WIN32)
+#elif defined(__BORLANDC__) && !defined(WIN32)
   #pragma option -N-
 #endif

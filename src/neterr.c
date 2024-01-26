@@ -53,13 +53,7 @@
   #define DATA_MOD
 #endif
 
-#if defined(__TURBOC__) && (__TURBOC__ <= 0x410) /* TCC/BCC <= 3.1 */
-  #define SYS_ERRLIST sys_errlist
-  #define SYS_NERR    sys_nerr
-
-  #include "build/borland/syserr.c" /* @NO_DEP */
-
-#elif defined(__BORLANDC__)
+#if defined(__BORLANDC__)
   #define SYS_ERRLIST _sys_errlist
   #define SYS_NERR    _sys_nerr
 

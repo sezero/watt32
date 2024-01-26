@@ -1340,11 +1340,6 @@ static const char *vendor_version (const char **vendor, const char **err_file)
   v = "__BORLANDC__";
   e = "borlandc.err";
 
-#elif defined(__TURBOC__)
-  sprintf (buf, "%X.%X", (__TURBOC__ >> 8) - 1, __TURBOC__ & 0xFF);
-  v = "__TURBOC__";
-  e = "turboc.err";
-
 #elif defined(__clang__)
   sprintf (buf, "%d.%d", __clang_major__, __clang_minor__);
   v = "__clang__";

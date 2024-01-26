@@ -10,15 +10,8 @@
 #ifndef _w32_SOCKET_H
 #define _w32_SOCKET_H
 
-#if defined(__TURBOC__) && (__TURBOC__ <= 0x301)
-  /*
-   * Prevent tcc <= 2.01 from even looking at this.
-   */
-  #define BOOL int
-#else  /* rest of file */
-
 #if defined(__CYGWIN__)
-  #include "wattcp.h"
+#include "wattcp.h"
 #endif
 
 #include <stdio.h>
@@ -431,6 +424,5 @@ extern int _UDP6_listen(Socket *socket, const void *host, WORD port);
  */
 extern BOOL _sock_pending_connect (Socket *socket);
 
-#endif  /* old __TURBOC__ */
 #endif  /* _w32_SOCKET_H */
 

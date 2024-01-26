@@ -18,7 +18,7 @@
 #include <ctype.h>
 #include <setjmp.h>
 
-#if defined(_MSC_VER) || defined(__TURBOC__) || defined(__BORLANDC__)
+#if defined(_MSC_VER) || defined(__BORLANDC__)
   #define YY_NO_UNISTD_H
 
 #elif defined(__WATCOMC__)

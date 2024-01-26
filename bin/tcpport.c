@@ -402,19 +402,17 @@ int ttinc (int fast)
     r.w.ax = sytek_int (r.w.ax);
     stackrestore();
   }
-#endif /* __WATCOMC__ */
 
-
-#ifdef __TURBOC__
+#elif defined(__BORLANDC__) && defined(__LARGE__)
   #pragma argsused
   #pragma option -N
 
-  void interrupt ourhandler (bp,di,si,ds,es,dx,cx,bx,ax,ip,cs,flgs)
+  void interrupt ourhandler (bp, di, si, ds, es, dx, cx, bx, ax, ip, cs, flgs)
   {
     static WORD old_sp, old_ss;
     static WORD stack [STACK_SIZE];
     static struct {
-           WORD bp,di,si,ds,es,dx,cx,bx,ax,ip,cs,flgs;
+           WORD bp, di, si, ds, es, dx, cx, bx, ax, ip, cs, flgs;
          } far *stkptr;
 
     (int*)stkptr = &bp;
@@ -426,7 +424,7 @@ int ttinc (int fast)
     _SS = old_ss;
     _SP = old_sp;
   }
-#endif /* __TURBOC__ */
+#endif
 
 
 void stuff_tx_char (char ch)
@@ -683,8 +681,8 @@ int main (int argc, char **argv)
   old8  = getvect (0x08);
   old14 = getvect (0x14);
 
-  setvect (0x08,tcpport_tick);
-  setvect (0x14,ourhandler);
+  setvect (0x08, tcpport_tick);
+  setvect (0x14, ourhandler);
   recvtimeout = set_timeout (50);
 
   outs ("Running...");

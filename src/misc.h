@@ -894,10 +894,6 @@ extern const char *short_strerror (int errnum);
       #define INTR_PROTOTYPE  void interrupt far
       typedef INTR_PROTOTYPE (*W32_IntrHandler)();
 
-    #elif defined(__TURBOC__)
-      #define INTR_PROTOTYPE  void cdecl interrupt
-      typedef void interrupt (*W32_IntrHandler)(void);
-
     #else
       #define INTR_PROTOTYPE  void cdecl interrupt
       typedef void (cdecl interrupt *W32_IntrHandler)();

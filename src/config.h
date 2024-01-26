@@ -229,12 +229,6 @@
   #error "Cannot define USE_PROFILER for this target"
 #endif
 
-#if defined(__TURBOC__) && (__TURBOC__ <= 0x301)
-  #if defined(USE_BIND) || defined(USE_SOCKET) || defined(USE_STATISTICS)
-  #error "tcc 2.0 cannot compile resolver, socket code or statistics"
-  #endif
-#endif
-
 /**
  * \note
  *  If including `#define USE_EMBEDDED', it's users responsibility to

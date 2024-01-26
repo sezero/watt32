@@ -75,7 +75,7 @@ extern const char * const z_errmsg[10]; /* indexed by 2-zlib_error */
 
 #if defined(MSDOS) || (defined(WINDOWS) && !defined(_WIN32))
 #  define OS_CODE  0x00
-#  if defined(__TURBOC__) || defined(__BORLANDC__)
+#  if defined(__BORLANDC__)
 #    if defined(__LARGE__) || defined(__COMPACT__)
        /* Allow compilation with ANSI keywords only enabled */
        void _Cdecl farfree( void *block );
@@ -159,7 +159,7 @@ extern const char * const z_errmsg[10]; /* indexed by 2-zlib_error */
 
          /* functions */
 
-#if defined(STDC99) || (defined(__TURBOC__) && __TURBOC__ >= 0x550)
+#if defined(STDC99)
 #  ifndef HAVE_VSNPRINTF
 #    define HAVE_VSNPRINTF
 #  endif
@@ -175,9 +175,6 @@ extern const char * const z_errmsg[10]; /* indexed by 2-zlib_error */
 #  ifdef MSDOS
      /* vsnprintf may exist on some MS-DOS compilers (DJGPP?),
         but for now we just assume it doesn't. */
-#    define NO_vsnprintf
-#  endif
-#  ifdef __TURBOC__
 #    define NO_vsnprintf
 #  endif
 #  ifdef _WIN32

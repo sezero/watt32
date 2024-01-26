@@ -44,7 +44,7 @@ W32_CLANG_PACK_WARN_OFF()
 
 #include <sys/pack_on.h>
 
-#if defined(__TURBOC__) || defined(__BORLANDC__)
+#if defined(__BORLANDC__)
 #pragma warn -bbf-   /* "Bitfields must be signed or unsigned int" warning */
 #endif
 
@@ -160,7 +160,7 @@ struct  ipstat {
         u_long  ips_toolong;            /* ip length > max ip packet size */
 };
 
-#if defined(__TURBOC__) || defined(__BORLANDC__)
+#if defined(__BORLANDC__)
 #pragma warn -bbf.
 #endif
 

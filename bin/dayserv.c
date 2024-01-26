@@ -64,10 +64,6 @@ int dayreply (DWORD host, WORD port)
  Function called whenever we receive a packet on the listening socket.
 -------------------------------------------------------------------------*/
 
-#ifdef __TURBOC__
-#pragma argsused
-#endif
-
 int dataHandler (void *s, const BYTE *dp, size_t len, DWORD *phSrc, WORD *upSrcPort)
 {
   if (debug)

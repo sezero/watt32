@@ -9,7 +9,7 @@
  */
 
 #ifndef _w32_WATTCP_H
-#error TARGET.H must be included inside or after WATTCP.H
+#error "TARGET.H must be included inside or after WATTCP.H"
 #endif
 
 #define DOS4GW       1             /**< Tenberry's DOS extender        (1+2)  */
@@ -71,15 +71,15 @@
 #endif
 
 #if defined(__TINY__) || defined(__COMPACT__) || defined(__MEDIUM__) || defined(__HUGE__)
-  #error Unsupported memory model (tiny/compact/medium/huge)
+  #error "Unsupported memory model (tiny/compact/medium/huge)"
 #endif
 
 #if defined(M_I86TM) || defined(M_I86CM) || defined(M_I86MM) || defined(M_I86HM)
-  #error Unsupported memory model (tiny/compact/medium/huge)
+  #error "Unsupported memory model (tiny/compact/medium/huge)"
 #endif
 
 #if defined(_M_I86MM) || defined(_M_I86MH)
-  #error Unsupported memory model (medium/huge)
+  #error "Unsupported memory model (medium/huge)"
 #endif
 
 /*
@@ -104,7 +104,7 @@
 /*
  * Digital Mars Compiler 8.30+
  */
-#if defined(__DMC__) && (__INTSIZE==4)
+#if defined(__DMC__) && (__INTSIZE == 4)
   #ifndef DOSX              /* If not set in dmars_*.mak file */
     #define DOSX   PHARLAP  /* may be X32VM, DOS4GW or PHARLAP */
   #endif
@@ -149,7 +149,7 @@
  */
 #if defined(__HIGHC__)
   #if !defined(_I386) || (_I386 == 0)
-    #error What CPU are you for?
+    #error "What CPU are you for?"
   #endif
   #if !defined(__i386__)
     #define __i386__
@@ -194,7 +194,7 @@
 #endif
 
 #if !defined(DOSX)
-  #error DOSX target not defined
+  #error "DOSX target not defined"
 #endif
 
 #if (defined(MSDOS) || defined(_MSDOS)) && !defined(__MSDOS__)
@@ -202,7 +202,7 @@
 #endif
 
 #if (DOSX == 0) && !defined(__MSDOS__)
-  #error __MSDOS__ not defined for a real-mode DOS compiler!?
+  #error "__MSDOS__ not defined for a real-mode DOS compiler!?"
 #endif
 
 #if (DOSX & (ATMEL | WINWATT)) == 0 && !defined(__MSDOS__)
@@ -253,7 +253,7 @@
   #include <stdio.h>
   #include <phapi.h>
 
-  #error Pharlap Lite not supported yet
+  #error "Pharlap Lite not supported yet"
 
 #elif (DOSX & DJGPP)
   #include <dos.h>
@@ -406,11 +406,11 @@
  */
 #if defined(_MSC_VER) && !defined(__POCC__)   /* "cl" and not "pocc -Ze" */
   #if (DOSX) && (DOSX != WINWATT) && (DOSX != PHARLAP)
-    #error Microsoft-C and non-Win32 or non-Pharlap targets not supported
+    #error "Microsoft-C and non-Win32 or non-Pharlap targets not supported"
   #endif
 
   #if !(defined(_M_IX86) || defined(_M_IA64) || defined(_M_X64) || defined(_M_AMD64))
-    #error Unsupported CPU-target
+    #error "Unsupported CPU-target"
   #endif
 
   #undef cdecl
@@ -436,7 +436,7 @@
     #if (_MSC_VER >= 1500)  /* VC9+ */
       #pragma warning (disable:4090 4244 4267 4312 4996)
       #ifndef _USE_32BIT_TIME_T
-/* !! #error Need to define "_USE_32BIT_TIME_T" for ABI compatability. No need? */
+/* !! #error "Need to define '_USE_32BIT_TIME_T' for ABI compatability" */
       #endif
     #endif
 
@@ -483,9 +483,9 @@
 #endif  /* _MSC_VER && !__POCC__ */
 
 
-#if defined(__TURBOC__) || defined(__BORLANDC__)
+#if defined(__BORLANDC__)
   #if defined(__DPMI16__)
-    #error 16-bit DPMI version not supported
+  #error "16-bit DPMI version not supported"
   #endif
 
   #include <string.h>
@@ -516,12 +516,12 @@
     #define memcmp        __memcmp__
     #define memchr        __memchr__
   #endif
-#endif    /* __TURBOC__ || __BORLANDC__ */
+#endif    /* __BORLANDC__ */
 
 
 #if defined(__GNUC__)
   #if (__GNUC__ < 3 || (__GNUC__ == 3 && __GNUC_MINOR__ < 1))
-    #error I need GCC 3.1 or later
+    #error "I need GCC 3.1 or later"
   #endif
   #include <string.h>
 
@@ -544,7 +544,7 @@
   #include <string.h>
 
   #if !defined(_M_IX86)
-  #error Only Watcom x86 supported
+  #error "Only Watcom x86 supported"
   #endif
 
   /* Code inside "W32_NO_8087" is meant to be excluded on a 8086 PC.
@@ -645,7 +645,7 @@
  * Some checks for Borland on Windows
  */
 #if defined(__DOS_H) && defined(__BORLANDC__) && defined(WIN32)
-  #error Do not include <dos.h> for Borland/WIN32
+  #error "Do not include <dos.h> for Borland/WIN32"
 #endif
 
 #endif  /* _w32_TARGET_H */
