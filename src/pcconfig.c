@@ -54,10 +54,6 @@
   #include <hw386.h>
 #endif
 
-#if defined(__BORLANDC__)
-  #pragma warn -pro
-#endif
-
 
 int  debug_on          = 0;    /* general debug level */
 int  ctrace_on         = 0;    /* tracing; on/off (High-C only) */
@@ -134,6 +130,7 @@ enum ParseMode {
 #else
   #define CONFIG_DBG_MSG(lvl, args)    ((void)0)
   #define RANGE_CHECK(val, low, high)  ((void)0)
+  #define type_name(t)                 "?"
 #endif
 
 
