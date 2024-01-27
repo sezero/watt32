@@ -12,7 +12,15 @@
  *           - MSVC + PellesC defines _WIN32+_WIN64 for targeting 64-bit Windows.
  *           - CygWin's gcc defines none of the above. But it supports
  *             native Win64 if '__x86_64__' is set. (needs 'CygWin64').
+ *           - Using an old (ver <= 5.5) of Borland's BCC32 could support WIN32.
+ *             But here we fake it to support `(DOSX & POWERPAK)` only.
  */
+#if defined(BCC32_OLD)
+  #undef WIN32
+  #undef _WIN32
+  #undef __WIN32__
+#endif
+
 #if defined(WIN64) || defined(_WIN64)
   #undef  WIN64
   #undef _WIN64

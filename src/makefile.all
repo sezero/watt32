@@ -348,12 +348,26 @@ C_ARGS    = $(OBJPATH)bcc.arg
 MAKE_FILE = bcc_l.mak
 
 @elifdef FLAT
-CC = f:\gv\Borland55\Bin\bcc32
 #
-# This is just a test. Old 'bcc32' such as the above v5.5 will no
-# longer work in Watt-32. So dropping support for Borland (small, large, flat) is imminent.
+# This is just a test to see if an old 'bcc32.exe' will
+# work for FLAT memory-model. Seems impossible now.
 #
-CFLAGS    = -4- -RT- -O2 -H -H=$(TEMP)\bcc_f.pch -D_M_IX86=1 -D__BORLANDC__=0x0550
+# Need an env-var 'BCCXDIR' != 'BCCDIR' below.
+#
+CC     = $(BCCXDIR)\bin\bcc32
+CFLAGS = -4- -RT-                             # 80486 instructions and no "Run-time type information"
+CFLAGS = $(CFLAGS) -O2                        # Optimize level 2
+CFLAGS = $(CFLAGS) -D__FLAT__ -D__DPMI32__    # Ditto
+CFLAGS = $(CFLAGS) -DBCC32_OLD                # Tested in various places
+
+# CFLAGS = $(CFLAGS) -H -H=$(TEMP)\bcc_f.pch  # Use pre-compiled headers
+# CFLAGS = $(CFLAGS) -D__BORLANDC__=0x0550    # Should be built-in
+
+#
+# Since a '$(BCCDIR)\bin\bcc32c.cfg' could interfere with '$(BCCXDIR)\bin\bcc32.cfg'
+#
+CFLAGS = $(CFLAGS) -I$(BCC32_OLD_DIR)\inc
+
 AFLAGS    = -mx -m2 -t -l -DDOSX
 STAT_LIB  = ..\lib\wattcpbf.lib
 LIBFLAG   = $(LIBFLAGS) /P32
@@ -363,8 +377,8 @@ MAKE_FILE = bcc_f.mak
 
 @elifdef WIN32
 #
-# Since CBuilder 10 (I think), the 32-bit compiler is based on LLVM and
-# it's name changed from 'bcc32.exe' to 'bcc32c.exe'.
+# Since CBuilder 10 (I think), the 32-bit compiler is based on
+# LLVM and it's name changed from 'bcc32.exe' to 'bcc32c.exe'.
 # Ditto for 'cpp32.exe'  (the C/C++ preprocessor).
 #
 # Borland is now a product of "Embarcadero Technologies, Inc."
@@ -385,6 +399,11 @@ MAKE_FILE = bcc_f.mak
   CFLAGS = -5 -WM -Vd -H -H=$(TEMP)\bcc_w.pch
 
   #
+  # CBuilder ver. 6 may need this.
+  #
+  # CFLAGS = $(CFLAGS) -DBCC32_OLD
+
+  #
   # Borland's Resource Compiler:
   #
   BRC32 = $(BCCDIR)\bin\brc32
@@ -394,6 +413,11 @@ MAKE_FILE = bcc_f.mak
   CFLAGS = # -fcolor-diagnostics-
   BRC32  = $(BCCDIR)\bin\rc
 !endif
+
+#
+# -q: Suppress compiler identification banner
+#
+CFLAGS = $(CFLAGS) -q
 
 #
 # -RT-: Generate RTTI, disable
@@ -429,11 +453,7 @@ MAKE_FILE = bcc_w.mak
 
 OBJPATH = $(OBJDIR)\ #
 
-!if "$(CBUILDER_IS_LLVM_BASED)" == ""
-  CFLAGS = $(CFLAGS) -w-aus- -w-pia- -w-csu-
-!endif
-
-CFLAGS  = $(CFLAGS) -q -c -O -v -vi- -d -Tt -w  -I. -I..\inc -n$(OBJDIR) -DWATT32_BUILD
+CFLAGS  = $(CFLAGS) -c -O -v -vi- -d -Tt -w  -I. -I..\inc -n$(OBJDIR) -DWATT32_BUILD
 LDFLAGS = -tWD -lM -lm -q -lq -laa -lc
 
 AS = tasm32

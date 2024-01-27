@@ -495,9 +495,21 @@
     #define DISABLE()     __emit__(0xFA)
   #endif
 
+ /*
+  * Warning control in BCC32 is really awful.
+  * See https://codenewsfast.com/cnf/article//permalink.art-ng1878q231
+  * for all these codes
+  */
+  #pragma warn -asc-     /* Restarting compile using assembly */
   #pragma warn -bbf-     /* "Bitfields must be signed or unsigned int" warning */
-  #pragma warn -sig-     /* "Conversion may loose significant digits" warning */
   #pragma warn -cln-     /* "Constant is long" warning */
+  #pragma warn -csu-     /* Comparing signed and unsigned values */
+  #pragma warn -dup-     /* Redefinition of 'x' is not identical */
+  #pragma warn -pia-     /* Possibly incorrect assignment */
+  #pragma warn -pin-     /* Initialization is only partially bracketed */
+  #pragma warn -pro-     /* Call to function 'function' with no prototype */
+  #pragma warn -sig-     /* "Conversion may loose significant digits" warning */
+//#pragma warn -wnod-    /* No declaration for function 'function' */
 
   #if defined(__DPMI32__)
     #pragma warn -stu-   /* structure undefined */
@@ -506,7 +518,7 @@
 
   /* make string/memory functions inline (but not for DPMI32/WIN32)
    */
-  #if defined(__BORLANDC__) && !defined(__DPMI32__) && !defined(WIN32)
+  #if !defined(__DPMI32__) && !defined(WIN32)
     #define strlen        __strlen__
     #define strncpy       __strncpy__
     #define strrchr       __strrchr__

@@ -74,6 +74,24 @@
   #define OPT_DEFINED
 #endif
 
+/**
+ * BCC32 ver <= 5.5 and it's C-preprocessor have serious troubles
+ * with seeing a 'var-arg' macro like:
+ *   `#define TRACE_FILE(args, ...)   ((void)0)`
+ *
+ * Hence limits it to these options:
+ */
+#if defined(BCC32_OLD)
+  #define USE_BOOTP
+  #define USE_DHCP
+  #define USE_STATISTICS
+  #define USE_BIND
+  #define USE_BSD_API
+  #define USE_BSD_FATAL
+  #define USE_MULTICAST
+  #define OPT_DEFINED
+#endif
+
 /*
  * Otherwise, for all targets define these options:
  */

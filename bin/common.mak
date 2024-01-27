@@ -52,8 +52,8 @@ CALLING_CONVENTION = -3r
 .SWAP
 
 MMODEL        = l
-BCC_CFLAGS    = -c -m$(MMODEL) -v -O -f87 -H=$(TEMP)\bcc.sym
-BCC32_CFLAGS  = -c -WX -v -ls -RT- -O -w-aus -w-stu
+BCC_CFLAGS    = -c -m$(MMODEL) -O -v -f87 -H=$(TEMP)\bcc.sym
+BCC32_CFLAGS  = -c -v -ls -RT- -O
 WCC386_CFLAGS = -mf -w5 -zc -zq -zm -fr=nul -bt=dos -d2 -fpi -oilrt $(CALLING_CONVENTION)
 HC386_CFLAGS  = -w4 -c -g -O2 -586 -Hsuffix=.o32 -Hnocopyr -Hturboerr \
                 -Hpragma=stack_size_warn(5000) -Hpragma=Offwarn(572)

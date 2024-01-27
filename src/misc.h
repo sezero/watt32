@@ -73,6 +73,17 @@ extern "C" {
   int _RTLENTRY _EXPFUNC getch (void);
   int _RTLENTRY _EXPFUNC cputs (const char *str);
 
+  #if defined(BCC32_OLD)
+    /*
+     * Some issue with these prototypes:
+     */
+    int _RTLENTRY intdos (union REGS _FAR *inregs,
+                          union REGS _FAR *outregs);
+
+    extern  unsigned _RTLENTRY _psp;
+    #define getpid() _psp
+  #endif
+
 #elif defined(__CYGWIN__)
   /*
    * More CygWin quirks.

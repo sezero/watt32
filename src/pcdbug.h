@@ -41,11 +41,12 @@ extern   void dbug_flush (void);
 /*
  * Send Rx/Tx packet to debug-file.
  * 'nw_pkt' must point to network layer packet.
-*
- * Since High-C does not handle the below 'var-args', use a dummy
- * function in 'highc.c'.
+ *
+ * Since High-C does not handle the below 'var-args',
+ * use a dummy function in 'highc.c'.
+ * Similar problems with Borland <= 5.5.
  */
-#if defined(USE_DEBUG) && !defined(__HIGHC__)
+#if defined(USE_DEBUG) && !defined(__HIGHC__) && !defined(BCC32_OLD)
   #define DEBUG_RX(sock, nw_pkt)                             \
           do {                                               \
             if (debug_recv)                                  \
@@ -80,7 +81,7 @@ extern   void dbug_flush (void);
   #define DEBUG_RX(sock, ip)               ((void)0)
   #define DEBUG_TX(sock, ip)               ((void)0)
 
-  #if defined(__HIGHC__)
+  #if defined(__HIGHC__) || defined(BCC32_OLD)
     extern void TRACE_FILE    (const char *fmt, ...);
     extern void TRACE_CONSOLE (int level, const char *fmt, ...);
   #else

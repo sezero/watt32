@@ -127,6 +127,9 @@ extern UINT        winpkt_trace_level;
                             const char *fmt, ...) W32_ATTR_PRINTF (1, 2);
   extern void winpkt_trace_fclose (void);
 
+#elif defined(BCC32_OLD)
+  extern void WINPKT_TRACE (const char *args, ...);
+
 #else
   #define WINPKT_TRACE(args, ...)  ((void)0)
 #endif  /* USE_DEBUG */
