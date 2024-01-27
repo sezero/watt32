@@ -112,8 +112,6 @@ extern "C" {
 #define hex_chars_upper  W32_NAMESPACE (hex_chars_upper)
 #define win32_dos_box    W32_NAMESPACE (win32_dos_box)
 #define get_day_num      W32_NAMESPACE (get_day_num)
-#define dword_str        W32_NAMESPACE (dword_str)
-#define qword_str        W32_NAMESPACE (qword_str)
 #define shell_exec       W32_NAMESPACE (shell_exec)
 #define assert_fail      W32_NAMESPACE (assert_fail)
 #define ctime_r          W32_NAMESPACE (ctime_r)
@@ -150,14 +148,14 @@ extern "C" {
 extern const char hex_chars_lower[];
 extern const char hex_chars_upper[];
 
-extern BOOL     win32_dos_box;
-extern BOOL    _watt_fatal_error;
-extern BOOL    _watt_crtdbg_check;
-extern WORD    _watt_os_ver;
-extern char    _watt_assert_buf[256];
+extern BOOL   win32_dos_box;
+extern BOOL  _watt_fatal_error;
+extern BOOL  _watt_crtdbg_check;
+extern WORD  _watt_os_ver;
+extern char  _watt_assert_buf[256];
 
-extern void     Wait         (unsigned msec);
-extern BOOL     valid_addr   (const void *addr, unsigned len);
+extern void   Wait       (unsigned msec);
+extern BOOL   valid_addr (const void *addr, unsigned len);
 
 #if !defined(SWIG)
   extern BOOL     is_in_stack  (const void *ptr);
@@ -165,16 +163,16 @@ extern BOOL     valid_addr   (const void *addr, unsigned len);
   extern unsigned _get_frame_size (const char *x);
 #endif
 
-extern void     os_yield     (void);
-extern void     assert_fail  (const char *file, unsigned line, const char *what);
+extern void     os_yield    (void);
+extern void     assert_fail (const char *file, unsigned line, const char *what);
 
 extern   DWORD  get_day_num      (void);
 extern   void   memdbg_init      (void);
 extern   void   memdbg_post_init (void);
 extern   FILE  *fopen_excl       (const char *file, const char *mode);
 
-extern void     unfinished      (const char *func, const char *file, unsigned line);
-extern void     unimplemented   (const char *func, const char *file, unsigned line);
+extern void     unfinished    (const char *func, const char *file, unsigned line);
+extern void     unimplemented (const char *func, const char *file, unsigned line);
 
 #define UNFINISHED()    unfinished (__FUNCTION__, __FILE__, __LINE__)
 #define UNIMPLEMENTED() unimplemented (__FUNCTION__, __FILE__, __LINE__)
@@ -184,10 +182,19 @@ extern struct tm  *localtime_r (const time_t *t, struct tm *res);
 extern char       *strtok_r    (char *ptr, const char *sep, char **end);
 
 extern const char *dos_extender_name (void);
-extern const char *dword_str (DWORD val);
 
-#if defined(HAVE_UINT64)
-extern const char *qword_str (uint64 val);
+#if defined(USE_DEBUG)
+  #define dword_str  W32_NAMESPACE (dword_str)
+  #define qword_str  W32_NAMESPACE (qword_str)
+
+  extern const char *dword_str (DWORD val);
+
+  #if defined(HAVE_UINT64)
+  extern const char *qword_str (uint64 val);
+  #endif
+#else
+  #define dword_str(x)  "?"
+  #define qword_str(x)  "?"
 #endif
 
 /*
@@ -225,6 +232,8 @@ extern const char *qword_str (uint64 val);
   extern const char *list_lookup   (DWORD, const struct search_list *, int);
   extern const char *list_lookupX  (DWORD, const struct search_list *, int);
   extern const char *MAC_address   (const void *addr);
+#else
+  #define MAC_address(a)   NULL
 #endif
 
 #if defined(__LARGE__)
@@ -451,8 +460,14 @@ extern const char *qword_str (uint64 val);
   #define HIGH_TEXT()      ((void)0)
   #define YELLOW_TEXT()    ((void)0)
   #define RED_TEXT()       ((void)0)
+
+  #undef  FOREGROUND_BLUE
   #define FOREGROUND_BLUE  0
+
+  #undef  FOREGROUND_GREEN
   #define FOREGROUND_GREEN 0
+
+  #undef  FOREGROUND_RED
   #define FOREGROUND_RED   0
 #endif
 

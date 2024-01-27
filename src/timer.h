@@ -17,10 +17,6 @@
 #define start_day         W32_NAMESPACE (start_day)
 #define init_timers       W32_NAMESPACE (init_timers)
 
-#define time_str          W32_NAMESPACE (time_str)
-#define hms_str           W32_NAMESPACE (hms_str)
-#define elapsed_str       W32_NAMESPACE (elapsed_str)
-
 #define has_rdtsc         W32_NAMESPACE (has_rdtsc)
 #define use_rdtsc         W32_NAMESPACE (use_rdtsc)
 
@@ -74,9 +70,19 @@ W32_DATA unsigned num_cpus;
 extern void  init_timers      (void);
 extern DWORD millisec_clock   (void);
 
-extern const char *time_str   (DWORD val);
-extern const char *hms_str    (DWORD sec);
-extern const char *elapsed_str(DWORD val);
+#if defined(USE_DEBUG)
+  #define time_str      W32_NAMESPACE (time_str)
+  #define hms_str       W32_NAMESPACE (hms_str)
+  #define elapsed_str   W32_NAMESPACE (elapsed_str)
+
+  extern const char *time_str   (DWORD val);
+  extern const char *hms_str    (DWORD sec);
+  extern const char *elapsed_str(DWORD val);
+#else
+  #define time_str(val)     "?"
+  #define hms_str(sec)      "?"
+  #define elapsed_str(val)  "?"
+#endif
 
 #if defined(__HIGHC__) || (defined(__DMC__) && defined(__MSDOS__))
   #define delay  W32_NAMESPACE (delay)

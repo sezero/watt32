@@ -2130,10 +2130,10 @@ static const char *get_route_flags (WORD flg)
 }
 
 #else
-  W32_CALL void W32_CALL _arp_cache_dump (void) {}
-  W32_CALL void W32_CALL _arp_gateways_dump (void) {}
-  W32_CALL void W32_CALL _arp_routes_dump (void) {}
-  W32_CALL void W32_CALL _arp_debug_dump (void) {}
+  void W32_CALL _arp_cache_dump (void) {}
+  void W32_CALL _arp_gateways_dump (void) {}
+  void W32_CALL _arp_routes_dump (void) {}
+  void W32_CALL _arp_debug_dump (void) {}
 #endif  /* USE_DEBUG */
 
 
