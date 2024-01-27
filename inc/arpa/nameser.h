@@ -126,9 +126,10 @@
 #endif
 
 /*
- * Currently defined response codes
+ * Currently defined response codes.
+ * The <winerror.h> value is okay to use.
  */
-#if !defined(WIN32) && !defined(_WIN32)  /* <winerror.h> value is okay */
+#if !defined(WIN32) && !defined(_WIN32) && !defined(__WIN32__)
 #define NOERROR        0               /* no error */
 #endif
 
