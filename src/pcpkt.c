@@ -876,7 +876,16 @@ int DTOR pkt_release (void)
 }
 
 #if defined(__BORLANDC__)
-  #pragma exit pkt_release 100
+ /**
+  * A `#pragma exit` funcion MUST be `void`
+  * \ref https://docwiki.embarcadero.com/RADStudio/Athens/en/Pragma_exit_and_pragma_startup
+  */
+  static void _pkt_release (void)
+  {
+    pkt_release();
+  }
+
+  #pragma exit _pkt_release 100
 #endif
 
 
