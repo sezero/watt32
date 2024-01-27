@@ -15,7 +15,7 @@ SRC = cmpt.c connect.c cookies.c fnmatch.c ftp-basi.c ftp-ls.c \
 COMMON_DEFS = -I. -DHAVE_CONFIG_H
 WCC386_DEFS = -wcd=124 -wcd=202
 
-POWERPAK = 0
+POWERPAK = 1
 
 BORLAND_EXE = wget.exe
 PHARLAP_EXP = wget.exp

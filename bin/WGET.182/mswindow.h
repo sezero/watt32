@@ -79,8 +79,7 @@ so, delete this exception statement from your version.  */
   # define mkdir(a, b) _mkdir(a)
   # define MKDIR(a, b) _mkdir(a)
   #else  /* __BORLANDC__ */
-  # define mkdir(a, b) mkdir(a)
-  # define MKDIR(a, b) mkdir(a)
+  # define MKDIR(a, b) _mkdir(a)
   #endif /* __BORLANDC__ */
 #endif   /* __CYGWIN__ */
 
@@ -96,7 +95,7 @@ so, delete this exception statement from your version.  */
 #endif
 
 /* Public functions.  */
-#if !defined(__MINGW32__) && !defined(__CYGWIN__)
+#if !defined(__MINGW32__) && !defined(__CYGWIN__) && !defined(__BORLANDC__)
 unsigned int sleep (unsigned);
 #endif
 

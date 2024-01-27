@@ -125,4 +125,20 @@
 #define PATH_MAX  512   /* for future expansion */
 #endif
 
+#if defined(__BORLANDC__)
+  #undef HAVE_SYS_UTIME_H
+  #undef HAVE_STRUCT_UTIMBUF
+
+  #pragma warn -aus-
+  #pragma warn -eff-
+  #pragma warn -stu-
+  #pragma warn -ccc-
+  #pragma warn -csu-
+  #pragma warn -obs-
+  #pragma warn -par-
+  #pragma warn -pia-
+  #pragma warn -pro-
+  #pragma warn -rch-
+#endif
+
 #endif
