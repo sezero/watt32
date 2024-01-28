@@ -155,7 +155,7 @@ static BOOL have_npcap = FALSE;
 /**
  * The above `NPCAP_prefix` is not used when NPcap was installed
  * in compatibility mode.
- * \todo mae this configurable?
+ * \todo make this configurable?
  */
 static BOOL NPF_compatibility_mode = TRUE;
 
