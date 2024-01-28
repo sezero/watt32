@@ -274,7 +274,8 @@ struct _eth_last_info {
 extern struct _eth_last_info _eth_last;
 
 extern BOOL        _ip_recursion, _eth_is_init;
-extern BOOL        _eth_ndis3pkt, _eth_winpcap, _eth_win10pcap, _eth_SwsVpkt, _eth_wanpacket;
+extern BOOL        _eth_ndis3pkt, _eth_winpcap, _eth_npcap;
+extern BOOL        _eth_win10pcap, _eth_SwsVpkt, _eth_wanpacket;
 extern BYTE        _eth_mac_len;
 extern const char *_eth_not_init;
 

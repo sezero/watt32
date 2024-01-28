@@ -441,6 +441,9 @@ int W32_CALL pkt_eth_init (mac_address *mac_addr)
     return (WERR_PKT_ERROR);
   }
 
+  if (PacketHaveNpcap())
+     _eth_npcap = TRUE;
+
   if (!_pktdrvrname[0] && !find_adapter(_pktdrvrname, sizeof(_pktdrvrname)))
   {
     const char *problem = "";
@@ -459,6 +462,7 @@ int W32_CALL pkt_eth_init (mac_address *mac_addr)
   rc = _eth_SwsVpkt   ? open_swsvpkt_adapter   (_pktdrvrname) :
        _eth_wanpacket ? open_wanpacket_adapter (_pktdrvrname) :
        _eth_win10pcap ? open_win10pcap_adapter (_pktdrvrname) :
+       _eth_npcap     ? open_npcap_adapter     (_pktdrvrname) :
                         open_winpcap_adapter   (_pktdrvrname);
 
   if (rc != WERR_NO_ERROR)
@@ -1284,6 +1288,32 @@ static BOOL get_if_type_pcap (const void *a, WORD *type)
   return (TRUE);
 }
 
+#ifdef NOT_NEEDED /* Needed? */
+/*
+ * NPcap fails on the `OID_GEN_MEDIA_IN_USE` call.
+ * Just fake it.
+*/
+static BOOL get_if_type_npcap (const void *a, WORD *type)
+{
+  (void) a;
+  *type = NdisMedium802_3;
+  return (TRUE);
+}
+
+static BOOL get_if_stat_npcap (const void *a, BOOL *is_up)
+{
+  (void) a;
+  *is_up = TRUE;
+  return (TRUE);
+}
+
+static BOOL get_descr_npcap (const void *a, char *buf, size_t max)
+{
+  strncpy (buf, "NPcap", max);
+  return (TRUE);
+}
+#endif
+
 static BOOL get_if_type_swsvpkt (const void *u, WORD *type)
 {
   const struct SwsVpktUsr *usr = u;
@@ -1294,7 +1324,8 @@ static BOOL get_if_type_swsvpkt (const void *u, WORD *type)
   return (TRUE);
 }
 
-/* Query the NIC driver for the adapter description
+/*
+ * Query the NIC driver for the adapter description
  */
 static BOOL get_descr_pcap (const void *a, char *buf, size_t max)
 {
@@ -1495,9 +1526,14 @@ int W32_CALL pkt_get_api_ver (WORD *ver_p)
   return (rc);
 }
 
-/*
+/**
  * Returns NPF.SYS/SwsVpkt.sys version as "major,minor,0,build" or
  * "major.minor.0.build" (8 bits each).
+ *
+ * For `NPcap.sys` only return "major.minor" from Registry.
+ * Altought the fileversion of `c:\Program Files\Npcap\npcap.sys`
+ * and `c:\Windows\System32\drivers\npcap.sys` is like this:
+ *   `FileVersion: 5.1.79.117`
  */
 int W32_CALL pkt_get_drvr_ver (WORD *major, WORD *minor, WORD *unused, WORD *build)
 {
@@ -1505,6 +1541,11 @@ int W32_CALL pkt_get_drvr_ver (WORD *major, WORD *minor, WORD *unused, WORD *bui
                      (*_pkt_inf->get_drv_ver_op)() : NULL;
   if (!ver)
      return (0);
+
+  *unused = *build = 0;
+
+  if (PacketHaveNpcap() && sscanf(ver, "%hu.%hu", major, minor) == 2)
+     return (1);
 
   if (sscanf(ver, "%hu,%hu,%hu,%hu", major, minor, unused, build) == 4 ||
       sscanf(ver, "%hu.%hu.%hu.%hu", major, minor, unused, build) == 4)
@@ -1563,7 +1604,6 @@ static enum eth_init_result open_winpcap_adapter (const char *name)
 
   _pkt_inf->adapter         = adapter;
   _pkt_inf->adapter_info    = PacketFindAdInfo (name);
-  _pkt_inf->init_op         = PacketInitModule;
   _pkt_inf->close_op        = (func_close)   PacketCloseAdapter;
   _pkt_inf->send_op         = (func_send)    PacketSendPacket;
   _pkt_inf->recv_op         = (func_recv)    PacketReceivePacket;
@@ -1598,7 +1638,6 @@ static enum eth_init_result open_npcap_adapter (const char *name)
 
   _pkt_inf->adapter         = adapter;
   _pkt_inf->adapter_info    = PacketFindAdInfo (name);
-  _pkt_inf->init_op         = PacketInitModule;
   _pkt_inf->close_op        = (func_close)   PacketCloseAdapter;
   _pkt_inf->send_op         = (func_send)    PacketSendPacket;
   _pkt_inf->recv_op         = (func_recv)    PacketReceivePacket;
@@ -1633,7 +1672,6 @@ static enum eth_init_result open_win10pcap_adapter (const char *name)
 
   _pkt_inf->adapter         = adapter;
   _pkt_inf->adapter_info    = PacketFindAdInfo (name);
-  _pkt_inf->init_op         = PacketInitModule;
   _pkt_inf->close_op        = (func_close)   PacketCloseAdapter;
   _pkt_inf->send_op         = (func_send)    PacketSendPacket;
   _pkt_inf->recv_op         = (func_recv)    PacketReceivePacket;

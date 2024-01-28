@@ -63,8 +63,8 @@
 /**
  * Current NPF.SYS / NPcap.sys version.
  */
-static char npf_drv_ver[64]   = "Unknown npf.sys version";
-static char npcap_drv_ver[64] = "Unknown npcap.sys version";
+static char npf_drv_ver [64]   = "Unknown npf.sys version";
+static char npcap_drv_ver [64] = "Unknown npcap.sys version";
 
 /**
  * Name constants (NPF).
@@ -83,9 +83,9 @@ static const char NPCAP_service_name[]      = "NPCap";
 static const char NPCAP_service_descr[]     = "Npcap Packet Driver";
 static const char NPCAP_registry_location[] = "SYSTEM\\CurrentControlSet\\Services\\npcap";
 static const char NPCAP_registry_params[]   = "SYSTEM\\CurrentControlSet\\Services\\npcap\\Parameters";
-static const char NPCAP_prefix[]            = "\\Device\\NPCAP_";   // or "\\\\.\\Global\\NPCAP_" ?
 static const char NPCAP_driver_path[]       = "system32\\drivers\\npcap.sys";
 static const char NPCAP_virtual_path[]      = "sysnative\\drivers\\npcap.sys";
+static const char NPCAP_prefix[]            = "\\Device\\NPCAP_";   // or "\\\\.\\Global\\NPCAP_" ?
 
 /**
  * Name constants (Win10Pcap).
@@ -120,8 +120,6 @@ static const struct search_list serv_stat[] = {
                     ADD_VALUE (SERVICE_STOPPED)
                   };
 
-#define DEVICE_PREFIX  "\\Device\\"
-
 /*
  * The {4D36E972-E325-11CE-BFC1-08002BE10318} subkey represents the class
  * of network adapter devices that the system supports.
@@ -150,9 +148,16 @@ static HANDLE adapters_mutex = INVALID_HANDLE_VALUE;
 static BOOL use_wanpacket = FALSE;
 
 /**
- * Do we have a NPcap-driver in WinPcap compatibilty mode?
+ * Do we have a NPcap-driver?
  */
 static BOOL have_npcap = FALSE;
+
+/**
+ * The above `NPCAP_prefix` is not used when NPcap was installed
+ * in compatibility mode.
+ * \todo mae this configurable?
+ */
+static BOOL NPF_compatibility_mode = TRUE;
 
 /**
  * Do we have a Win10Pcap-driver?
@@ -186,6 +191,8 @@ static void set_char_pointers (const char *adapter)
     driver_prefix     = NPCAP_prefix;
     driver_path       = NPCAP_driver_path;
     virtual_path      = NPCAP_virtual_path;
+    if (NPF_compatibility_mode)
+       driver_prefix = NPF_prefix;
   }
   else
   {
@@ -199,30 +206,100 @@ static void set_char_pointers (const char *adapter)
 }
 
 #if defined(USE_DEBUG)
-  /**
-   * Dumps a registry key to disk in text format. Uses regedit.
-   *
-   * \param key_name Name of the key to dump. All its subkeys will be
-   *        saved recursively.
-   * \param file_name Name of the file that will contain the dump.
-   * \return If the function succeeds, the return value is nonzero.
-   *
-   * For debugging purposes, we use this function to obtain some registry
-   * keys from the user's machine.
-   */
-  static void PacketDumpRegistryKey (const char *key_name, const char *file_name)
-  {
-    char command[256];
+/**
+ * If using NPcap.sys, check for differences in `nBIO*` codes versus `pBIO*` (WinPcap) codes.
+ */
+#define ADD_BIO_VALUE(v)  { p ##v, n ##v, #v }
 
-    /* Let regedit do the dirty work for us
-     */
-    SNPRINTF (command, sizeof(command), "regedit /e %s %s", file_name, key_name);
-    system (command);
+/* These does not exist in NPF.sys
+ */
+#define pBIOCISDUMPENDED     0
+#define pBIOCGEVNAME         0
+#define pBIOCSTIMESTAMPMODE  0
+#define pBIOCGTIMESTAMPMODES 0
+
+typedef struct BIO_list {
+        DWORD       p_value;
+        DWORD       n_value;
+        const char *name;
+      } BIO_list;
+
+static const BIO_list bio_list[] = {
+       ADD_BIO_VALUE (BIOCISDUMPENDED),
+       ADD_BIO_VALUE (BIOCISETLOBBEH),
+       ADD_BIO_VALUE (BIOCSMODE),
+       ADD_BIO_VALUE (BIOCSWRITEREP),         /* not used */
+       ADD_BIO_VALUE (BIOCSMINTOCOPY),
+       ADD_BIO_VALUE (BIOCGEVNAME),           /* not used */
+       ADD_BIO_VALUE (BIOCSRTIMEOUT),
+       ADD_BIO_VALUE (BIOCSETEVENTHANDLE),
+       ADD_BIO_VALUE (BIOCSETDUMPFILENAME),   /* not used */
+       ADD_BIO_VALUE (BIOCSETF),              /* not used */
+       ADD_BIO_VALUE (BIOCGSTATS),
+       ADD_BIO_VALUE (BIOCSENDPACKETSNOSYNC), /* not used */
+       ADD_BIO_VALUE (BIOCSENDPACKETSSYNC),   /* not used */
+       ADD_BIO_VALUE (BIOCSETDUMPLIMITS),     /* not used */
+       ADD_BIO_VALUE (BIOCSETBUFFERSIZE),
+       ADD_BIO_VALUE (BIOCSETOID),
+       ADD_BIO_VALUE (BIOCQUERYOID),
+       ADD_BIO_VALUE (BIOCSTIMESTAMPMODE),
+       ADD_BIO_VALUE (BIOCGTIMESTAMPMODES)
+    };
+
+static void check_BIO_codes (void)
+{
+  const BIO_list *bio = bio_list + 0;
+  const char     *fmt;
+  const char     *hex_fmt = "%2zu: p/n%-22s 0x%08lX  0x%08lX   %sOK\n";
+  const char     *dec_fmt = "%2zu: p/n%-22s %-7lu     %-7lu      %sOK\n";
+  size_t          i, num = DIM(bio_list);
+  BOOL            okay;
+
+  winpkt_trace_func = "check_BIO_codes";
+  WINPKT_TRACE ("---------------------------------------------------------------\n"
+                "                                             "
+                "idx BIO names                 NPF value   NPCAP value  Status\n");
+
+  for (i = 0; i < num; i++, bio++)
+  {
+    okay = (bio->p_value == 0 || bio->p_value == bio->n_value);
+    if (bio->p_value >= 0x80000000 || bio->n_value >= 0x80000000)
+         fmt = hex_fmt;
+    else fmt = dec_fmt;
+    WINPKT_TRACE (fmt, i, bio->name, bio->p_value, bio->n_value, okay ? "" : "not ");
   }
-#endif
+  WINPKT_TRACE ("---------------------------------------------------------------\n");
+}
+
+/**
+ * Dumps a Registry key to disk in text format. Uses regedit.
+ *
+ * \param key_name Name of the key to dump. All its subkeys will be
+ *        saved recursively.
+ * \param file_name Name of the file that will contain the dump.
+ * \return If the function succeeds, the return value is nonzero.
+ *
+ * For debugging purposes, we use this function to obtain some Registry
+ * keys from the user's machine.
+ */
+static void PacketDumpRegistryKey (const char *key_name, const char *file_name)
+{
+  char command[256];
+
+  /* Let regedit do the dirty work for us
+   */
+  SNPRINTF (command, sizeof(command), "regedit /e %s %s", file_name, key_name);
+  system (command);
+}
+
+#else
+static void check_BIO_codes (void)
+{
+}
+#endif /* USE_DEBUG */
 
 /*
- * Allow 64-bit applications to access redirected keys in the 32-bit registry view.
+ * Allow 64-bit applications to access redirected keys in the 32-bit Registry view.
  * Ref: https://learn.microsoft.com/en-us/windows/win32/winprog64/accessing-an-alternate-registry-view
  */
 static REGSAM reg_read_access (void)
@@ -236,15 +313,14 @@ static REGSAM reg_read_access (void)
 }
 
 /*
- * The get_file_version() fails under Win-Vista+ since files under
- * '"%SystemRoot%\system32\drivers' are hidden from non-admin users.
- * So this function is used instead. I assume the true file-version of
- * NPF.sys is the same as "DisplayVersion" in Registry.
+ * It is assumed the true file-version of NPF.sys is the same
+ * as "DisplayVersion" in Registry.
  */
 static BOOL get_npf_ver_from_registry (char *ret_ver, size_t ver_size)
 {
   char  str[100];
   BOOL  rc = FALSE;
+
   DWORD size = sizeof(str);
   HKEY  key = NULL;
   LONG  status;
@@ -339,13 +415,18 @@ static BOOL npf_sc_getdisplayname (char *name_buf, size_t name_size)
 }
 #endif
 
+BOOL PacketHaveNpcap (void)
+{
+  return (have_npcap);
+}
+
 /**
- * The winpcap init function (formerly DllMain).
+ * The WinPcap / NPcap init function (formerly DllMain).
  */
 BOOL PacketInitModule (void)
 {
   const struct ADAPTER_INFO *ai;
-  BOOL  rc = FALSE;
+  BOOL  rc;
 
   winpkt_trace_func = "PacketInitModule";
   WINPKT_TRACE ("\n");
@@ -353,7 +434,7 @@ BOOL PacketInitModule (void)
 #if defined(USE_DEBUG)
   if (winpkt_trace_level >= 3 && !_watt_is_win9x)
   {
-    /* dump a bunch of registry keys
+    /* dump a bunch of Registry keys
      */
     PacketDumpRegistryKey ("HKEY_LOCAL_MACHINE" ADAPTER_KEY_CLASS, "adapters.reg");
     PacketDumpRegistryKey ("HKEY_LOCAL_MACHINE\\SYSTEM\\CurrentControlSet"
@@ -369,58 +450,17 @@ BOOL PacketInitModule (void)
    */
   adapters_mutex = CreateMutex (NULL, FALSE, NULL);
 
-  /*
-   * Retrieve NPF.sys version information from the file.
-   *
-   * \todo: Should maybe use an absolute path: "%SystemRoot%\system32\drivers\npf.sys" ?
-   *        Or we can assume %SystemRoot% is always in %PATH?
-   *
-   * The get_file_version() fails under Win-Vista+ since files under
-   * '"%SystemRoot%\system32\drivers' are hidden from non-admin users.
-   * Hence try the "%SystemRoot%\sysnative\drivers" directory first
-   * (a virtual directory). If that fails (or on < Vista), try
-   * "%SystemRoot%\system32\drivers".
-   *
-   * Instead of checking "%SystemRoot%\sysnative\drivers" directly, MSDN
-   * would recommend we use:
-   *   Wow64DisableWow64FsRedirection (...)
-   *   get_file_version (driver_path,...)
-   *   Wow64EnableWow64FsRedirection (....)
-   *
-   * But this can led to strange bugs.
-   *
-   * Refs: https://msdn.microsoft.com/en-us/library/windows/desktop/aa365743(v=vs.85).aspx
-   *       https://blogs.msdn.microsoft.com/oldnewthing/20130321-00/?p=4883/
-   *
-   * If both attempts fails, simply try to get the version from Registry.
-   *
-   * Ref. Section "Registry and file system" at:
-   *   http://en.wikipedia.org/wiki/WoW64
+  /* Retrieve NPF / NPcap versions information from the Registry.
    */
-  if (_watt_os_ver >= 0x0600)
-     rc = get_file_version (virtual_path, npf_drv_ver, sizeof(npf_drv_ver));
+  rc = get_npf_ver_from_registry (npf_drv_ver, sizeof(npf_drv_ver));
+  WINPKT_TRACE ("get_npf_ver_from_registry(): rc=%d, npf_drv_ver=\"%s\"\n", rc, npf_drv_ver);
 
-  if (!rc)
-     rc = get_file_version (driver_path, npf_drv_ver, sizeof(npf_drv_ver));
-
-  WINPKT_TRACE ("get_file_version(): rc=%d, npf_drv_ver=\"%s\"\n", rc, npf_drv_ver);
-
-  if (!rc)
+  rc = get_npcap_ver_from_registry (npcap_drv_ver, sizeof(npcap_drv_ver));
+  WINPKT_TRACE ("get_npcap_ver_from_registry(): rc=%d, npcap_drv_ver=\"%s\"\n", rc, npcap_drv_ver);
+  if (rc)
   {
-    rc = get_npf_ver_from_registry (npf_drv_ver, sizeof(npf_drv_ver));
-    WINPKT_TRACE ("get_npf_ver_from_registry(): rc=%d, npf_drv_ver=\"%s\"\n",
-                  rc, npf_drv_ver);
-  }
-
-  /* Check for a NPcap.sys installation
-   */
-  if (!rc)
-  {
-    rc = get_npcap_ver_from_registry (npcap_drv_ver, sizeof(npcap_drv_ver));
-    WINPKT_TRACE ("get_npcap_ver_from_registry(): rc=%d, npcap_drv_ver=\"%s\"\n",
-                  rc, npcap_drv_ver);
-    if (rc)
-       have_npcap = TRUE;
+    have_npcap = TRUE;
+    check_BIO_codes();
   }
 
   /* Populate the 'adapters_list' list.
@@ -433,11 +473,7 @@ BOOL PacketInitModule (void)
   for (ai = PacketGetAdInfo(); ai; ai = ai->Next)
   {
     winpkt_trace_func = "PacketInitModule";
-#if 0
-    WINPKT_TRACE ("%s, `%s'\n", ai->Name, ai->Description);
-#else
     WINPKT_TRACE ("%s\n", ai->Name);
-#endif
   }
   WINPKT_TRACE ("rc %d\n", rc);
 
@@ -566,29 +602,36 @@ static BOOL PacketSetReadEvt3xx (ADAPTER *AdapterObject)
 
 static BOOL PacketSetReadEvt4xx (ADAPTER *AdapterObject)
 {
-  DWORD  BytesReturned;
+  DWORD  error, code, BytesReturned;
   HANDLE hEvent;
 
   winpkt_trace_func = "PacketSetReadEvt4xx";
 
   if (AdapterObject->ReadEvent)
   {
-    WINPKT_TRACE ("error\n");
+    WINPKT_TRACE ("ReadEvent is not NULL\n");
     SetLastError (ERROR_INVALID_FUNCTION);
-    return FALSE;
+    return (FALSE);
   }
 
   hEvent = CreateEvent (NULL, TRUE, FALSE, NULL);
   if (!hEvent)
   {
-    WINPKT_TRACE ("error creating event\n");
-    return FALSE;
+    error = GetLastError();
+    WINPKT_TRACE ("error creating event; %s\n", win_strerror(error));
+    SetLastError (error);
+    return (FALSE);
   }
 
-  if (!DeviceIoControl(AdapterObject->hFile, pBIOCSETEVENTHANDLE, &hEvent,
+  code = (have_npcap ? nBIOCSETEVENTHANDLE : pBIOCSETEVENTHANDLE);
+
+  if (!DeviceIoControl(AdapterObject->hFile, code, &hEvent,
                        sizeof(hEvent), NULL, 0, &BytesReturned, NULL))
   {
-    WINPKT_TRACE ("error getting event-handle\n");
+    error = GetLastError();
+    WINPKT_TRACE ("error getting event-handle, error: %s\n", win_strerror(error));
+    CloseHandle (hEvent);
+    SetLastError (error);
     return (FALSE);
   }
 
@@ -602,7 +645,7 @@ static BOOL PacketSetReadEvt4xx (ADAPTER *AdapterObject)
 
 static BOOL PacketSetReadEvt (ADAPTER *AdapterObject)
 {
-  if (npf_drv_ver[0] == '3')
+  if (npf_drv_ver[0] == '3' && !have_npcap)
      return PacketSetReadEvt3xx (AdapterObject);
   return PacketSetReadEvt4xx (AdapterObject);
 }
@@ -686,7 +729,7 @@ static ADAPTER *PacketOpenAdapterNPF (const char *AdapterName)
   DWORD          error, KeyRes;
   SC_HANDLE      svcHandle = NULL;
   HKEY           PathKey;
-  char           SymbolicLink[128];
+  char           SymbolicLink [128];
   const char    *sym_link;
   SERVICE_STATUS SStat;
   SC_HANDLE      scmHandle, srvHandle;
@@ -705,7 +748,7 @@ static ADAPTER *PacketOpenAdapterNPF (const char *AdapterName)
   }
   else
   {
-    /* Check if the service registry key is already present.
+    /* Check if the Service Registry key is already present.
      * This means that the driver is already installed and that
      * we don't need to call PacketInstallDriver().
      */
@@ -723,7 +766,9 @@ static ADAPTER *PacketOpenAdapterNPF (const char *AdapterName)
       if (have_npcap)
       {
         DWORD AdminOnly         = (DWORD)-1;
+        DWORD Dot11Support      = (DWORD)-1;
         DWORD LoopbackSupport   = (DWORD)-1;
+        DWORD VlanSupport       = (DWORD)-1;
         DWORD WinPcapCompatible = (DWORD)-1;
         DWORD regType = (DWORD)-1;;
         DWORD bufLen;
@@ -739,16 +784,33 @@ static ADAPTER *PacketOpenAdapterNPF (const char *AdapterName)
           status = RegQueryValueExA (PathKey, "AdminOnly", NULL,
                                      &regType, (BYTE*)&AdminOnly, &bufLen);
 
-          bufLen = sizeof(WinPcapCompatible);
-          status = RegQueryValueExA (PathKey, "WinPcapCompatible", NULL,
-                                     &regType, (BYTE*)&WinPcapCompatible, &bufLen);
+          bufLen = sizeof(AdminOnly);
+          status = RegQueryValueExA (PathKey, "Dot11Support", NULL,
+                                     &regType, (BYTE*)&Dot11Support, &bufLen);
 
           bufLen = sizeof(LoopbackSupport);
           status = RegQueryValueExA (PathKey, "LoopbackSupport", NULL,
                                      &regType, (BYTE*)&LoopbackSupport, &bufLen);
+
+          bufLen = sizeof(VlanSupport);
+          status = RegQueryValueExA (PathKey, "VlanSupport", NULL,
+                                     &regType, (BYTE*)&VlanSupport, &bufLen);
+
+          bufLen = sizeof(WinPcapCompatible);
+          status = RegQueryValueExA (PathKey, "WinPcapCompatible", NULL,
+                                     &regType, (BYTE*)&WinPcapCompatible, &bufLen);
+
+          if (WinPcapCompatible != 1)
+             NPF_compatibility_mode = FALSE;
+
           RegCloseKey (params);
-          WINPKT_TRACE ("AdminOnly: %lu, LoopbackSupport: %lu, WinPcapCompatible: %lu\n",
-                        (u_long)AdminOnly, (u_long)LoopbackSupport, (u_long)WinPcapCompatible);
+          WINPKT_TRACE ("AdminOnly: %lu, Dot11Support: %lu, LoopbackSupport: %lu, "
+                        "VlanSupport: %lu, WinPcapCompatible: %lu\n",
+                        (u_long)AdminOnly,
+                        (u_long)Dot11Support,
+                        (u_long)LoopbackSupport,
+                        (u_long)VlanSupport,
+                        (u_long)WinPcapCompatible);
         }
       }
       Result = TRUE;
@@ -848,7 +910,7 @@ static ADAPTER *PacketOpenAdapterNPF (const char *AdapterName)
 
   /* skip "\Device" to create a symlink name
    */
-  prefix_len = strlen (DEVICE_PREFIX);
+  prefix_len = sizeof ("\\Device\\") - 1;
   if (strnicmp(AdapterName, driver_prefix, prefix_len))
   {
     WINPKT_TRACE ("Unexpected prefix for adapter \"%s\". Expected prefix: \"%s\"\n",
@@ -863,8 +925,23 @@ static ADAPTER *PacketOpenAdapterNPF (const char *AdapterName)
     return (NULL);
   }
 
-  sym_link = AdapterName + prefix_len;
-  SNPRINTF (SymbolicLink, sizeof(SymbolicLink), "\\\\.\\%s", sym_link);
+  if (have_npcap)
+  {
+    /*
+     * The `SymbolicLink` should look like:
+     *   "\\\\.\\Global\\NPCAP\\{6568F487-0016-453C-8C29-5C28DEDF27A0}"
+     *
+     * Hence use the GUID part of `AdapterName`.
+     */
+    SNPRINTF (SymbolicLink, sizeof(SymbolicLink), "\\\\.\\Global\\NPCAP\\%s",
+              strchr(AdapterName, '{'));
+    sym_link = SymbolicLink;
+  }
+  else
+  {
+    sym_link = AdapterName + prefix_len;
+    SNPRINTF (SymbolicLink, sizeof(SymbolicLink), "\\\\.\\%s", sym_link);
+  }
 
   WINPKT_TRACE ("Creating SymbolicLink: \"%s\".\n", SymbolicLink);
 
@@ -900,10 +977,12 @@ static ADAPTER *PacketOpenAdapterNPF (const char *AdapterName)
 }
 
 /**
- * Return a string with the version of the NPF.sys device driver.
+ * Return a string with the version of the NPF.sys or NPcap.sys device driver.
  */
 const char *PacketGetDriverVersion (void)
 {
+  if (have_npcap)
+     return (npcap_drv_ver);
   return (npf_drv_ver);
 }
 
@@ -1147,7 +1226,8 @@ BOOL PacketSetMinToCopy (const ADAPTER *AdapterObject, int nbytes)
   DWORD BytesReturned;
   BOOL  rc;
 
-  rc = DeviceIoControl (AdapterObject->hFile, pBIOCSMINTOCOPY, &nbytes,
+  rc = DeviceIoControl (AdapterObject->hFile,
+                        have_npcap ? nBIOCSMINTOCOPY : pBIOCSMINTOCOPY, &nbytes,
                         4, NULL, 0, &BytesReturned, NULL);
 
   winpkt_trace_func = "PacketSetMinToCopy";
@@ -1207,7 +1287,8 @@ BOOL PacketSetMode (const ADAPTER *AdapterObject, DWORD mode)
   DWORD BytesReturned;
   BOOL  rc;
 
-  rc = DeviceIoControl (AdapterObject->hFile, pBIOCSMODE, &mode,
+  rc = DeviceIoControl (AdapterObject->hFile,
+                        have_npcap ? nBIOCSMODE : pBIOCSMODE, &mode,
                         sizeof(mode), NULL, 0, &BytesReturned, NULL);
 
   winpkt_trace_func = "PacketSetMode";
@@ -1230,7 +1311,8 @@ BOOL PacketSetLoopbackBehavior (const ADAPTER *AdapterObject, UINT behavior)
   DWORD BytesReturned;
   BOOL  rc;
 
-  rc = DeviceIoControl (AdapterObject->hFile, pBIOCISETLOBBEH,
+  rc = DeviceIoControl (AdapterObject->hFile,
+                        have_npcap ? nBIOCISETLOBBEH : pBIOCISETLOBBEH,
                         &behavior, sizeof(UINT), NULL,
                         0, &BytesReturned, NULL);
 
@@ -1297,8 +1379,10 @@ BOOL PacketSetReadTimeout (ADAPTER *AdapterObject, int timeout)
 
   AdapterObject->ReadTimeOut = timeout;
 
-  rc = DeviceIoControl (AdapterObject->hFile, pBIOCSRTIMEOUT, &driverTimeout,
-                        sizeof(driverTimeout), NULL, 0, &BytesReturned, NULL);
+  rc = DeviceIoControl (AdapterObject->hFile,
+                        have_npcap ? nBIOCSRTIMEOUT : pBIOCSRTIMEOUT,
+                        &driverTimeout, sizeof(driverTimeout), NULL, 0,
+                        &BytesReturned, NULL);
 
   winpkt_trace_func = "PacketSetReadTimeout";
   WINPKT_TRACE ("timeout %d, rc %d; %s\n",
@@ -1330,7 +1414,8 @@ BOOL PacketSetBuff (const ADAPTER *AdapterObject, DWORD dim)
   DWORD BytesReturned;
   BOOL  rc;
 
-  rc = DeviceIoControl (AdapterObject->hFile, pBIOCSETBUFFERSIZE,
+  rc = DeviceIoControl (AdapterObject->hFile,
+                        have_npcap ? nBIOCSETBUFFERSIZE : pBIOCSETBUFFERSIZE,
                         &dim, sizeof(dim), NULL, 0, &BytesReturned, NULL);
 
   winpkt_trace_func = "PacketSetBuff";
@@ -1355,7 +1440,8 @@ BOOL PacketGetStatsEx (const ADAPTER *AdapterObject, struct bpf_stat *stat)
 
   memset (&tmp_stat, 0, sizeof(tmp_stat));
   rc = DeviceIoControl (AdapterObject->hFile,
-                        pBIOCGSTATS, NULL, 0, &tmp_stat, sizeof(tmp_stat),
+                        have_npcap ? nBIOCGSTATS : pBIOCGSTATS,
+                        NULL, 0, &tmp_stat, sizeof(tmp_stat),
                         &read, NULL);
 
   winpkt_trace_func = "PacketGetStatsEx";
@@ -1642,7 +1728,6 @@ static const struct search_list oid_list[] = {
    ADD_VALUE (OID_GEN_CO_GET_NETCARD_TIME),
    ADD_VALUE (OID_GEN_CO_GET_TIME_CAPS),
    ADD_VALUE (OID_GEN_CO_HARDWARE_STATUS),
-   ADD_VALUE (OID_GEN_CO_LINK_SPEED),
    ADD_VALUE (OID_GEN_CO_MAC_OPTIONS),
    ADD_VALUE (OID_GEN_CO_MEDIA_CONNECT_STATUS),
    ADD_VALUE (OID_GEN_CO_MEDIA_IN_USE),
@@ -1881,7 +1966,7 @@ BOOL PacketRequest2 (const ADAPTER *AdapterObject, BOOL set,
                      const char *file, unsigned line)
 {
   DWORD  transfered, in_size, out_size;
-  DWORD  in_len, out_len;
+  DWORD  in_len, out_len, get_code, set_code;
   BOOL   rc;
   int    error = 0;
   char   prof_buf[100] = "";
@@ -1893,13 +1978,15 @@ BOOL PacketRequest2 (const ADAPTER *AdapterObject, BOOL set,
      start = win_get_perf_count();
 #endif
 
+  get_code = (have_npcap ? nBIOCQUERYOID : pBIOCQUERYOID);
+  set_code = (have_npcap ? nBIOCSETOID   : pBIOCSETOID);
+
   transfered = 0;
   in_len   = oidData->Length;
   in_size  = sizeof(*oidData) - 1 + oidData->Length;
   out_size = in_size;
 
-  rc = DeviceIoControl (AdapterObject->hFile,
-                        set ? pBIOCSETOID : pBIOCQUERYOID,
+  rc = DeviceIoControl (AdapterObject->hFile, set ? set_code : get_code,
                         oidData, in_size, oidData, out_size, &transfered, NULL);
 
   out_len = rc ? oidData->Length : 0;
@@ -1921,7 +2008,7 @@ BOOL PacketRequest2 (const ADAPTER *AdapterObject, BOOL set,
   winpkt_trace_file = file;
   winpkt_trace_line = line;
   winpkt_trace ("%-30.30s len %lu/%lu, xfered %lu, set %d, rc %d; %s %s\n",
-                list_lookup(oidData->Oid,oid_list,DIM(oid_list)),
+                list_lookup(oidData->Oid, oid_list, DIM(oid_list)),
                 (u_long)in_len, (u_long)out_len, (u_long)transfered, set, rc,
                 !rc ? win_strerror(error) : "okay", prof_buf);
 #endif
@@ -1942,7 +2029,7 @@ BOOL PacketRequest2 (const ADAPTER *AdapterObject, BOOL set,
  */
 
 /**
- * Scan the registry to retrieve the IP addresses of an adapter.
+ * Scan the Registry to retrieve the IP addresses of an adapter.
  *
  * \param AdapterName String that contains the name of the adapter.
  * \param buffer A user allocated array of npf_if_addr that will be filled
@@ -1950,11 +2037,11 @@ BOOL PacketRequest2 (const ADAPTER *AdapterObject, BOOL set,
  * \param NEntries Size of the array (in npf_if_addr).
  * \return If the function succeeds, the return value is nonzero.
  *
- * This function grabs from the registry information like the IP addresses,
+ * This function grabs from the Registry information like the IP addresses,
  * the netmasks and the broadcast addresses of an interface. The buffer
  * passed by the user is filled with npf_if_addr structures, each of which
  * contains the data for a single address. If the buffer is full, the reaming
- * addresses are dropeed, therefore set its dimension to sizeof(npf_if_addr)
+ * addresses are dropped, therefore set its dimension to sizeof(npf_if_addr)
  * if you want only the first address.
  */
 static BOOL GetAddressesFromRegistry (const char  *AdapterName,
@@ -1991,7 +2078,7 @@ static BOOL GetAddressesFromRegistry (const char  *AdapterName,
   {
     HKEY SystemKey, ParametersKey, InterfaceKey;
 
-    /* Query the registry key with the interface's addresses
+    /* Query the Registry key with the interface's addresses
      */
     status = RegOpenKeyExA (HKEY_LOCAL_MACHINE,
                             "SYSTEM\\CurrentControlSet\\Services",
@@ -2227,7 +2314,7 @@ fail:
  * \param AdName Name of the adapter to add
  * \return If the function succeeds, the return value is nonzero.
  *
- * Used by PacketGetAdapters(). Queries the registry to fill the
+ * Used by PacketGetAdapters(). Queries the Registry to fill the
  * '*ADAPTER_INFO' describing the new adapter.
  */
 static BOOL AddAdapter (const char *AdName)
@@ -2305,12 +2392,12 @@ quit:
 }
 
 /**
- * Updates the list of the adapters querying the registry.
+ * Updates the list of the adapters querying the Registry.
  *
  * \return If the function succeeds, the return value is nonzero.
  *
  * This function populates the list of adapter descriptions, retrieving
- * the information from the registry.
+ * the information from the Registry.
  */
 static BOOL PacketGetAdapters (void)
 {
@@ -2347,7 +2434,7 @@ static BOOL PacketGetAdapters (void)
     WINPKT_TRACE ("  loop %d: sub-key %s\n", i, AdapName);
     i++;
 
-    /* Get the adapter name from the registry key
+    /* Get the adapter name from the Registry key
      */
     Status = RegOpenKeyExA (AdapKey, AdapName, 0, KEY_READ, &OneAdapKey);
     if (Status != ERROR_SUCCESS)
@@ -2442,7 +2529,7 @@ nt4:
      */
     for (guid = strchr((const char*)bpStr,'{');
          guid;
-         guid = strchr(guid+1,'{'))
+         guid = strchr(guid + 1, '{'))
     {
       SNPRINTF (TAName, sizeof(TAName), "%s%s", prefix, guid);
       AddAdapter (TAName);
@@ -2509,7 +2596,7 @@ static BOOL PopulateAdaptersInfoList (void)
    */
   if (!PacketGetAdapters())
   {
-    WINPKT_TRACE ("registry scan for adapters failed!\n");
+    WINPKT_TRACE ("Registry scan for adapters failed!\n");
     rc = FALSE;
   }
   ReleaseMutex (adapters_mutex);

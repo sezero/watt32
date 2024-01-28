@@ -58,6 +58,8 @@ BOOL        _eth_SwsVpkt   = FALSE;  /**< for DOS *and* Win32 programs */
 BOOL        _eth_wanpacket = FALSE;  /**< for Win32 using an WanPacket adapter */
 BOOL        _eth_win10pcap = FALSE;  /**< for Win32 using an Win10Pcap adapter */
 BOOL        _eth_winpcap   = FALSE;  /**< for Win32 using an WinPcap or NPcap adapter (default) */
+BOOL        _eth_npcap     = FALSE;  /**< for Win32 using an NPcap adapter in WinPcap compatibility mode.
+                                          An NPcap adapter *not* in this mode is untested. */
 
 const char *_eth_not_init = "Packet driver not initialised";
 

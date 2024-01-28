@@ -46,7 +46,7 @@
 
 /* Working modes
  */
-#define PACKET_MODE_CAPT      0x0                    /* Capture mode */
+#define PACKET_MODE_CAPT      0x0                    /* Capture mode (the only mode we use) */
 #define PACKET_MODE_STAT      0x1                    /* Statistical mode */
 #define PACKET_MODE_MON       0x2                    /* Monitoring mode */
 #define PACKET_MODE_DUMP      0x10                   /* Dump mode */
@@ -54,7 +54,7 @@
 
 /* Loopback behaviour definitions
  */
-#define NPF_DISABLE_LOOPBACK  1   /* Drop the packets sent by the NPF driver */
+#define NPF_DISABLE_LOOPBACK  1   /* Drop the packets sent by the NPF driver (we use this) */
 #define NPF_ENABLE_LOOPBACK   2   /* Capture the packets sent by the NPF driver (default) */
 
 /*
@@ -75,7 +75,7 @@
 #endif
 
 #ifndef METHOD_IN_DIRECT
-#define METHOD_IN_DIRECT   1
+#define METHOD_IN_DIRECT   1   /* Not needed */
 #endif
 
 #ifndef METHOD_OUT_DIRECT
@@ -83,7 +83,7 @@
 #endif
 
 #ifndef METHOD_NEITHER
-#define METHOD_NEITHER     3
+#define METHOD_NEITHER     3   /* Not needed */
 #endif
 
 #if 0
@@ -101,7 +101,7 @@
   #define FILE_READ_ACCESS   0x0001    /* file & pipe */
   #endif
 
-  #ifndef FILE_READ_ACCESS
+  #ifndef FILE_WRITE_ACCESS
   #define FILE_WRITE_ACCESS  0x0002    /* file & pipe */
   #endif
 
@@ -124,6 +124,9 @@
   #define IOCTL_CLOSE               CTL_CODE (FILE_DEVICE_PROTOCOL, 8, METHOD_BUFFERED, FILE_ANY_ACCESS)
 #endif   /* 0 */
 
+/**
+ * The WinPcap `pBIO*x` codes:
+ */
 #define pBIOCSETBUFFERSIZE        9592   /* set kernel buffer size */
 #define pBIOCSETF                 9030   /* set packet filtering program */
 #define pBIOCGSTATS               9031   /* get the capture stats */
@@ -143,6 +146,38 @@
 #define pBIOCSETOID        2147483648U   /* set an OID value */
 #define pBIOCQUERYOID      2147483652U   /* get an OID value */
 
+/*
+ * The NPcap `nBIO*x` codes.
+ *
+ * Some of the below codes are different from the WinPcap `pBIO*x` codes above.
+ * Hence, with `USE_DEBUG` check for differences in `check_BIO_codes()` before
+ * calling any `DeviceIoControl()` function.
+ *
+ * The `#define nBIO* CTL_CODE(...)` list below is here:
+ *   https://github.com/nmap/npcap/blob/master/packetWin7/npf/npf/ioctls.h
+ *
+ * (they name the WinPcap BIO-values as `W_BIO*`).
+ */
+#define nBIOCISETLOBBEH        CTL_CODE (FILE_DEVICE_TRANSPORT, 0xA10, METHOD_BUFFERED, FILE_READ_DATA)
+#define nBIOCISDUMPENDED       CTL_CODE (FILE_DEVICE_TRANSPORT, 0xA0F, METHOD_BUFFERED, FILE_READ_DATA)
+#define nBIOCSMODE             CTL_CODE (FILE_DEVICE_TRANSPORT, 0xA05, METHOD_BUFFERED, FILE_READ_DATA)
+#define nBIOCSWRITEREP         CTL_CODE (FILE_DEVICE_TRANSPORT, 0xA06, METHOD_BUFFERED, FILE_WRITE_DATA)
+#define nBIOCSMINTOCOPY        CTL_CODE (FILE_DEVICE_TRANSPORT, 0xA07, METHOD_BUFFERED, FILE_READ_DATA)
+#define nBIOCGEVNAME           CTL_CODE (FILE_DEVICE_TRANSPORT, 0xA0B, METHOD_BUFFERED, FILE_READ_DATA)
+#define nBIOCSRTIMEOUT         CTL_CODE (FILE_DEVICE_TRANSPORT, 0xA04, METHOD_BUFFERED, FILE_READ_DATA)
+#define nBIOCSETEVENTHANDLE    CTL_CODE (FILE_DEVICE_TRANSPORT, 0xA11, METHOD_BUFFERED, FILE_READ_DATA)
+#define nBIOCSETDUMPFILENAME   CTL_CODE (FILE_DEVICE_TRANSPORT, 0xA0A, METHOD_BUFFERED, FILE_READ_DATA)
+#define nBIOCSETF              CTL_CODE (FILE_DEVICE_TRANSPORT, 0xA02, METHOD_BUFFERED, FILE_READ_DATA)
+#define nBIOCGSTATS            CTL_CODE (FILE_DEVICE_TRANSPORT, 0xA03, METHOD_BUFFERED, FILE_READ_DATA)
+#define nBIOCSENDPACKETSNOSYNC CTL_CODE (FILE_DEVICE_TRANSPORT, 0xA0C, METHOD_BUFFERED, FILE_WRITE_DATA)
+#define nBIOCSENDPACKETSSYNC   CTL_CODE (FILE_DEVICE_TRANSPORT, 0xA0D, METHOD_BUFFERED, FILE_WRITE_DATA)
+#define nBIOCSETDUMPLIMITS     CTL_CODE (FILE_DEVICE_TRANSPORT, 0xA0E, METHOD_BUFFERED, FILE_READ_DATA)
+#define nBIOCSETBUFFERSIZE     CTL_CODE (FILE_DEVICE_TRANSPORT, 0xA01, METHOD_BUFFERED, FILE_READ_DATA)
+#define nBIOCSETOID            CTL_CODE (FILE_DEVICE_TRANSPORT, 0xA08, METHOD_BUFFERED, FILE_WRITE_DATA)
+#define nBIOCQUERYOID          CTL_CODE (FILE_DEVICE_TRANSPORT, 0xA09, METHOD_BUFFERED, FILE_READ_DATA)
+#define nBIOCSTIMESTAMPMODE    CTL_CODE (FILE_DEVICE_TRANSPORT, 0xA12, METHOD_BUFFERED, FILE_READ_DATA)
+#define nBIOCGTIMESTAMPMODES   CTL_CODE (FILE_DEVICE_TRANSPORT, 0xA13, METHOD_BUFFERED, FILE_READ_DATA)
+
 /* Alignment macro. Defines the alignment size.
  */
 #define Packet_ALIGNMENT sizeof(int)
@@ -150,14 +185,6 @@
 /* Alignment macro. Rounds up to the next even multiple of Packet_ALIGNMENT.
  */
 #define Packet_WORDALIGN(x) (((x) + (Packet_ALIGNMENT-1)) & ~(Packet_ALIGNMENT-1))
-
-#if 0
-  #define NdisMediumNull       -1   /* Custom linktype: NDIS doesn't provide an equivalent */
-  #define NdisMediumCHDLC      -2   /* Custom linktype: NDIS doesn't provide an equivalent */
-  #define NdisMediumPPPSerial  -3   /* Custom linktype: NDIS doesn't provide an equivalent */
-  #define NdisMediumBare80211  -4   /* Custom linktype: NDIS doesn't provide an equivalent */
-  #define NdisMediumRadio80211 -5   /* Custom linktype: NDIS doesn't provide an equivalent */
-#endif
 
 /**
  * Addresses of a network adapter.
@@ -171,11 +198,7 @@ typedef struct npf_if_addr {
         struct sockaddr_storage Broadcast;
       } npf_if_addr;
 
-
-#define MAX_LINK_NAME_LENGTH   64       /* Maximum length of the devices symbolic links */
 #define ADAPTER_NAME_LENGTH   (256+12)  /* Max length for the name of an adapter */
-#define ADAPTER_DESC_LENGTH    128      /* Max length for the description of an adapter */
-#define MAX_MAC_ADDR_LENGTH    8        /* Max length for the link layer address */
 #define MAX_NETWORK_ADDRESSES  16       /* Max # of network layer addresses */
 
 /**
@@ -201,6 +224,7 @@ typedef struct ADAPTER {
 
 /**
  * Values for ADAPTER::flags
+ * Not used for anything sensible.
  */
 #define INFO_FLAG_NDIS_ADAPTER      0
 #define INFO_FLAG_NDISWAN_ADAPTER   1
@@ -218,7 +242,7 @@ typedef struct ADAPTER {
 typedef struct PACKET_OID_DATA {
         DWORD  Oid;
         DWORD  Length;
-        BYTE   Data[1];
+        BYTE   Data [1];
       } PACKET_OID_DATA;
 
 W32_CLANG_PACK_WARN_OFF()
@@ -244,7 +268,6 @@ struct bpf_hdr {
        DWORD  bh_datalen;                   /* Original length of packet */
        WORD   bh_hdrlen;                    /* Length of bpf header (this struct plus alignment padding) */
      };
-
 
 /* The receive statistics structure from NPF.
  */
@@ -283,6 +306,7 @@ W32_CLANG_PACK_WARN_DEF()
 #define PacketReceivePacket       W32_NAMESPACE (PacketReceivePacket)
 #define PacketSendPacket          W32_NAMESPACE (PacketSendPacket)
 #define PacketSetLoopbackBehavior W32_NAMESPACE (PacketSetLoopbackBehavior)
+#define PacketHaveNpcap           W32_NAMESPACE (PacketHaveNpcap)
 
 BOOL PacketInitModule (void);
 BOOL PacketExitModule (void);
@@ -296,7 +320,7 @@ const char         *PacketGetDriverVersion (void);
 BOOL PacketRequest2 (const ADAPTER *adapter, BOOL Set, PACKET_OID_DATA *OidData,
                      const char *file, unsigned line);
 
-#define PacketRequest(a,set,oid)  PacketRequest2 (a, set, oid, __FILE__, __LINE__)
+#define PacketRequest(a, set, oid)  PacketRequest2 (a, set, oid, __FILE__, __LINE__)
 
 BOOL   PacketGetMacAddress (const ADAPTER *adapter, void *mac);
 BOOL   PacketSetMode (const ADAPTER *adapter, DWORD mode);
@@ -307,6 +331,7 @@ HANDLE PacketGetReadEvent (const ADAPTER *adapter);
 BOOL   PacketGetStatsEx (const ADAPTER *adapter, struct bpf_stat *st);
 UINT   PacketSendPacket    (const ADAPTER *adapter, const void *buf, UINT len);
 BOOL   PacketSetLoopbackBehavior (const ADAPTER *adapter, UINT LoopbackBehavior);
+BOOL   PacketHaveNpcap (void);
 
 UINT MS_CDECL PacketReceivePacket (const ADAPTER *adapter, void *buf, UINT buf_len);
 
@@ -321,17 +346,17 @@ typedef void WAN_ADAPTER;  /* The details of this struct is not important to us.
  * Protect these symbols in our own namespace in case we use the real
  * WinPcap/libpcap with a static version of Watt-32.
  */
-#define WanPacketSetBpfFilter         W32_NAMESPACE (WanPacketSetBpfFilter)
-#define WanPacketOpenAdapter          W32_NAMESPACE (WanPacketOpenAdapter)
-#define WanPacketCloseAdapter         W32_NAMESPACE (WanPacketCloseAdapter)
-#define WanPacketSetBufferSize        W32_NAMESPACE (WanPacketSetBufferSize)
-#define WanPacketReceivePacket        W32_NAMESPACE (WanPacketReceivePacket)
-#define WanPacketSetMinToCopy         W32_NAMESPACE (WanPacketSetMinToCopy)
-#define WanPacketGetStats             W32_NAMESPACE (WanPacketGetStats)
-#define WanPacketSetReadTimeout       W32_NAMESPACE (WanPacketSetReadTimeout)
-#define WanPacketSetMode              W32_NAMESPACE (WanPacketSetMode)
-#define WanPacketGetReadEvent         W32_NAMESPACE (WanPacketGetReadEvent)
-#define WanPacketTestAdapter          W32_NAMESPACE (WanPacketTestAdapter)
+#define WanPacketSetBpfFilter       W32_NAMESPACE (WanPacketSetBpfFilter)
+#define WanPacketOpenAdapter        W32_NAMESPACE (WanPacketOpenAdapter)
+#define WanPacketCloseAdapter       W32_NAMESPACE (WanPacketCloseAdapter)
+#define WanPacketSetBufferSize      W32_NAMESPACE (WanPacketSetBufferSize)
+#define WanPacketReceivePacket      W32_NAMESPACE (WanPacketReceivePacket)
+#define WanPacketSetMinToCopy       W32_NAMESPACE (WanPacketSetMinToCopy)
+#define WanPacketGetStats           W32_NAMESPACE (WanPacketGetStats)
+#define WanPacketSetReadTimeout     W32_NAMESPACE (WanPacketSetReadTimeout)
+#define WanPacketSetMode            W32_NAMESPACE (WanPacketSetMode)
+#define WanPacketGetReadEvent       W32_NAMESPACE (WanPacketGetReadEvent)
+#define WanPacketTestAdapter        W32_NAMESPACE (WanPacketTestAdapter)
 
 BOOL         WanPacketSetBpfFilter (WAN_ADAPTER *wan_adapter, PUCHAR FilterCode, DWORD Length);
 WAN_ADAPTER *WanPacketOpenAdapter (void);
