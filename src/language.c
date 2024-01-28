@@ -18,16 +18,17 @@
 #include <ctype.h>
 #include <setjmp.h>
 
-#if defined(_MSC_VER) || defined(__BORLANDC__)
+#if defined(_MSC_VER)
   #define YY_NO_UNISTD_H
-
-#elif defined(__WATCOMC__)
-  #include <stdint.h>
 
 #elif defined(__BORLANDC__)
   /*
    * Refer Makefile.all for the '-DFLEXINT_H=1' etc. hacks.
    */
+  #define YY_NO_UNISTD_H
+
+#elif defined(__WATCOMC__)
+  #include <stdint.h>
 #endif
 
 #define YY_NO_INPUT           1

@@ -501,14 +501,14 @@
   * for all these codes
   */
   #pragma warn -asc-     /* Restarting compile using assembly */
-  #pragma warn -bbf-     /* "Bitfields must be signed or unsigned int" warning */
-  #pragma warn -cln-     /* "Constant is long" warning */
+  #pragma warn -bbf-     /* Bitfields must be signed or unsigned int */
+  #pragma warn -cln-     /* Constant is long */
   #pragma warn -csu-     /* Comparing signed and unsigned values */
   #pragma warn -dup-     /* Redefinition of 'x' is not identical */
   #pragma warn -pia-     /* Possibly incorrect assignment */
   #pragma warn -pin-     /* Initialization is only partially bracketed */
   #pragma warn -pro-     /* Call to function 'function' with no prototype */
-  #pragma warn -sig-     /* "Conversion may loose significant digits" warning */
+  #pragma warn -sig-     /* Conversion may loose significant digits */
 //#pragma warn -wnod-    /* No declaration for function 'function' */
 
   #if defined(__DPMI32__)

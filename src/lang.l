@@ -85,6 +85,7 @@ static struct Language {
 
 #elif defined(__clang__)
   #pragma clang diagnostic ignored "-Wshadow"
+  #pragma clang diagnostic ignored "-Wunused-function"  /* Could be for '__BORLANDC__' too */
 
 #elif defined(__WATCOMC__)
   /*
