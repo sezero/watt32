@@ -12,7 +12,7 @@
 #endif
 
 #if defined(_MSC_VER) || defined(__WATCOMC__) || \
-    defined(__DMC__) || defined(__MINGW32__)
+    defined(__DMC__) || defined(__BORLANDC__) || defined(__MINGW32__)
   #include <process.h>
 #endif
 
