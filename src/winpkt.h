@@ -42,7 +42,6 @@ extern struct pkt_rx_element *pkt_poll_recv (void);
   extern int pkt_set_multicast_list (const void *listbuf, int len);
 #endif
 
-typedef BOOL        (*func_init)        (void);
 typedef void       *(*func_open)        (const char *name, ...);
 typedef BOOL        (*func_close)       (void *a);
 typedef UINT        (*func_send)        (const void *a, const void *buf, UINT buf_len); /* returns length of buf sent */
@@ -83,7 +82,6 @@ struct pkt_info {
        /* Function pointers to transmit(), recv() etc. Depending
         * on the type of low-level driver we use (NPF/SwsVpkt/WanPacket).
         */
-       func_init         init_op;
        func_open         open_op;
        func_close        close_op;
        func_send         send_op;
