@@ -302,7 +302,7 @@ int W32_CALL W32_NAMESPACE (gettimeofday) (struct timeval *tv, struct timezone *
 
 #if defined(HAVE_UINT64) && defined(__MSDOS__)
 /*
- * Return hardware time-of-day in microseconds.
+ * Return hardware time-of-day in 32.32 fixed-point (like NTP).
  * NOTE: hardware counter (lo) counts down from 65536 at a rate of
  *       1.19318 MHz (4.77/4).
  */
@@ -319,8 +319,16 @@ static __inline uint64 microsec_clock (void)
   }
   while (hi != PEEKL(0, BIOS_CLK));   /* tick count changed, try again */
   lo = 0 - lo;
-  rc = ((uint64)hi << 16) + lo;
-  return (rc * U64_SUFFIX(88000000) / U64_SUFFIX(105000000));
+
+  /* These magic numbers are chosen to synchronize with
+   * what the BIOS considers "24 hours" (1573040 ticks).
+   *
+   * This approximates:
+   *    (hi * 2^16 + lo) * (24*60*60 * 2^32) / (1573040 * 2^16)
+   */
+  rc = (uint64)hi * 235903203UL;
+  rc += (lo * 28797UL) >> 3;
+  return (rc);
 }
 
 #if (DOSX)
@@ -461,17 +469,17 @@ int W32_CALL gettimeofday2 (struct timeval *tv, struct timezone *tz)
   {
     static uint64 last = 0;
     static time_t secs = 0;           /* UTC time() at midnight, local time */
-    uint64 usecs = microsec_clock();  /* usec day-clock */
+    uint64 now = microsec_clock();    /* day-clock (fixed-point NTP format) */
 
-    if (secs == 0 || usecs < last)    /* not init or wrapped */
+    if (secs == 0 || now < last)      /* not init or wrapped */
     {
       secs = time (NULL);
-      secs -= usecs / 1000000UL;
+      secs -= now >> 32;
     }
-    last = usecs;
+    last = now;
 
-    tv->tv_usec = usecs % 1000000UL;
-    tv->tv_sec = (usecs - tv->tv_usec) / 1000000UL + secs;
+    tv->tv_usec = ((now & 0xffffffffUL) * 1000000UL) >> 32;
+    tv->tv_sec = (now >> 32) + secs;
 
     if (tz)
        get_zone (tz, tv->tv_sec);
