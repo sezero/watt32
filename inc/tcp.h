@@ -806,17 +806,19 @@ typedef struct watt_option {
         int val;
       } watt_option;
 
-/**
- * \typedef watt_wide_option
- * As struct optio, buyt with a wide-char `name`.
- * For Windows only.
- */
-typedef struct watt_wide_option {
-        const wchar_t *name;
-        int            has_arg;   /* really is `watt_long_arg` */
-        int           *flag;
-        int            val;
-      } watt_wide_option;
+#if defined(WATT32_ON_WINDOWS)
+  /**
+   * \typedef watt_wide_option
+   * As struct optio, buyt with a wide-char `name`.
+   * For Windows only.
+   */
+  typedef struct watt_wide_option {
+          const wchar_t *name;
+          int            has_arg;   /* really is `watt_long_arg` */
+          int           *flag;
+          int            val;
+        } watt_wide_option;
+#endif
 
 W32_FUNC int W32_CALL watt_getopt_long (int argc, char *const *argv,
                                         const char *opt_str,
