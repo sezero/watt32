@@ -59,8 +59,12 @@ int _ip4_frag_reasm = MAX_IP_HOLDTIME;  /* configurable; pcconfig.c */
 
 #if defined(USE_FRAGMENTS)
 
-#if defined(__HIGHC__)
-  static void TRACE_MSG (int color,  const char *fmt, ...)
+#if defined(__HIGHC__) || defined(BCC32_OLD)
+  /*
+   * High-C and old Borland compilers does not handle 'var-args' macros.
+   * Fake it into a dummy var-arg function.
+   */
+  static void TRACE_MSG (int color, const char *fmt, ...)
   {
     ARGSUSED (color);
     ARGSUSED (fmt);
@@ -175,12 +179,12 @@ static void dump_frag_holes (const char *where, const struct frag_ctrl *fc, cons
   }
 
   TRACE_MSG (FOREGOUND_WHITE, "%s: fc->used: %d, fc->data_offset: %" ADDR_FMT "\n",
-                 where, fc->used, ADDR_CAST(fc->data_offset));
+             where, fc->used, ADDR_CAST(fc->data_offset));
 
   for (h = hole; h; h = h->next)
   {
     TRACE_MSG (FOREGOUND_WHITE, "hole: %" ADDR_FMT ", h->start: %ld, h->end: %ld\n",
-                   ADDR_CAST(h), h->start, h->end);
+               ADDR_CAST(h), h->start, h->end);
   }
 }
 #endif
@@ -471,10 +475,10 @@ int ip4_defragment (const in_Header **ip_ptr, DWORD offset, WORD flags)
   data_end    = data_start + data_length;
 
   TRACE_MSG (FOREGOUND_WHITE, "\nip4_defrag: %s -> %s, id 0x%04X, len %ld, ofs %ld, fbits %s\n",
-                _inet_ntoa(NULL,intel(ip->source)),
-                _inet_ntoa(NULL,intel(ip->destination)),
-                intel16(ip->identification), data_length, data_start,
-                decode_fbits(fbits));
+             _inet_ntoa(NULL,intel(ip->source)),
+             _inet_ntoa(NULL,intel(ip->destination)),
+             intel16(ip->identification), data_length, data_start,
+             decode_fbits(fbits));
 
   if ((flags & IP_MF) && data_length == 0 && offset != 0)
   {
