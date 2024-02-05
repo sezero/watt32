@@ -722,7 +722,7 @@ W32_FUNC int W32_CALL num_mcast_active  (void);
  *
  * The tricky part is that all the below headers declare getopt().
  * So we fall back to the watt_getopt() in Watt-32 for others who doesn't
- * have it. But we must allways export / define getopt.c functions and
+ * have it. But we must always export / define getopt.c functions and
  * data.
  */
 #if defined(__DJGPP__)
@@ -740,11 +740,13 @@ W32_FUNC int W32_CALL num_mcast_active  (void);
   #define WATT32_NO_GETOPT
 #endif
 
-enum _watt_optmode {
-      GETOPT_UNIX,        /* options at start of argument list (default)   */
-      GETOPT_ANY,         /* move non-options to the end                   */
-      GETOPT_KEEP         /* return options in order                       */
-    };
+enum watt_optmode {
+     GETOPT_UNIX,        /* options at start of argument list (default)   */
+     GETOPT_ANY,         /* move non-options to the end                   */
+     GETOPT_KEEP         /* return options in order                       */
+   };
+
+W32_DATA enum watt_optmode watt_optmode;
 
 W32_DATA char *watt_optarg;       /* argument of current option                    */
 W32_DATA int   watt_optind;       /* index of next argument; default=0: initialize */
@@ -755,21 +757,95 @@ W32_DATA char *watt_optswchar;    /* characters introducing options; default="-"
 W32_FUNC int W32_CALL watt_getopt (int argc, char *const *argv, const char *opt_str);
 
 #if !defined(WATT32_NO_GETOPT)
-  #define optarg    watt_optarg
-  #define optind    watt_optind
-  #define opterr    watt_opterr
-  #define optopt    watt_optopt
-  #define optswchar watt_optswchar
-  #define getopt    watt_getopt
+  /**
+   * When using an external 'getopt.h, it is assumed that
+   * the below values (`no_argument` etc.) are defined therein.
+   *
+   * Values for `watt_option::has_arg` and `struct watt_wide_option::has_arg`:
+   */
+  typedef enum watt_long_arg {
+          no_argument       = 0,  /**< the option does not take an argument */
+          required_argument = 1,  /**< the option requires an argument */
+          optional_argument = 2   /**< the option takes an optional argument */
+        } watt_long_arg;
+#endif
+
+/**
+ * \typedef watt_option
+ * Structure used in watt_getopt_long().
+ */
+typedef struct watt_option {
+        /**
+         * The long name for this option (but no leading "--")
+         */
+        const char *name;
+
+        /**
+         * What is expected to follow `name`;
+         *  `no_argument`       -> expects "--foo" only.
+         *  `required_argument` -> expects "--foo some-arg" or "--foo=some-arg" only.
+         *  `optional_argument` -> expects "--foo", "--foo some-arg" or "--foo=some-arg".
+         */
+        int has_arg;  /* really is `watt_long_arg` */
+
+        /**
+         * NULL or pointing to a variable that is set to the value
+         * given in the field `val` when the option is found. E.g.:
+         *   int foo;
+         *   struct option my_opts[] = {
+         *     { "foo", no_argument, &foo, 'f' },
+         *     ...
+         * sets `foo = 'f';` when `program.exe --foo` was called.
+         */
+        int *flag;
+
+        /**
+         * The value to set if `*flag` is non-NULL.
+         * I.e. 'f' in the above example.
+         */
+        int val;
+      } watt_option;
+
+/**
+ * \typedef watt_wide_option
+ * As struct optio, buyt with a wide-char `name`.
+ * For Windows only.
+ */
+typedef struct watt_wide_option {
+        const wchar_t *name;
+        int            has_arg;   /* really is `watt_long_arg` */
+        int           *flag;
+        int            val;
+      } watt_wide_option;
+
+W32_FUNC int W32_CALL watt_getopt_long (int argc, char *const *argv,
+                                        const char *opt_str,
+                                        const watt_option *opt_long,
+                                        int *long_idx);
+
+#if !defined(WATT32_NO_GETOPT)
+  #define optarg       watt_optarg
+  #define optind       watt_optind
+  #define opterr       watt_opterr
+  #define optopt       watt_optopt
+  #define optswchar    watt_optswchar
+  #define getopt       watt_getopt
+  #define option       watt_option
+  #define getopt_long  watt_getopt_long
 #endif
 
 #if defined(WATT32_ON_WINDOWS)
-  /** \todo
-   * Add some internal aliases for getopt processing
+  /**
+   * \todo
+   * Add some internal aliases for getopt() / getopt_long() processing
    */
   W32_DATA wchar_t *    _w_watt_optarg;
   W32_DATA wchar_t *    _w_watt_optswchar;
   W32_FUNC int W32_CALL _w_watt_getopt (int argc, wchar_t *const *argv, const wchar_t *opt_str);
+  W32_FUNC int W32_CALL _w_watt_getopt_long (int argc, wchar_t *const *argv,
+                                             const wchar_t *opt_str,
+                                             const watt_wide_option *opt_long,
+                                             int *long_idx);
 #endif
 
 /*
