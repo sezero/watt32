@@ -27,7 +27,6 @@
   #include "sysdep.h"
 #endif
 
-#define CPU_TEST
 #include "cpumodel.h"
 
 #if !defined(HAVE_UINT64)

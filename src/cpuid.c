@@ -26,131 +26,96 @@
  *   https://en.wikipedia.org/wiki/CPUID
  *   http://www.sandpile.org/x86/cpuid.htm
  */
-
-#ifndef WIN32_LEAN_AND_MEAN
-#define WIN32_LEAN_AND_MEAN
-#endif
-
-#ifndef _CRT_SECURE_NO_WARNINGS
-#define _CRT_SECURE_NO_WARNINGS
-#endif
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <windows.h>
+#include <ctype.h>
 
-#if defined(__GNUC__)
-  #include <cpuid.h>
+#include "wattcp.h"
+#include "cpumodel.h"
 
-#elif defined(_MSC_VER)
-  #include <intrin.h>
-#endif
+static DWORD get_cpuid2 (int level, void *result, unsigned line);
 
-static int trace_level = 0;
+#define GET_CPUID2(level, result) get_cpuid2 (level, result, __LINE__)
 
-#define TRACE(level, fmt, ...)                          \
-        do {                                            \
-          if (trace_level >= level) {                   \
-            if (trace_level >= 2)                       \
-               printf ("%s(%u): ", __FILE__, __LINE__); \
-            printf (fmt, ##__VA_ARGS__);                \
-          }                                             \
-        } while (0)
+static int  trace_level = 0;
+static char vendor_str [13];
 
-static void print_reg (DWORD reg, const char *which)
-{
-  BYTE a = LOBYTE (reg);
-  BYTE b = HIBYTE (reg);
-  BYTE c = LOBYTE (reg >> 16);
-  BYTE d = HIBYTE (reg >> 16);
-
-  printf ("  %s: %08lX, %c%c%c%c\n", which, reg,
-          isprint(a) ? a : '.',
-          isprint(b) ? b : '.',
-          isprint(c) ? c : '.',
-          isprint(d) ? d : '.');
-}
-
-#if defined(_MSC_VER)
-#if defined(_M_X64) || 1
-static void msvc_cpuid (DWORD level, DWORD *_eax, DWORD *_ebx, DWORD *_ecx, DWORD *_edx)
-{
-  int regs[4];
-
-  __cpuid (regs, level);
-  *_eax = (DWORD) regs[0];
-  *_ebx = (DWORD) regs[1];
-  *_ecx = (DWORD) regs[2];
-  *_edx = (DWORD) regs[3];
-}
-#else
-__declspec(naked) static void msvc_cpuid (DWORD level, DWORD *_eax, DWORD *_ebx, DWORD *_ecx, DWORD *_edx)
-{
-  __asm  {
-    enter 0, 0
-    push ebx
-    push esi
-    mov  eax, [ebp+8]        /* EAX = level */
-    cpuid
-    mov  esi, [ebp+12]
-    mov  [esi], eax          /* *_eax = EAX */
-    mov  esi, [ebp+16]
-    mov  [esi], ebx          /* *_ebx = EBX */
-    mov  esi, [ebp+20]
-    mov  [esi], ecx          /* *_ecx = ECX */
-    mov  esi, [ebp+24]
-    mov  [esi], edx          /* *_edx = EDX */
-    pop  esi
-    pop  ebx
-    leave
-    ret
+#if defined(__HIGHC__) || defined(BCC32_OLD)
+  /*
+   * High-C and old Borland compilers does not handle 'var-args' macros.
+   * Fake it into a dummy var-arg function.
+   */
+  static void TRACE (int level, const char *fmt, ...)
+  {
+    ARGSUSED (color);
+    ARGSUSED (fmt);
   }
-}
-#endif
-#endif  /* _MSC_VER */
 
-static unsigned int get_cpuid2 (int level, void *result)
+#else
+  #define TRACE(level, fmt, ...)                        \
+          do {                                          \
+            if (trace_level >= level) {                 \
+               printf ("%s(%u): ", __FILE__, __LINE__); \
+               printf (fmt, ##__VA_ARGS__);             \
+            }                                           \
+          } while (0)
+#endif
+
+static void print_reg (const char *reg_name, DWORD reg)
 {
-  unsigned int  eax = 0, ebx = 0, ecx = 0, edx = 0;
-  unsigned int *res = (unsigned int*) result;
-  const char   *cpuid_func;
+  BYTE a = loBYTE (reg);
+  BYTE b = hiBYTE (reg);
+  BYTE c = loBYTE (reg >> 16);
+  BYTE d = hiBYTE (reg >> 16);
 
-#if defined(__GNUC__)
-  cpuid_func = "__get_cpuid";
-  __get_cpuid (level, &eax, &ebx, &ecx, &edx);
-#elif defined(_MSC_VER)
-  cpuid_func = "msvc_cpuid";
-  msvc_cpuid (level, &eax, &ebx, &ecx, &edx);
-#endif
+  if (trace_level >= 1)
+     printf ("  %s: %08lX, %c%c%c%c\n", reg_name, reg,
+             isprint(a) ? a : '.',
+             isprint(b) ? b : '.',
+             isprint(c) ? c : '.',
+             isprint(d) ? d : '.');
+}
 
-  TRACE (1, "\nFrom %s (0x%08X):\n", cpuid_func, level);
-  print_reg (eax, "EAX");
-  print_reg (ebx, "EBX");
-  print_reg (ecx, "ECX");
-  print_reg (edx, "EDX");
+static DWORD get_cpuid2 (int level, void *result, unsigned line)
+{
+  DWORD  eax = 0, ebx = 0, ecx = 0, edx = 0;
+  DWORD *res = (DWORD*) result;
 
-  res[0] = ebx;
-  res[1] = edx;  /* Not a typo; we want EDX into 'res[1]' */
-  res[2] = ecx;
+  get_cpuid (level, &eax, &ebx, &ecx, &edx);
+
+  TRACE (1, "From get_cpuid (0x%08X) at line %u:\n", level, line);
+  print_reg ("EAX", eax);
+  print_reg ("EBX", ebx);
+  print_reg ("ECX", ecx);
+  print_reg ("EDX", edx);
+
+  if (res)
+  {
+    res [0] = ebx;
+    res [1] = ecx;
+    res [2] = edx;
+  }
   return (eax);
 }
 
 /*
- * Returns a specific name for an "GenuineIntel" based on type, model and features.
+ * Returns a specific name for an "GenuineIntel" based on family, model and features.
  */
-static const char *get_Intel_model (int type, int model, const void *features)
+static const char *get_Intel_model (int family, int model, const void *features)
 {
+  static char Intel_model [12];
   char features2 [12];
   int  feat, id_max;
 
-  switch (type)
+  switch (family)
   {
     case 5:
          if (model <= 2)
             return ("Pentium");
          if (model >= 4)
             return ("PentiumMMX");
+         break;
 
     case 6:
          if (model == 1)
@@ -198,10 +163,10 @@ static const char *get_Intel_model (int type, int model, const void *features)
          break;
 
     case 15:
-         id_max = get_cpuid2 (0x80000000, features2) & 0xff;
+         id_max = GET_CPUID2 (0x80000000, features2) & 0xff;
          if (id_max >= 1)
          {
-           get_cpuid2 (0x80000001, features2);
+           GET_CPUID2 (0x80000001, features2);
            if (features2[8] & 1)
               return ("Netburstlahf");
            return ("Netburst");
@@ -213,15 +178,19 @@ static const char *get_Intel_model (int type, int model, const void *features)
             return ("Prescott");
          break;
   }
+  Intel_model [0] = '?';
+  return itoa (model, Intel_model+1, 10);
   return (NULL);
 }
 
 /*
- * Returns a specific name for an "AuthenticAMD" CPU based on type and model.
+ * Returns a specific name for an "AuthenticAMD" CPU based on family, model and features.
  */
-static const char *get_AMD_model (int type, int model)
+static const char *get_AMD_model (int family, int model, const void *features)
 {
-  switch (type)
+  static char AMD_model [12];
+
+  switch (family)
   {
     case 5:
          if (model <= 3)
@@ -261,19 +230,22 @@ static const char *get_AMD_model (int type, int model)
             return ("Bulldozer");
          if (model == 2 || model == 3 || model == 16 || model == 18 || model == 19)
             return ("Piledriver");
+         break;
 
      case 22:
           return ("Jaguar");
   }
-  return (NULL);
+  (void) features;
+  AMD_model [0] = '?';
+  return itoa (model, AMD_model+1, 10);
 }
 
 /*
- * Returns a specific name for an "CentaurHauls" CPU based on type and model.
+ * Returns a specific name for an "CentaurHauls" CPU based on family, model and features.
  */
-static const char *get_Centaur_model (int type, int model)
+static const char *get_Centaur_model (int family, int model, const void *features)
 {
-  if (type != 6)
+  if (family != 6)
      return (NULL);
 
   if (model == 15)
@@ -281,90 +253,150 @@ static const char *get_Centaur_model (int type, int model)
 
   if (model < 9)
      return ("ViaC3");
+  (void) features;
   return ("ViaC32");
 }
 
+/**
+ * Get basic CPI information.
+ * In functio 0, the 'vendor_str' gets returned in EBX, EDX and ECX.
+ *
+ * \ref https://en.wikipedia.org/wiki/CPUID#EAX=0:_Highest_Function_Parameter_and_Manufacturer_ID
+ */
 const char *cpu_get_model (void)
 {
-  static char  vendor_string[13];
-  char   features[12];
-  int    type, model, stepping;
-  DWORD  id_max, fms;
+  char   vendor_str2 [13];
+  char   features [12];
+  int    family, ext_family;
+  int    model,  ext_model, stepping, type;
+  DWORD  id_max;
+  DWORD  fms;    /* family, model, stepping values */
 
-  vendor_string[0] = '\0';
-  id_max = get_cpuid2 (0, vendor_string);
-  vendor_string[12] = '\0';
+  id_max = GET_CPUID2 (0, vendor_str2);
 
-  TRACE (1, "  id_max: %08lX.\n", id_max);
+  snprintf (vendor_str, sizeof(vendor_str), "%.4s%.4s%.4s",
+            vendor_str2,      /* EBX */
+            vendor_str2+4+4,  /* EDX */
+            vendor_str2+4);   /* ECX */
 
-  fms = get_cpuid2 (1, features);
+  fms = GET_CPUID2 (1, features);
+  TRACE (1, "  id_max: %08lX, fms: 0x%08lX.\n", id_max, fms);
 
-  type = (fms >> 8) & 0x0F;
-/*if (type == 15) */
-     type |= (fms >> 16) & 0xFF0;  /* set extended family */
+  family     = (fms >> 8) & 0x0F;
+  ext_family = (fms >> 27) & 0xFF;
+  model      = (fms >> 4) & 0x0F;
+  ext_model  = (fms >> 10) & 0x0F;
+  stepping   = (fms & 0x0F);
+  type       = (fms >> 12) & 0x3;
 
-  model = (fms >> 4) & 0x0F;
-/*if (model == 15) */
-     model |= (fms >> 12) & 0xF0;  /* set extended model */
+  TRACE (1, "Found vendor_str: \"%s\".\n", vendor_str);
+  TRACE (1, "Found family:     %d, Extended-family: %d.\n", family, ext_family);
+  TRACE (1, "Found model:      %d, Extended-model: %d.\n", model, ext_model);
+  TRACE (1, "Found stepping:   %d, type: 0x%X.\n", stepping, type);
 
-  stepping = fms & 15;
+  if (!strcmp(vendor_str, "GenuineIntel"))
+     return get_Intel_model (family, model, &features);
 
-  TRACE (1, "Found vendor_string: \"%s\".\n", vendor_string);
-  TRACE (1, "Found type:          %d.\n", type);
-  TRACE (1, "Found model:         %d.\n", model);
-  TRACE (1, "Found stepping:      %d.\n", stepping);
+  if (!strcmp(vendor_str, "AuthenticAMD"))
+     return get_AMD_model (family, model, &features);
 
-  if (!strcmp(vendor_string, "GenuineIntel"))
-     return get_Intel_model (type, model, &features);
+  if (!strcmp(vendor_str, "CentaurHauls"))
+     return get_Centaur_model (family, model, &features);
 
-  if (!strcmp(vendor_string, "AuthenticAMD"))
-     return get_AMD_model (type, model);
-
-  if (!strcmp(vendor_string, "CentaurHauls"))
-     return get_Centaur_model (type, model);
-
-  if (vendor_string[0])
-     return (vendor_string);
+  if (vendor_str[0])
+     return (vendor_str);
 
   return (NULL);
 }
 
-const char *cpu_get_freq_info (void)
+const char *cpu_get_freq_info1 (void)
 {
   static char  result [100];
-  char         info[13];
-  DWORD        id_max = get_cpuid2 (0, info);
-  unsigned int eax = 0, ebx = 0, ecx = 0;
+  char   info [13];
+  DWORD  id_max = GET_CPUID2 (0, info);
+  DWORD  eax = 0, ebx = 0, ecx = 0;
 
   if (id_max < 0x16)
      return (NULL);
 
-  eax = get_cpuid2 (0x16, info);
-  ebx = ((unsigned int*) info) [1];
-  ecx = ((unsigned int*) info) [2];
+  eax = GET_CPUID2 (0x16, info);
+  ebx = *(DWORD*) &info [1];
+  ecx = *(DWORD*) &info [2];
 
-  snprintf (result, sizeof(result), "Core base: %d, Core max: %d, Core bus: %d (MHz)",
+  snprintf (result, sizeof(result), "Core base: %lu, Core max: %lu, Core bus: %lu (MHz)",
             eax & (1 << 15), ebx & (1 << 15), ecx & (1 << 15));
   return (result);
 }
 
+const char *cpu_get_freq_info2 (void)
+{
+  static char  result [100];
+  char   info [13];
+  DWORD  id_max = GET_CPUID2 (0x80000007, info);
+  DWORD  edx;
+
+  if (id_max < 0x80000007)
+     return (NULL);
+
+  GET_CPUID2 (0x80000007, info);
+  edx = *(DWORD*) &info [3];
+
+  snprintf (result, sizeof(result), "EDX: 0x%08lX, FID: %lu, EffFreqRO: %lu, ProcFeedback: %lu",
+            edx, (edx & 1), (edx & (1 << 10)), (edx & (1 << 11)));
+  return (result);
+}
+
+const char *cpu_get_brand_info (void)
+{
+  char   info1 [13];
+  char   info2 [13];
+  char   info3 [13];
+  DWORD  id_max = GET_CPUID2 (0x80000000, NULL);
+  DWORD  eax [3];
+  static char result [100];
+
+  if (id_max < 0x80000004)
+     return (NULL);
+
+  eax [0] = GET_CPUID2 (0x80000002, info1);
+  eax [1] = GET_CPUID2 (0x80000003, info2);
+  eax [2] = GET_CPUID2 (0x80000004, info3);
+
+  snprintf (result, sizeof(result),
+            "%.4s%.12s" "%.4s%.12s" "%.4s%.12s",
+            (const char*) &eax[0], info1,
+            (const char*) &eax[1], info2,
+            (const char*) &eax[2], info3);
+  return (result);
+}
+
+/*
+ * If not included from pcdbug.c
+ */
+#if !defined(COMPILING_PCDBUG_C)
 int main (int argc, char **argv)
 {
-  const char *cpu, *freq;
+  const char *cpu, *freq, *brand;
 
-  if (argc > 1)
-  {
-    if (!strcmp(argv[1], "-d"))
-       trace_level = 1;
-    if (!strcmp(argv[1], "-dd"))
-       trace_level = 2;
- }
+  if (argc > 1 && !strcmp(argv[1], "-d"))
+     trace_level = 1;
 
   cpu = cpu_get_model();
-  printf ("CPU-model:    %s\n", cpu ? cpu : "<unknown>");
+  printf ("CPU-vendor: %s\n", vendor_str[0] ? vendor_str : "<unknown>");
+  printf ("CPU-model:  %s\n", cpu ? cpu : "<unknown>");
 
-  freq = cpu_get_freq_info();
-  printf ("CPU-freq info: %s\n", freq? freq : "<unknown>");
-  return 0;
+  brand = cpu_get_brand_info();
+  printf ("CPU-brand:  '%s'\n", brand ? brand : "<unknown>");
+
+#if 0
+  freq = cpu_get_freq_info1();
+  printf ("CPU-freq1:  %s\n", freq ? freq : "<unknown>");
+
+  freq = cpu_get_freq_info2();
+  printf ("CPU-freq2:  %s\n", freq ? freq : "<unknown>");
+#endif
+
+  return (0);
 }
+#endif /* COMPILING_PCDBUG_C */
 

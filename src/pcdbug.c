@@ -114,6 +114,7 @@ static const BYTE *dns_labels   (const BYTE *, const BYTE *, const BYTE *);
 
 static int write_pcap_header (void);
 static int write_pcap_packet (const void *pkt, BOOL out);
+static void print_cpu_info (void);
 
 #if defined(USE_PPPOE)
   static unsigned ccp_dump  (const BYTE *bp);
@@ -125,13 +126,9 @@ static int write_pcap_packet (const void *pkt, BOOL out);
     !defined(__NO_INLINE__)   /* Don't do this if 'gcc -O0' is used */
   #define PRINT_CPU_INFO
   #define COMPILING_PCDBUG_C
-  #define CPU_TEST
 
-  #include "cpumodel.h"
-  #include "tests/cpu.c"
-  static void print_cpu_info (void);
+  #include "cpuid.c"
 #endif
-
 
 static void (W32_CALL *prev_hook) (const char *, const char *) = NULL;
 
@@ -2223,10 +2220,7 @@ static void dbug_dump (const void *sock, const in_Header *ip,
   {
     print_once = TRUE;
     print_driver_info();
-
-#if defined(PRINT_CPU_INFO)
     print_cpu_info();
-#endif
 
     if (!PROMISC_RECV() && filter.NONE)
        dbug_printf ("\nNB: receive-mode (%s = 0x%02X) is not suitable for "
@@ -3744,155 +3738,14 @@ static int write_pcap_packet (const void *pkt, BOOL out)
   return (rc == 0 ? -1 : (int)rc);
 }
 
-/*
- * This stuff is taken mostly from tests/cpu.c.
- */
-#if defined(PRINT_CPU_INFO)
-
-#if 0 /* Use code in tests/cpu.c instead */
-const char *i486_model (int model)
-{
-  static const char *models[] = {
-                    "0", "DX", "SX", "DX/2", "4", "SX/2", "6",
-                    "DX/2-WB", "DX/4", "DX/4-WB", "10", "11", "12", "13",
-                    "Am5x86-WT", "Am5x86-WB"
-                  };
-  if (model < DIM(models))
-     return (models[model]);
-  return (NULL);
-}
-
-const char *i586_model (int model)
-{
-  static const char *models[] = {
-                    "0", "Pentium 60/66", "Pentium 75+", "OverDrive PODP5V83",
-                    "Pentium MMX", NULL, NULL, "Mobile Pentium 75+",
-                    "Mobile Pentium MMX"
-                  };
-  if (model < DIM(models))
-     return (models[model]);
-  return (NULL);
-}
-
-const char *Cx86_model (int type)
-{
-  int    model;
-  static const char *models[] = {
-                    "unknown", "6x86", "6x86L", "6x86MX", "MII"
-                  };
-  switch (type)
-  {
-    case 5:
-         /* CX8 flag only on 6x86L */
-         model = ((x86_capability & X86_CAPA_CX8) ? 2 : 1);
-         break;
-    case 6:
-         model = 3;
-         break;
-    default:
-         model = 0;
-  }
-  return (models[model]);
-}
-
-const char *i686_model (int model)
-{
-  static const char *models[] = {
-                    "PPro A-step", "Pentium Pro"
-                  };
-  if (model < DIM(models))
-     return (models[model]);
-  return (NULL);
-}
-
-struct model_info {
-       int         type;
-       const char *names[16];
-     };
-
-const char *AMD_model (int type, int model)
-{
-  static const struct model_info amd_models[] = {
-    { 4,
-      { NULL, NULL, NULL, "DX/2", NULL, NULL, NULL, "DX/2-WB", "DX/4",
-        "DX/4-WB", NULL, NULL, NULL, NULL, "Am5x86-WT", "Am5x86-WB"
-      }
-    },
-    { 5,
-      { "K5/SSA5 (PR-75, PR-90, PR-100)", "K5 (PR-120, PR-133)",
-        "K5 (PR-166)", "K5 (PR-200)", NULL, NULL,
-        "K6 (166-266)", "K6 (166-300)", "K6-2 (200-450)",
-        "K6-3D-Plus (200-450)", NULL, NULL, NULL, NULL, NULL, NULL
-      }
-    }
-  };
-  int i;
-
-  if (model < 16)
-     for (i = 0; i < DIM(amd_models); i++)
-         if (amd_models[i].type == type)
-            return (amd_models[i].names[model]);
-  return (NULL);
-}
-
-const char *cpu_get_model (int type, int model)
-{
-  const  char *p = NULL;
-  const  char *vendor = x86_vendor_id;
-  static char buf [12];
-
-  if (!x86_have_cpuid)
-     return ("unknown");
-
-  if (!strncmp(vendor, "Cyrix", 5))
-     p = Cx86_model (type);
-  else if (!strcmp(vendor, "AuthenticAMD"))
-     p = AMD_model (type, model);
-#if 0  /** \todo */
-  else if (!strcmp(vendor, "UMC UMC UMC "))
-     p = UMC_model (type, model);
-  else if (!strcmp(vendor, "NexGenDriven"))
-     p = NexGen_model (type, model);
-  else if (!strcmp(vendor, "CentaurHauls"))
-     p = Centaur_model (type, model);
-  else if (!strcmp(vendor, "RiseRiseRise"))  /* Rise Technology */
-     p = Rise_model (type, model);
-  else if (!strcmp(vendor, "GenuineTMx86"))  /* Transmeta */
-     p = Transmeta_model (type, model);
-  else if (!strcmp(vendor, "Geode by NSC"))  /* National Semiconductor */
-     p = National_model (type, model);
-#endif
-  else   /* Intel */
-  {
-    switch (type & 0x07)  /* mask off extended family bit */
-    {
-      case 4:
-           p = i486_model (model);
-           break;
-      case 5:
-           p = i586_model (model);   /* Pentium I */
-           break;
-      case 6:
-           p = i686_model (model);   /* Pentium II */
-           break;
-      case 7:
-           p = "Pentium 3";
-           break;
-      case 8:
-           p = "Pentium 4";
-           break;
-    }
-  }
-  if (p)
-     return (p);
-  return itoa (model, buf, 10);
-}
-#endif   /* 0 */
-
 static void print_cpu_info (void)
 {
-  uint64 Hz;
-  char   speed [20];
+  /* Not for 'gcc -O0' or Cygwin
+   */
+#if defined(PRINT_CPU_INFO)
+  uint64      Hz;
+  char        speed [20];
+  const char *vendor, *model, *brand;
 
   CheckCpuType();
 
@@ -3901,10 +3754,23 @@ static void print_cpu_info (void)
        sprintf (speed, "%.3f", (double)Hz/1E6);
   else strcpy (speed, "??");
 
-  dbug_printf ("CPU: %d86, model: %s, vendor: %s, speed: %s MHz (%d CPU core%s)\n",
-               x86_type, cpu_get_model(x86_type,x86_model),
-               x86_vendor_id[0] ? x86_vendor_id : "unknown", speed,
-               num_cpus, num_cpus > 1 ? "s" : "");
+  model  = cpu_get_model();
+  vendor = vendor_str;
+  brand  = cpu_get_brand_info();
+
+  if (!model)
+     model = "<unknown>";
+
+  if (!brand)
+     brand = "<unknown>";
+
+  if (!vendor[0])
+     vendor = "<unknown>";
+
+  dbug_printf ("CPU: model: %s, vendor: %s, brand: %s\n"
+               "     speed: %s MHz (%d CPU core%s)\n",
+               model, vendor, brand,
+               speed, num_cpus, num_cpus > 1 ? "s" : "");
+#endif /* PRINT_CPU_INFO */
 }
-#endif  /* PRINT_CPU_INFO */
-#endif  /* USE_DEBUG */
+#endif /* USE_DEBUG */
