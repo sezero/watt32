@@ -460,7 +460,10 @@ int W32_CALL gettimeofday2 (struct timeval *tv, struct timezone *tz)
     tv->tv_sec  = (time_t) ((usecs - tv->tv_usec) / U64_SUFFIX(1000000));
     if (tz)
        get_zone (tz, tv->tv_sec);
-    adjust_cpu_clock (tv);
+
+    /* This has a midnight bug, disabled for now.
+     */
+    /* adjust_cpu_clock (tv); */
     return (0);
   }
 #endif
