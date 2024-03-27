@@ -21,20 +21,20 @@ int ident (DWORD host, WORD client_port, WORD server_port)
   int    status    = 0;
   WORD   localport = _w32_Random (1100, 5555);
   WORD   identport = 113;
-  char   buf[512];
-  char   osName[50];
-  char   userId[50];
+  char   buf [512];
+  char   osName [50+1];
+  char   userId [50+1];
   int    len, num;
 
 #ifndef SAVE_SPACE
   struct servent *serv;
 
   if ((serv = getservbyname("auth", "tcp")) != NULL ||
-      (serv = getservbyname("ident","tcp")) != NULL)
+      (serv = getservbyname("ident", "tcp")) != NULL)
      identport = intel16 (serv->s_port);
 #endif
 
-  if (!tcp_open(&sock,localport,host,identport,NULL))
+  if (!tcp_open(&sock, localport, host, identport, NULL))
   {
     printf ("Unable to connect; %s", sockerr(&sock));
     return (-1);
@@ -108,7 +108,7 @@ int main (int argc, char **argv)
   int    timer_isr = 0;
   int    ch;
 
-  while ((ch = getopt(argc,argv,"?vdt")) != EOF)
+  while ((ch = getopt(argc, argv, "?vdt")) != EOF)
      switch(ch)
      {
        case 'v':
