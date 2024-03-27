@@ -32,6 +32,7 @@
 #endif
 
 #if defined(__GNUC__)
+  #pragma GCC diagnostic ignored  "-Warray-bounds"
   #pragma GCC diagnostic ignored  "-Wchar-subscripts"
   #pragma GCC diagnostic ignored  "-Wstrict-aliasing"
 #endif
