@@ -94,7 +94,7 @@ static int file_ioctrl (Socket *socket, long cmd, void *argp)
 {
   int len;
 
-  switch (cmd)
+  switch ((DWORD)cmd)
   {
     case FIONREAD:
          VERIFY_RW (argp, sizeof(u_long));
@@ -280,7 +280,7 @@ static int iface_ioctrl (Socket *socket, long cmd, void *argp)
 
   VERIFY_RW (argp, sizeof(*ifr));
 
-  switch (cmd)
+  switch ((DWORD)cmd)
   {
     case SIOCSARP:
     case SIOCGARP:
@@ -514,7 +514,7 @@ static int iface_ioctrl (Socket *socket, long cmd, void *argp)
  */
 static int waterm_ioctrl (Socket *socket, long cmd, void *argp)
 {
-  switch (cmd)
+  switch ((DWORD)cmd)
   {
     case SIOCSHIWAT:
          /** \todo set high watermark */
@@ -556,7 +556,7 @@ static int arp_ioctrl (Socket *socket, long cmd, void *argp)
   eth_address   *eth;
   DWORD  ip;
 
-  switch (cmd)
+  switch ((DWORD)cmd)
   {
     case SIOCSARP:      /* add given IP/MAC-addr pair to ARP cache */
          ip  = intel (*(DWORD*)arp->arp_pa.sa_data);
@@ -611,53 +611,53 @@ static int arp_ioctrl (Socket *socket, long cmd, void *argp)
  */
 #if defined(USE_DEBUG)
 static const struct search_list commands[] = {
-                  { (DWORD) FIOCLEX,         "FIOCLEX"         },
-                  { (DWORD) FIONCLEX,        "FIONCLEX"        },
-                  { (DWORD) FIONREAD,        "FIONREAD"        },
-                  { (DWORD) FIONBIO,         "FIONBIO"         },
-                  { (DWORD) FIOASYNC,        "FIOASYNC"        },
-                  { (DWORD) FIOSETOWN,       "FIOSETOWN"       },
-                  { (DWORD) FIOGETOWN,       "FIOGETOWN"       },
-                  { (DWORD) SIOCSPGRP,       "SIOCSPGRP"       },
-                  { (DWORD) SIOCGPGRP,       "SIOCGPGRP"       },
-                  { (DWORD) SIOCADDRT,       "SIOCADDRT"       },
-                  { (DWORD) SIOCDELRT,       "SIOCDELRT"       },
-                  { (DWORD) SIOCSIFADDR,     "SIOCSIFADDR"     },
-                  { (DWORD) OSIOCGIFADDR,    "OSIOCGIFADDR"    },
-                  { (DWORD) SIOCGIFADDR,     "SIOCGIFADDR"     },
-                  { (DWORD) SIOCSIFDSTADDR,  "SIOCSIFDSTADDR"  },
-                  { (DWORD) OSIOCGIFDSTADDR, "OSIOCGIFDSTADDR" },
-                  { (DWORD) SIOCGIFDSTADDR,  "SIOCGIFDSTADDR"  },
-                  { (DWORD) SIOCSIFFLAGS,    "SIOCSIFFLAGS"    },
-                  { (DWORD) SIOCGIFFLAGS,    "SIOCGIFFLAGS"    },
-                  { (DWORD) OSIOCGIFBRDADDR, "OSIOCGIFBRDADDR" },
-                  { (DWORD) SIOCGIFBRDADDR,  "SIOCGIFBRDADDR"  },
-                  { (DWORD) SIOCSIFBRDADDR,  "SIOCSIFBRDADDR"  },
-                  { (DWORD) OSIOCGIFCONF,    "OSIOCGIFCONF"    },
-                  { (DWORD) SIOCGIFCONF,     "SIOCGIFCONF"     },
-                  { (DWORD) OSIOCGIFNETMASK, "OSIOCGIFNETMASK" },
-                  { (DWORD) SIOCGIFNETMASK,  "SIOCGIFNETMASK"  },
-                  { (DWORD) SIOCSIFNETMASK,  "SIOCSIFNETMASK"  },
-                  { (DWORD) SIOCGIFMETRIC,   "SIOCGIFMETRIC"   },
-                  { (DWORD) SIOCSIFMETRIC,   "SIOCSIFMETRIC"   },
-                  { (DWORD) SIOCDIFADDR,     "SIOCDIFADDR"     },
-                  { (DWORD) SIOCAIFADDR,     "SIOCAIFADDR"     },
-                  { (DWORD) SIOCGIFMTU,      "SIOCGIFMTU"      },
-                  { (DWORD) SIOCSARP,        "SIOCSARP"        },
-                  { (DWORD) OSIOCGARP,       "OSIOCGARP"       },
-                  { (DWORD) SIOCGARP,        "SIOCGARP"        },
-                  { (DWORD) SIOCDARP,        "SIOCDARP"        },
-                  { (DWORD) SIOCSHIWAT,      "SIOCSHIWAT"      },
-                  { (DWORD) SIOCGHIWAT,      "SIOCGHIWAT"      },
-                  { (DWORD) SIOCSLOWAT,      "SIOCSLOWAT"      },
-                  { (DWORD) SIOCGLOWAT,      "SIOCGLOWAT"      },
-                  { (DWORD) SIOCATMARK,      "SIOCATMARK"      },
-                  { (DWORD) SIOCGIFHWADDR,   "SIOCGIFHWADDR"   }
+                  { FIOCLEX,         "FIOCLEX"         },
+                  { FIONCLEX,        "FIONCLEX"        },
+                  { FIONREAD,        "FIONREAD"        },
+                  { FIONBIO,         "FIONBIO"         },
+                  { FIOASYNC,        "FIOASYNC"        },
+                  { FIOSETOWN,       "FIOSETOWN"       },
+                  { FIOGETOWN,       "FIOGETOWN"       },
+                  { SIOCSPGRP,       "SIOCSPGRP"       },
+                  { SIOCGPGRP,       "SIOCGPGRP"       },
+                  { SIOCADDRT,       "SIOCADDRT"       },
+                  { SIOCDELRT,       "SIOCDELRT"       },
+                  { SIOCSIFADDR,     "SIOCSIFADDR"     },
+                  { OSIOCGIFADDR,    "OSIOCGIFADDR"    },
+                  { SIOCGIFADDR,     "SIOCGIFADDR"     },
+                  { SIOCSIFDSTADDR,  "SIOCSIFDSTADDR"  },
+                  { OSIOCGIFDSTADDR, "OSIOCGIFDSTADDR" },
+                  { SIOCGIFDSTADDR,  "SIOCGIFDSTADDR"  },
+                  { SIOCSIFFLAGS,    "SIOCSIFFLAGS"    },
+                  { SIOCGIFFLAGS,    "SIOCGIFFLAGS"    },
+                  { OSIOCGIFBRDADDR, "OSIOCGIFBRDADDR" },
+                  { SIOCGIFBRDADDR,  "SIOCGIFBRDADDR"  },
+                  { SIOCSIFBRDADDR,  "SIOCSIFBRDADDR"  },
+                  { OSIOCGIFCONF,    "OSIOCGIFCONF"    },
+                  { SIOCGIFCONF,     "SIOCGIFCONF"     },
+                  { OSIOCGIFNETMASK, "OSIOCGIFNETMASK" },
+                  { SIOCGIFNETMASK,  "SIOCGIFNETMASK"  },
+                  { SIOCSIFNETMASK,  "SIOCSIFNETMASK"  },
+                  { SIOCGIFMETRIC,   "SIOCGIFMETRIC"   },
+                  { SIOCSIFMETRIC,   "SIOCSIFMETRIC"   },
+                  { SIOCDIFADDR,     "SIOCDIFADDR"     },
+                  { SIOCAIFADDR,     "SIOCAIFADDR"     },
+                  { SIOCGIFMTU,      "SIOCGIFMTU"      },
+                  { SIOCSARP,        "SIOCSARP"        },
+                  { OSIOCGARP,       "OSIOCGARP"       },
+                  { SIOCGARP,        "SIOCGARP"        },
+                  { SIOCDARP,        "SIOCDARP"        },
+                  { SIOCSHIWAT,      "SIOCSHIWAT"      },
+                  { SIOCGHIWAT,      "SIOCGHIWAT"      },
+                  { SIOCSLOWAT,      "SIOCSLOWAT"      },
+                  { SIOCGLOWAT,      "SIOCGLOWAT"      },
+                  { SIOCATMARK,      "SIOCATMARK"      },
+                  { SIOCGIFHWADDR,   "SIOCGIFHWADDR"   }
                 };
 
 static const char *get_ioctl_cmd (long cmd)
 {
-  static char buf[50];
+  static char buf [50];
 
   switch (IOCGROUP(cmd))
   {
@@ -706,7 +706,7 @@ void __assert_fail (unsigned line)
 
 const char *eth_addr_string (struct ether_addr *eth)
 {
-  static char buf[20];
+  static char buf [20];
 
   sprintf (buf, "%02X:%02X:%02X:%02X:%02X:%02X",
            eth->ether_addr_octet[0],
@@ -720,45 +720,45 @@ const char *eth_addr_string (struct ether_addr *eth)
 
 const char *if_flags_string (unsigned short flags)
 {
-  static char buf[200];
+  static char buf [200];
 
   buf[0] = '\0';
 
   if (flags & IFF_UP)
-     strcat (buf,"up,");
+     strcat (buf, "up,");
   if (flags & IFF_BROADCAST)
-     strcat (buf,"broadcast,");
+     strcat (buf, "broadcast,");
   if (flags & IFF_DEBUG)
-     strcat (buf,"debug,");
+     strcat (buf, "debug,");
   if (flags & IFF_LOOPBACK)
-     strcat (buf,"loopback,");
+     strcat (buf, "loopback,");
   if (flags & IFF_POINTOPOINT)
-     strcat (buf,"p-to-p,");
+     strcat (buf, "p-to-p,");
   if (flags & IFF_NOTRAILERS)
-     strcat (buf,"no-trail,");
+     strcat (buf, "no-trail,");
   if (flags & IFF_RUNNING)
-     strcat (buf,"running,");
+     strcat (buf, "running,");
   if (flags & IFF_NOARP)
-     strcat (buf,"no-arp,");
+     strcat (buf, "no-arp,");
   if (flags & IFF_PROMISC)
-     strcat (buf,"promisc,");
+     strcat (buf, "promisc,");
   if (flags & IFF_ALLMULTI)
-     strcat (buf,"all-multi,");
+     strcat (buf, "all-multi,");
   if (flags & IFF_OACTIVE)
-     strcat (buf,"out-act,");
+     strcat (buf, "out-act,");
   if (flags & IFF_SIMPLEX)
-     strcat (buf,"simplex,");
+     strcat (buf, "simplex,");
   if (flags & IFF_LINK0)
-     strcat (buf,"link0,");
+     strcat (buf, "link0,");
   if (flags & IFF_LINK1)
-     strcat (buf,"link1,");
+     strcat (buf, "link1,");
   if (flags & IFF_LINK2)
-     strcat (buf,"link2,");
+     strcat (buf, "link2,");
   if (flags & IFF_MULTICAST)
-     strcat (buf,"mcast,");
+     strcat (buf, "mcast,");
 
   if (buf[0])
-     buf[strlen(buf)-1] = '\0';
+     buf [strlen(buf)-1] = '\0';
   return (buf);
 }
 
