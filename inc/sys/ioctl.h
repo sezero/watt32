@@ -48,19 +48,19 @@
  * we restrict parameters to at most 128 bytes.
  */
 
-#define IOCPARM_MASK 0x7f               /* parameters must be < 128 bytes */
+#define IOCPARM_MASK (long) 0x7f        /* parameters must be < 128 bytes */
 
 #define IOCPARM_LEN(x)  (((x) >> 16) & IOCPARM_MASK)
 #define IOCBASECMD(x)   ((x) & ~IOCPARM_MASK)
 #define IOCGROUP(x)     (((x) >> 8) & 0xff)
 
-#define IOCPARM_MAX     4096              /* max size of ioctl */
-#define IOC_VOID        0x20000000        /* no parameters */
-#define IOC_OUT         0x40000000        /* copy out parameters */
-#define IOC_IN          0x80000000        /* copy in parameters */
+#define IOCPARM_MAX     (long) 4096       /* max size of ioctl */
+#define IOC_VOID        (long) 0x20000000 /* no parameters */
+#define IOC_OUT         (long) 0x40000000 /* copy out parameters */
+#define IOC_IN          (long) 0x80000000 /* copy in parameters */
 #define IOC_INOUT       (IOC_IN|IOC_OUT)  /* 0x20000000 distinguishes new &
                                              old ioctl's */
-#define IOC_DIRMASK     0xe0000000        /* mask for IN/OUT/VOID */
+#define IOC_DIRMASK     (long) 0xe0000000 /* mask for IN/OUT/VOID */
 
 #define _IO(x,y)    (IOC_VOID|(x<<8)|y)
 #define _IOR(x,y,t) (IOC_OUT|((sizeof(t)&IOCPARM_MASK)<<16)|(x<<8)|y)
