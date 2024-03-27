@@ -94,7 +94,7 @@ static int file_ioctrl (Socket *socket, long cmd, void *argp)
 {
   int len;
 
-  switch ((DWORD)cmd)
+  switch (cmd)
   {
     case FIONREAD:
          VERIFY_RW (argp, sizeof(u_long));
@@ -280,7 +280,7 @@ static int iface_ioctrl (Socket *socket, long cmd, void *argp)
 
   VERIFY_RW (argp, sizeof(*ifr));
 
-  switch ((DWORD)cmd)
+  switch (cmd)
   {
     case SIOCSARP:
     case SIOCGARP:
@@ -514,7 +514,7 @@ static int iface_ioctrl (Socket *socket, long cmd, void *argp)
  */
 static int waterm_ioctrl (Socket *socket, long cmd, void *argp)
 {
-  switch ((DWORD)cmd)
+  switch (cmd)
   {
     case SIOCSHIWAT:
          /** \todo set high watermark */
@@ -556,7 +556,7 @@ static int arp_ioctrl (Socket *socket, long cmd, void *argp)
   eth_address   *eth;
   DWORD  ip;
 
-  switch ((DWORD)cmd)
+  switch (cmd)
   {
     case SIOCSARP:      /* add given IP/MAC-addr pair to ARP cache */
          ip  = intel (*(DWORD*)arp->arp_pa.sa_data);
@@ -611,48 +611,48 @@ static int arp_ioctrl (Socket *socket, long cmd, void *argp)
  */
 #if defined(USE_DEBUG)
 static const struct search_list commands[] = {
-                  { FIOCLEX,         "FIOCLEX"         },
-                  { FIONCLEX,        "FIONCLEX"        },
-                  { FIONREAD,        "FIONREAD"        },
-                  { FIONBIO,         "FIONBIO"         },
-                  { FIOASYNC,        "FIOASYNC"        },
-                  { FIOSETOWN,       "FIOSETOWN"       },
-                  { FIOGETOWN,       "FIOGETOWN"       },
-                  { SIOCSPGRP,       "SIOCSPGRP"       },
-                  { SIOCGPGRP,       "SIOCGPGRP"       },
-                  { SIOCADDRT,       "SIOCADDRT"       },
-                  { SIOCDELRT,       "SIOCDELRT"       },
-                  { SIOCSIFADDR,     "SIOCSIFADDR"     },
-                  { OSIOCGIFADDR,    "OSIOCGIFADDR"    },
-                  { SIOCGIFADDR,     "SIOCGIFADDR"     },
-                  { SIOCSIFDSTADDR,  "SIOCSIFDSTADDR"  },
-                  { OSIOCGIFDSTADDR, "OSIOCGIFDSTADDR" },
-                  { SIOCGIFDSTADDR,  "SIOCGIFDSTADDR"  },
-                  { SIOCSIFFLAGS,    "SIOCSIFFLAGS"    },
-                  { SIOCGIFFLAGS,    "SIOCGIFFLAGS"    },
-                  { OSIOCGIFBRDADDR, "OSIOCGIFBRDADDR" },
-                  { SIOCGIFBRDADDR,  "SIOCGIFBRDADDR"  },
-                  { SIOCSIFBRDADDR,  "SIOCSIFBRDADDR"  },
-                  { OSIOCGIFCONF,    "OSIOCGIFCONF"    },
-                  { SIOCGIFCONF,     "SIOCGIFCONF"     },
-                  { OSIOCGIFNETMASK, "OSIOCGIFNETMASK" },
-                  { SIOCGIFNETMASK,  "SIOCGIFNETMASK"  },
-                  { SIOCSIFNETMASK,  "SIOCSIFNETMASK"  },
-                  { SIOCGIFMETRIC,   "SIOCGIFMETRIC"   },
-                  { SIOCSIFMETRIC,   "SIOCSIFMETRIC"   },
-                  { SIOCDIFADDR,     "SIOCDIFADDR"     },
-                  { SIOCAIFADDR,     "SIOCAIFADDR"     },
-                  { SIOCGIFMTU,      "SIOCGIFMTU"      },
-                  { SIOCSARP,        "SIOCSARP"        },
-                  { OSIOCGARP,       "OSIOCGARP"       },
-                  { SIOCGARP,        "SIOCGARP"        },
-                  { SIOCDARP,        "SIOCDARP"        },
-                  { SIOCSHIWAT,      "SIOCSHIWAT"      },
-                  { SIOCGHIWAT,      "SIOCGHIWAT"      },
-                  { SIOCSLOWAT,      "SIOCSLOWAT"      },
-                  { SIOCGLOWAT,      "SIOCGLOWAT"      },
-                  { SIOCATMARK,      "SIOCATMARK"      },
-                  { SIOCGIFHWADDR,   "SIOCGIFHWADDR"   }
+                  { (DWORD) FIOCLEX,         "FIOCLEX"         },
+                  { (DWORD) FIONCLEX,        "FIONCLEX"        },
+                  { (DWORD) FIONREAD,        "FIONREAD"        },
+                  { (DWORD) FIONBIO,         "FIONBIO"         },
+                  { (DWORD) FIOASYNC,        "FIOASYNC"        },
+                  { (DWORD) FIOSETOWN,       "FIOSETOWN"       },
+                  { (DWORD) FIOGETOWN,       "FIOGETOWN"       },
+                  { (DWORD) SIOCSPGRP,       "SIOCSPGRP"       },
+                  { (DWORD) SIOCGPGRP,       "SIOCGPGRP"       },
+                  { (DWORD) SIOCADDRT,       "SIOCADDRT"       },
+                  { (DWORD) SIOCDELRT,       "SIOCDELRT"       },
+                  { (DWORD) SIOCSIFADDR,     "SIOCSIFADDR"     },
+                  { (DWORD) OSIOCGIFADDR,    "OSIOCGIFADDR"    },
+                  { (DWORD) SIOCGIFADDR,     "SIOCGIFADDR"     },
+                  { (DWORD) SIOCSIFDSTADDR,  "SIOCSIFDSTADDR"  },
+                  { (DWORD) OSIOCGIFDSTADDR, "OSIOCGIFDSTADDR" },
+                  { (DWORD) SIOCGIFDSTADDR,  "SIOCGIFDSTADDR"  },
+                  { (DWORD) SIOCSIFFLAGS,    "SIOCSIFFLAGS"    },
+                  { (DWORD) SIOCGIFFLAGS,    "SIOCGIFFLAGS"    },
+                  { (DWORD) OSIOCGIFBRDADDR, "OSIOCGIFBRDADDR" },
+                  { (DWORD) SIOCGIFBRDADDR,  "SIOCGIFBRDADDR"  },
+                  { (DWORD) SIOCSIFBRDADDR,  "SIOCSIFBRDADDR"  },
+                  { (DWORD) OSIOCGIFCONF,    "OSIOCGIFCONF"    },
+                  { (DWORD) SIOCGIFCONF,     "SIOCGIFCONF"     },
+                  { (DWORD) OSIOCGIFNETMASK, "OSIOCGIFNETMASK" },
+                  { (DWORD) SIOCGIFNETMASK,  "SIOCGIFNETMASK"  },
+                  { (DWORD) SIOCSIFNETMASK,  "SIOCSIFNETMASK"  },
+                  { (DWORD) SIOCGIFMETRIC,   "SIOCGIFMETRIC"   },
+                  { (DWORD) SIOCSIFMETRIC,   "SIOCSIFMETRIC"   },
+                  { (DWORD) SIOCDIFADDR,     "SIOCDIFADDR"     },
+                  { (DWORD) SIOCAIFADDR,     "SIOCAIFADDR"     },
+                  { (DWORD) SIOCGIFMTU,      "SIOCGIFMTU"      },
+                  { (DWORD) SIOCSARP,        "SIOCSARP"        },
+                  { (DWORD) OSIOCGARP,       "OSIOCGARP"       },
+                  { (DWORD) SIOCGARP,        "SIOCGARP"        },
+                  { (DWORD) SIOCDARP,        "SIOCDARP"        },
+                  { (DWORD) SIOCSHIWAT,      "SIOCSHIWAT"      },
+                  { (DWORD) SIOCGHIWAT,      "SIOCGHIWAT"      },
+                  { (DWORD) SIOCSLOWAT,      "SIOCSLOWAT"      },
+                  { (DWORD) SIOCGLOWAT,      "SIOCGLOWAT"      },
+                  { (DWORD) SIOCATMARK,      "SIOCATMARK"      },
+                  { (DWORD) SIOCGIFHWADDR,   "SIOCGIFHWADDR"   }
                 };
 
 static const char *get_ioctl_cmd (long cmd)
