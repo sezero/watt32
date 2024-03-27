@@ -200,7 +200,7 @@ void MS_CDECL perror (const char *str)
  */
 char * MS_CDECL strerror (int errnum)
 {
-  static char buf[70];
+  static char buf [70];
 
   if (errnum >= 0 && errnum < SYS_NERR)
        _strlcpy (buf, SYS_ERRLIST2[errnum], sizeof(buf));
@@ -284,7 +284,7 @@ void __stdcall WSASetLastError (int err)
  */
 const char *short_strerror (int errnum)
 {
-  static char buf[256];
+  static char buf [256];
   char  *l_par, *r_par;
 
   _strlcpy (buf, strerror(errnum), sizeof(buf));

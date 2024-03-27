@@ -336,7 +336,7 @@
   #undef  BOOL
   #define BOOL int
 
-#elif (DOSX & ATMEL)   /* ATX &/ ATmel MCU targets */
+#elif (DOSX & ATMEL)   /* ATX & ATmel MCU targets */
   /*
    * todo
    */
