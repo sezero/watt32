@@ -2179,7 +2179,7 @@ static void dbug_dump (const void *sock, const in_Header *ip,
                        const char *fname, unsigned line, BOOL out)
 {
   static BOOL print_once = FALSE;
-  char   sz_buf [30];
+  char   sz_buf [28];
   int    err;
 
   WATT_ASSERT (ip);

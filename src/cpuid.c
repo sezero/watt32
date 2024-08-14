@@ -311,7 +311,7 @@ const char *cpu_get_model (void)
 
 const char *cpu_get_freq_info1 (void)
 {
-  static char  result [100];
+  static char  result [102];
   char   info [13];
   DWORD  id_max = GET_CPUID2 (0, info);
   DWORD  eax = 0, ebx = 0, ecx = 0;
@@ -330,7 +330,7 @@ const char *cpu_get_freq_info1 (void)
 
 const char *cpu_get_freq_info2 (void)
 {
-  static char  result [100];
+  static char  result [112];
   char   info [13];
   DWORD  id_max = GET_CPUID2 (0x80000007, info);
   DWORD  edx;
@@ -353,7 +353,7 @@ const char *cpu_get_brand_info (void)
   char   info3 [13];
   DWORD  id_max = GET_CPUID2 (0x80000000, NULL);
   DWORD  eax [3];
-  static char result [100];
+  static char result [49];
 
   if (id_max < 0x80000004)
      return (NULL);
