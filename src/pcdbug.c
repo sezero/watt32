@@ -2305,7 +2305,7 @@ static void dbug_dump (const void *sock, const in_Header *ip,
     {
       pppoe_disc_dump ((const struct pppoe_Packet*) pkt->eth.data);
       goto quit;
-  }
+    }
     if (type == PPPOE_SESS_TYPE)
     {
       pppoe_sess_dump (sock, (const struct pppoe_Packet*) pkt->eth.data);
