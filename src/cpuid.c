@@ -1,6 +1,6 @@
 /*
  * CPU-model tool. Uses CPUID to figure out a more
- * excact name of the running processor. Supports these 32 and 64-bit
+ * exact name of the running processor. Supports these 32 and 64-bit
  * CPUs:
  *   GenuineIntel, AuthenticAMD and CentaurHauls.
  *
@@ -274,7 +274,7 @@ const char *cpu_get_model (void)
 
   id_max = GET_CPUID2 (0, vendor_str2);
 
-  snprintf (vendor_str, sizeof(vendor_str), "%.4s%.4s%.4s",
+  sprintf (vendor_str, "%.4s%.4s%.4s",
             vendor_str2,      /* EBX */
             vendor_str2+4+4,  /* EDX */
             vendor_str2+4);   /* ECX */
@@ -323,7 +323,7 @@ const char *cpu_get_freq_info1 (void)
   ebx = *(DWORD*) &info [1];
   ecx = *(DWORD*) &info [2];
 
-  snprintf (result, sizeof(result), "Core base: %lu, Core max: %lu, Core bus: %lu (MHz)",
+  sprintf (result, "Core base: %lu, Core max: %lu, Core bus: %lu (MHz)",
             eax & (1 << 15), ebx & (1 << 15), ecx & (1 << 15));
   return (result);
 }
@@ -341,7 +341,7 @@ const char *cpu_get_freq_info2 (void)
   GET_CPUID2 (0x80000007, info);
   edx = *(DWORD*) &info [3];
 
-  snprintf (result, sizeof(result), "EDX: 0x%08lX, FID: %lu, EffFreqRO: %lu, ProcFeedback: %lu",
+  sprintf (result, "EDX: 0x%08lX, FID: %lu, EffFreqRO: %lu, ProcFeedback: %lu",
             edx, (edx & 1), (edx & (1 << 10)), (edx & (1 << 11)));
   return (result);
 }
@@ -362,7 +362,7 @@ const char *cpu_get_brand_info (void)
   eax [1] = GET_CPUID2 (0x80000003, info2);
   eax [2] = GET_CPUID2 (0x80000004, info3);
 
-  snprintf (result, sizeof(result),
+  sprintf (result,
             "%.4s%.12s" "%.4s%.12s" "%.4s%.12s",
             (const char*) &eax[0], info1,
             (const char*) &eax[1], info2,

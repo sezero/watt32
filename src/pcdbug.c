@@ -2243,7 +2243,7 @@ static void dbug_dump (const void *sock, const in_Header *ip,
      dbug_putc ('\n');   /* !! Why do I need this? */
 
   if (dbg_print_size)    /* debug.rx_size = 1 */
-       snprintf (sz_buf, sizeof(sz_buf), ", size %u",
+       sprintf (sz_buf, ", size %u",
                  out ? _eth_last.tx.size : _eth_last.rx.size);
   else sz_buf [0] = '\0';
 
