@@ -309,6 +309,7 @@ const char *cpu_get_model (void)
   return (NULL);
 }
 
+#if 0
 const char *cpu_get_freq_info1 (void)
 {
   static char  result [102];
@@ -345,6 +346,7 @@ const char *cpu_get_freq_info2 (void)
             edx, (edx & 1), (edx & (1 << 10)), (edx & (1 << 11)));
   return (result);
 }
+#endif
 
 const char *cpu_get_brand_info (void)
 {
