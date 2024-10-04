@@ -6,7 +6,7 @@
 #        This file is only used by 'makefile' under './bin'.
 #        Not in './bin' itself. Refer 'djgpp.mak' for that.
 #
-# by Gisle Vanem 1997 - 2023
+# by Gisle Vanem 1997 - 2024
 #
 MAKEFLAGS += --warn-undefined-variables
 

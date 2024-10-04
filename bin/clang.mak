@@ -1,6 +1,6 @@
 #
 #  GNU Makefile for some Waterloo TCP sample applications
-#  Gisle Vanem 2004 - 2023
+#  Gisle Vanem 2004 - 2024
 #
 #  Target:
 #    Clang-CL (Win32/Win64; depends on '%CPU%')
