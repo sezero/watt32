@@ -228,16 +228,15 @@ else ifeq ($(USE_WATT32),1)
   EXE     = wget-w32.exe
   CFLAGS += -DWATT32           \
             -DWATT32_NO_OLDIES \
-            -DWATT32_STATIC    \
             -I$(WATT_ROOT)/inc \
             -I$(WATT_ROOT)/inc/w32-fakes
 
   OS_LIBS = $(call os_lib, advapi32.lib user32.lib)
 
-  WATT_LIB = $(call select, $(WATT_ROOT)/lib/$(CPU)/libwatt32.a,        \
-                            $(WATT_ROOT)/lib/$(CPU)/libwatt32-cygwin.a, \
-                            $(WATT_ROOT)/lib/$(CPU)/wattcp_clang.lib,   \
-                            $(WATT_ROOT)/lib/$(CPU)/wattcpvc.lib)
+  WATT_LIB = $(call select, $(WATT_ROOT)/lib/$(CPU)/libwatt32.a,            \
+                            $(WATT_ROOT)/lib/$(CPU)/libwatt32-cygwin.dll.a, \
+                            $(WATT_ROOT)/lib/$(CPU)/wattcp_clang_imp.lib,   \
+                            $(WATT_ROOT)/lib/$(CPU)/wattcpvc_imp.lib)
 else
   #
   # Let Cygwin use the Winsock2 API (not POSIX)
