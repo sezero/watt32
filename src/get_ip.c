@@ -247,6 +247,11 @@ void W32_CALL freehostent (struct hostent *he)
   if (!he->h_name)   /* possible double freeing */
      return;
 
+#if 0
+ /*
+  * A simple fix for issue 'https://github.com/gvanem/Watt-32/issues/115'.
+  * Since the below elements are currently NOT allocated on heap by 'fill_hostent()'.
+  */
   DO_FREE (he->h_name);
 
   for (p = he->h_addr_list; *p; p++)
@@ -258,6 +263,7 @@ void W32_CALL freehostent (struct hostent *he)
   free (he->h_aliases);
   free (he->h_addr_list);
   free (he);
+#endif
 }
 
 static struct hostent *copyandmerge (const struct hostent *he1,

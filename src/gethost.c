@@ -640,6 +640,12 @@ int * W32_CALL __h_errno_location (void)
   return (&h_errno);
 }
 
+/*
+ * Note for issue 'https://github.com/gvanem/Watt-32/issues/115'.
+ *
+ * The below elements should be deep-copied and allocated on heap to
+ * make 'gethostbyaddr()' and 'freehostent()' reentrant.
+ */
 static struct hostent *fill_hostent (const struct _hostent *h)
 {
   static struct hostent ret;
