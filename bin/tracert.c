@@ -715,8 +715,8 @@ int main (int argc, char **argv)
       }
 
 #if defined(USE_GEOIP) || defined(USE_IP2LOCATION)
-  if (get_country > 0)
-     init_geoip (argv[0]);
+  if (get_country > 0 && !init_geoip(argv[0]))
+     return (1);
 #endif
 
   argc -= optind;
@@ -1440,6 +1440,8 @@ int init_geoip (const char *argv0)
 
 #ifdef USE_IP2LOCATION
   ip2loc_ctx = IP2Location_open (file1);
+  if (!ip2loc_ctx)
+     return (0);
 
 #ifndef MSDOS
   if (ip2loc_ctx && IP2Location_DB_set_shared_memory(ip2loc_ctx->file) == -1)
