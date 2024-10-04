@@ -203,7 +203,7 @@ char * MS_CDECL strerror (int errnum)
   static char buf [70];
 
   if (errnum >= 0 && errnum < SYS_NERR)
-       _strlcpy (buf, SYS_ERRLIST2[errnum], sizeof(buf));
+       str_lcpy (buf, SYS_ERRLIST2[errnum], sizeof(buf));
   else sprintf (buf, "Unknown error: %d", errnum);
 
 #if !defined(__GNUC__)
@@ -287,7 +287,7 @@ const char *short_strerror (int errnum)
   static char buf [256];
   char  *l_par, *r_par;
 
-  _strlcpy (buf, strerror(errnum), sizeof(buf));
+  str_lcpy (buf, strerror(errnum), sizeof(buf));
   l_par = strchr (buf, '(');
   if (!l_par)
   {

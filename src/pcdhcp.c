@@ -530,7 +530,7 @@ static int DHCP_offer (const struct dhcp *in)
                opt[1] % 4 == 0)         /* length = n * 4 */
            {
              ip = intel (*(DWORD*)(opt+2));   /* select 1st host */
-             _strlcpy (syslog_host_name, _inet_ntoa(NULL, ip),
+             str_lcpy (syslog_host_name, _inet_ntoa(NULL, ip),
                        sizeof(syslog_host_name));
              TRACE (("Syslog:    %s\n", syslog_host_name));
            }
@@ -1255,12 +1255,12 @@ static int set_request_list (char *options)
   init  = TRUE;
   start = list;
   end   = start + maxreq - 1;
-  tok   = (BYTE*) strtok_r (options, ", \t", &tok_buf);
+  tok   = (BYTE*) str_tok (options, ", \t", &tok_buf);
 
   while (tok && list < end)
   {
     *list = ATOI ((const char*)tok);
-    tok   = (BYTE*) strtok_r (NULL, ", \t", &tok_buf);
+    tok   = (BYTE*) str_tok (NULL, ", \t", &tok_buf);
 
     /* If request list start with Pad option ("DHCP.REQ_LIST=0"),
      * disable options all-together.
@@ -1767,14 +1767,14 @@ static int usr_read_config (void)
   tcp_keep_intvl = cfg.tcp_keep_intvl;
 #endif
 
-  _strlcpy (hostname, cfg._hostname, sizeof(hostname));
+  str_lcpy (hostname, cfg._hostname, sizeof(hostname));
 
   TRACE (("DHCP: using previous domain   %s\n", cfg.domain));
   setdomainname (cfg.domain, strlen(cfg.domain)+1);
 
 #if defined(USE_BSD_API)
   if (cfg.loghost[0])
-     _strlcpy (syslog_host_name, cfg.loghost, sizeof(syslog_host_name));
+     str_lcpy (syslog_host_name, cfg.loghost, sizeof(syslog_host_name));
 #endif
 
   return (1);
@@ -1799,12 +1799,12 @@ static int usr_write_config (void)
   cfg.tcp_keep_intvl = tcp_keep_intvl;
 #endif
 
-  _strlcpy (cfg._hostname, hostname, sizeof(cfg._hostname));
-  _strlcpy (cfg.domain, def_domain, sizeof(cfg.domain));
+  str_lcpy (cfg._hostname, hostname, sizeof(cfg._hostname));
+  str_lcpy (cfg.domain, def_domain, sizeof(cfg.domain));
 
 #if defined(USE_BSD_API)
   if (syslog_host_name[0])
-     _strlcpy (cfg.loghost, syslog_host_name, sizeof(cfg.loghost));
+     str_lcpy (cfg.loghost, syslog_host_name, sizeof(cfg.loghost));
 #endif
 
   return (*config_func) (DHCP_OP_WRITE, &cfg);

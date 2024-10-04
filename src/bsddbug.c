@@ -185,7 +185,7 @@ void _sock_dbug_open (void)
  */
 static void set_dbg_fname (const char *value)
 {
-  _strlcpy (dbg_fname, value, sizeof(dbg_fname));
+  str_lcpy (dbg_fname, value, sizeof(dbg_fname));
 
   if (!stricmp(dbg_fname,"stderr"))
      dbg_file = stderr;
@@ -199,7 +199,7 @@ static void set_dbg_fname (const char *value)
 
 static void set_dbg_openmode (const char *value)
 {
-  _strlcpy (dbg_omode, value, sizeof(dbg_omode));
+  str_lcpy (dbg_omode, value, sizeof(dbg_omode));
 }
 
 /*

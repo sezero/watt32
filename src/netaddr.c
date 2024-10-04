@@ -227,19 +227,19 @@ const char *_inet_atoeth (const char *src, eth_address *p_eth)
   eth [5] = tmp [5];
   src = strrchr(src, colon ? ':' : '-') + 3;
 #else
-  eth [0] = atox (src - 2);      /*   xx:xx:xx:xx:xx:xx */
-  eth [1] = atox (src + 1);      /* ^src-2              */
-  eth [2] = atox (src + 4);      /*    ^src+1           */
-  eth [3] = atox (src + 7);
-  eth [4] = atox (src + 10);
-  eth [5] = atox (src + 13);
+  eth [0] = str_atox (src - 2);      /*   xx:xx:xx:xx:xx:xx */
+  eth [1] = str_atox (src + 1);      /* ^src-2              */
+  eth [2] = str_atox (src + 4);      /*    ^src+1           */
+  eth [3] = str_atox (src + 7);
+  eth [4] = str_atox (src + 10);
+  eth [5] = str_atox (src + 13);
 
   src += strlen ("xx:xx:xx:xx:xx:xx");
 #endif
 
   if (*src == ',')
      ++src;
-  return strltrim (src);
+  return str_ltrim (src);
 }
 
 #if defined(USE_BSD_API)

@@ -60,7 +60,7 @@ static __inline struct netent *fill_netent (const struct _netent *n)
   static char  *aliases [MAX_NETENT_ALIASES+1];
 
   memcpy (&aliases, n->n_aliases, sizeof(aliases));
-  ret.n_name     = _strlcpy (name, n->n_name, sizeof(name));
+  ret.n_name     = str_lcpy (name, n->n_name, sizeof(name));
   ret.n_aliases  = aliases;
   ret.n_net      = n->n_net;
   ret.n_addrtype = AF_INET;
@@ -192,12 +192,12 @@ struct netent * W32_CALL getnetent (void)
     if (!fgets(buf,sizeof(buf),networkFile))
        return (NULL);
 
-    tok = strltrim (buf);
+    tok = str_ltrim (buf);
     if (*tok == '#' || *tok == ';' || *tok == '\n')
        continue;
 
-    name = strtok_r (tok, " \t", &tok_buf);
-    net  = strtok_r (NULL, "= \t\n", &tok_buf);
+    name = str_tok (tok, " \t", &tok_buf);
+    net  = str_tok (NULL, "= \t\n", &tok_buf);
     if (name && net)
        break;
   }
@@ -208,7 +208,7 @@ struct netent * W32_CALL getnetent (void)
   memset (&n, 0, sizeof(n));
   n.n_net  = inet_network (net);
   n.n_name = name;
-  alias    = strtok_r (NULL, " \t\n", &tok_buf);
+  alias    = str_tok (NULL, " \t\n", &tok_buf);
 
   for (i = 0; alias && i < MAX_NETENT_ALIASES; i++)
   {
@@ -217,8 +217,8 @@ struct netent * W32_CALL getnetent (void)
     if (*alias == '#' || *alias == ';')
        break;
 
-    n.n_aliases[i] = _strlcpy (aliases[i], alias, sizeof(aliases[i]));
-    alias = strtok_r (NULL, " \t\n", &tok_buf);
+    n.n_aliases[i] = str_lcpy (aliases[i], alias, sizeof(aliases[i]));
+    alias = str_tok (NULL, " \t\n", &tok_buf);
   }
   return fill_netent (&n);
 }

@@ -241,7 +241,7 @@ const char * W32_CALL pkt_strerror (int code)
   if (code > 0 && code < DIM(errors))
      return (_LANG(errors[code]));
 
-  rc = _strlcpy (buf, _LANG(errors[0]), sizeof(buf));
+  rc = str_lcpy (buf, _LANG(errors[0]), sizeof(buf));
   p  = strchr (rc, '(');
   if (p && strlen(p) >= 5)
   {

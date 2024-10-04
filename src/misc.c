@@ -1038,11 +1038,11 @@ const char *dword_str (DWORD val)
   {
     sprintf (tmp, "%9lu", (u_long)val);
     sprintf (buf, "%.3s,%.3s,%.3s", tmp, tmp+3, tmp+6);
-    return strltrim (buf);
+    return str_ltrim (buf);
   }
   sprintf (tmp, "%12lu", (u_long)val);
   sprintf (buf, "%.3s,%.3s,%.3s,%.3s", tmp, tmp+3, tmp+6, tmp+9);
-  return strltrim (buf);
+  return str_ltrim (buf);
 }
 
 #if defined(HAVE_UINT64)
@@ -1430,7 +1430,7 @@ BOOL shell_exec (const char *cmd)
   size_t i = sizeof(blk.buf)-1;
   IREGS  regs;
 
-  _strlcpy (blk.buf, cmd, i);
+  str_lcpy (blk.buf, cmd, i);
   i = min (i, strlen(blk.buf));
   blk.len    = i;
   blk.buf[i] = '\r';

@@ -820,7 +820,7 @@ static int explore_numeric_scope (const struct addrinfo *pai,
   /* Handle special case of <scoped_address>%<scope id>
    * 'scope id' is numeric "1..x".
    */
-  _strlcpy (hostname2, _hostname, sizeof(hostname2));
+  str_lcpy (hostname2, _hostname, sizeof(hostname2));
 
   /* terminate at the delimiter
    */

@@ -226,7 +226,7 @@ int W32_CALL setdomainname (const char *name, size_t len)
   }
 #endif
 
-  def_domain = _strlcpy (defaultdomain, name, len);
+  def_domain = str_lcpy (defaultdomain, name, len);
   return (0);
 }
 
@@ -441,7 +441,7 @@ int _get_machine_name (char *buf, int size)
   memcpy (dosBuf, SEG_OFS_TO_LIN(_watt_dosTbSeg,0), sizeof(dosBuf));
 #endif
 
-  h = strrtrim (dosBuf);
+  h = str_rtrim (dosBuf);
   len = strlen (h);
   if (len + 1 > size)
   {

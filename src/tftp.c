@@ -381,7 +381,7 @@ static void tftp_close (void)
 char *tftp_set_server (const char *name, int len)
 {
   len = min (len+1, SIZEOF(tftp_server_name));
-  return _strlcpy (tftp_server_name, name, len);
+  return str_lcpy (tftp_server_name, name, len);
 }
 
 /**
@@ -394,7 +394,7 @@ char *tftp_set_boot_fname (const char *name, int len)
   char *p, buf [MAX_PATHLEN];
 
   len = min (len+1, SIZEOF(buf));
-  _strlcpy (buf, name, len);
+  str_lcpy (buf, name, len);
   tftp_boot_remote_file = strdup (buf);
   tftp_boot_local_file  = tftp_boot_remote_file;
 
@@ -415,7 +415,7 @@ char *tftp_set_boot_fname (const char *name, int len)
  */
 static char *tftp_set_xfer_mode (const char *name)
 {
-  return _strlcpy (tftp_xfer_mode, name, sizeof(tftp_xfer_mode));
+  return str_lcpy (tftp_xfer_mode, name, sizeof(tftp_xfer_mode));
 }
 
 /**

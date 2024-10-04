@@ -344,7 +344,7 @@ static BOOL get_npf_ver_from_registry (char *ret_ver, size_t ver_size)
     goto fail;
   }
 
-  _strlcpy (ret_ver, str, ver_size);
+  str_lcpy (ret_ver, str, ver_size);
   rc = TRUE;
 
 fail:
@@ -381,7 +381,7 @@ static BOOL get_npcap_ver_from_registry  (char *ret_ver, size_t ver_size)
     goto fail;
   }
 
-  _strlcpy (ret_ver, str, ver_size);
+  str_lcpy (ret_ver, str, ver_size);
   rc = TRUE;
 
 fail:

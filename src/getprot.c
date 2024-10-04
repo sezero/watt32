@@ -60,7 +60,7 @@ static __inline struct protoent *fill_protoent (const struct _protoent *p)
   static char  *aliases [MAX_PROTO_ALIASES+1];
 
   memcpy (&aliases, p->p_aliases, sizeof(aliases));
-  ret.p_name    = _strlcpy (name, p->p_name, sizeof(name));
+  ret.p_name    = str_lcpy (name, p->p_name, sizeof(name));
   ret.p_proto   = p->p_proto;
   ret.p_aliases = aliases;
   h_errno       = NETDB_SUCCESS;
@@ -191,12 +191,12 @@ struct protoent * W32_CALL getprotoent (void)
       return (NULL);
     }
 
-    tok = strltrim (buf);
+    tok = str_ltrim (buf);
     if (*tok == '#' || *tok == ';' || *tok == '\n')
        continue;
 
-    proto = strtok_r (tok, " \t", &tok_buf);
-    name  = strtok_r (NULL, " ,\t\n", &tok_buf);
+    proto = str_tok (tok, " \t", &tok_buf);
+    name  = str_tok (NULL, " ,\t\n", &tok_buf);
     if (proto && name)
        break;
   }

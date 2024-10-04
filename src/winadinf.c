@@ -663,7 +663,7 @@ static const char *dword_string (DWORD val)
     sprintf (rc, "%.3s.%.3s.%.3s.%.3s", tmp, tmp+3, tmp+6, tmp+9);
   }
   idx &= 7;
-  return strltrim (rc);
+  return str_ltrim (rc);
 }
 
 /**
@@ -1928,7 +1928,7 @@ static void print_mib_if_row (DWORD index, const MIB_IFROW *row)
    * interface. To verify same interface, we can compare the
    * descriptions from the 2 API functions.
    */
-  (*_printf) ("  Interface name: %.*s\n", MAX_INTERFACE_NAME_LEN, wstring_utf8(row->wszName));
+  (*_printf) ("  Interface name: %.*s\n", MAX_INTERFACE_NAME_LEN, wstr_utf8(row->wszName));
   (*_printf) ("  Description:    %.*s\n", MAXLEN_IFDESCR, row->bDescr);
 
   (*_printf) ("    MTU:          %lu\n", (u_long)row->dwMtu);
@@ -2383,7 +2383,7 @@ static int _pkt_win_print_GetAdaptersAddresses (void)
     }
 
     (*_printf) ("  Adapter name:          %s (number %u)\n", addr->AdapterName, num);
-    (*_printf) ("    Description:         %s\n", wstring_utf8(addr->Description));
+    (*_printf) ("    Description:         %s\n", wstr_utf8(addr->Description));
 
     /* With IPv6 enabled, this is typical list for the 'Unicast Addresses:
      *
@@ -2446,7 +2446,7 @@ static int _pkt_win_print_GetAdaptersAddresses (void)
 #endif
 
     if (!(flags & GAA_FLAG_SKIP_FRIENDLY_NAME))
-      (*_printf) ("    Friendly name:       %s\n", wstring_utf8(addr->FriendlyName));
+      (*_printf) ("    Friendly name:       %s\n", wstr_utf8(addr->FriendlyName));
     (*_printf) ("    MAC-address:         %s\n", get_phys_address(&addr->PhysicalAddress, addr->PhysicalAddressLength, TRUE));
     (*_printf) ("    Flags:               %s\n", get_address_flags(addr->Flags));
     (*_printf) ("    MTU:                 %s\n", dword_str(addr->Mtu));

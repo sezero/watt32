@@ -312,13 +312,13 @@ static BOOL set_value (BOOL is_hex, const char *value, void *arg, int size)
     ch = toupper (*s);
     if (len > 0 && strchr(hex_chars_upper, ch))
     {
-      val = atox (s-2);
+      val = str_atox (s-2);
       if (strlen(s) >= 4)
-         val = (val << 8) + atox (s);
+         val = (val << 8) + str_atox (s);
       if (strlen(s) >= 6)
-         val = (val << 8) + atox (s+2);
+         val = (val << 8) + str_atox (s+2);
       if (strlen(s) >= 8)
-         val = (val << 8) + atox (s+4);
+         val = (val << 8) + str_atox (s+4);
       ok = TRUE;
     }
   }
@@ -395,7 +395,7 @@ int W32_CALL parse_config_table (const struct config_table *tab,
       strcat (keyword, tab->keyword);   /* "SECTION.KEYWORD" */
     }
     else
-      _strlcpy (keyword, tab->keyword, sizeof(keyword));
+      str_lcpy (keyword, tab->keyword, sizeof(keyword));
 
     if (strcmp(name,keyword))
        continue;
@@ -468,7 +468,7 @@ int W32_CALL parse_config_table (const struct config_table *tab,
            break;
 
       case ARG_STRCPY:
-           _strlcpy ((char*)arg, value, MAX_VALUELEN);
+           str_lcpy ((char*)arg, value, MAX_VALUELEN);
            break;
 
       default:
@@ -501,7 +501,7 @@ static void set_my_ip (const char *value)
 
 static void set_hostname (const char *value)
 {
-  _strlcpy (hostname, value, sizeof(hostname));
+  str_lcpy (hostname, value, sizeof(hostname));
 }
 
 static void set_gateway (const char *value)
@@ -708,7 +708,7 @@ const char *get_argv0 (void)
   while (*(env+1))
         env += 1 + strlen (env);
   env += 2;
-  _strlcpy (buf, env, sizeof(buf));
+  str_lcpy (buf, env, sizeof(buf));
   free (start);
   ret = buf;
 
@@ -906,7 +906,7 @@ void W32_CALL tcp_inject_config (const struct config_table *cfg,
     return;
   }
 
-  strntrimcpy (theKey, key, MAX_NAMELEN);
+  str_ntrimcpy (theKey, key, MAX_NAMELEN);
   theKey[MAX_NAMELEN] = '\0';
   strupr (theKey);
 
@@ -916,7 +916,7 @@ void W32_CALL tcp_inject_config (const struct config_table *cfg,
     return;
   }
 
-  strntrimcpy (theValue, value, MAX_VALUELEN);
+  str_ntrimcpy (theValue, value, MAX_VALUELEN);
   theValue[MAX_VALUELEN] = '\0';
 
   current_file = NULL;
@@ -1135,8 +1135,8 @@ long tcp_parse_file (WFILE f, const struct config_table *cfg)
         if (quote_mode)
            CONFIG_DBG_MSG (0, ("Missing right \" in quoted string: `%s'\n",
                            value));
-        strrtrim (key);
-        strrtrim (value);
+        str_rtrim (key);
+        str_rtrim (value);
         if (key[0] && value[0])
            tcp_inject_config_direct (cfg, key, value);
         else if (!key[0] && !value[0] && equal_sign)
@@ -1162,7 +1162,7 @@ int W32_CALL tcp_config_name (char *name, int max)
     path = getenv (environ_names[i]);
     if (path)
     {
-      path = _strlcpy (name, path, max-2);
+      path = str_lcpy (name, path, max-2);
       break;
     }
   }
@@ -1188,8 +1188,8 @@ int W32_CALL tcp_config_name (char *name, int max)
     if (!argv0 || !argv0[0])
        return (0);
 
-    _strlcpy (name, argv0, max);
-    strreplace ('/', '\\', name);
+    str_lcpy (name, argv0, max);
+    str_replace ('/', '\\', name);
 
     /* If path == "x:", extract path.
      * temp -> last '\\' in path.
@@ -1243,7 +1243,7 @@ long W32_CALL tcp_config (const char *path)
   else
   {
     fname = name;
-    _strlcpy (name, path, sizeof(name));
+    str_lcpy (name, path, sizeof(name));
     if (!FILE_EXIST(fname))
        goto not_found;
   }

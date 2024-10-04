@@ -546,7 +546,7 @@ const char * W32_CALL wattcpBuildCC (void)
  * Since the makefiles contains "-I..\inc" for some targets (except gcc),
  * replace "-I.." with "-I../inc". ("\i" is interpreted as an ESC-sequence).
  *
- * Also removes excessive spaces between args in $(CFLAGS) using 'strtrim()'.
+ * Also removes excessive spaces between args in $(CFLAGS) using 'str_trim()'.
  */
 #if defined(CFLAGS_BUF)
   /*
@@ -586,9 +586,9 @@ const char * W32_CALL wattcpBuildCC (void)
       }
       *to = '\0';
 #else
-      strreplace ('\n', 0, w32_cflags2);
-      strreplace ('\\','/', w32_cflags2);
-      strtrim (w32_cflags2, buf, sizeof(w32_cflags2));
+      str_replace ('\n', 0, w32_cflags2);
+      str_replace ('\\','/', w32_cflags2);
+      str_trim (w32_cflags2, buf, sizeof(w32_cflags2));
 #endif
       done = 1;
     }
@@ -606,7 +606,7 @@ const char * W32_CALL wattcpBuildCC (void)
   #if defined(CFLAGS)
     static char buf [400];  /* should be enough for High-C */
 
-    _strlcpy (buf, w32_cflags, sizeof(buf));
+    str_lcpy (buf, w32_cflags, sizeof(buf));
     return (buf);
   #else
     return ("Unknown");

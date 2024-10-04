@@ -102,7 +102,7 @@ static int slip_dial (const char *str)
   if (!modem_command("ATZ\r","OK",5))
      return (0);
 
-  _strlcpy (dial_str, str, sizeof(dial_str)-3);
+  str_lcpy (dial_str, str, sizeof(dial_str)-3);
   strcat (dial_str, "\r");
   outs (_LANG("SLIP dialing.."));
 

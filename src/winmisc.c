@@ -522,12 +522,12 @@ static BOOL WinDnsQueryCommon (WORD type, const void *what,
 
     else if (rr->wType == DNS_TYPE_PTR && type == DNS_TYPE_PTR)
     {
-      _strlcpy (result, dr->Data.PTR.pNameHost, size);
+      str_lcpy (result, dr->Data.PTR.pNameHost, size);
       TRACE_CONSOLE (2, "PTR: %s\n", (const char*)result);
     }
     else if (rr->wType == DNS_TYPE_CNAME)
     {
-      _strlcpy (dom_cname, dr->Data.CNAME.pNameHost, sizeof(dom_cname));
+      str_lcpy (dom_cname, dr->Data.CNAME.pNameHost, sizeof(dom_cname));
       TRACE_CONSOLE (2, "CNAME: %s\n", dom_cname);
     }
     else
@@ -965,7 +965,7 @@ char *W32_NAMESPACE(itoa) (int value, char *buf, int radix)
   if (sign < 0)
      buf [i++] = '-';
   buf [i] = '\0';
-  return strreverse (buf);
+  return str_reverse (buf);
 }
 #endif  /* 0 */
 

@@ -213,12 +213,12 @@ struct hostent * W32_CALL gethostent6 (void)
     if (!fgets(buf, sizeof(buf), host6file))
        return (NULL);
 
-    tok = strltrim (buf);
+    tok = str_ltrim (buf);
     if (*tok == '#' || *tok == ';' || *tok == '\n')
        continue;
 
-    ip   = strtok_r (tok, " \t", &tok_buf);
-    name = strtok_r (NULL, " \t\n", &tok_buf);
+    ip   = str_tok (tok, " \t", &tok_buf);
+    name = str_tok (NULL, " \t\n", &tok_buf);
     if (ip && name && inet_pton(AF_INET6, ip, &h.h_address[0]) == 1)
        break;
   }
@@ -228,7 +228,7 @@ struct hostent * W32_CALL gethostent6 (void)
 
   h.h_num_addr = 1;
   h.h_name = name;
-  alias    = strtok_r (NULL, " \t\n", &tok_buf);
+  alias    = str_tok (NULL, " \t\n", &tok_buf);
 
   for (i = 0; alias && i < MAX_HOST_ALIASES; i++)
   {
@@ -237,8 +237,8 @@ struct hostent * W32_CALL gethostent6 (void)
     if (*alias == '#' || *alias == ';')
        break;
 
-    h.h_aliases[i] = _strlcpy (aliases[i], alias, sizeof(aliases[i]));
-    alias = strtok_r (NULL, " \t\n", &tok_buf);
+    h.h_aliases[i] = str_lcpy (aliases[i], alias, sizeof(aliases[i]));
+    alias = str_tok (NULL, " \t\n", &tok_buf);
   }
   return fill_hostent6 (&h);
 }
@@ -547,7 +547,7 @@ static struct hostent *fill_hostent6 (const struct _hostent6 *h)
 
   list[i]         = NULL;
   ret.h_addr_list = list;
-  ret.h_name      = _strlcpy (_hostname, h->h_name, sizeof(_hostname));
+  ret.h_name      = str_lcpy (_hostname, h->h_name, sizeof(_hostname));
   ret.h_aliases   = _aliases;
   ret.h_addrtype  = AF_INET6;
   ret.h_length    = sizeof (addr[0].s6_addr);

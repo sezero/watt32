@@ -193,10 +193,10 @@ char * W32_CALL rip (char *s)
 
 /**
  * Convert hexstring "0x??" to hex. Just assumes "??"
- * are in the [0-9,a-fA-F] range. Don't call atox() unless
+ * are in the [0-9,a-fA-F] range. Don't call 'str_atox()' unless
  * they are or before checking for a "0x" prefix.
  */
-BYTE atox (const char *hex)
+BYTE str_atox (const char *hex)
 {
   unsigned hi = toupper ((int)hex[2]);
   unsigned lo = toupper ((int)hex[3]);
@@ -209,7 +209,7 @@ BYTE atox (const char *hex)
 /**
  * Replace 'ch1' to 'ch2' in string 'str'.
  */
-char *strreplace (int ch1, int ch2, char *str)
+char *str_replace (int ch1, int ch2, char *str)
 {
   char *s = str;
 
@@ -227,7 +227,7 @@ char *strreplace (int ch1, int ch2, char *str)
 /**
  * Similar to strncpy(), but always returns 'dst' with 0-termination.
  */
-char *_strlcpy (char *dst, const char *src, size_t len)
+char *str_lcpy (char *dst, const char *src, size_t len)
 {
   size_t slen;
 
@@ -247,7 +247,7 @@ char *_strlcpy (char *dst, const char *src, size_t len)
 /**
  * Return pointer to first non-blank (space/tab) in a string.
  */
-char *strltrim (const char *s)
+char *str_ltrim (const char *s)
 {
   int ch;
 
@@ -265,7 +265,7 @@ char *strltrim (const char *s)
 /**
  * Return pointer to string with trailing blanks (space/tab) removed.
  */
-char *strrtrim (char *s)
+char *str_rtrim (char *s)
 {
   size_t n;
   int    ch;
@@ -290,7 +290,7 @@ char *strrtrim (char *s)
 /**
  * Copy a string (to 'dest') with all excessive blanks (space/tab) removed.
  */
-char *strtrim (const char *orig, char *dest, size_t len)
+char *str_trim (const char *orig, char *dest, size_t len)
 {
   size_t i, j;
   int    ch, last = -1;
@@ -316,15 +316,15 @@ char *strtrim (const char *orig, char *dest, size_t len)
 /*
  * Reverse string 'str' in place.
  */
-char *strreverse (char *str)
+char *str_reverse (char *str)
 {
   int i, j;
 
-  for (i = 0, j = strlen(str)-1; i < j; i++, j--)
+  for (i = 0, j = strlen(str) - 1; i < j; i++, j--)
   {
-    char c = str[i];
-    str[i] = str[j];
-    str[j] = c;
+    char c = str [i];
+    str [i] = str [j];
+    str [j] = c;
   }
   return (str);
 }
@@ -335,7 +335,7 @@ char *strreverse (char *str)
  * \note This function does not work exactly like strncpy(), in that it
  *       expects the destination buffer to be at last (n+1) chars long.
  */
-size_t strntrimcpy (char *dst, const char *src, size_t n)
+size_t str_ntrimcpy (char *dst, const char *src, size_t n)
 {
   size_t      len;
   const char *s;
@@ -370,11 +370,11 @@ size_t strntrimcpy (char *dst, const char *src, size_t n)
 }
 
 /*
- * A strtok_r() function taken from libcurl:
+ * A reentrant strtok() function taken from libcurl:
  *
  * Copyright (C) 1998 - 2007, Daniel Stenberg, <daniel@haxx.se>, et al.
   */
-char *strtok_r (char *ptr, const char *sep, char **end)
+char *str_tok (char *ptr, const char *sep, char **end)
 {
   if (!ptr)
   {
@@ -459,22 +459,22 @@ static const wchar_t *ascii_string (const char *in_str, UINT cp)
   return (buf);
 }
 
-const wchar_t *astring_acp (const char *in_str)
+const wchar_t *astr_acp (const char *in_str)
 {
   return ascii_string (in_str, CP_ACP);
 }
 
-const wchar_t *astring_utf8 (const char *in_str)
+const wchar_t *astr_utf8 (const char *in_str)
 {
   return ascii_string (in_str, CP_UTF8);
 }
 
-const char *wstring_acp (const wchar_t *in_str)
+const char *wstr_acp (const wchar_t *in_str)
 {
   return wide_string (in_str, CP_ACP);
 }
 
-const char *wstring_utf8 (const wchar_t *in_str)
+const char *wstr_utf8 (const wchar_t *in_str)
 {
   return wide_string (in_str, CP_UTF8);
 }

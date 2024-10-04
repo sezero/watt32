@@ -278,7 +278,7 @@ int main (void)
 
   while (fgets(buf, sizeof(buf), stdin))
   {
-    _strlcpy (rec.key, buf, KEYSIZE);
+    str_lcpy (rec.key, buf, KEYSIZE);
     rec.id = ++record_num;
     if (!tree_insert (&tree_root, &rec, sizeof(rec), (CmpFunc)rec_cmp))
     {
@@ -291,7 +291,7 @@ int main (void)
   prompt ("Delete");
   fgets (buf, sizeof(buf), stdin);
   rec.key[0] = '\0';
-  _strlcpy (rec.key, buf, KEYSIZE);
+  str_lcpy (rec.key, buf, KEYSIZE);
 
   while ((found = tree_find (tree_root, &rec, (CmpFunc)rec_cmp)) != NULL)
   {

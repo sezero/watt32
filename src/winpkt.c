@@ -279,7 +279,7 @@ static BOOL find_winpcap_adapter (char *aname, size_t size)
 
       if (ip_addr->sin_family == AF_INET)
       {
-        _strlcpy (aname, ai->Name, size);
+        str_lcpy (aname, ai->Name, size);
         return (TRUE);
       }
     }
@@ -315,7 +315,7 @@ static BOOL find_swsvpkt_adapter (char *aname, size_t size)
     }
   }
   if (found)
-     _strlcpy (aname, name, size);
+     str_lcpy (aname, name, size);
   return (found);
 }
 
@@ -417,7 +417,7 @@ int W32_CALL pkt_eth_init (mac_address *mac_addr)
     const char *file = expand_var_str (dump_fname);
 
     if (file != dump_fname)  /* not overlapping data */
-       _strlcpy (dump_fname, file, sizeof(dump_fname));
+       str_lcpy (dump_fname, file, sizeof(dump_fname));
     if (!strcmp(dump_fname, "-"))
          trace_file = stdout;
     else trace_file = fopen_excl (file, "w+t");
@@ -473,7 +473,7 @@ int W32_CALL pkt_eth_init (mac_address *mac_addr)
 
   if (_pkt_inf->get_descr_op &&
       (*_pkt_inf->get_descr_op)(_pkt_inf->adapter, descr, sizeof(descr)))
-     _strlcpy (_pktdrvr_descr, strrtrim(descr), sizeof(_pktdrvr_descr));
+     str_lcpy (_pktdrvr_descr, str_rtrim(descr), sizeof(_pktdrvr_descr));
 
   if (!_pkt_inf->get_if_type_op ||
       !(*_pkt_inf->get_if_type_op) (_pkt_inf->adapter, &_pktdevclass))

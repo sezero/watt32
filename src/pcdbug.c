@@ -2646,7 +2646,7 @@ static DWORD dump_data (const void *data_p, UINT datalen)
 
 static void set_debug_file (const char *value)
 {
-  _strlcpy (dbg_name, value, sizeof(dbg_name)-1);
+  str_lcpy (dbg_name, value, sizeof(dbg_name)-1);
 }
 
 static void set_debug_mode (const char *value)
@@ -2661,7 +2661,7 @@ static void set_debug_filter (const char *value)
 {
   char val[80];
 
-  _strlcpy (val, value, sizeof(val));
+  str_lcpy (val, value, sizeof(val));
   strupr (val);
 
   if (strstr(val, "ALL"))
@@ -2691,7 +2691,7 @@ static void set_debug_proto (const char *value)
 {
   char val[80];
 
-  _strlcpy (val, value, sizeof(val));
+  str_lcpy (val, value, sizeof(val));
   strupr (val);
 
   if (!strcmp(val, "ALL"))

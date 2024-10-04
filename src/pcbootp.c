@@ -200,7 +200,7 @@ static void bootp_parse (const struct bootp *bootp_in, int max)
            ip = intel (*(DWORD*)(p+2));  /* select 1st host */
            if (!syslog_host_name[0] &&   /* not in config-file */
                p[1] % 4 == 0)            /* length = n * 4 */
-             _strlcpy (syslog_host_name, _inet_ntoa(NULL,ip),
+             str_lcpy (syslog_host_name, _inet_ntoa(NULL,ip),
                        sizeof(syslog_host_name));
            break;
 #endif

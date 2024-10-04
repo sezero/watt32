@@ -387,18 +387,18 @@ char * W32_CALL __hostalias (const char *name)
   {
     char *p, *host, *alias;
 
-    p = strltrim (buf);
+    p = str_ltrim (buf);
     if (!*p || *p == '\n' || *p == '#' || *p == ';')
        continue;
 
-    host  = strtok_r (p, " \t", &tok_buf);
-    alias = strtok_r (NULL, " \t\n", &tok_buf);
+    host  = str_tok (p, " \t", &tok_buf);
+    alias = str_tok (NULL, " \t\n", &tok_buf);
     if (!host || !alias)
        continue;
 
     if (!stricmp(host, name))
     {
-      _strlcpy (abuf, alias, sizeof(abuf)-1);
+      str_lcpy (abuf, alias, sizeof(abuf)-1);
       break;
     }
   }

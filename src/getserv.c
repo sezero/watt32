@@ -80,8 +80,8 @@ static __inline struct servent *fill_servent (const struct _servent *s)
   static char *aliases [MAX_SERV_ALIASES+1];
 
   memcpy (&aliases, s->s_aliases, sizeof(aliases));
-  ret.s_name    = _strlcpy (name, s->s_name, sizeof(name));
-  ret.s_proto   = _strlcpy (prot, s->s_proto, sizeof(prot));
+  ret.s_name    = str_lcpy (name, s->s_name, sizeof(name));
+  ret.s_proto   = str_lcpy (prot, s->s_proto, sizeof(prot));
   ret.s_aliases = aliases;
   ret.s_port    = s->s_port;
   h_errno       = NETDB_SUCCESS;
@@ -200,7 +200,7 @@ struct servent * W32_CALL getservent (void)
       return (NULL);
     }
 
-    tok = strltrim (buf);
+    tok = str_ltrim (buf);
     if (*tok == '#' || *tok == ';' || *tok == '\n')
        continue;
 
@@ -213,13 +213,13 @@ struct servent * W32_CALL getservent (void)
      *    discard         9/udp           sink null
      */
 
-    name = strtok_r (tok, " \t", &tok_buf);
-    tok  = strtok_r (NULL, "/ \t\n", &tok_buf);
+    name = str_tok (tok, " \t", &tok_buf);
+    tok  = str_tok (NULL, "/ \t\n", &tok_buf);
     if (!tok)
        continue;
 
     port  = intel16 (atoi(tok));
-    proto = strtok_r (NULL, " \t\n", &tok_buf);
+    proto = str_tok (NULL, " \t\n", &tok_buf);
     if (name && port && proto &&
         (!stricmp(proto, "udp") || !stricmp(proto, "tcp")))
        break;
@@ -233,7 +233,7 @@ struct servent * W32_CALL getservent (void)
   s.s_proto = proto;
   s.s_port  = port;
 
-  alias = strtok_r (NULL, " \t\n", &tok_buf);
+  alias = str_tok (NULL, " \t\n", &tok_buf);
 
   for (i = 0; alias && i < MAX_SERV_ALIASES; i++)
   {
@@ -242,8 +242,8 @@ struct servent * W32_CALL getservent (void)
     if (*alias == '#' || *alias == ';')
        break;
 
-    s.s_aliases[i] = _strlcpy (aliases[i], alias, sizeof(aliases[i]));
-    alias = strtok_r (NULL, " \t\n", &tok_buf);
+    s.s_aliases[i] = str_lcpy (aliases[i], alias, sizeof(aliases[i]));
+    alias = str_tok (NULL, " \t\n", &tok_buf);
   }
   return fill_servent (&s);
 }

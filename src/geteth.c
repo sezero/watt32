@@ -80,7 +80,7 @@ static int           get_ether_entry (char *in_buf, eth_address *e,
 void W32_CALL InitEthersFile (const char *fname)
 {
   if (fname && *fname)
-     _strlcpy (ethersFname, fname, sizeof(ethersFname));
+     str_lcpy (ethersFname, fname, sizeof(ethersFname));
 }
 
 const char * W32_CALL GetEthersFile (void)
@@ -185,7 +185,7 @@ static int get_ether_entry (char *in_buf, eth_address *e,
   size_t   len, i;
   unsigned eth [sizeof(*e)];
   BOOL     ok, colon;
-  char    *token = strltrim (in_buf);
+  char    *token = str_ltrim (in_buf);
   char    *ip_name;
   char    *tok_buf = NULL;
 
@@ -206,8 +206,8 @@ static int get_ether_entry (char *in_buf, eth_address *e,
     return (0);
   }
 
-  token   = strtok_r (token, " \t", &tok_buf);
-  ip_name = strtok_r (NULL, " #\t\n", &tok_buf);
+  token   = str_tok (token, " \t", &tok_buf);
+  ip_name = str_tok (NULL, " #\t\n", &tok_buf);
 
   if (!token || !ip_name || (len = strlen(ip_name)) < 1 || len > name_max)
   {
@@ -217,7 +217,7 @@ static int get_ether_entry (char *in_buf, eth_address *e,
 
   ip_name = (char*) expand_var_str (ip_name);
 
-  _strlcpy (name, ip_name, name_max);
+  str_lcpy (name, ip_name, name_max);
 
   for (i = 0; i < sizeof(*e); i++)
       ((BYTE*)e)[i] = eth[i];

@@ -78,7 +78,7 @@ static void set_syslog_mask (const char *value)
 {
   char val[100];
 
-  _strlcpy (val, value, sizeof(val));
+  str_lcpy (val, value, sizeof(val));
   strlwr (val);
   syslog_mask = get_log_mask (val);
 }

@@ -245,7 +245,7 @@ static const char *getlogname (void)
 
   if (name && name[0])
   {
-    name = _strlcpy (buf, name, sizeof(buf));
+    name = str_lcpy (buf, name, sizeof(buf));
     dot  = strrchr (name, '.');
     if (dot && (!strnicmp(dot,".exe",4) || !strnicmp(dot,".exp",4)))
     {
@@ -292,7 +292,7 @@ static int openloghost (char **errbuf)
     log_sock = (sock_type*) malloc (sizeof(_udp_Socket));
     if (!log_sock)
     {
-      _strlcpy (buf, strerror(errno), sizeof(buf));
+      str_lcpy (buf, strerror(errno), sizeof(buf));
       *errbuf = buf;
       return (0);
     }
@@ -300,7 +300,7 @@ static int openloghost (char **errbuf)
 
   if (!udp_open(&log_sock->udp, 0, log_host, syslog_port, NULL))
   {
-    _strlcpy (buf, sockerr(log_sock), sizeof(buf));
+    str_lcpy (buf, sockerr(log_sock), sizeof(buf));
     *errbuf = buf;
     sock_close (log_sock);
     free (log_sock);
@@ -329,7 +329,7 @@ void W32_CALL openlog (const char *ident, int logstat, int logfac)
      log_facil = logfac;
 
   if (!syslog_file_name[0])          /* not set in wattcp.cfg */
-     _strlcpy (syslog_file_name, getlogname(), sizeof(syslog_file_name));
+     str_lcpy (syslog_file_name, getlogname(), sizeof(syslog_file_name));
 
   if (syslog_mask)
   {

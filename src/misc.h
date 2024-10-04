@@ -124,7 +124,6 @@ extern "C" {
 #define assert_fail      W32_NAMESPACE (assert_fail)
 #define ctime_r          W32_NAMESPACE (ctime_r)
 #define localtime_r      W32_NAMESPACE (localtime_r)
-#define strtok_r         W32_NAMESPACE (strtok_r)
 
 #define memdbg_init      W32_NAMESPACE (memdbg_init)
 #define memdbg_post_init W32_NAMESPACE (memdbg_post_init)
@@ -187,8 +186,6 @@ extern void     unimplemented (const char *func, const char *file, unsigned line
 
 extern char       *ctime_r     (const time_t *t, char *res);
 extern struct tm  *localtime_r (const time_t *t, struct tm *res);
-extern char       *strtok_r    (char *ptr, const char *sep, char **end);
-
 extern const char *dos_extender_name (void);
 
 #if defined(USE_DEBUG)

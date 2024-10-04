@@ -164,7 +164,7 @@ extern int          _tcp_send_reset (_tcp_Socket *s, const in_Header *ip,
 #define SET_ERR_MSG(s, msg) \
         do { \
           if (s && s->err_msg == NULL && msg != NULL) \
-             s->err_msg = _strlcpy (s->err_buf, msg, sizeof(s->err_buf)); \
+             s->err_msg = str_lcpy (s->err_buf, msg, sizeof(s->err_buf)); \
         } while (0)
 
 /*!\struct tcp_rtt

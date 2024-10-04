@@ -172,7 +172,7 @@ int dynip_exec (void)
     TRACE (2, ("Got %d bytes HTML, Found myip: `%s'\r\n", rc, myip));
     if (!myip)
        return (0);
-    _strlcpy (dyn_myip, myip, sizeof(dyn_myip));
+    str_lcpy (dyn_myip, myip, sizeof(dyn_myip));
   }
 
   if (!dyn_myhostname[0] || !dyndns.get_req)
@@ -255,7 +255,7 @@ static const char *parse_myip_address (const char *orig)
   for ( ; *p && p < end; p++)
       if (isdigit((int)*p) && aton(p))
       {
-        ret = _strlcpy (res, p, min(end - p + 1, SIZEOF(res)));
+        ret = str_lcpy (res, p, min(end - p + 1, SIZEOF(res)));
         break;
       }
   free (buf);
@@ -313,7 +313,7 @@ static BOOL url_parse (struct URL *res, const char *url)
   p = strstr (url, "://");
   if (p)
   {
-    _strlcpy (scheme, url, min(SIZEOF(scheme), p - url + 1));
+    str_lcpy (scheme, url, min(SIZEOF(scheme), p - url + 1));
     if (stricmp(scheme, "http"))
     {
       TRACE (1, ("Unsupported scheme `%s'\n", scheme));
@@ -370,7 +370,7 @@ static void url_free (struct URL *url)
 static int chkip_method (const char *value)
 {
   if (isaddr(value))
-     _strlcpy (dyn_myip, value, sizeof(dyn_myip));
+     str_lcpy (dyn_myip, value, sizeof(dyn_myip));
   else
   {
     url_free (&chkip);

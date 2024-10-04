@@ -262,11 +262,11 @@ static char **split_labels (const char *name)
 
     if (!dot)
     {
-      res[i] = _strlcpy (buf[i], p, sizeof(buf[i]));
+      res[i] = str_lcpy (buf[i], p, sizeof(buf[i]));
       i++;
       break;
     }
-    res[i] = _strlcpy (buf[i], p, dot-p+1);
+    res[i] = str_lcpy (buf[i], p, dot-p+1);
     p = ++dot;
   }
   res[i] = NULL;

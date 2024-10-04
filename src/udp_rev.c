@@ -366,7 +366,7 @@ static BOOL read_response (sock_type *s, char *name, size_t size)
       }
 #endif
       dom_errno = DNS_SRV_OK;
-      _strlcpy (name, dom_remove_dot(result), size);
+      str_lcpy (name, dom_remove_dot(result), size);
       return (TRUE);
     }
   }
