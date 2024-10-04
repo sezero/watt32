@@ -3,10 +3,7 @@
 #include "wput.h"
 #include "ftp.h"
 #include "utils.h"
-
-#ifdef _WIN32  /* assuming VC/MingW */
 #include "getopt.h"
-#endif
 
 int start_fsession();
 int start_ftp();

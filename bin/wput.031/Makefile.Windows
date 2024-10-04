@@ -83,8 +83,6 @@ ifeq ($(USE_WATT32),1)
             -I$(WATT_ROOT)/inc \
             -I$(WATT_ROOT)/inc/w32-fakes
 
-  CFLAGS += $(call select,, -D__GETOPT_H__, -D__GETOPT_H__)
-
   OS_LIBS  =
   WATT_LIB = $(call select, $(WATT_ROOT)/lib/$(CPU)/libwatt32.dll.a,      \
                             $(WATT_ROOT)/lib/$(CPU)/wattcp_clang_imp.lib, \

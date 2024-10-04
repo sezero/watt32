@@ -38,6 +38,16 @@
 extern "C" {
 #endif
 
+#if defined(WATT32)
+  #undef opterr
+  #undef optind
+  #undef optopt
+  #undef optarg
+  #undef option
+  #undef getopt
+  #undef getopt_long
+#endif
+
 extern int   opterr;      /* if error message should be printed */
 extern int   optind;      /* index into parent argv vector */
 extern int   optopt;      /* character checked for validity */
