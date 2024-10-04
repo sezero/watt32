@@ -18,6 +18,14 @@
 #ifndef _GETOPT_H
 #define _GETOPT_H 1
 
+#if defined(WATT32) && !defined(WATT32_STATIC)
+  #undef optarg
+  #undef optind
+  #undef opterr
+  #undef optopt
+  #undef getopt
+#endif
+
 #ifdef	__cplusplus
 extern "C" {
 #endif
@@ -74,13 +82,11 @@ extern int optopt;
    one).  For long options that have a zero `flag' field, `getopt'
    returns the contents of the `val' field.  */
 
+#undef option
+
 struct option
 {
-#if	__STDC__
   const char *name;
-#else
-  char *name;
-#endif
   /* has_arg can't be an enum because some compilers complain about
      type mismatches in all the code that assumes it is an int.  */
   int has_arg;
@@ -94,15 +100,10 @@ struct option
 #define required_argument	1
 #define optional_argument	2
 
-#if __STDC__
-#if defined(__GNU_LIBRARY__)
-/* Many other libraries have conflicting prototypes for getopt, with
-   differences in the consts, in stdlib.h.  To avoid compilation
-   errors, only prototype getopt for the GNU C library.  */
 extern int getopt (int argc, char *const *argv, const char *shortopts);
-#else /* not __GNU_LIBRARY__ */
-extern int getopt ();
-#endif /* not __GNU_LIBRARY__ */
+
+#undef getopt_long
+
 extern int getopt_long (int argc, char *const *argv, const char *shortopts,
 		        const struct option *longopts, int *longind);
 extern int getopt_long_only (int argc, char *const *argv,
@@ -114,13 +115,6 @@ extern int _getopt_internal (int argc, char *const *argv,
 			     const char *shortopts,
 		             const struct option *longopts, int *longind,
 			     int long_only);
-#else /* not __STDC__ */
-extern int getopt ();
-extern int getopt_long ();
-extern int getopt_long_only ();
-
-extern int _getopt_internal ();
-#endif /* not __STDC__ */
 
 #ifdef	__cplusplus
 }
