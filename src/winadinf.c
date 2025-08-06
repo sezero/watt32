@@ -3996,7 +3996,7 @@ quit:
    */
   static void print_bw_estimate (const char *what, LONG64 Bps, int indent)
   {
-    char speed[30];
+    char speed [30];
 
     (*_printf) ("%*s%s: %s", indent, "", what, speed64_string(Bps, speed));
   }

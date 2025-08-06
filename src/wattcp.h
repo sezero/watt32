@@ -222,7 +222,7 @@ struct ulong_long {
  */
 #define IP4_TYPE         0x0008
 #define IP6_TYPE         0xDD86
-#define IEEE802_1Q_TYPE  0x0081   /* Virtual LAN */
+#define IEEE802_1Q_TYPE  0x0081   /* VLAN, Virtual LAN */
 #define ARP_TYPE         0x0608
 #define RARP_TYPE        0x3580
 #define PPPOE_DISC_TYPE  0x6388
