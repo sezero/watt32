@@ -140,7 +140,7 @@ void W32_CALL ReadEthersFile (void)
      */
     if (!h)
     {
-      TRACE_CONSOLE (4, "ReadEthersFile(): gethostbyname() failed\n");
+      TRACE_CONSOLE (4, "%s(): gethostbyname() failed\n", __FUNCTION__);
       continue;
     }
     TRACE_CONSOLE (4, "\n");
@@ -175,7 +175,7 @@ void W32_CALL ReadEthersFile (void)
  * hostname/IP-address and separate it into its component parts.
  * E.g.
  *   in_buf -> "88-87-17-17-5a-3e  10.0.0.4"
- *   in_buf -> "E0-CA-94-3D-74-F0  printer"
+ *   in_buf -> "E0:CA:94:3D:74:F0  printer"
  */
 #define MIN_LEN  sizeof("0:0:0:0:0:0 a.b.c.d")
 
@@ -202,7 +202,7 @@ static int get_ether_entry (char *in_buf, eth_address *e,
                        &eth[3], &eth[4], &eth[5]) == DIM(eth));
   if (!ok)
   {
-    TRACE_CONSOLE (1, "get_ether_entry(): sscanf() failed\n");
+    TRACE_CONSOLE (1, "%s(): sscanf() failed for '%s'\n", __FUNCTION__, token);
     return (0);
   }
 
@@ -211,7 +211,7 @@ static int get_ether_entry (char *in_buf, eth_address *e,
 
   if (!token || !ip_name || (len = strlen(ip_name)) < 1 || len > name_max)
   {
-    TRACE_CONSOLE (1, "get_ether_entry(): short line or malformed ip_name '%s'\n", ip_name);
+    TRACE_CONSOLE (1, "%s(): short line or malformed ip_name '%s'\n", __FUNCTION__, ip_name);
     return (0);
   }
 
@@ -222,8 +222,8 @@ static int get_ether_entry (char *in_buf, eth_address *e,
   for (i = 0; i < sizeof(*e); i++)
       ((BYTE*)e)[i] = eth[i];
 
-  TRACE_CONSOLE (4, "get_ether_entry(): ip: %s, eth: %02X:%02X:%02X:%02X:%02X:%02X\n",
-                 ip_name, eth[0],eth[1],eth[2],eth[3],eth[4],eth[5]);
+  TRACE_CONSOLE (4, "%s(): ip: %s, eth: %02X:%02X:%02X:%02X:%02X:%02X\n",
+                 __FUNCTION__, ip_name, eth[0],eth[1],eth[2],eth[3],eth[4],eth[5]);
 
   return (1);
 }
