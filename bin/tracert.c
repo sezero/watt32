@@ -1646,7 +1646,8 @@ int trace_this_ttl (int ttl, int seq)
     if (!ip)
     {
       if (ttl == 1 && probe == nprobes-1)
-         Exit ("\n No reply on 1st hop. Giving up");
+         Exit ("\n No reply on 1st hop. Giving up.\n"
+               " Try the '-s <the Windows source IP>' option.");
       if (verbose >= 2)
          printf ("ttl: %d, probe: %d, consecutive: %d, lost: %d\n", ttl, probe, consecutive, lost);
       continue;
