@@ -228,31 +228,31 @@ W32_FUNC void              W32_CALL endhostent6    (void);
 W32_FUNC void              W32_CALL endnetent      (void);
 W32_FUNC void              W32_CALL endprotoent    (void);
 W32_FUNC void              W32_CALL endservent     (void);
-W32_FUNC struct hostent  * W32_CALL gethostbyaddr  (const char *, socklen_t, int);
-W32_FUNC struct hostent  * W32_CALL gethostbyaddr6 (const void *);
+W32_FUNC struct hostent  * W32_CALL gethostbyaddr  (const char *addr, socklen_t len, int type);
+W32_FUNC struct hostent  * W32_CALL gethostbyaddr6 (const void *addr);
 W32_FUNC struct hostent  * W32_CALL gethostbyname  (const char *name);
 W32_FUNC struct hostent  * W32_CALL gethostbyname2 (const char *name, int af);
 W32_FUNC struct hostent  * W32_CALL gethostbyname6 (const char *name);
 W32_FUNC struct hostent  * W32_CALL gethostent     (void);
 W32_FUNC struct hostent  * W32_CALL gethostent6    (void);
-W32_FUNC struct hostent  * W32_CALL getipnodebyaddr(const void *, size_t, int, int *);
-W32_FUNC struct hostent  * W32_CALL getipnodebyname(const char *, int, int, int *);
-W32_FUNC struct netent   * W32_CALL getnetbyaddr   (long, int);
-W32_FUNC struct netent   * W32_CALL getnetbyname   (const char *);
+W32_FUNC struct hostent  * W32_CALL getipnodebyaddr(const void *addr, size_t len, int af, int *error);
+W32_FUNC struct hostent  * W32_CALL getipnodebyname(const char *name, int af, int flags, int *error);
+W32_FUNC struct netent   * W32_CALL getnetbyaddr   (long net, int type);
+W32_FUNC struct netent   * W32_CALL getnetbyname   (const char *name);
 W32_FUNC struct netent   * W32_CALL getnetent      (void);
-W32_FUNC struct protoent * W32_CALL getprotobyname (const char *);
-W32_FUNC struct protoent * W32_CALL getprotobynumber (int);
+W32_FUNC struct protoent * W32_CALL getprotobyname (const char *proto);
+W32_FUNC struct protoent * W32_CALL getprotobynumber (int proto);
 W32_FUNC struct protoent * W32_CALL getprotoent    (void);
-W32_FUNC struct servent  * W32_CALL getservbyname  (const char *, const char *);
-W32_FUNC struct servent  * W32_CALL getservbyport  (int, const char *);
+W32_FUNC struct servent  * W32_CALL getservbyname  (const char *service, const char *proto);
+W32_FUNC struct servent  * W32_CALL getservbyport  (int port, const char *proto);
 W32_FUNC struct servent  * W32_CALL getservent     (void);
-W32_FUNC void              W32_CALL herror         (const char *);
-W32_FUNC const char      * W32_CALL hstrerror      (int);
+W32_FUNC void              W32_CALL herror         (const char *prefix);
+W32_FUNC const char      * W32_CALL hstrerror      (int err);
 W32_FUNC void              W32_CALL sethostent     (int stayopen);
 W32_FUNC void              W32_CALL sethostent6    (int stayopen);
-W32_FUNC void              W32_CALL setnetent      (int);
-W32_FUNC void              W32_CALL setprotoent    (int);
-W32_FUNC void              W32_CALL setservent     (int);
+W32_FUNC void              W32_CALL setnetent      (int stayopen);
+W32_FUNC void              W32_CALL setprotoent    (int stayopen);
+W32_FUNC void              W32_CALL setservent     (int stayopen);
 
 W32_FUNC int    W32_CALL getnameinfo (const struct sockaddr *sa, socklen_t salen,
                                       char *host, socklen_t hostlen,
@@ -263,11 +263,11 @@ W32_FUNC int    W32_CALL getaddrinfo (const char *hostname, const char *servname
                                       struct addrinfo **res);
 
 W32_FUNC void   W32_CALL freeaddrinfo (struct addrinfo *ai);
-W32_FUNC void   W32_CALL freehostent  (struct hostent *);
+W32_FUNC void   W32_CALL freehostent  (struct hostent *he);
 W32_FUNC char * W32_CALL gai_strerror (int ecode);
 
-W32_FUNC int    W32_CALL if_nametoindex (const char *);
-W32_FUNC char * W32_CALL if_indextoname (int, char *);
+W32_FUNC int    W32_CALL if_nametoindex (const char *if_name);
+W32_FUNC char * W32_CALL if_indextoname (int if_id, char *if_name);
 
 W32_FUNC int  * W32_CALL __h_errno_location (void);
 
