@@ -2195,7 +2195,7 @@ static int _pkt_win_print_GetIpNetTable (void)
   qsort (table->table, table->dwNumEntries, sizeof(MIB_IPNETROW), compare_ipnetrow);
 
   for (i = 0; i < table->dwNumEntries; i++)
-      print_mib_ipnetrow (i, table->table + i);
+      print_mib_ipnet_row (i, table->table + i);
   return (0);
 }
 
@@ -3770,23 +3770,33 @@ static void print_radio_state (const WLAN_RADIO_STATE *rs, int indent)
 }
 
 /*
- * Helper functions for GetIpNetTable() and GetIpNetTable2().
+ * Helper functions for GetIpNetTable().
  */
-static void print_mib_ipnetrow (DWORD index, const MIB_IPNETROW *row)
+static void print_mib_ipnet_row (DWORD index, const MIB_IPNETROW *row)
 {
   address_buf abuf = "?";
   ULONG       len  = min (row->dwPhysAddrLen, MAXLEN_PHYSADDR);
+  static MIB_IPNETROW last;
 
   if (index == 0)
      (*_printf) ("  IPv4             MAC-addr           Type\n"
                  "  --------------------------------------------\n");
 
-  _w32_inet_ntop (_w32_AF_INET, &row->dwAddr, abuf, sizeof(abuf));
-  (*_printf) ("  %-15.15s  %-17s  %s\n",
-              abuf, get_phys_address(&row->bPhysAddr, len, FALSE),
-              _list_lookup(row->dwType, arp_types, DIM(arp_types)));
+  /* Drop duplicate addresses.
+   */
+  if (index > 0 & row->dwAddr != last.dwAddr)
+  {
+    _w32_inet_ntop (_w32_AF_INET, &row->dwAddr, abuf, sizeof(abuf));
+    (*_printf) ("  %-15.15s  %-17s  %s\n",
+                abuf, get_phys_address(&row->bPhysAddr, len, FALSE),
+                _list_lookup(row->dwType, arp_types, DIM(arp_types)));
+  }
+  memcpy (&last, row, sizeof(last));
 }
 
+/*
+ * Helper functions for GetIpNetTable2().
+ */
 static void print_mib_ipnet_row2 (DWORD index, const MIB_IPNET_ROW2 *row)
 {
   ULONG       sec, len  = min (row->PhysicalAddressLength, IF_MAX_PHYS_ADDRESS_LENGTH);

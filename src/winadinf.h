@@ -1110,7 +1110,7 @@
   static void print_radio_state             (const WLAN_RADIO_STATE *rs, int indent);
   static void print_auth_pairs              (const WLAN_AUTH_CIPHER_PAIR_LIST2 *auth, int indent);
 
-  static void print_mib_ipnetrow       (DWORD index, const MIB_IPNETROW *row);
+  static void print_mib_ipnet_row      (DWORD index, const MIB_IPNETROW *row);
   static void print_mib_ipnet_row2     (DWORD index, const MIB_IPNET_ROW2 *row);
   static void print_mib_ipforward_row2 (DWORD index, const MIB_IPFORWARD_ROW2 *row, int family);
 
