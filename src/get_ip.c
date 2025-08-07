@@ -263,6 +263,8 @@ void W32_CALL freehostent (struct hostent *he)
   free (he->h_aliases);
   free (he->h_addr_list);
   free (he);
+#else
+  (void) p;
 #endif
 }
 
