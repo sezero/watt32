@@ -145,7 +145,7 @@ void W32_CALL ReadEthersFile (void)
     }
     TRACE_CONSOLE (4, "\n");
 
-    e = calloc (sizeof(*e), 1);
+    e = calloc (1, sizeof(*e));
     if (!e)
        break;
 

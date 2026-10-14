@@ -124,7 +124,7 @@ void W32_CALL ReadHosts6File (const char *fname)
     if (!h)
        break;
 
-    h2 = calloc (sizeof(*h2), 1);
+    h2 = calloc (1, sizeof(*h2));
     if (!h2)
     {
       (*_printf) (_LANG("%s too big!\n"), host6Fname);
@@ -584,7 +584,7 @@ static struct _hostent6 *add_hostent6 (
   }
   else           /* create a new node */
   {
-    h = calloc (sizeof(*h), 1);
+    h = calloc (1, sizeof(*h));
     if (h)
     {
       h->h_next = host0;

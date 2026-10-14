@@ -736,7 +736,7 @@ void ip4_frag_init (void)
   for (i = 0; i < DIM(frag_buckets); i++)
   {
     struct frag_bucket *fb  = frag_buckets + i;
-    struct huge_ip     *hip = calloc (sizeof(*hip), 1);
+    struct huge_ip     *hip = calloc (1, sizeof(*hip));
 
     if (!hip)
        break;
@@ -893,7 +893,7 @@ BYTE *init_frag (int argc, char **argv)
     exit (-1);
   }
 
-  data = calloc (frag_size * max_frags, 1);
+  data = calloc (1, frag_size * max_frags);
   if (!data)
   {
     printf ("no memory\n");

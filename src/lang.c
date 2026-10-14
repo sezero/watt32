@@ -2551,7 +2551,7 @@ static void AddEntry (void)
   struct Node *list = NULL;
 
   if ((str = strdup(buf)) == NULL ||
-      (list = calloc(sizeof(*list),1)) == NULL)
+      (list = calloc(1, sizeof(*list))) == NULL)
   {
     (*_printf) ("Language file too big!\n");
     DO_FREE (str);

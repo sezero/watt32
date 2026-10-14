@@ -128,7 +128,7 @@ void W32_CALL ReadServFile (const char *fname)
     if (!s)
        break;
 
-    s2 = calloc (sizeof(*s2), 1);
+    s2 = calloc (1, sizeof(*s2));
     if (!s2)
     {
       (*_printf) (_LANG("%s too big!\n"), servFname);
