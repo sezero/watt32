@@ -1147,10 +1147,10 @@ void CheckReply (const struct ip *ip, int ttl, int probe, int seq, double delta_
     if (!nflag)
     {
       const char *addr = inet_ntoa (src);
-      size_t      len = strlen (addr);
+      int         len  = (int) strlen (addr);
 
       if (len > longest_addr && len < 16)
-         longest_addr =  16 - len;
+         longest_addr = 16 - len;
       p += snprintf (p, sizeof(buf) - (p - buf), " (%s)%-*s", inet_ntoa(src), longest_addr, "");
     }
 
@@ -1305,14 +1305,16 @@ const char *GetAddress (struct in_addr addr)
     if (hp)
     {
       char *cp;
+      int   len;
 
       strncpy (name, hp->h_name, sizeof(name)-1);
       name [MAXHOSTNAMELEN] = '\0';
       cp = strchr (name, '.');
       if (drop_domain && cp && !strcmp(cp+1,domain))
          *cp = '\0';
-      if (strlen(name) > longest_name)
-         longest_name = strlen (name);
+      len = (int) strlen (name);
+      if (len > longest_name)
+         longest_name = len;
       return (name);
     }
   }
