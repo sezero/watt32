@@ -154,7 +154,7 @@ typedef struct Socket {
         struct sockaddr_in *local_addr;
         struct sockaddr_in *remote_addr;
 
-        int                 timeout;
+        int32_t             timeout;
         int                 inp_flags;   /* misc. IP-protocol options */
         BYTE                ip_tos;
         BYTE                ip_ttl;
