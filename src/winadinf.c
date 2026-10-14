@@ -943,7 +943,6 @@ static char *trace_REG_BINARY (HKEY key, const char *value, DWORD num)
 {
   DWORD       bin_type = REG_BINARY;
   DWORD       bin_len = 0;
-  ULONGLONG   bin_val;
   char       *bin_buf = NULL;
   const char *t_val = "";
 
