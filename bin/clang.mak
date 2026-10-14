@@ -39,7 +39,7 @@ USE_STATIC_LIB ?= 0
 #   GEOIP_LIB = 1 ==> compile with 'geoip.c'
 #   GEOIP_LIB = 0 ==> compile with neither.
 #
-GEOIP_LIB = 2
+GEOIP_LIB ?= 2
 
 #
 # Use "Address Sanitizer"?
@@ -224,28 +224,24 @@ SOURCES = ping.c    popdump.c rexec.c   tcpinfo.c cookie.c   \
           revip.c   vlsm.c    whois.c   wol.c     eth-wake.c \
           ident.c   country.c tracert.c w32-test.c
 
-depend:
-	$(CC) $(CFLAGS) -E -showIncludes $(SOURCES) > .depend.clang
-
 #
 # GNU-make macros:
 #
 # The following assumes you have MSys/Cygwin's echo with colour support.
 #
 BRIGHT_GREEN = \e[1;32m
-colour_msg   = @echo -e "$(1)\e[0m"
-green_msg    = $(call colour_msg,$(BRIGHT_GREEN)$(strip $(1)))
+BRIGHT_WHITE = \e[1;37m
+
+colour_msg = @echo -e "$(1)\e[0m"
+green_msg  = $(call colour_msg,$(BRIGHT_GREEN)$(strip $(1)))
 
 define link_EXE
-  $(call green_msg, Linking $(1))
+  $(call green_msg, Linking $(BRIGHT_WHITE)$(strip $(1)))
   link -out:$(strip $(1)) $(LDFLAGS) $(2) > link.tmp
   @cat link.tmp >> $(1:.exe=.map)
   @rm -f $(1:.exe=.exp) $(1:.exe=.lib)
   @echo
 endef
-
-
--include .depend.clang
 
 #
 # These are needed for MSYS' make (sigh)
