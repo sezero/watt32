@@ -937,6 +937,9 @@ CFLAGS = -nologo -Zi -Zo -GS- -I. -I../inc \
          -D_WINSOCK_DEPRECATED_NO_WARNINGS \
          -DBUILD_WINDOWS
 
+#
+# Turn off warnings on '#pragma message(...)'
+#
 CFLAGS += -Wno-\#pragma-messages
 
 @ifdef DEBUG
@@ -961,6 +964,12 @@ USE_UBSAN ?= 0
 # Enable full Microsoft Visual C++ compatibility
 #
 CFLAGS += -fms-compatibility
+
+#
+# Turn off console-colours; blue on blue background is not readable.
+#
+CFLAGS += -fno-color-diagnostics
+
 LDFLAGS = -dll -nologo -map -debug -debugtype:cv -incremental:no -machine:$(CPU)
 
 #
