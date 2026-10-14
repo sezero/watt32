@@ -329,6 +329,7 @@ static int dup_bind (Socket *sock, Socket **newconn, int idx)
    */
   free (clone->tcp_sock);
   clone->tcp_sock = sock->listen_queue[idx];
+  clone->tcp_sock->locflags &= ~LF_IS_SERVER;  /* an accepted connection is not a listener */
   sock->listen_queue [idx] = NULL;
   sock->syn_timestamp[idx] = 0UL;
   *newconn = clone;
