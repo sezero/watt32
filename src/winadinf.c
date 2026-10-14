@@ -4181,8 +4181,10 @@ quit:
         (*_printf) ("\n");
       }
       else
-        (*_printf) ("%*sGetIpNetworkConnectionBandwidthEstimates(): %s\n",
-                   indent, "", win_strerror(rc));
+      {
+        (*_printf) ("%*sIn  Bandwidth: ?, Instability: ?\n"
+                    "%*sOut Bandwidth: ?, Instability: ?\n", indent, "", indent, "");
+      }
     }
   }
 #endif  /* ON_WIN_VISTA && HAVE_NETIOAPI_H */
