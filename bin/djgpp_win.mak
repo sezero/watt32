@@ -15,7 +15,7 @@ DPMI_STUB ?= 1
 #
 # Define 'MAKE_MAP = 1' if you like a .map-file
 #
-MAKE_MAP ?= 1
+MAKE_MAP ?= 0
 
 #
 # Use 'gcc -Wall'?
@@ -143,16 +143,29 @@ vclean realclean: clean
 	rm -f $(PROGRAMS)
 
 #
+# GNU-make macros:
+#
+# The following assumes you have MSys/Cygwin's echo with colour support.
+#
+BRIGHT_GREEN = \e[1;32m
+BRIGHT_WHITE = \e[1;37m
+
+colour_msg = @echo -e "$(1)\e[0m"
+green_msg  = $(call colour_msg,$(BRIGHT_GREEN)$(strip $(1)))
+
+#
 # Make-macro for linking.
 #
 ifeq ($(MAKE_MAP),1)
   define link_EXE
-    $(CC) $(LDFLAGS) -o $(1) $(2) ../lib/libwatt.a > $(3)
+    $(call green_msg, Linking $(BRIGHT_WHITE)$(strip $(1)))
+    $(strip $(CC) $(LDFLAGS) -o $(1) $(2) ../lib/libwatt.a > $(3))
     @echo
   endef
 else
   define link_EXE
-    $(CC) $(LDFLAGS) -o $(1) $(2) ../lib/libwatt.a
+    $(call green_msg, Linking $(BRIGHT_WHITE)$(strip $(1)))
+    $(strip $(CC) $(LDFLAGS) -o $(1) $(2) ../lib/libwatt.a)
     @echo
   endef
 endif
